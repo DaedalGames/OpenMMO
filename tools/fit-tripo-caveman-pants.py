@@ -32,6 +32,8 @@ def clip_plane(points, uv, faces, normal):
 def add_mesh(doc, binary, name, points, uv, faces, material):
     used, remapped = np.unique(faces, return_inverse=True)
     points, uv, faces = points[used], uv[used], remapped.reshape(-1, 3)
+    if name.startswith('caveman_pelt_'):
+        points = drape_back(points)
     joints = np.zeros((len(points), 4), dtype=np.uint16)
     joints[:, 0] = fit.NAMES.index('Hips')
     weights = np.zeros((len(points), 4))
@@ -40,6 +42,14 @@ def add_mesh(doc, binary, name, points, uv, faces, material):
     attributes['TEXCOORD_0'] = io.add_accessor(doc, binary, uv, 'VEC2')
     doc['meshes'].append(dict(name=name, primitives=[dict(attributes=attributes,
         material=material, indices=io.add_accessor(doc, binary, faces.reshape(-1, 1), 'SCALAR', 5125))]))
+
+
+def drape_back(points):
+    adjusted = points.copy()
+    rear = io.smoothstep((-points[:, 2] - .030) / .090)
+    below_belt = 1 - io.smoothstep((points[:, 1] - 1.0) / .070)
+    adjusted[:, 2] += .025 * rear * below_belt
+    return adjusted
 
 
 def cloth_side(panel, belt, body, sign):
@@ -78,6 +88,9 @@ def cloth_side(panel, belt, body, sign):
     radial /= np.linalg.norm(radial, axis=1, keepdims=True)
     back = front.copy()
     back[:, [0, 2]] -= radial * .006
+    offset = drape_back(front) - front
+    front += offset
+    back += offset
     physics['pivot'] = front[:columns].mean(0).tolist()
     physics['length'] = float(front[0, 1] - front[:, 1].min())
     return np.vstack([front, back]), texcoords, triangles, physics
@@ -168,6 +181,8 @@ def main():
         physics = barbarian.panel_physics('plate', 'Hips', pivot, outward,
             float(pivot[1] - panel[0][:, 1].min()))
         physics['colliders'][0].update(center=[0, .98, -.010], radii=[.192, .15, .14])
+        if name == 'back':
+            physics['colliders'][0]['radii'][2] = .130
         if name in ('left', 'right'):
             sign = 1 if name == 'left' else -1
             p, t, f, physics = cloth_side(panel, belt_triangles, body_triangles, sign)
@@ -186,7 +201,7 @@ def main():
     target = OUTPUT / 'pants_caveman.glb'
     fit.write_glb(target, doc, binary)
     assert images == [view_bytes(doc, binary, image['bufferView']) for image in doc['images'][:len(images)]]
-    report = dict(date='2026-10-04', status='Barbarian-style rigid front/back hinges and 9x11 side cloth; runtime and visual validation required',
+    report = dict(date='2026-10-10', status='Barbarian-style rigid front/back hinges and 9x11 side cloth; runtime and visual validation required',
         source={'path': str(source.relative_to(ROOT)), 'sha256': fit.digest(source)},
         base={'path': str(base.relative_to(ROOT)), 'sha256': fit.digest(base)},
         interfaces={'path': 'assets/modular_human_male_01/interfaces/v1/interfaces.json', 'sha256': fit.digest(ROOT / 'assets/modular_human_male_01/interfaces/v1/interfaces.json')},
@@ -198,6 +213,10 @@ def main():
             method='Preserve source belt, ornaments and front/back panels with original UV; resample side shells onto paired 9x11 grids with source hem heights, existing barbarian fur texture and 17mm waistband overlap',
             waist_overlap_y_m=[1.095, 1.112]),
         transform=dict(scale=[.55, .495, .60], translation=[0, .65, -.020], waist='Actual body radial sections with preserved shell and accessory offsets'),
+        rear_drape=dict(date='2026-10-10', maximum_inward_shift_m=.025,
+            transition_y_m=[1.0, 1.07], belt_and_ornaments_unchanged=True,
+            rear_hip_collider_depth_radius_m=.130,
+            method='Reduce the rear shelf after panel splitting and side-grid sampling; preserve X/Y, topology, UV, side-shell thickness and lightweight hinges'),
         source_components=count,
         physics=dict(anchor_bone='Hips', rigid_accessory_components=count - 1,
             method='Existing barbarian runtime: rigid front/back hip hinges and two 99-particle cloth grids with four constraint iterations; no pelt_bend, no thigh skinning',

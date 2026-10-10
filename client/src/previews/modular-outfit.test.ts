@@ -48,6 +48,267 @@ const undressed: ModularOutfit = {
   helmet: 'none',
 }
 
+describe('bard top preview', () => {
+  it('keeps the underwear seam continuous and restores the rear hem when pants change', () => {
+    const { body, parts } = fixture()
+    const torso = body.find((mesh) => mesh.userData.region === 'torso')!
+    const legs = body.find((mesh) => mesh.userData.region === 'legs')!
+    torso.geometry = new THREE.PlaneGeometry(0.2, 0.2, 4, 4)
+    torso.geometry.translate(0, 1.1, -0.11)
+    legs.geometry = new THREE.PlaneGeometry(0.2, 0.2, 4, 4)
+    legs.geometry.translate(0, 0.9, -0.11)
+    const source = new THREE.BoxGeometry(0.3, 0.4, 0.3, 2, 4, 2)
+    source.translate(0, 1.1, 0)
+    const top = new THREE.SkinnedMesh(source)
+    parts.set('top_bard', [top])
+    const outfit: ModularOutfit = { ...undressed, top: 'bard' }
+    showModularOutfit(body, parts, outfit)
+    const seam = (mesh: THREE.SkinnedMesh) => {
+      const positions = mesh.geometry.attributes.position
+      return Array.from({ length: positions.count }, (_, i) => i)
+        .filter((i) => Math.abs(positions.getY(i) - 1) < 1e-6)
+        .map((i) => [positions.getX(i), positions.getZ(i)])
+        .sort((a, b) => a[0] - b[0])
+    }
+    expect(seam(torso)).toEqual(seam(legs))
+    expect(seam(torso).some(([, z]) => Math.abs(z + 0.11) > 0.001)).toBe(true)
+    torso.geometry.computeBoundingBox()
+    expect(torso.geometry.boundingBox!.max.y).toBeCloseTo(1.16)
+    const original = source.attributes.position
+    const fitted = top.geometry.attributes.position
+    let moved = 0
+    for (let i = 0; i < original.count; i++) {
+      expect(Math.abs(fitted.getX(i) - original.getX(i))).toBeLessThanOrEqual(
+        0.020001
+      )
+      expect(fitted.getY(i)).toBe(original.getY(i))
+      const displacement = original.getZ(i) - fitted.getZ(i)
+      expect(displacement).toBeGreaterThanOrEqual(0)
+      expect(displacement).toBeLessThanOrEqual(0.045001)
+      if (original.getZ(i) >= 0 || original.getY(i) >= 1.17) {
+        expect(fitted.getX(i)).toBe(original.getX(i))
+        expect(fitted.getZ(i)).toBe(original.getZ(i))
+      } else if (fitted.getZ(i) < original.getZ(i)) moved++
+    }
+    expect(moved).toBeGreaterThan(0)
+    const adjusted = top.geometry
+    showModularOutfit(body, parts, { ...outfit, pants: 'cloth' })
+    const standardHem = top.geometry
+    const standardFitted = standardHem.attributes.position
+    expect(standardHem).not.toBe(adjusted)
+    const expandedHems = {
+      cloth: undefined,
+      plate: { x: 0.045, z: 0.045, extra: 0.019 },
+      barbarian: { x: 0.09, z: 0.045, extra: 0.019 },
+      caveman: { x: 0.13, z: 0.085, extra: 0.019 },
+      ranger: { x: 0.075, z: 0.065, extra: 0.039 },
+      priest: { x: 0.075, z: 0.065, extra: 0.039 },
+    } as const
+    const tolerance = 1e-6
+    for (const [pants, limits] of Object.entries(expandedHems) as [
+      keyof typeof expandedHems,
+      (typeof expandedHems)[keyof typeof expandedHems],
+    ][]) {
+      parts.set(`pants_${pants}`, [new THREE.SkinnedMesh()])
+      showModularOutfit(body, parts, { ...outfit, pants })
+      expect(top.geometry).not.toBe(source)
+      if (limits) {
+        expect(top.geometry).not.toBe(adjusted)
+        const expanded = top.geometry.attributes.position
+        let additionalClearance = 0
+        for (let i = 0; i < original.count; i++) {
+          expect(expanded.getY(i)).toBe(original.getY(i))
+          expect(
+            Math.abs(expanded.getX(i) - original.getX(i))
+          ).toBeLessThanOrEqual(limits.x + tolerance)
+          expect(original.getZ(i) - expanded.getZ(i)).toBeLessThanOrEqual(
+            limits.z + tolerance
+          )
+          expect(expanded.getZ(i) - original.getZ(i)).toBeLessThanOrEqual(
+            0.02 + tolerance
+          )
+          additionalClearance = Math.max(
+            additionalClearance,
+            standardFitted.getZ(i) - expanded.getZ(i)
+          )
+          if (original.getY(i) >= 1.17) {
+            expect(expanded.getX(i)).toBe(original.getX(i))
+            expect(expanded.getZ(i)).toBe(original.getZ(i))
+          }
+        }
+        expect(additionalClearance).toBeGreaterThan(limits.extra)
+        const expandedGeometry = top.geometry
+        showModularOutfit(body, parts, { ...outfit, pants })
+        expect(top.geometry).toBe(expandedGeometry)
+      } else expect(top.geometry).toBe(standardHem)
+      parts.delete(`pants_${pants}`)
+      const selected = showModularOutfit(body, parts, { ...outfit, pants })
+      const fallbackToUnderwear =
+        pants === 'caveman' || pants === 'ranger' || pants === 'priest'
+      expect(top.geometry).toBe(fallbackToUnderwear ? adjusted : source)
+      if (fallbackToUnderwear)
+        expect(selected.has(`pants_${pants}`)).toBe(false)
+    }
+    showModularOutfit(body, parts, outfit)
+    expect(top.geometry).toBe(adjusted)
+    showModularOutfit(body, parts, undressed)
+    expect(top.geometry).toBe(source)
+  })
+
+  it.each(['barbarian', 'caveman'] as const)(
+    'clips both sleeves at %s bracers while preserving the hem fit and restoring sleeves',
+    (gloves) => {
+      const { body, parts, visible } = fixture()
+      const source = new THREE.BufferGeometry()
+      source.setAttribute(
+        'position',
+        new THREE.Float32BufferAttribute(
+          [
+            -0.1, 1, -0.15, 0.1, 1, -0.15, 0, 1.1, -0.15, 0.28, 1.3, 0, 0.37,
+            1.3, 0, 0.46, 1, 0, -0.28, 1.3, 0, -0.37, 1.3, 0, -0.46, 1, 0,
+          ],
+          3
+        )
+      )
+      source.setIndex([0, 1, 2, 3, 4, 5, 6, 7, 8])
+      const top = new THREE.SkinnedMesh(source)
+      parts.set('top_bard', [top])
+      parts.set(`gloves_${gloves}`, [new THREE.SkinnedMesh()])
+      const outfit: ModularOutfit = { ...undressed, top: 'bard' }
+      showModularOutfit(body, parts, outfit)
+      const hem = top.geometry
+      const center = (geometry: THREE.BufferGeometry) => {
+        const p = geometry.attributes.position
+        return Array.from({ length: p.count }, (_, i) => [
+          p.getX(i),
+          p.getY(i),
+          p.getZ(i),
+        ]).filter(([x]) => Math.abs(x) < 0.2)
+      }
+      const bracers: ModularOutfit = { ...outfit, gloves }
+      showModularOutfit(body, parts, bracers)
+      const clipped = top.geometry
+      expect(clipped).not.toBe(hem)
+      expect(center(clipped)).toEqual(center(hem))
+      const p = clipped.attributes.position
+      for (const side of [-1, 1]) {
+        const heights = Array.from({ length: p.count }, (_, i) => i)
+          .filter((i) => p.getX(i) * side > 0.28)
+          .map((i) => p.getY(i))
+        expect(heights.length).toBeGreaterThan(0)
+        expect(Math.min(...heights)).toBeGreaterThan(1.15)
+      }
+      expect(visible('hands')).toBe(true)
+      showModularOutfit(body, parts, { ...bracers, pants: 'cloth' })
+      expect(top.geometry).not.toBe(clipped)
+      showModularOutfit(body, parts, { ...outfit, pants: 'cloth' })
+      const clothHem = top.geometry
+      showModularOutfit(body, parts, { ...bracers, pants: 'cloth' })
+      expect(center(top.geometry)).toEqual(center(clothHem))
+      showModularOutfit(body, parts, bracers)
+      expect(top.geometry).toBe(clipped)
+      showModularOutfit(body, parts, outfit)
+      expect(top.geometry).toBe(hem)
+      parts.delete(`gloves_${gloves}`)
+      showModularOutfit(body, parts, bracers)
+      expect(top.geometry).toBe(hem)
+      showModularOutfit(body, parts, undressed)
+      expect(top.geometry).toBe(source)
+    }
+  )
+
+  it('hides rogue pockets under the bard hem and restores them when the top changes or is missing', () => {
+    const { body, parts } = fixture()
+    const topSource = new THREE.BoxGeometry(0.3, 0.4, 0.3)
+    topSource.translate(0, 1.1, 0)
+    const top = new THREE.SkinnedMesh(topSource)
+    parts.set('top_bard', [top])
+    const pants = parts.get('pants_rogue')![0]
+    const source = new THREE.BufferGeometry()
+    source.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(
+        [
+          -0.1, 0.3, 0, 0.1, 0.3, 0, 0, 1.1, 0, 0.19, 0.94, -0.1, 0.25, 0.94,
+          -0.1, 0.25, 1.08, -0.1,
+        ],
+        3
+      )
+    )
+    source.setIndex([0, 1, 2, 3, 4, 5])
+    pants.geometry = source
+    const outfit: ModularOutfit = { ...undressed, top: 'bard', pants: 'rogue' }
+    showModularOutfit(body, parts, outfit)
+    const trimmed = pants.geometry
+    const hem = top.geometry
+    expect(trimmed.index!.count).toBe(3)
+    expect(hem).not.toBe(topSource)
+    expect(source.index!.count).toBe(6)
+    for (let i = 0; i < topSource.attributes.position.count; i++) {
+      const original = topSource.attributes.position
+      const fitted = hem.attributes.position
+      expect(fitted.getY(i)).toBe(original.getY(i))
+      expect(Math.abs(fitted.getX(i) - original.getX(i))).toBeLessThanOrEqual(
+        0.075001
+      )
+      expect(original.getZ(i) - fitted.getZ(i)).toBeLessThanOrEqual(0.065001)
+      expect(fitted.getZ(i) - original.getZ(i)).toBeLessThanOrEqual(0.020001)
+    }
+    for (const nextTop of ['rogue', 'none'] as const) {
+      showModularOutfit(body, parts, { ...outfit, top: nextTop })
+      expect(pants.geometry).toBe(source)
+      expect(top.geometry).toBe(topSource)
+    }
+    showModularOutfit(body, parts, outfit)
+    expect(pants.geometry).toBe(trimmed)
+    expect(top.geometry).toBe(hem)
+    showModularOutfit(body, parts, { ...outfit, pants: 'cloth' })
+    expect(pants.geometry).toBe(source)
+    expect(top.geometry).not.toBe(topSource)
+    expect(top.geometry).not.toBe(hem)
+    parts.delete('top_bard')
+    showModularOutfit(body, parts, outfit)
+    expect(pants.geometry).toBe(source)
+  })
+
+  it('masks covered skin, preserves openings, and restores skin on removal or load failure', () => {
+    const { body, parts, visible } = fixture()
+    const torso = body.find((mesh) => mesh.userData.region === 'torso')!
+    const neck = body.find((mesh) => mesh.userData.region === 'neck')!
+    const torsoSource = new THREE.PlaneGeometry(0.3, 0.6, 2, 6)
+    torsoSource.translate(0, 1.25, 0)
+    const neckSource = new THREE.PlaneGeometry(0.2, 0.2, 4, 4)
+    neckSource.translate(0, 1.6, 0)
+    torso.geometry = torsoSource
+    neck.geometry = neckSource
+    const top = new THREE.SkinnedMesh()
+    parts.set('top_bard', [top])
+    const outfit: ModularOutfit = { ...undressed, top: 'bard' }
+    expect(showModularOutfit(body, parts, outfit).has('top_bard')).toBe(true)
+    expect(top.visible).toBe(true)
+    expect(visible('upper_arms')).toBe(false)
+    for (const region of ['torso', 'neck', 'forearms', 'hands'])
+      expect(visible(region)).toBe(true)
+    torso.geometry.computeBoundingBox()
+    neck.geometry.computeBoundingBox()
+    expect(torso.geometry.boundingBox!.max.y).toBeCloseTo(1.08)
+    expect(neck.geometry.boundingBox!.min.y).toBeCloseTo(1.54)
+    expect(neck.geometry.boundingBox!.max.x).toBeCloseTo(0.075)
+    expect(neck.geometry.boundingBox!.min.x).toBeCloseTo(-0.075)
+    showModularOutfit(body, parts, undressed)
+    expect(top.visible).toBe(false)
+    expect(visible('upper_arms')).toBe(true)
+    expect(torso.geometry).toBe(torsoSource)
+    expect(neck.geometry).toBe(neckSource)
+    showModularOutfit(body, parts, outfit)
+    parts.delete('top_bard')
+    expect(showModularOutfit(body, parts, outfit).has('top_bard')).toBe(false)
+    expect(visible('upper_arms')).toBe(true)
+    expect(torso.geometry).toBe(torsoSource)
+    expect(neck.geometry).toBe(neckSource)
+  })
+})
+
 describe('hair below the priest mitre', () => {
   it.each(['hair_ranger', 'hair_wavy_bone'] as const)(
     'keeps lower %s visible and restores it after removing the hat',

@@ -9,6 +9,7 @@ import {
 import {
   bindModularPart,
   BARBARIAN_MODULAR_OUTFIT,
+  BARD_MODULAR_OUTFIT,
   CAVEMAN_MODULAR_OUTFIT,
   KNIGHT_MODULAR_OUTFIT,
   modularAnimationClips,
@@ -135,9 +136,10 @@ async function main() {
   const caveman = requestedOutfit === 'caveman'
   const ranger = requestedOutfit === 'ranger'
   const priest = requestedOutfit === 'priest'
-  if (tripo || caveman || ranger || priest) showWeapon.checked = false
+  const bard = requestedOutfit === 'bard'
+  if (tripo || caveman || ranger || priest || bard) showWeapon.checked = false
   if (caveman) cameraSelect.value = 'full'
-  if (ranger || priest) cameraSelect.value = 'full'
+  if (ranger || priest || bard) cameraSelect.value = 'full'
   const load = async (url: string) => {
     const gltf = await loader.loadAsync(url)
     if (disposed) {
@@ -178,6 +180,7 @@ async function main() {
     'top_priest',
     'pants_priest',
     'boots_priest',
+    'top_bard',
   ]
   const [base, sources, animations, sword, profile, candidateSources, social] =
     await Promise.all([
@@ -222,6 +225,7 @@ async function main() {
     ids.includes(id)
   )
   el<HTMLButtonElement>('ranger-outfit').disabled = !rangerAvailable
+  el<HTMLButtonElement>('bard-outfit').disabled = !ids.includes('top_bard')
   const clips = [
     ...modularAnimationClips(base.scene, animations, 'corrected'),
     ...modularAnimationClips(base.scene, social, 'corrected').filter(
@@ -310,21 +314,25 @@ async function main() {
       equipped.has('boots_caveman') ||
       equipped.has('gloves_caveman')
     const inspectingRanger = equipped.has('top_ranger')
+    const inspectingBard = equipped.has('top_bard')
     note.hidden =
       rogueAvailable &&
       !inspectingRogue &&
       !inspectingCaveman &&
       !inspectingRanger &&
+      !inspectingBard &&
       !inspectingPriest
-    note.textContent = inspectingPriest
-      ? '사제 성의·사슬 바지·가죽 앵클부츠'
-      : inspectingRanger
-        ? '순찰자 가죽 복장'
-        : inspectingCaveman
-          ? '원시전사 모피와 뼈 장식'
-          : !rogueAvailable
-            ? '일부 로그 파츠를 불러오지 못했습니다. 새로고침해 다시 시도하세요.'
-            : '기본 로그 상의를 적용했습니다. 다른 장비와의 혼합 호환은 검수 중입니다.'
+    note.textContent = inspectingBard
+      ? '바드 조끼·케이프 상의 · 다른 장비와의 혼합 조합은 검수 중입니다.'
+      : inspectingPriest
+        ? '사제 성의·사슬 바지·가죽 앵클부츠'
+        : inspectingRanger
+          ? '순찰자 가죽 복장'
+          : inspectingCaveman
+            ? '원시전사 모피와 뼈 장식'
+            : !rogueAvailable
+              ? '일부 로그 파츠를 불러오지 못했습니다. 새로고침해 다시 시도하세요.'
+              : '기본 로그 상의를 적용했습니다. 다른 장비와의 혼합 호환은 검수 중입니다.'
     for (const id of ['hair_crop', 'hair_sidepart'])
       for (const mesh of parts.get(id)!)
         for (const mat of Array.isArray(mesh.material)
@@ -350,6 +358,7 @@ async function main() {
   el('rogue-outfit').onclick = () => wearOutfit(ROGUE_MODULAR_OUTFIT)
   el('caveman-outfit').onclick = () => wearOutfit(CAVEMAN_MODULAR_OUTFIT)
   el('ranger-outfit').onclick = () => wearOutfit(RANGER_MODULAR_OUTFIT)
+  el('bard-outfit').onclick = () => wearOutfit(BARD_MODULAR_OUTFIT)
   hairColor.oninput = dress
   if (disposed) return
   const hand = body.getObjectByName('RightHand')
@@ -645,7 +654,8 @@ async function main() {
           : '얼굴 1,505'
       }`
   }
-  if (priest && parts.has('top_priest'))
+  if (bard && parts.has('top_bard')) wearOutfit(BARD_MODULAR_OUTFIT)
+  else if (priest && parts.has('top_priest'))
     wearOutfit({ ...PRIEST_MODULAR_OUTFIT, helmet: 'priest' })
   else if (ranger && rangerAvailable) wearOutfit(RANGER_MODULAR_OUTFIT)
   else if (caveman && cavemanAvailable) wearOutfit(CAVEMAN_MODULAR_OUTFIT)

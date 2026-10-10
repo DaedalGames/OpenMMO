@@ -92,7 +92,7 @@ try {
   disposePeltPhysics(body)
   for (const { mesh, rest } of records) for (let i = 0; i < rest.length; i++)
     assert.ok(new THREE.Vector3().fromBufferAttribute(mesh.geometry.attributes.position, i).equals(rest[i]))
-  const report = { date: '2026-10-04', method: 'Actual barbarian runtime physics at 60 Hz, about 13 geometry samples per clip; rigid edges, side-grid pins, thickness and vertical length limits measured against original GLB positions', sources,
+  const report = { date: new Date().toISOString().slice(0, 10), method: 'Actual barbarian runtime physics at 60 Hz, about 13 geometry samples per clip; rigid edges, side-grid pins, thickness and vertical length limits measured against original GLB positions', sources,
     mesh_count: meshes.length, panel_count: panels.length, all_skin_influences: 'Hips only', clips,
     limits: 'Rigid edge change under 1 micrometer; side-cloth vertical extension at most 4.002%, pinned rows fixed and original thickness preserved. Side-grid lateral/diagonal stretch is reported, not constrained to the retired bend solver limit.',
     cached_geometry_restored: true,

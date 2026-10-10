@@ -20,6 +20,7 @@ type Cut =
   | 'priest_hat_hair'
   | 'priest_hat_lappets'
   | 'bracers'
+  | 'caveman_sleeves'
   | 'gauntlets'
   | 'gloves'
   | 'ranger_gloves'
@@ -36,11 +37,18 @@ type Cut =
   | 'tripo_collar'
   | 'ranger_collar'
   | 'tripo_waist'
+  | 'bard_waist'
+  | 'bard_rear_hem'
+  | 'bard_underwear_hem'
+  | 'bard_plate_hem'
+  | 'bard_barbarian_hem'
+  | 'bard_caveman_hem'
+  | 'bard_fitted_pants_hem'
   | 'tripo_covered_waist'
   | 'ranger_plate_waist'
   | 'priest_plate_waist'
   | 'priest_fur'
-  | 'priest_rogue_pockets'
+  | 'rogue_pockets'
   | 'tripo_pants_waist'
   | 'linen_untucked'
   | 'linen_waist'
@@ -73,6 +81,7 @@ const cuts: Record<Cut, Distance | Distance[] | Reshape> = {
   priest_hat_hair: (point) => 1.82 - point.y,
   priest_hat_lappets: { reshape: drapePriestLappetsOverHair },
   bracers: sleeveCut(0.23),
+  caveman_sleeves: sleeveCut(0.19),
   gauntlets: sleeveCut(0.85),
   gloves: sleeveCut(0.89),
   ranger_gloves: rangerGloves,
@@ -95,6 +104,19 @@ const cuts: Record<Cut, Distance | Distance[] | Reshape> = {
     (point) => -point.x - 0.09,
   ],
   tripo_waist: (point) => point.y - 1.14,
+  bard_waist: (point) =>
+    point.y -
+    THREE.MathUtils.lerp(
+      1.08,
+      1.16,
+      THREE.MathUtils.smoothstep(-point.z, 0.02, 0.07)
+    ),
+  bard_rear_hem: { reshape: bardHem(0.025) },
+  bard_underwear_hem: { reshape: bardHem(0.045, 0.02) },
+  bard_plate_hem: { reshape: bardHem(0.045, 0.045, true) },
+  bard_barbarian_hem: { reshape: bardHem(0.045, 0.09, true) },
+  bard_caveman_hem: { reshape: bardHem(0.085, 0.13, true) },
+  bard_fitted_pants_hem: { reshape: bardHem(0.065, 0.075, true) },
   tripo_covered_waist: (point) => point.y - 1.105,
   ranger_plate_waist: (point) => {
     const rear = 1 - THREE.MathUtils.smoothstep(point.z, -0.06, -0.02)
@@ -103,11 +125,69 @@ const cuts: Record<Cut, Distance | Distance[] | Reshape> = {
   },
   priest_plate_waist: { reshape: tuckWaist(-0.035, 0.23, [0.17, 0.1], false) },
   priest_fur: { reshape: tuckWaist(-0.015, 0.22, [0.145, 0.145], true) },
-  priest_rogue_pockets: { reshape: removeRoguePockets },
+  rogue_pockets: { reshape: removeRoguePockets },
   tripo_pants_waist: (point) => 1.105 - point.y,
   linen_untucked: { reshape: untuckLinen },
   linen_waist: (point) => point.y - 1.09,
   underwear_seat: { reshape: reshapeUnderwearSeat },
+}
+
+function bardHem(rearClearance: number, sideClearance = 0, overPants = false) {
+  return (source: THREE.BufferGeometry) => {
+    const geometry = source.clone()
+    const positions = geometry.getAttribute('position')
+    const original = source.getAttribute('position')
+    for (let i = 0; i < positions.count; i++) {
+      const x = positions.getX(i)
+      const y = positions.getY(i)
+      const z = positions.getZ(i)
+      const hem =
+        (1 - THREE.MathUtils.smoothstep(y, 1.05, 1.17)) *
+        (1 - THREE.MathUtils.smoothstep(Math.abs(x), 0.23, 0.29))
+      if (!hem) continue
+      const inner = THREE.MathUtils.smoothstep(Math.abs(x), 0.06, 0.14)
+      const rear = THREE.MathUtils.smoothstep(-z, 0.04, 0.12) * hem
+      const side = overPants
+        ? THREE.MathUtils.smoothstep(-z, -0.14, 0.06) * hem
+        : rear
+      const front = overPants
+        ? THREE.MathUtils.smoothstep(z, -0.02, 0.06) * hem * inner * 0.02
+        : 0
+      positions.setZ(i, z - rearClearance * rear + front)
+      if (sideClearance)
+        positions.setX(i, x + Math.sign(x) * sideClearance * side * inner)
+    }
+    return finishReshape(
+      source,
+      geometry,
+      (i) =>
+        positions.getX(i) === original.getX(i) &&
+        positions.getZ(i) === original.getZ(i)
+    )
+  }
+}
+
+function finishReshape(
+  source: THREE.BufferGeometry,
+  geometry: THREE.BufferGeometry,
+  untouched: (index: number) => boolean
+) {
+  geometry.deleteAttribute('tangent')
+  geometry.computeVertexNormals()
+  const normals = geometry.getAttribute('normal')
+  const originalNormals = source.getAttribute('normal')
+  if (originalNormals)
+    for (let i = 0; i < normals.count; i++)
+      if (untouched(i))
+        normals.setXYZ(
+          i,
+          originalNormals.getX(i),
+          originalNormals.getY(i),
+          originalNormals.getZ(i)
+        )
+  geometry.boundingBox = null
+  geometry.boundingSphere = null
+  return geometry
 }
 
 function reshapeUnderwearSeat(source: THREE.BufferGeometry) {
@@ -149,22 +229,12 @@ function reshapeUnderwearSeat(source: THREE.BufferGeometry) {
     geometry.dispose()
     return source
   }
-  geometry.deleteAttribute('tangent')
-  geometry.computeVertexNormals()
-  const normals = geometry.getAttribute('normal')
-  const originalNormals = source.getAttribute('normal')
-  if (originalNormals)
-    for (let i = 0; i < positions.count; i++)
-      if (positions.getZ(i) === source.attributes.position.getZ(i))
-        normals.setXYZ(
-          i,
-          originalNormals.getX(i),
-          originalNormals.getY(i),
-          originalNormals.getZ(i)
-        )
-  geometry.boundingBox = null
-  geometry.boundingSphere = null
-  return geometry
+  const original = source.getAttribute('position')
+  return finishReshape(
+    source,
+    geometry,
+    (i) => positions.getZ(i) === original.getZ(i)
+  )
 }
 
 export function clipSkinnedGeometry(
@@ -425,22 +495,7 @@ function untuckLinen(source: THREE.BufferGeometry) {
     const scale = THREE.MathUtils.lerp(1, 1 / radius, amount)
     positions.setXYZ(i, x * scale, y, z * scale - 0.015)
   }
-  geometry.deleteAttribute('tangent')
-  geometry.computeVertexNormals()
-  const originalNormals = source.getAttribute('normal')
-  const normals = geometry.getAttribute('normal')
-  if (originalNormals)
-    for (let i = 0; i < positions.count; i++)
-      if (positions.getY(i) >= 1.2)
-        normals.setXYZ(
-          i,
-          originalNormals.getX(i),
-          originalNormals.getY(i),
-          originalNormals.getZ(i)
-        )
-  geometry.boundingBox = null
-  geometry.boundingSphere = null
-  return geometry
+  return finishReshape(source, geometry, (i) => positions.getY(i) >= 1.2)
 }
 
 function tuckWaist(

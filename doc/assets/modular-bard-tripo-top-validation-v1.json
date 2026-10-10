@@ -1,0 +1,5613 @@
+{
+  "date": "2026-10-10",
+  "status": "Canonical rig, source preservation, region isolation and sampled wrist clearance passed",
+  "source": "22d3bdc0c7556595584e6526cfd84a896cd4549d705a45d1deecc350ef59394f",
+  "output": {
+    "path": "assets/modular_human_male_01/bard/tripo_top_v1/top_bard.glb",
+    "sha256": "91c1c1d3b94ca6ba9184ba3c9a74d8131c2a452f024f61a58f0f38db0c8e5d76",
+    "triangles": 5201,
+    "bones": 65,
+    "exact_rest_hierarchy_and_inverse_bind_match": true,
+    "maximum_weight_sum_error": 1.1920928955078125e-07,
+    "active_bones": [
+      "Hips",
+      "LeftArm",
+      "LeftForeArm",
+      "LeftHand",
+      "LeftUpLeg",
+      "Neck",
+      "RightArm",
+      "RightForeArm",
+      "RightHand",
+      "RightUpLeg",
+      "Spine",
+      "Spine1",
+      "Spine2"
+    ]
+  },
+  "retained_source_faces_and_uv_and_texture_verified": true,
+  "cuffs_only_same_side_arm_bones": true,
+  "hem_has_no_arm_or_hand_weights": true,
+  "interface_sha256": "52cbd59252b2c80740553182f347273afd3706adf1da3f26b9a11d79400eb23e",
+  "rest_sections": [
+    {
+      "interface": "neck_base",
+      "offset_m": 0,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.01973095399688915,
+      "negative_rays": 0
+    },
+    {
+      "interface": "neck_base",
+      "offset_m": 0.015,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.01037846479239106,
+      "negative_rays": 0
+    },
+    {
+      "interface": "neck_base",
+      "offset_m": 0.03,
+      "common_rays": 62,
+      "missing_garment_rays": 2,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.01864314195266835,
+      "negative_rays": 0
+    },
+    {
+      "interface": "waist",
+      "offset_m": 0,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.01669215432252133,
+      "negative_rays": 0
+    },
+    {
+      "interface": "waist",
+      "offset_m": 0.015,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.011984595014636168,
+      "negative_rays": 0
+    },
+    {
+      "interface": "waist",
+      "offset_m": 0.03,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.0054497209159582866,
+      "negative_rays": 0
+    },
+    {
+      "interface": "glove_short_Left",
+      "offset_m": 0,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.009806625173987858,
+      "negative_rays": 0
+    },
+    {
+      "interface": "glove_short_Left",
+      "offset_m": 0.015,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.010695987365026693,
+      "negative_rays": 0
+    },
+    {
+      "interface": "glove_short_Left",
+      "offset_m": 0.03,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.011426966055949651,
+      "negative_rays": 0
+    },
+    {
+      "interface": "glove_short_Right",
+      "offset_m": 0,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.01058789361151876,
+      "negative_rays": 0
+    },
+    {
+      "interface": "glove_short_Right",
+      "offset_m": 0.015,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.01163340641664961,
+      "negative_rays": 0
+    },
+    {
+      "interface": "glove_short_Right",
+      "offset_m": 0.03,
+      "common_rays": 64,
+      "missing_garment_rays": 0,
+      "missing_body_rays": 0,
+      "minimum_clearance_m": 0.012137070628360731,
+      "negative_rays": 0
+    }
+  ],
+  "wrist_motion_sections": [
+    {
+      "clip": "idle1",
+      "time": 0,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009411719968932974,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009645375927984041,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010498555559979104,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010500908017951588,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01158602308139118,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011625920262709782,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 0.6944444179534912,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009395835880478202,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009711144975117166,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010493102250091271,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010453503230678562,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011561522861836697,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011674588107255399,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 1.3888888359069824,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009386840076134828,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009593271673314016,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010513190446242063,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010540834903496735,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01153628393249348,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011610391514835318,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 2.0833332538604736,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009390752949924343,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009742701581141683,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010496051034569624,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01046027689777701,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01155339871623115,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011744951226513811,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 2.777777671813965,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009415257505872014,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009660473902420114,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010500033137433161,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010505032978685568,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0115786246164813,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011678612879585118,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 3.472222089767456,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009373584485701053,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009568705232642194,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010516349484543358,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010554710855167057,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01153097395868978,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01158483416578255,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 4.166666507720947,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00930843698277499,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009442705913451206,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010543013111810266,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010606685743133837,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011468486558637726,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01155281975085478,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 4.8611109256744385,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00936315988881016,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009554425508442689,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010518370479538929,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010565722490067653,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011527535286893327,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011581411897581773,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 5.55555534362793,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009411756246702416,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00965087414752347,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01049980212933345,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010521695787666187,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01157132325174097,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011666512493650229,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 6.249999761581421,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009345515857637557,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0098179428789689,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010497102894163356,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01045909134198958,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01152076332159424,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01177934727268868,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 6.944444179534912,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009326486353808429,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0098235098008966,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01049223505926681,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010454118334138986,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011520852515716912,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011743630854971591,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 7.638888597488403,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009416070784344643,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00965920813748243,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010497394712840336,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010497288997941868,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011588629468619431,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011647898433620234,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "idle1",
+      "time": 8.333333015441895,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009411720308052401,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009645376928269396,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010498555377505818,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010500906892295207,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01158602347452553,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011625920854639572,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006327390373249427,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006987921924426502,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009066472249530208,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009273456818001936,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009935782164873251,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008535921722606851,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.08611110846201579,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006186256149634764,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0071917291141370965,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008802006136038668,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00913255401424639,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009798953305821076,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00942195096885784,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.17222221692403158,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0062711286887455545,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0066875770014816,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008842158564560797,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008999710618300412,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009675203641196471,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00895538811516311,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.25833332538604736,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.005409322918991988,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006363166330347683,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0088162043283974,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008623879458402747,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009255409699674769,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008345967229125582,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.34444443384806317,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0053603782527197885,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006297033599284643,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008704138587738025,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008572208277549703,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009028394653705495,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008290596329279407,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.4305555423100789,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0053231486560686644,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006322381908075082,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008792637008703065,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008535103828174233,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008639469060688722,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008113578338525412,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.5166666507720947,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.005869451130090249,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0066259506299424994,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00895280432263882,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008095140022127287,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008775002414187931,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008142258729082467,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.6027777592341105,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006487956481296769,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00716131600961839,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009305936803308823,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00952623284962037,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009134757459551543,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00871011484531329,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.6888888676961263,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006848471680109117,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007467413068944273,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009463177428033112,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009371468605112461,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00945019069946152,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00919652430512835,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.7749999761581421,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006783042645674343,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007387023705893253,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009370165452982075,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011044611586876536,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011192798978085831,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010058595918003836,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.8611110846201578,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007033579020708537,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008003677242235219,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009271005438176348,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011044929141748004,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011612725147425867,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010384370427430345,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 0.9472221930821737,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006868135054158321,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007408920237745073,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009338618820825713,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010656860523629921,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01063602746920024,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009505534731009423,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "walk",
+      "time": 1.0333333015441895,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006327389110582518,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006987925142716109,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00906646647994732,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009273455857470109,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009935782328975892,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008535921279167545,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007961747939739833,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009407081509268417,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010121841711503168,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010186796457998394,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011097569907784578,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01116041178731822,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.052777777115503945,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008859997530845834,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00938712290911782,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010623314467449865,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0073233944103878665,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009764453115813101,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010857777638863295,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.10555555423100789,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008901209938081377,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009701655020255467,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01076763996747996,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006448909517821802,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009589947986098447,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01104625753849238,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.15833333134651184,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00851687955803105,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00976786502328194,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010766424319552229,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007240750814378971,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009704443923255396,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011186013942873128,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.21111110846201578,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0076249308681053535,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008624920249770907,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009992991916386099,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0063610278453324134,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008884978324013915,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010775463675698621,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.2638888855775197,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006311209481810895,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007290323731706613,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008931314268410595,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.004960576023001574,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008610506181184606,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010061792848226413,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.3166666626930237,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006165692713464552,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007550787353847246,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009150445222179893,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007689386946094612,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00981974591919637,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010457563215512201,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.36944443980852765,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006016762321377871,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008142005962926586,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009824474513373732,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009450978253063458,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010766243845578546,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010592045893127386,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.42222221692403156,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006394703796006047,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007995163227499408,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00927559330832551,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009029417678523596,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010301151625733224,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010588045182466733,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.4749999940395355,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006043593971199142,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00811884776499204,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00889490438264675,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00846541954322639,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009793059617812204,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010673431881228962,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.5277777711550394,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00759989769523467,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008983712752590398,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009680481568621245,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009522175011893966,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009937427693195985,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010490064060341926,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.5805555482705435,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007934169796866432,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00889535080401336,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010275085730183396,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00976423566178708,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010867172968533352,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010872898063540096,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "run",
+      "time": 0.6333333253860474,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007961748803589859,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009407084766264125,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01012184560639768,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010186775066949302,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011097556626047167,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011160446086440581,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 0,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006317369395074893,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007856469226382945,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009002544169529024,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008849191379947267,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010023142244074905,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008730232070457158,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 0.15833333134651184,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007086730744819483,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010823977586508264,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010428646082163547,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008270732970763188,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009260413329155226,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00916997988839062,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 0.3166666626930237,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009801347086093024,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011578173856592322,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011244654756084403,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009952970137263345,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010409443929719805,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010863991826947084,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 0.4749999940395355,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009087109409658733,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00944911046182724,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010699921436621733,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010105902039858825,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010717334762341886,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0099997688863252,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 0.6333333253860474,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008353358535566034,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009079076206371044,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008841429906986043,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010667053794044076,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011001763483559607,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011978106564955342,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 0.7916666567325592,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008383150210357598,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009650876147945797,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01000219111488352,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010419664758106503,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01110385820211019,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011677974899846413,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 0.949999988079071,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008605951706927656,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0096930538215112,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009970677308201115,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007174567085878769,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00946656556990546,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010576306834709587,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 1.1083333194255829,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007490982043970265,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010068336567495902,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010727499427827497,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008649166126874157,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010071198155004298,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010799541919223693,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 1.2666666507720947,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008320505058838377,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011145370963890566,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010238426391153937,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00983781624592802,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00922023631471891,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009372156384182193,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 1.4249999821186066,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007545023688439179,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010386001942412515,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010325854331297485,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00838725127760711,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00963177095759965,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008714492916174668,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 1.5833333134651184,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006921931150731621,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008904802179963235,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009967775970531861,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008583458961613284,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009717995542616688,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008914460460482748,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 1.7416666448116302,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006224238793464655,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00808169583070345,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00920123988938236,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008550523436937678,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009898533544227824,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008983008273395564,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "jump",
+      "time": 1.899999976158142,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006319552159217173,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007858668280898463,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009001291884896997,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008848133877717462,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010022955254059149,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008730027551927005,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 0,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009578212935977978,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009978763624314262,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011056496981137594,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008878770973675926,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010165314412836822,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008868138992381307,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 0.12777777512868246,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009078040163495282,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009732752669350933,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01074403460947676,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009303930429399664,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010097003859917034,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010759014113405296,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 0.2555555502573649,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0089632891326396,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009182995463210303,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01035625424268477,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009539242517584617,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010842281002400818,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011045271396433534,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 0.38333332538604736,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009225825060536909,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010054915389948356,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010735676695775298,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010022870869410935,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010597825103998697,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01143313982561478,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 0.5111111005147299,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009483682362703041,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01028742054252861,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011314447266585904,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008441311695393347,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008595610480103065,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008950225898369583,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 0.6388888756434122,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008705242815514096,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008876076528312335,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010276047911746154,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010775310589849853,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011938938824963705,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.012091155042495125,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 0.7666666507720947,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009045688473586916,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009890958210575264,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010725662702018773,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.002233112055256316,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006327486152195867,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010298773357571248,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 0.8944444259007772,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008851388674280126,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010479179483918431,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010846890929717877,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0025033594139600296,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006953901948433497,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01042088905152766,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 1.0222222010294597,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009028321400809766,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009955813927328444,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010919490466546673,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006045554196536067,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009082041640498757,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010235310210472068,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 1.149999976158142,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009085176297180052,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010063730548847752,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010959802966322034,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007922066693976257,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010549799941679205,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010008920618802389,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 1.2777777512868245,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009382070994538604,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010251398509830707,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011251783876587658,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00817139152156069,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010491588696124647,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010475181154177803,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 1.405555526415507,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009374470891865681,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009797631884547284,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010970924574042147,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009560572073226116,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01039037680961065,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011102268411357814,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "slash1",
+      "time": 1.5333333015441895,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009578209803042997,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009978751707236104,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011056483810141744,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00887878279590349,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010165317518797852,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008868140824197027,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 0,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0086889229133486,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009297190629115382,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01066090584211471,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010154103596455341,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010857519788800507,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011209101494698927,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 0.21388888359069824,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00864077469716433,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00928137505276369,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010602054250833909,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010252923467107856,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010747361404465874,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011135291402030276,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 0.4277777671813965,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008461887806586618,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009315408036592698,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010404857481541296,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010133515412321874,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010801818084748949,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011058270352850168,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 0.6416666507720947,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008465572710626548,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009263984178039884,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010395571405236906,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010039990493250169,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01041850106347985,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010743224369654365,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 0.855555534362793,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00856894286399848,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00919270212484962,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01059650973131386,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010194260129761629,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010547083706152857,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010861190102618344,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 1.0694444179534912,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008636153194723231,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009237475287569824,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010539730816627388,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010196054658953513,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010773296155007724,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011134907482325575,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 1.2833333015441895,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008705466655350824,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009307346441518732,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010525754951646017,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010396139769657982,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01050479912566131,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011124943360593692,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 1.4972221851348877,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0086738175999116,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009407239497205067,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010493750186789712,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0101544359377208,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010822989702429633,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011229707360904284,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 1.711111068725586,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008460702150956019,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010092107032164878,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010527400013902961,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01016677923901356,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010725932105358382,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011028288086779955,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 1.9249999523162842,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008328028139979508,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010077086837871951,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010465487755398198,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009937516676533316,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010446779757318128,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010635209733911535,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 2.1388888359069824,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008445735409184342,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009317245568239575,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010375856058702303,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010067301316075424,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010480762144023638,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010920579203047863,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 2.3527777194976807,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00863909770781595,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00923702724998305,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010518287866708526,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010256350967939816,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01039703343749264,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01109280017749116,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "combat_idle",
+      "time": 2.566666603088379,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008692273466625905,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009300539891546535,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01064969689319395,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010159281335542517,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010849969952778864,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01121976311000105,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 0,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006957402410647545,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0094272872570215,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.0116842531834018,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008054675388987374,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009860942069141475,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011070823219342801,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 0.3611111243565877,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006772259610539254,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009463996814543588,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011756492779580165,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007934960366519313,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00979731070267123,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01100674298448824,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 0.7222222487131754,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006738934339137151,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009365967755701254,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011708110026168846,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007839967564106633,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009763898189670384,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010961006718086586,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 1.0833333730697632,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007100402802708926,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009145456886118106,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011491079815181417,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007900663720196398,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010009762054454224,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01114416714332591,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 1.4444444974263508,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007421825780649802,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009330025038893977,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011508960949380594,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008200120616500252,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010324291576503337,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011126208287356595,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 1.8055556217829387,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007287570756117204,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009644202604655032,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011718451442592315,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008323326946465925,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010297298721808075,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011112904846759461,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 2.1666667461395264,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00696167365548072,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009586454258379888,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011822397418238394,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008138696690224254,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01001815030491452,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011159959313272794,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 2.5277778704961142,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006823184206446557,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009377987206810129,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011791301192368805,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007981513331392777,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009832645180023497,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011007425603747054,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 2.8888889948527017,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006758085422727107,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009225653054112909,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011780529421951985,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007853820351801377,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009843367073281636,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.010900957339577307,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 3.2500001192092896,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006757656085305347,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009430114388946607,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01177290921283601,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007866343606068645,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009768176334911179,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01096923782918334,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 3.6111112435658774,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00695063773910988,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009376136999585352,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011669571018869306,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007943629089715312,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009936856338098377,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011092643314042291,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 3.972222367922465,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006914419470355121,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009357516511947425,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011661458430710932,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.007999902733858935,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01000956870293851,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.01113471164869187,
+          "negative_rays": 0
+        }
+      ]
+    },
+    {
+      "clip": "sit_idle",
+      "time": 4.333333492279053,
+      "sections": [
+        {
+          "side": "Left",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.006957399752349852,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.009427287485966433,
+          "negative_rays": 0
+        },
+        {
+          "side": "Left",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011684253901860293,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.008054675200779363,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.015,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.00986094151899549,
+          "negative_rays": 0
+        },
+        {
+          "side": "Right",
+          "offset_m": 0.03,
+          "common_rays": 64,
+          "missing_garment_rays": 0,
+          "missing_body_rays": 0,
+          "minimum_clearance_m": 0.011070823139267591,
+          "negative_rays": 0
+        }
+      ]
+    }
+  ],
+  "wrist_motion_summary": {
+    "poses": 91,
+    "sections": 546,
+    "rays_per_section": 64,
+    "minimum_clearance_m": 0.002233112055256316,
+    "missing_rays": 0,
+    "negative_rays": 0
+  },
+  "interpretation": "Rays cover visible openings and multiple cloth layers. Missing rays are not automatically defects; inspect cuff and collar renders. Mixed gloves/pants are not certified."
+}

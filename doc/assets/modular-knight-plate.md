@@ -59,11 +59,14 @@
 
 ```sh
 .venv/bin/python tools/fit-modular-plate.py
+.venv/bin/python tools/reshape-glove-thumbs.py --part plate
 blender -b --python-exit-code 1 -P tools/blender-scripts/pack_modular_plate.py
 node tools/prepare-modular-character.mjs
 ```
 
 Windows 환경에서는 `.venv/Scripts/python.exe`를 사용한다.
+2026-10-10 [판금 장갑 엄지 형상 보정](modular-plate-glove-thumbs.md)을 추가했다.
+양손 엄지의 과한 부피를 줄였으며 제작본·편집본·게임 압축본에 반영했다.
 파츠는 기존 `human_male_01_mixamo_candidate_v2`의 65본·기준 행렬을 그대로 공유한다.
 상의를 A 자세로 맞추고 목깃·손목을 조정했으며, 하의의 무릎과 발목을 맞췄다.
 장갑은 손가락 기준점으로 변형하고 반대 손을 대칭 제작했다. 몸체에서 가중치를 옮기고,

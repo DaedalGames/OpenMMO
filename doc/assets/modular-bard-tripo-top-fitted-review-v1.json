@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-10",
+  "blender_version": "5.2.0 LTS",
+  "status": "Editable fitting and rigging result; runtime registration and mixed equipment approval separate",
+  "model": {
+    "path": "assets/modular_human_male_01/bard/tripo_top_v1/top_bard.glb",
+    "sha256": "91c1c1d3b94ca6ba9184ba3c9a74d8131c2a452f024f61a58f0f38db0c8e5d76"
+  },
+  "editable": {
+    "path": "assets/modular_human_male_01/bard/tripo_top_v1/bard-top-fitting.blend",
+    "sha256": "e46ec44160a43eb9bc61a76cac68200b65311a5300a8e80995c919e43929e019"
+  },
+  "images": [
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_top_v1/review/rest.png",
+      "sha256": "a9efc19a2a66924e0a2b610eb35e0139b47617598935e3fdc92976e93d62db04"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_top_v1/review/openings.png",
+      "sha256": "bf82445bee3b0ed015164980d31a2339dde13859782dad2f574bc32ff2c59002"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_top_v1/review/motion.png",
+      "sha256": "80683a4d735231a2d81d79a2095c92667e9784167c486295a7a112594681455c"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_top_v1/review/motion-back.png",
+      "sha256": "c708c4b1c3847e67e03d9599a9590c5b10920c72ad971e7cebd927a3e34f4d50"
+    }
+  ],
+  "source": {
+    "path": "assets/items/bard_starter/tripo_top_v1/source.glb",
+    "sha256": "22d3bdc0c7556595584e6526cfd84a896cd4549d705a45d1deecc350ef59394f"
+  },
+  "fitting": {
+    "path": "doc/assets/modular-bard-tripo-top-fitting-v1.json",
+    "sha256": "a2b00517b9c99d36068ef7b9984071eebd9bd0fca2302cfd67007c09b9f36587"
+  },
+  "unmasked_views": [
+    "rest",
+    "openings"
+  ],
+  "animation_mask": {
+    "torso_retained_below_m": 1.08,
+    "hidden_regions": [
+      "upper_arms"
+    ],
+    "neck_lower_trim_m": 1.54,
+    "hands_and_forearms_preserved": true,
+    "canonical_base_unchanged": true,
+    "runtime_mask_implemented": false
+  },
+  "context": "Existing crop hair and cloth pants; source hidden in separate collection",
+  "timeline": "Rest and sampled game poses, constant interpolation"
+}

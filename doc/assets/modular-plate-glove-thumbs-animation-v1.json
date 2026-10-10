@@ -1,0 +1,87 @@
+{
+  "date": "2026-10-10",
+  "sources": [
+    {
+      "path": "assets/modular_human_male_01/fitted/base.glb",
+      "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+    },
+    {
+      "path": "assets/modular_human_male_01/gloves/shape_sources/plate-before-thumb-v1.glb",
+      "sha256": "9f533effca5d082daddc179971540a372a328c3caa95c934eb8092fbbffd7792"
+    },
+    {
+      "path": "assets/modular_human_male_01/fitted/gloves_plate.glb",
+      "sha256": "078e8c74bb0998ca7502482b26f919262f30991ead986ef92f79f1a9ef4bb542"
+    },
+    {
+      "path": "client/public/models/characters/modular_male/gloves_plate.glb",
+      "sha256": "06eb7781b7fb4ed4c35e50b45ceba81f7f6fea25be3e1d3f8cd9b3058e11df50"
+    },
+    {
+      "path": "assets/modular_human_male_01/animations/animations.glb",
+      "sha256": "fc47d9613bd1fbc9f0d61ce0cc95a5c540d16ab8430bcf34ee7ddcd9cd958ac3"
+    },
+    {
+      "path": "client/public/models/characters/modular_male/animations/social.glb",
+      "sha256": "a9efe7a2d388011cdc039ca6778c2b3a929b07953941ee7bb7c50a511d4b083d"
+    }
+  ],
+  "triangles": 1404,
+  "changed_vertices_by_primitive": [
+    145,
+    0,
+    0
+  ],
+  "preserved": [
+    "topology",
+    "UV",
+    "weights",
+    "cuffs and lining",
+    "posed positions of unchanged vertices"
+  ],
+  "poses": [
+    {
+      "clip": "idle1",
+      "samples": 25,
+      "maximum_displacement_m": 0.013268500469403088,
+      "runtime_difference_m": 0
+    },
+    {
+      "clip": "walk",
+      "samples": 25,
+      "maximum_displacement_m": 0.0134362090417931,
+      "runtime_difference_m": 0
+    },
+    {
+      "clip": "run",
+      "samples": 25,
+      "maximum_displacement_m": 0.013447184770155884,
+      "runtime_difference_m": 0
+    },
+    {
+      "clip": "jump",
+      "samples": 25,
+      "maximum_displacement_m": 0.013443277959349673,
+      "runtime_difference_m": 0
+    },
+    {
+      "clip": "combat_idle",
+      "samples": 25,
+      "maximum_displacement_m": 0.013075088513898214,
+      "runtime_difference_m": 0
+    },
+    {
+      "clip": "slash1",
+      "samples": 25,
+      "maximum_displacement_m": 0.013075088955390038,
+      "runtime_difference_m": 0
+    },
+    {
+      "clip": "sit_idle",
+      "samples": 25,
+      "maximum_displacement_m": 0.013449091478943236,
+      "runtime_difference_m": 0
+    }
+  ],
+  "scope": "Seven canonical clips, 25 poses each; bounded thumb deformation and identical native/runtime geometry. Not an all-pose collision test."
+}

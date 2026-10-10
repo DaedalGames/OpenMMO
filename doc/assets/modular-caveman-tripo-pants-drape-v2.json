@@ -1,0 +1,143 @@
+{
+  "date": "2026-10-10",
+  "before_sha256": "1fc3a92b29c8b5e37931cda6b32966754e1f3b1f33fe478a528179fc739a2db4",
+  "after_sha256": "e2964531ffbd6a932635304a7b9f683f053658f3ea50b99df636e26a08848b50",
+  "meshes": [
+    {
+      "mesh": "caveman_belt",
+      "vertices": 1477,
+      "max_inward_shift_m": 0.0,
+      "topology_uv_skin_xy_unchanged": true
+    },
+    {
+      "mesh": "caveman_bone_ornaments",
+      "vertices": 4207,
+      "max_inward_shift_m": 0.0,
+      "topology_uv_skin_xy_unchanged": true
+    },
+    {
+      "mesh": "caveman_pelt_front",
+      "vertices": 924,
+      "max_inward_shift_m": 0.0,
+      "topology_uv_skin_xy_unchanged": true
+    },
+    {
+      "mesh": "caveman_pelt_back",
+      "vertices": 1390,
+      "max_inward_shift_m": 0.025000005960464478,
+      "topology_uv_skin_xy_unchanged": true
+    },
+    {
+      "mesh": "caveman_pelt_left",
+      "vertices": 198,
+      "max_inward_shift_m": 0.025000005960464478,
+      "topology_uv_skin_xy_unchanged": true
+    },
+    {
+      "mesh": "caveman_pelt_right",
+      "vertices": 198,
+      "max_inward_shift_m": 0.025000005960464478,
+      "topology_uv_skin_xy_unchanged": true
+    }
+  ],
+  "outputs": {
+    "assets/modular_human_male_01/caveman/tripo_pants_v1/pants_caveman.glb": {
+      "sha256": "e2964531ffbd6a932635304a7b9f683f053658f3ea50b99df636e26a08848b50",
+      "bytes": 4812332
+    },
+    "client/public/models/characters/modular_male/pants_caveman.glb": {
+      "sha256": "7771eb237f9296708436865a37f11936de7e3203c8a381a8035142b9c9806a66",
+      "bytes": 880152
+    },
+    "client/public/models/armor/caveman_pants.glb": {
+      "sha256": "11145bb41f5d3cd82c26deca5303986f855dd3ee05fe717efdfc426b8886a678",
+      "bytes": 487832
+    }
+  },
+  "physics_performance": [
+    {
+      "name": "previous_caveman",
+      "path": "/tmp/caveman-pants-before-drape.glb",
+      "triangles": 5239,
+      "timings": [
+        {
+          "clip": "walk",
+          "frames": 120,
+          "mean_ms": 0.2763255583333314,
+          "median_ms": 0.2737870000000271,
+          "p95_ms": 0.32981399999999894
+        },
+        {
+          "clip": "run",
+          "frames": 120,
+          "mean_ms": 0.2408683083333339,
+          "median_ms": 0.24025399999999308,
+          "p95_ms": 0.2588489999999979
+        },
+        {
+          "clip": "sit_idle",
+          "frames": 120,
+          "mean_ms": 0.19924403333333393,
+          "median_ms": 0.19846499999999878,
+          "p95_ms": 0.20341500000000678
+        }
+      ]
+    },
+    {
+      "name": "barbarian",
+      "path": "assets/modular_human_male_01/fitted/pants_barbarian.glb",
+      "triangles": 3323,
+      "timings": [
+        {
+          "clip": "walk",
+          "frames": 120,
+          "mean_ms": 0.3920719833333332,
+          "median_ms": 0.34025300000001835,
+          "p95_ms": 0.6222060000000056
+        },
+        {
+          "clip": "run",
+          "frames": 120,
+          "mean_ms": 0.3042737166666664,
+          "median_ms": 0.3065189999999802,
+          "p95_ms": 0.3229200000000674
+        },
+        {
+          "clip": "sit_idle",
+          "frames": 120,
+          "mean_ms": 0.25805182500000307,
+          "median_ms": 0.25744700000007015,
+          "p95_ms": 0.2610029999999597
+        }
+      ]
+    },
+    {
+      "name": "rebuilt_caveman",
+      "path": "assets/modular_human_male_01/caveman/tripo_pants_v1/pants_caveman.glb",
+      "triangles": 5239,
+      "timings": [
+        {
+          "clip": "walk",
+          "frames": 120,
+          "mean_ms": 0.3228008666666758,
+          "median_ms": 0.31222999999999956,
+          "p95_ms": 0.4461830000000191
+        },
+        {
+          "clip": "run",
+          "frames": 120,
+          "mean_ms": 0.252152750000001,
+          "median_ms": 0.25247699999999895,
+          "p95_ms": 0.2697999999999183
+        },
+        {
+          "clip": "sit_idle",
+          "frames": 120,
+          "mean_ms": 0.2090151583333352,
+          "median_ms": 0.2080029999999624,
+          "p95_ms": 0.21375399999999445
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-10",
+  "sources": [
+    {
+      "path": "assets/modular_human_male_01/fitted/base.glb",
+      "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+    },
+    {
+      "path": "assets/modular_human_male_01/gloves/shape_sources/leather-before-thumb-v1.glb",
+      "sha256": "5baa3dc74cc60e78fc33ebb561b84a28751b3851aadadc79fbd4a29f9a0ac9c3"
+    },
+    {
+      "path": "assets/modular_human_male_01/fitted/gloves_leather.glb",
+      "sha256": "24adc275fc992ff9f9d82725e6ecba1d7ca6f3988757831e17be34c69ac95085"
+    },
+    {
+      "path": "assets/modular_human_male_01/animations/animations.glb",
+      "sha256": "fc47d9613bd1fbc9f0d61ce0cc95a5c540d16ab8430bcf34ee7ddcd9cd958ac3"
+    },
+    {
+      "path": "client/public/models/characters/modular_male/animations/social.glb",
+      "sha256": "a9efe7a2d388011cdc039ca6778c2b3a929b07953941ee7bb7c50a511d4b083d"
+    }
+  ],
+  "triangles": 1033,
+  "affected_vertices": [
+    {
+      "side": "Left",
+      "count": 49
+    },
+    {
+      "side": "Right",
+      "count": 66
+    }
+  ],
+  "preserved": [
+    "topology",
+    "UV",
+    "weights",
+    "posed positions of unchanged vertices"
+  ],
+  "poses": [
+    {
+      "clip": "idle1",
+      "samples": 25,
+      "maximum_displacement_m": 0.027948353568265513
+    },
+    {
+      "clip": "walk",
+      "samples": 25,
+      "maximum_displacement_m": 0.027948354425309452
+    },
+    {
+      "clip": "run",
+      "samples": 25,
+      "maximum_displacement_m": 0.027948355938274213
+    },
+    {
+      "clip": "jump",
+      "samples": 25,
+      "maximum_displacement_m": 0.027948353694684732
+    },
+    {
+      "clip": "combat_idle",
+      "samples": 25,
+      "maximum_displacement_m": 0.027948353568265725
+    },
+    {
+      "clip": "slash1",
+      "samples": 25,
+      "maximum_displacement_m": 0.027948354613375474
+    },
+    {
+      "clip": "sit_idle",
+      "samples": 25,
+      "maximum_displacement_m": 0.02967222744600162
+    }
+  ],
+  "scope": "Seven canonical clips, 25 poses each; finite positions and bounded thumb deformation. Not an all-pose collision test."
+}

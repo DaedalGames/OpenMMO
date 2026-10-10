@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-10",
+  "source": {
+    "path": "assets/modular_human_male_01/gloves/shape_sources/leather-before-thumb-v1.glb",
+    "sha256": "5baa3dc74cc60e78fc33ebb561b84a28751b3851aadadc79fbd4a29f9a0ac9c3"
+  },
+  "output": {
+    "path": "assets/modular_human_male_01/fitted/gloves_leather.glb",
+    "sha256": "24adc275fc992ff9f9d82725e6ecba1d7ca6f3988757831e17be34c69ac95085"
+  },
+  "body": {
+    "path": "assets/modular_human_male_01/fitted/base.glb",
+    "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+  },
+  "changes": [
+    {
+      "side": "Left",
+      "vertices_changed": 49,
+      "maximum_displacement_m": 0.02655835635960102
+    },
+    {
+      "side": "Right",
+      "vertices_changed": 66,
+      "maximum_displacement_m": 0.029672231525182724
+    }
+  ],
+  "target_clearance_m": 0.004,
+  "method": "Shrink only excess thumb volume toward its canonical skin surface; blend at the palm and keep the existing finger weights",
+  "preserved": [
+    "triangle topology",
+    "UV",
+    "textures",
+    "skin weights",
+    "skeleton and bind pose"
+  ],
+  "source_and_license": "Existing Meshy leather gloves; local geometry edit, no additional generation"
+}

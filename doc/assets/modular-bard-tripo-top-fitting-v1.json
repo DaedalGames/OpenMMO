@@ -1,0 +1,437 @@
+{
+  "date": "2026-10-10",
+  "status": "Fitted and rigged candidate; motion and clearance review pending",
+  "source": {
+    "path": "assets/items/bard_starter/tripo_top_v1/source.glb",
+    "sha256": "22d3bdc0c7556595584e6526cfd84a896cd4549d705a45d1deecc350ef59394f"
+  },
+  "base": {
+    "path": "assets/modular_human_male_01/fitted/base.glb",
+    "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+  },
+  "rig_id": "human_male_01_mixamo_candidate_v2",
+  "interfaces": "interfaces/v1",
+  "source_triangles": 5335,
+  "preserved_uv_and_embedded_texture": true,
+  "removed_inner_cuff_and_collar_faces": [
+    2,
+    3,
+    4,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    273,
+    274,
+    277,
+    278,
+    281,
+    282,
+    283,
+    284,
+    285,
+    286,
+    291,
+    292,
+    293,
+    294,
+    295,
+    296,
+    297,
+    298,
+    299,
+    300,
+    461,
+    462,
+    463,
+    464,
+    465,
+    466,
+    467,
+    468,
+    469,
+    470,
+    471,
+    472,
+    473,
+    474,
+    475,
+    476,
+    477,
+    478,
+    691,
+    692,
+    693,
+    694,
+    699,
+    700,
+    703,
+    704,
+    705,
+    706,
+    711,
+    712,
+    715,
+    716,
+    719,
+    720,
+    775,
+    776,
+    777,
+    778,
+    779,
+    780,
+    781,
+    782,
+    783,
+    784,
+    791,
+    792,
+    795,
+    796,
+    799,
+    800,
+    803,
+    804,
+    805,
+    806,
+    2973,
+    2974,
+    3033,
+    3034,
+    3041,
+    3042,
+    3463,
+    3464,
+    3465,
+    3466,
+    3471,
+    3472,
+    3483,
+    3484,
+    3487,
+    3488,
+    3491,
+    3492,
+    3495,
+    3496,
+    3499,
+    3500,
+    3535,
+    3536,
+    3539,
+    3540,
+    3587,
+    3588,
+    3589,
+    3590,
+    3591,
+    3592,
+    3593,
+    3594,
+    3597,
+    3598,
+    3601,
+    3602,
+    3605,
+    3606,
+    3607,
+    3608
+  ],
+  "alignment": {
+    "source_translation": [
+      0,
+      0,
+      0.003906257450580597
+    ],
+    "torso_scale": [
+      1.02,
+      0.95,
+      0.8
+    ],
+    "torso_offset": [
+      0,
+      0.94,
+      -0.035
+    ],
+    "sleeve_source_start": [
+      0.23,
+      0.575,
+      0
+    ],
+    "sleeve_source_end": [
+      0.464,
+      0.19,
+      0.095
+    ],
+    "sleeve_radius_scales": [
+      0.95,
+      0.85,
+      0.72
+    ]
+  },
+  "correction_iterations": [
+    {
+      "step": 0,
+      "minimum_signed_distance_m": -0.06524165158766126,
+      "maximum_correction_m": 0.011475187405639579
+    },
+    {
+      "step": 1,
+      "minimum_signed_distance_m": -0.055848421785742,
+      "maximum_correction_m": 0.011278108735567605
+    },
+    {
+      "step": 2,
+      "minimum_signed_distance_m": -0.04763038996795366,
+      "maximum_correction_m": 0.011340909852987023
+    },
+    {
+      "step": 3,
+      "minimum_signed_distance_m": -0.039630593789572885,
+      "maximum_correction_m": 0.01137050338546516
+    },
+    {
+      "step": 4,
+      "minimum_signed_distance_m": -0.035029052987371814,
+      "maximum_correction_m": 0.011278317500452596
+    },
+    {
+      "step": 5,
+      "minimum_signed_distance_m": -0.03080990788140587,
+      "maximum_correction_m": 0.009911051826712177
+    },
+    {
+      "step": 6,
+      "minimum_signed_distance_m": -0.026843600816154438,
+      "maximum_correction_m": 0.008020383355181716
+    },
+    {
+      "step": 7,
+      "minimum_signed_distance_m": -0.02307459452173334,
+      "maximum_correction_m": 0.006177765593056381
+    },
+    {
+      "step": 8,
+      "minimum_signed_distance_m": -0.022152377364445874,
+      "maximum_correction_m": 0.005894354476365964
+    },
+    {
+      "step": 9,
+      "minimum_signed_distance_m": -0.021228580105387727,
+      "maximum_correction_m": 0.005009458562558594
+    },
+    {
+      "step": 10,
+      "minimum_signed_distance_m": -0.02031960471747213,
+      "maximum_correction_m": 0.0041185176865163025
+    },
+    {
+      "step": 11,
+      "minimum_signed_distance_m": -0.01942007479290408,
+      "maximum_correction_m": 0.003753340899163209
+    },
+    {
+      "step": 12,
+      "minimum_signed_distance_m": -0.02066248715182626,
+      "maximum_correction_m": 0.0032265715419305912
+    },
+    {
+      "step": 13,
+      "minimum_signed_distance_m": -0.01979483171187949,
+      "maximum_correction_m": 0.002537226741737829
+    },
+    {
+      "step": 14,
+      "minimum_signed_distance_m": -0.018927729636546875,
+      "maximum_correction_m": 0.0021100396315399113
+    },
+    {
+      "step": 15,
+      "minimum_signed_distance_m": -0.01806094581513043,
+      "maximum_correction_m": 0.0019852471912069395
+    },
+    {
+      "step": 16,
+      "minimum_signed_distance_m": -0.01719381324832735,
+      "maximum_correction_m": 0.0018622403293917353
+    },
+    {
+      "step": 17,
+      "minimum_signed_distance_m": -0.016326492812830717,
+      "maximum_correction_m": 0.0017721472267132213
+    },
+    {
+      "step": 18,
+      "minimum_signed_distance_m": -0.015459056479789242,
+      "maximum_correction_m": 0.001657902204059086
+    },
+    {
+      "step": 19,
+      "minimum_signed_distance_m": -0.014591356369649843,
+      "maximum_correction_m": 0.0015873691356320043
+    },
+    {
+      "step": 20,
+      "minimum_signed_distance_m": -0.0137233365455274,
+      "maximum_correction_m": 0.0014778774764588939
+    },
+    {
+      "step": 21,
+      "minimum_signed_distance_m": -0.012855133633370411,
+      "maximum_correction_m": 0.0014153591315160775
+    },
+    {
+      "step": 22,
+      "minimum_signed_distance_m": -0.011986826760492418,
+      "maximum_correction_m": 0.0013202905198807517
+    },
+    {
+      "step": 23,
+      "minimum_signed_distance_m": -0.011118461796872908,
+      "maximum_correction_m": 0.0012669027428873342
+    },
+    {
+      "step": 24,
+      "minimum_signed_distance_m": -0.010250064122275242,
+      "maximum_correction_m": 0.00118185723753698
+    },
+    {
+      "step": 25,
+      "minimum_signed_distance_m": -0.00938164854500383,
+      "maximum_correction_m": 0.0011335791027186663
+    },
+    {
+      "step": 26,
+      "minimum_signed_distance_m": -0.008513222771388305,
+      "maximum_correction_m": 0.0010622918892557614
+    },
+    {
+      "step": 27,
+      "minimum_signed_distance_m": -0.007644791504610318,
+      "maximum_correction_m": 0.0010255309367573527
+    },
+    {
+      "step": 28,
+      "minimum_signed_distance_m": -0.006776356815363679,
+      "maximum_correction_m": 0.0009627701004602519
+    },
+    {
+      "step": 29,
+      "minimum_signed_distance_m": -0.005907920240362633,
+      "maximum_correction_m": 0.0009266777759943764
+    }
+  ],
+  "clearance_target_m": 0.008,
+  "opening_section_fitting": [
+    {
+      "interface": "neck_base",
+      "margin_m": 0.006,
+      "iterations": 4,
+      "maximum_displacement_m": 0.003221374245770175
+    },
+    {
+      "interface": "glove_short_Left",
+      "margin_m": 0.014,
+      "iterations": 4,
+      "maximum_displacement_m": 0.00937999685055682
+    },
+    {
+      "interface": "glove_short_Right",
+      "margin_m": 0.014,
+      "iterations": 4,
+      "maximum_displacement_m": 0.009501691457074463
+    }
+  ],
+  "wrist_motion_refinement": {
+    "pose_source": "assets/modular_human_male_01/bard/tripo_top_v1/validation-poses.json",
+    "pose_sha256": "78dd2c0dbd4687fc13e53dfb3f34240da01ef9564dca4ac1b21839e714d7b866",
+    "inputs": [
+      {
+        "path": "assets/modular_human_male_01/fitted/base.glb",
+        "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+      },
+      {
+        "path": "client/public/models/characters/modular_male/animations/locomotion.glb",
+        "sha256": "b99c491b2c66f47a98fc03da923c892d59d62b240317203ec699c5b2d70d47ae"
+      },
+      {
+        "path": "client/public/models/characters/modular_male/animations/combat_melee.glb",
+        "sha256": "c70372c773f9613646ef5e2c01e138db682449bc50d353ee23567bb2007d16fc"
+      },
+      {
+        "path": "client/public/models/characters/modular_male/animations/social.glb",
+        "sha256": "a9efe7a2d388011cdc039ca6778c2b3a929b07953941ee7bb7c50a511d4b083d"
+      }
+    ],
+    "samples": 91,
+    "modified_vertex_counts": [
+      4,
+      3,
+      0
+    ],
+    "maximum_displacement_m": 0.006688273256031105
+  },
+  "skinning": {
+    "torso": "Barycentric transfer restricted to torso spine bones",
+    "sleeve_fidelity": 100,
+    "diffusion": 0.012,
+    "opposite_arm_influences_removed": true,
+    "hem_maximum_same_side_thigh_weight": 0.55,
+    "leather_arm_influence_suppression": true,
+    "cuffs": "Same-side forearm and hand surface weights",
+    "rigid_ornaments": [
+      {
+        "vertices": 190,
+        "shared_weights": true
+      },
+      {
+        "vertices": 39,
+        "shared_weights": true
+      },
+      {
+        "vertices": 70,
+        "shared_weights": true
+      },
+      {
+        "vertices": 69,
+        "shared_weights": true
+      }
+    ],
+    "cape_layer_offset_m": 0.02
+  },
+  "validation": {
+    "path": "assets/modular_human_male_01/bard/tripo_top_v1/top_bard.glb",
+    "sha256": "91c1c1d3b94ca6ba9184ba3c9a74d8131c2a452f024f61a58f0f38db0c8e5d76",
+    "triangles": 5201,
+    "bones": 65,
+    "exact_rest_hierarchy_and_inverse_bind_match": true,
+    "maximum_weight_sum_error": 1.1920928955078125e-07,
+    "active_bones": [
+      "Hips",
+      "LeftArm",
+      "LeftForeArm",
+      "LeftHand",
+      "LeftUpLeg",
+      "Neck",
+      "RightArm",
+      "RightForeArm",
+      "RightHand",
+      "RightUpLeg",
+      "Spine",
+      "Spine1",
+      "Spine2"
+    ]
+  }
+}

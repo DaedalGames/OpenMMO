@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-10",
+  "source": {
+    "path": "assets/modular_human_male_01/gloves/shape_sources/plate-before-thumb-v1.glb",
+    "sha256": "9f533effca5d082daddc179971540a372a328c3caa95c934eb8092fbbffd7792"
+  },
+  "output": {
+    "path": "assets/modular_human_male_01/fitted/gloves_plate.glb",
+    "sha256": "078e8c74bb0998ca7502482b26f919262f30991ead986ef92f79f1a9ef4bb542"
+  },
+  "body": {
+    "path": "assets/modular_human_male_01/fitted/base.glb",
+    "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+  },
+  "changes": [
+    {
+      "mesh": "Mesh_0",
+      "primitive": 0,
+      "side": "Left",
+      "vertices_changed": 77,
+      "maximum_displacement_m": 0.013449093326926231
+    },
+    {
+      "mesh": "Mesh_0",
+      "primitive": 0,
+      "side": "Right",
+      "vertices_changed": 68,
+      "maximum_displacement_m": 0.013075819239020348
+    }
+  ],
+  "target_clearance_m": 0.006,
+  "method": "Shrink only excess thumb volume toward its canonical skin surface; blend at the palm and keep the existing finger weights",
+  "preserved": [
+    "triangle topology",
+    "UV",
+    "textures",
+    "skin weights",
+    "skeleton and bind pose"
+  ],
+  "source_and_license": "Existing Meshy plate gloves; local geometry edit, no additional generation"
+}

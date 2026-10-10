@@ -182,7 +182,7 @@ describe('modular clothing cuts', () => {
     const mesh = new THREE.SkinnedMesh(source)
     const second = new THREE.SkinnedMesh(source)
     const originalIndex = source.index!.array.slice()
-    trimModularClothing(mesh, 'priest_rogue_pockets')
+    trimModularClothing(mesh, 'rogue_pockets')
     expect(mesh.geometry.index!.count).toBe(9)
     const retained = Array.from(mesh.geometry.attributes.uv.array).filter(
       (_, i) => i % 2 === 0
@@ -196,7 +196,7 @@ describe('modular clothing cuts', () => {
             source.attributes[name].getComponent(original, j)
           )
       }
-    trimModularClothing(second, 'priest_rogue_pockets')
+    trimModularClothing(second, 'rogue_pockets')
     expect(second.geometry).toBe(mesh.geometry)
     trimModularClothing(mesh)
     expect(mesh.geometry).toBe(source)
