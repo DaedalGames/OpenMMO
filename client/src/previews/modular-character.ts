@@ -182,6 +182,7 @@ async function main() {
     'top_bard',
     'pants_bard',
     'boots_bard',
+    'helmet_bard',
   ]
   const [base, sources, animations, sword, profile, candidateSources, social] =
     await Promise.all([
@@ -315,7 +316,8 @@ async function main() {
       equipped.has('boots_caveman') ||
       equipped.has('gloves_caveman')
     const inspectingRanger = equipped.has('top_ranger')
-    const inspectingBard = equipped.has('top_bard')
+    const inspectingBard =
+      equipped.has('top_bard') || equipped.has('helmet_bard')
     note.hidden =
       rogueAvailable &&
       !inspectingRogue &&
@@ -324,7 +326,7 @@ async function main() {
       !inspectingBard &&
       !inspectingPriest
     note.textContent = inspectingBard
-      ? '바드 조끼·케이프·녹색 바지·가죽 부츠'
+      ? '바드 깃털 모자·조끼·케이프·녹색 바지·가죽 부츠'
       : inspectingPriest
         ? '사제 성의·사슬 바지·가죽 앵클부츠'
         : inspectingRanger
@@ -359,7 +361,11 @@ async function main() {
   el('rogue-outfit').onclick = () => wearOutfit(ROGUE_MODULAR_OUTFIT)
   el('caveman-outfit').onclick = () => wearOutfit(CAVEMAN_MODULAR_OUTFIT)
   el('ranger-outfit').onclick = () => wearOutfit(RANGER_MODULAR_OUTFIT)
-  el('bard-outfit').onclick = () => wearOutfit(BARD_MODULAR_OUTFIT)
+  const bardPreviewOutfit: ModularOutfit = {
+    ...BARD_MODULAR_OUTFIT,
+    helmet: parts.has('helmet_bard') ? 'bard' : 'none',
+  }
+  el('bard-outfit').onclick = () => wearOutfit(bardPreviewOutfit)
   hairColor.oninput = dress
   if (disposed) return
   const hand = body.getObjectByName('RightHand')
@@ -655,7 +661,7 @@ async function main() {
           : '얼굴 1,505'
       }`
   }
-  if (bard && parts.has('top_bard')) wearOutfit(BARD_MODULAR_OUTFIT)
+  if (bard && parts.has('top_bard')) wearOutfit(bardPreviewOutfit)
   else if (priest && parts.has('top_priest'))
     wearOutfit({ ...PRIEST_MODULAR_OUTFIT, helmet: 'priest' })
   else if (ranger && rangerAvailable) wearOutfit(RANGER_MODULAR_OUTFIT)

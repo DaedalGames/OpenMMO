@@ -18,6 +18,7 @@ import {
 } from './cavemanBootCuff'
 
 type Cut =
+  | 'bard_hat_hair'
   | 'priest_hat_hair'
   | 'priest_hat_lappets'
   | 'bracers'
@@ -82,6 +83,7 @@ function sleeveCut(fraction: number): Distance {
 const rangerGloves = sleeveCut(0.4)
 
 const cuts: Record<Cut, Distance | Distance[] | Reshape> = {
+  bard_hat_hair: (point) => 1.815 - point.y,
   priest_hat_hair: (point) => 1.82 - point.y,
   priest_hat_lappets: { reshape: drapePriestLappetsOverHair },
   bracers: sleeveCut(0.23),
@@ -513,7 +515,7 @@ function drapePriestLappetsOverHair(source: THREE.BufferGeometry) {
   return finishReshape(source, geometry, () => false)
 }
 
-function tuckHairUnderPriestHat(geometry: THREE.BufferGeometry) {
+function tuckHairUnderHat(geometry: THREE.BufferGeometry) {
   const positions = geometry.getAttribute('position')
   const originalNormals = geometry.getAttribute('normal')?.clone()
   const originalPositions = positions.clone()
@@ -631,7 +633,8 @@ function applyCuts(
               name === 'bard_pants_boots'
           )
         )
-    if (name === 'priest_hat_hair') tuckHairUnderPriestHat(geometry)
+    if (name === 'priest_hat_hair' || name === 'bard_hat_hair')
+      tuckHairUnderHat(geometry)
     if (name === 'bard_plate_waist') replace(tuckBardWaist(geometry, skeleton))
     if (name === 'ranger_pants_boots') tuckPantsIntoRangerBoots(geometry)
     if (name === 'caveman_pants_boots') tuckPantsIntoCavemanBoots(geometry)

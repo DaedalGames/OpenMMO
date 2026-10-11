@@ -81,6 +81,12 @@ fn class_starter_items(
             ("worn_priest_pants", 1, Some("pants")),
             ("worn_priest_boots", 1, Some("boots")),
         ],
+        CharacterClass::Bard if gender == Gender::Male => &[
+            ("worn_bard_top", 1, Some("chest")),
+            ("worn_bard_pants", 1, Some("pants")),
+            ("worn_bard_boots", 1, Some("boots")),
+            ("worn_mandolin", 1, None),
+        ],
         CharacterClass::Bard => &[("worn_mandolin", 1, None)],
         _ => &[],
     }
@@ -2900,19 +2906,47 @@ mod tests {
             guard: 0,
         };
 
-        let bard = auth
-            .create_character(
-                &account,
-                "Lark",
-                &attributes,
-                12,
-                CharacterClass::Bard,
-                Gender::Female,
-            )
-            .unwrap();
-        let items = auth.load_inventory(bard.id).unwrap();
-        assert!(items.iter().any(|r| r.item_def_id == "worn_mandolin"));
-        assert!(items.iter().any(|r| r.item_def_id == "worn_iron_sword"));
+        for (name, gender) in [("Lark", Gender::Female), ("Robin", Gender::Male)] {
+            let bard = auth
+                .create_character(
+                    &account,
+                    name,
+                    &attributes,
+                    12,
+                    CharacterClass::Bard,
+                    gender,
+                )
+                .unwrap();
+            let items = auth.load_inventory(bard.id).unwrap();
+            assert!(items.iter().any(|r| r.item_def_id == "worn_mandolin"));
+            assert!(items.iter().any(|r| r.item_def_id == "worn_iron_sword"));
+            let worn = auth.load_character_equipment(bard.id).unwrap();
+            if gender == Gender::Female {
+                assert_eq!(worn.armor, Default::default());
+                assert_eq!(items.len(), STARTER_ITEMS.len() + 1);
+                continue;
+            }
+            for (id, slot) in [
+                ("worn_bard_top", "chest"),
+                ("worn_bard_pants", "pants"),
+                ("worn_bard_boots", "boots"),
+            ] {
+                let item = items.iter().find(|item| item.item_def_id == id).unwrap();
+                assert_eq!(item.quantity, 1);
+                assert_eq!(item.equip_slot.as_deref(), Some(slot));
+                let def = crate::item_defs::item_defs().get(id).unwrap();
+                assert_eq!(def.equip_slot.as_ref().map(EquipSlot::as_str), Some(slot));
+                assert_eq!(def.base_price, None);
+                assert!(def.untradeable);
+                assert_eq!(def.guard, Some(1));
+            }
+            assert_eq!(items.len(), STARTER_ITEMS.len() + 4);
+            assert_eq!(worn.armor.chest.as_deref(), Some("worn_bard_top"));
+            assert_eq!(worn.armor.pants.as_deref(), Some("worn_bard_pants"));
+            assert_eq!(worn.armor.boots.as_deref(), Some("worn_bard_boots"));
+            assert!(worn.armor.head.is_none());
+            assert!(worn.armor.hands.is_none());
+        }
 
         let knight = auth
             .create_character(

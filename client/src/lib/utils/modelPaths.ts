@@ -77,7 +77,10 @@ const CLASS_GENDER_MODELS: Partial<
     male: PRIEST_CHARACTER_MODEL_PATH,
     female: FEMALE_PRIEST_CHARACTER_MODEL_PATH,
   },
-  bard: { female: FEMALE_BARD_CHARACTER_MODEL_PATH },
+  bard: {
+    female: FEMALE_BARD_CHARACTER_MODEL_PATH,
+    male: MODULAR_MALE_MODEL_PATH,
+  },
   merchant: { female: MERCHANT_CHARACTER_MODEL_PATH },
   guard: { male: GUARD_CHARACTER_MODEL_PATH },
   maid: { female: MAID_CHARACTER_MODEL_PATH },

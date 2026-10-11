@@ -80,6 +80,13 @@ const priestSources = {
 };
 const priestParts = Object.keys(priestSources);
 parts.push(...priestParts);
+const bardSources = {
+  top_bard: "assets/modular_human_male_01/bard/tripo_top_v1/top_bard.glb",
+  pants_bard: "assets/modular_human_male_01/bard/tripo_pants_v1/pants_bard.glb",
+  boots_bard: "assets/modular_human_male_01/bard/tripo_boots_v1/boots_bard.glb",
+};
+const bardParts = Object.keys(bardSources);
+parts.push(...bardParts);
 const appearanceSources = {
   face_default: `${fitted}/base.glb`,
   face_ranger:
@@ -114,7 +121,7 @@ const hash = (path) =>
     .digest("hex");
 const report = {
   source:
-    "Modular male body, knight, barbarian, rogue, caveman, ranger and priest equipment and user-provided Mixamo rig; source tiers and licenses in doc/assets/characters.md",
+    "Modular male body, knight, barbarian, rogue, caveman, ranger, priest and bard equipment and user-provided Mixamo rig; source tiers and licenses in doc/assets/characters.md",
   inputs: {},
   outputs: {},
 };
@@ -147,6 +154,7 @@ const partSets = {
   "--body-only": bodyParts,
   "--appearance-only": appearanceParts,
   "--priest-only": priestParts,
+  "--bard-only": bardParts,
   "--ranger-only": rangerParts,
   "--caveman-only": cavemanParts,
   "--outfits-only": outfitParts,
@@ -164,6 +172,7 @@ for (const name of selectedParts) {
     cavemanSources[name] ??
     rangerSources[name] ??
     priestSources[name] ??
+    bardSources[name] ??
     (rogueParts.includes(name)
       ? (rogue.part_overrides[name] ?? `${rogue.directory}/${name}.glb`)
       : `${fitted}/${name}.glb`);

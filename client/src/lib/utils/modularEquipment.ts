@@ -4,6 +4,7 @@ import { DEFAULT_MODULAR_OUTFIT, type ModularOutfit } from './modularCharacter'
 
 const ARMOR_STYLES = {
   chest: {
+    'armor/bard_top.glb': 'bard',
     'armor/priest_top.glb': 'priest',
     'armor/ranger_top.glb': 'ranger',
     'armor/caveman_top.glb': 'caveman',
@@ -12,6 +13,7 @@ const ARMOR_STYLES = {
     'armor/barbarian_armor.glb': 'barbarian',
   },
   pants: {
+    'armor/bard_pants.glb': 'bard',
     'armor/priest_pants.glb': 'priest',
     'armor/ranger_pants.glb': 'ranger',
     'armor/caveman_pants.glb': 'caveman',
@@ -20,6 +22,7 @@ const ARMOR_STYLES = {
     'armor/barbarian_pants.glb': 'barbarian',
   },
   boots: {
+    'armor/bard_boots.glb': 'bard',
     'armor/priest_boots.glb': 'priest',
     'armor/ranger_boots.glb': 'ranger',
     'armor/caveman_boots.glb': 'caveman',

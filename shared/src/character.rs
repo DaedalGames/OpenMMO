@@ -95,6 +95,7 @@ impl CharacterAppearance {
                     | CharacterClass::Caveman
                     | CharacterClass::Ranger
                     | CharacterClass::Priest
+                    | CharacterClass::Bard
             )
         {
             self
@@ -137,6 +138,14 @@ mod appearance_tests {
         );
         assert_eq!(
             appearance.for_character(&CharacterClass::Knight, Gender::Female),
+            CharacterAppearance::default()
+        );
+        assert_eq!(
+            appearance.for_character(&CharacterClass::Bard, Gender::Male),
+            appearance
+        );
+        assert_eq!(
+            appearance.for_character(&CharacterClass::Bard, Gender::Female),
             CharacterAppearance::default()
         );
     }

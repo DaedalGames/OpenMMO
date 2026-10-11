@@ -74,9 +74,10 @@ describe('male player model selection', () => {
     for (const cls of PLAYER_CLASSES) {
       if (getAvailableGenders(cls).includes('male')) {
         expect(getCharacterModelPath(cls, 'male')).toBe(MODULAR_MALE_MODEL_PATH)
-        expect(getCharacterModelPath(cls, 'male', true)).not.toBe(
-          MODULAR_MALE_MODEL_PATH
-        )
+        if (cls !== 'bard')
+          expect(getCharacterModelPath(cls, 'male', true)).not.toBe(
+            MODULAR_MALE_MODEL_PATH
+          )
       }
       if (getAvailableGenders(cls).includes('female'))
         expect(getCharacterModelPath(cls, 'female')).not.toBe(
@@ -87,6 +88,14 @@ describe('male player model selection', () => {
       '/models/characters/guard.glb'
     )
     expect(getNpcModelPath('Tobin')).toBe('/models/characters/tobin.glb')
+  })
+
+  it('offers both bard genders while retaining the default female NPC model', () => {
+    expect(getAvailableGenders('bard')).toEqual(['female', 'male'])
+    expect(getCharacterModelPath('bard', 'male')).toBe(MODULAR_MALE_MODEL_PATH)
+    expect(getCharacterModelPath('bard', undefined, true)).toBe(
+      '/models/characters/female_bard.glb'
+    )
   })
 })
 
@@ -103,6 +112,27 @@ describe.skipIf(
         (mesh.userData.part_id ?? mesh.parent?.userData.part_id) === 'base' &&
         (mesh.userData.region ?? mesh.parent?.userData.region) === region
     )
+
+  it('loads the bard starter outfit and restores the body when it is removed', async () => {
+    const source = await loadCharacterModel(
+      getCharacterModelPath('bard', 'male')
+    )
+    const { modelRoot } = createCharacterModelRoot(source.scene)
+    await applyCharacterArmor(modelRoot, {
+      chest: 'worn_bard_top',
+      pants: 'worn_bard_pants',
+      boots: 'worn_bard_boots',
+    })
+    for (const part of ['top_bard', 'pants_bard', 'boots_bard'])
+      expect(visible(modelRoot, part), part).toBe(true)
+    expect(computeSoleGroundOffset(modelRoot)).toBeCloseTo(0, 6)
+    await applyCharacterArmor(modelRoot, {})
+    for (const part of ['top_bard', 'pants_bard', 'boots_bard'])
+      expect(visible(modelRoot, part), part).toBe(false)
+    expect(
+      bodyRegion(skinnedParts(modelRoot), 'legs').every((mesh) => mesh.visible)
+    ).toBe(true)
+  })
 
   it('assembles every face onto the common body without loading full body variants', async () => {
     const { loadHeadlessGlb } = await import('./headless-glb.fixture')
@@ -904,6 +934,7 @@ describe.skipIf(
       caveman: 'worn_caveman_boots',
       ranger: 'worn_ranger_boots',
       priest: 'worn_priest_boots',
+      bard: 'worn_bard_boots',
     } satisfies Record<
       keyof typeof import('./modularSoleOffsets.json'),
       string | null

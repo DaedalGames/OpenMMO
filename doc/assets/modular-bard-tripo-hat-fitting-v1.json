@@ -1,0 +1,193 @@
+{
+  "date": "2026-10-11",
+  "fitting_revision": 5,
+  "head_shell": {
+    "vertices": 74,
+    "maximum_radial_correction_mm": 31.35834755961862
+  },
+  "side_clearance_mm": {
+    "negative_x": [
+      {
+        "height_m": 1.83,
+        "gap_mm": 4.906815156742156
+      },
+      {
+        "height_m": 1.835,
+        "gap_mm": 3.870878796732674
+      },
+      {
+        "height_m": 1.84,
+        "gap_mm": 2.834942436723151
+      },
+      {
+        "height_m": 1.85,
+        "gap_mm": 3.14630955096723
+      },
+      {
+        "height_m": 1.86,
+        "gap_mm": 4.599755728767835
+      }
+    ],
+    "positive_x": [
+      {
+        "height_m": 1.83,
+        "gap_mm": 7.4684626073145
+      },
+      {
+        "height_m": 1.835,
+        "gap_mm": 4.860784741306301
+      },
+      {
+        "height_m": 1.84,
+        "gap_mm": 5.0952270452813835
+      },
+      {
+        "height_m": 1.85,
+        "gap_mm": 4.884832582874574
+      },
+      {
+        "height_m": 1.86,
+        "gap_mm": 4.797170795484765
+      }
+    ]
+  },
+  "lateral_cage": {
+    "negative_x_scale": 0.82,
+    "positive_x_scale": 0.89,
+    "temple_inset_m": [
+      0.002,
+      0.006
+    ],
+    "contact_height_m": [
+      1.82,
+      1.84,
+      1.88,
+      1.92
+    ]
+  },
+  "lateral_extent_m": [
+    -0.13451007109405774,
+    0.134994921875
+  ],
+  "front_clearance_mm": [
+    {
+      "height_m": 1.83,
+      "gap_mm": 7.773289345864034
+    },
+    {
+      "height_m": 1.835,
+      "gap_mm": 6.664238991151997
+    },
+    {
+      "height_m": 1.84,
+      "gap_mm": 5.636896453189156
+    },
+    {
+      "height_m": 1.85,
+      "gap_mm": 4.443287644471619
+    },
+    {
+      "height_m": 1.86,
+      "gap_mm": 5.724555301504869
+    }
+  ],
+  "front_cage": {
+    "lower_backward_shift_m": 0.034,
+    "upper_backward_shift_m": 0.006,
+    "height_blend_y_m": [
+      1.81,
+      1.84
+    ],
+    "depth_blend_z_m": [
+      0.015,
+      0.1
+    ]
+  },
+  "crown": {
+    "height_scale": 0.85,
+    "pivot_y_m": 1.9
+  },
+  "rear_clearance_mm": [
+    {
+      "height_m": 1.83,
+      "gap_mm": 9.631046875686097
+    },
+    {
+      "height_m": 1.835,
+      "gap_mm": 7.8451430963826505
+    },
+    {
+      "height_m": 1.84,
+      "gap_mm": 6.0592393170791485
+    },
+    {
+      "height_m": 1.85,
+      "gap_mm": 4.313946261567988
+    },
+    {
+      "height_m": 1.86,
+      "gap_mm": 3.9610824808546385
+    }
+  ],
+  "rear_cage": {
+    "forward_shift_m": 0.052,
+    "lower_rim_drop_m": 0.015,
+    "rear_width_scale": 0.88,
+    "depth_blend_z_m": [
+      -0.05,
+      0.045
+    ],
+    "height_blend_y_m": [
+      1.85,
+      1.91
+    ]
+  },
+  "sources": [
+    {
+      "path": "assets/items/bard_starter/tripo_hat_v1/source.glb",
+      "sha256": "d8b486c7275ec3eb3ef76bea0a606063a1a5ab3fd24d64f697990b02d5c17827"
+    },
+    {
+      "path": "assets/modular_human_male_01/fitted/base.glb",
+      "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+    },
+    {
+      "path": "assets/modular_human_male_01/fitted/hair_crop.glb",
+      "sha256": "5e8acb389f575331008c36dd94afcbf3831c90f53ca21ab0a7bbe666539f2472"
+    }
+  ],
+  "output": {
+    "path": "assets/modular_human_male_01/bard/tripo_hat_v1/helmet_bard.glb",
+    "sha256": "f7af3a0fb126147eff50d7d744368870b2c44004e7877c0729abc4d45edd4d70"
+  },
+  "initial_transform": {
+    "scale": [
+      0.4,
+      0.43,
+      0.4
+    ],
+    "translation_m": [
+      0,
+      1.795,
+      0
+    ]
+  },
+  "head_clearance_mm": 1.754988560591847,
+  "clearance_method": "Unsigned nearest-head distance at hat vertices and triangle centers; separate triangle-overlap checks required",
+  "triangles": 1978,
+  "texture_bytes_preserved": true,
+  "uv_preserved": true,
+  "skinning": "All vertices rigidly weighted 1.0 to the canonical Head bone",
+  "validation": {
+    "path": "assets/modular_human_male_01/bard/tripo_hat_v1/helmet_bard.glb",
+    "sha256": "f7af3a0fb126147eff50d7d744368870b2c44004e7877c0729abc4d45edd4d70",
+    "triangles": 1978,
+    "bones": 65,
+    "exact_rest_hierarchy_and_inverse_bind_match": true,
+    "maximum_weight_sum_error": 0,
+    "active_bones": [
+      "Head"
+    ]
+  },
+  "scope": "Fitted candidate; runtime motion and intersections validated separately"
+}

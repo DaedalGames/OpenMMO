@@ -1,5 +1,63 @@
 # 바드 부위별 제작 원화
 
+## 모자 원화 — 2026-10-11
+
+사용자가 전달한 3D 모델은 [Tripo 모자 원본 검수](modular-bard-tripo-hat.md)에 기록했다.
+
+트리포 입력용으로 정면과 **정면 그림 기준 오른쪽 측면**을 별도 이미지로 제작했다.
+오른쪽 측면은 깃털이 있는 쪽이며 착용자 기준으로는 왼쪽이다. 현재 측면 v3는 v2의 잘못된 앞뒤 방향을 바로잡은 이미지다.
+
+- [정면 PNG](../../assets/items/bard_starter/concepts/hat/hat-bard-front-v1.png)
+- [오른쪽 측면 v3 PNG](../../assets/items/bard_starter/concepts/hat/hat-bard-viewer-right-side-v3.png): 정면 그림 기준 오른쪽에서 본 모습. **모자 앞은 화면 왼쪽, 뒤는 오른쪽.** 깃털도 뒤쪽인 오른쪽으로 기울어진다.
+- [정면 프롬프트·참조·해시](../../assets/items/bard_starter/concepts/hat/generation-views-v1.json)
+- [측면 v3 프롬프트·참조·해시](../../assets/items/bard_starter/concepts/hat/generation-side-v3.json)
+- **[미사용·삭제]** 이전 측면 v1·v2는 모자 앞을 화면 오른쪽으로 지정한 오류가 있어 v3로 대체했다. 이미지 파일은 중간 결과물 정리 요청에 따라 삭제했고 제작 기록은 오류 이력으로 보존한다.
+
+두 파일 모두 1254×1254 RGBA, 알파 범위 0–255이며 모자 한 개와 한 시점만 담는다.
+깃털과 황동 장식은 착용자 왼쪽에 두었다. 이미지 생성 기반 원화이므로 정밀한 3D 투영도는 아니다.
+측면의 앞뒤 깊이는 보완한 제안이며 깃털 기울기·챙 곡률·장식 세부는 3D 제작 시 원본과 정면을 우선해 정리한다.
+제작 도구·등급·날짜·이용 조건은 아래 원화와 동일하다.
+
+캐릭터 생성 화면의 남성 음유시인 복장에 맞춘 모자 초안이다.
+짙은 녹색 펠트에 짧고 한쪽이 올라간 챙, 갈색 가죽띠, 황동 고정구와 밝은 깃털 한 개를 조합했다.
+낮은 크라운과 짧은 챙으로 얼굴이 잘 드러나도록 의도했으며 실제 착용 비율은 후속 피팅에서 확인한다.
+
+- [모자 3/4 원화 PNG](../../assets/items/bard_starter/concepts/hat/hat-bard-three-quarter-v1.png)
+- [전체 프롬프트·해시·검수 기록](../../assets/items/bard_starter/concepts/hat/generation.json)
+
+1254×1254 RGBA PNG이며 알파 범위는 0–255다. 단일 모자·단일 시점으로 생성했다.
+현재 복장의 색상·소재를 텍스트로 참조했으며 이미지 입력은 사용하지 않았다.
+원화 제안 단계다. 3D 제작 전 깃털과 가장자리, 머리·헤어와의 맞음새, 챙의 얼굴 가림을 검토한다.
+
+제작: OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**, 2026-10-11.
+OpenAI 생성 출력물 이용 조건을 적용한다.
+
+## 캐릭터 생성 화면 적용 — 2026-10-11
+
+남성 음유시인을 선택하고 공통 남성 몸체의 얼굴·머리·색상을 설정할 수 있다.
+생성 미리보기와 시작 장비는 `worn_bard_top`, `worn_bard_pants`, `worn_bard_boots`를 사용한다.
+기존 만돌린 지급은 유지하며 여성 음유시인과 기존 여성 NPC 모델도 유지한다.
+
+- 착용 모델: `client/public/models/characters/modular_male/{top,pants,boots}_bard.glb`.
+- 바닥 아이템 모델·아이콘: `client/public/models/armor/bard_{top,pants,boots}.glb`, `client/public/items/armor/bard_{top,pants,boots}.png`.
+- 아이템 편집본: `assets/items/bard_{top,pants,boots}/bard_{top,pants,boots}.blend`.
+- 재생성: `node tools/prepare-modular-character.mjs --bard-only`와 `blender -b --python tools/blender-scripts/export_priest_items.py -- --outfit bard`. 착용 모델 압축에는 `toktx`가 필요하다.
+
+기존 [상의](modular-bard-tripo-top.md), [하의](modular-bard-tripo-pants.md), [부츠](modular-bard-tripo-boots.md)의 피팅 원본을 사용한다.
+새 AI 생성 없이 파생 에셋만 내보냈다. 원본의 Tripo 출처·이용 조건과 미확인 구독 등급·생성일 기록을 그대로 따른다.
+착용 모델은 Meshopt·512px KTX2로 압축하며 입력·출력 해시는 런타임 `manifest.json`에 기록한다.
+부츠 접지 보정은 세 얼굴에서 측정한 `0.011000244302464102m`를 사용한다.
+기본 얼굴·크롭 헤어·복장 3종 착용 시 무기 없이 원본 합계 26,449 triangles,
+가림 적용 후 표시 18,004 triangles이며 얼굴은 3,157 triangles다.
+전체 원본 수는 권장 범위를 넘지만 가려지는 몸체를 포함한 값이며 예산만을 위한 메시 축소는 하지 않았다.
+
+브라우저에서 남녀 선택 전환, 남성 외형 설정, 능력치 굴림·생성 요청의 직업·성별 전달을 확인했다.
+실제 런타임 모델의 WebGPU·WebGL 표시와 세 부위의 개별 착탈·재착용에서 로딩·렌더링 오류가 없었다.
+서버 생성 테스트로 남성 복장 3종의 착용 지급, 만돌린 지급, 여성 기존 동작을 확인했다.
+기존 피팅·혼합 장비 검증 기록은 각 부위 문서를 따른다.
+
+## 제작 원화
+
 사용자가 전달한 3D 결과와 후속 피팅·리깅은 [Tripo 상의 제작 기록](modular-bard-tripo-top.md)에 기록했다.
 
 신발 한 짝의 정면·측면은 [부츠 원화](#부츠-한-짝-정면측면-원화--2026-10-11)를 참고한다.

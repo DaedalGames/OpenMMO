@@ -1,5 +1,5 @@
 {
-  "source": "Modular male body, knight, barbarian, rogue, caveman, ranger and priest equipment and user-provided Mixamo rig; source tiers and licenses in doc/assets/characters.md",
+  "source": "Modular male body, knight, barbarian, rogue, caveman, ranger, priest and bard equipment and user-provided Mixamo rig; source tiers and licenses in doc/assets/characters.md",
   "inputs": {
     "assets/modular_human_male_01/fitted/base.glb": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a",
     "assets/modular_human_male_01/fitted/hair_crop.glb": "5e8acb389f575331008c36dd94afcbf3831c90f53ca21ab0a7bbe666539f2472",
@@ -46,7 +46,10 @@
     "assets/modular_human_male_01/priest/tripo_top_v1/top_priest.glb": "d150bb102c4aa61a2f1a4107e48f09f39241b524de2541a45d37116809a205ed",
     "assets/modular_human_male_01/priest/tripo_pants_v1/pants_priest.glb": "3ff9f0768c899b404eeecdaae3f382da9250fd0584795a12358ecfc8a40f880b",
     "assets/modular_human_male_01/priest/tripo_boots_v1/boots_priest.glb": "995e83d5cd5e41413024b4ab8a522c724b1d078f49232b81460e3d8cf26f4ba0",
-    "assets/modular_human_male_01/priest/tripo_helmet_v1/helmet_priest.glb": "3d6a6d38362626069099b13d183ec6064b1fbf245b65a3397405e76f16119237"
+    "assets/modular_human_male_01/priest/tripo_helmet_v1/helmet_priest.glb": "3d6a6d38362626069099b13d183ec6064b1fbf245b65a3397405e76f16119237",
+    "assets/modular_human_male_01/bard/tripo_top_v1/top_bard.glb": "91c1c1d3b94ca6ba9184ba3c9a74d8131c2a452f024f61a58f0f38db0c8e5d76",
+    "assets/modular_human_male_01/bard/tripo_pants_v1/pants_bard.glb": "87885b4a6459f124ea38024a2092f2b4c324fae7bb3b8f878328bf1b1cccb720",
+    "assets/modular_human_male_01/bard/tripo_boots_v1/boots_bard.glb": "033658dbf434e1bd308f93de239989a20d49150ed5da96b84a865a1fe4746b66"
   },
   "outputs": {
     "base.glb": "abf1a12178d5df11269afed6793e46ed16796c47174e356708ee73bdf590bdad",
@@ -165,6 +168,9 @@
     "helmet_priest.glb": "2aa304e1ecc74b04989a4f3bf26749f274b3e445879bee6019a874ddcbebc32e",
     "face_default.glb": "11475885360ea39850453821a3644c172236d999010de3718b52d75545a0e5ca",
     "face_rugged.glb": "c64aec5a878967b1233a7411513c8fa7d8d5ddbbe46b0dda311b9c41b333ea1d",
-    "face_ranger.glb": "e2fd52b467f0c5627fa12448602592dce71652f3fc0ebb8731bd985ef74656f8"
+    "face_ranger.glb": "e2fd52b467f0c5627fa12448602592dce71652f3fc0ebb8731bd985ef74656f8",
+    "top_bard.glb": "92c1501741ff2ab35d740f9263ea52f7e498adccd79a8af4a3eb39ac997b5978",
+    "pants_bard.glb": "7e4994046ec27f4ccd94fe6052ef521c7c945f213323cfdadbf994f4cf3e18e3",
+    "boots_bard.glb": "ae3250362ad44f044096a55faac32c18bf17af142e820180b8acb40dd837df79"
   }
 }

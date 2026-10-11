@@ -23,6 +23,7 @@ import {
   CAVEMAN_MODULAR_OUTFIT,
   RANGER_MODULAR_OUTFIT,
   PRIEST_MODULAR_OUTFIT,
+  BARD_MODULAR_OUTFIT,
   SELECTABLE_HAIR_PARTS,
   type ModularOutfit,
   bindModularFace,
@@ -49,6 +50,7 @@ const lazyParts = new Set(
     CAVEMAN_MODULAR_OUTFIT,
     RANGER_MODULAR_OUTFIT,
     PRIEST_MODULAR_OUTFIT,
+    BARD_MODULAR_OUTFIT,
   ]
     .flatMap((outfit) => [...modularOutfitParts(outfit)])
     .concat(...SELECTABLE_HAIR_PARTS)
@@ -63,10 +65,7 @@ const lazyStates = new WeakMap<
     outfitKey?: string
   }
 >()
-const soleOffsets: Record<ModularOutfit['boots'], number> = {
-  bard: modularSoleOffsets.none,
-  ...modularSoleOffsets,
-}
+const soleOffsets: Record<ModularOutfit['boots'], number> = modularSoleOffsets
 
 export function loadCharacterModel(
   path: string,

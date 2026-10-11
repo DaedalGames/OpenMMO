@@ -103,7 +103,7 @@ export interface ModularOutfit {
     | 'caveman'
     | 'ranger'
   boots: (typeof MODULAR_BOOTS)[number]
-  helmet: 'none' | 'plate' | 'barbarian' | 'priest'
+  helmet: 'none' | 'plate' | 'barbarian' | 'priest' | 'bard'
 }
 
 export const SELECTABLE_HAIR_PARTS = new Set<ModularOutfit['hair']>([
@@ -144,7 +144,9 @@ export function modularOutfitParts(outfit: ModularOutfit): Set<string> {
   if (outfit.pants !== 'none') selected.add(`pants_${outfit.pants}`)
   if (
     outfit.hair !== 'none' &&
-    (outfit.helmet === 'none' || outfit.helmet === 'priest')
+    (outfit.helmet === 'none' ||
+      outfit.helmet === 'priest' ||
+      outfit.helmet === 'bard')
   )
     selected.add(outfit.hair)
   if (outfit.top === 'linen' || outfit.top === 'leather')
@@ -269,9 +271,11 @@ function showBaseModularOutfit(
       const partRegion = region(mesh)
       const cut =
         id.startsWith('hair_') &&
-        outfit.helmet === 'priest' &&
-        !!parts.get('helmet_priest')?.length
-          ? 'priest_hat_hair'
+        (outfit.helmet === 'priest' || outfit.helmet === 'bard') &&
+        !!parts.get(`helmet_${outfit.helmet}`)?.length
+          ? outfit.helmet === 'bard'
+            ? 'bard_hat_hair'
+            : 'priest_hat_hair'
           : id === 'helmet_priest' &&
               (outfit.hair === 'hair_ranger' ||
                 outfit.hair === 'hair_wavy_bone') &&

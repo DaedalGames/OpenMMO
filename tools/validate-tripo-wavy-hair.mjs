@@ -4,9 +4,10 @@ import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { CANONICAL_CLIPS_WITH_DYING, clipSampler, headlessThree, loadClips, root } from './lib/headless-three.mjs'
 
 const ranger = process.argv.includes('--ranger')
+const bardHat = process.argv.includes('--bard-hat')
 const style = ranger ? 'ranger' : 'wavy'
-const part = ranger ? 'hair_ranger' : 'hair_wavy_bone'
-const output = `assets/modular_human_male_01/hair/tripo_${style}_v1/`
+const part = bardHat ? 'helmet_bard' : ranger ? 'hair_ranger' : 'hair_wavy_bone'
+const output = bardHat ? 'assets/modular_human_male_01/bard/tripo_hat_v1/' : `assets/modular_human_male_01/hair/tripo_${style}_v1/`
 const { server, sources, load } = await headlessThree()
 try {
   const { bindModularPart, modularAnimationClips } = await server.ssrLoadModule('/src/lib/utils/modularCharacter.ts')
@@ -33,7 +34,7 @@ try {
   const inverseHead = head.matrixWorld.clone().invert()
   const headLocal = rest.map(p => p.clone().applyMatrix4(inverseHead))
   const animations = await loadClips(body, load, modularAnimationClips, CANONICAL_CLIPS_WITH_DYING)
-  const poses = clipSampler(body)
+  const poses = clipSampler(body, bardHat ? { restore: mesh.skeleton.bones } : undefined)
   const clips = [], snapshots = []
   const bones = mesh.skeleton.bones
   const restMatrices = bones.map(b => b.matrixWorld.clone())
@@ -57,18 +58,18 @@ try {
         })
     }
     assert.ok(headError < 1e-5, `${name}: Head binding error ${headError}`)
-    assert.ok(edgeError < 1e-4, `${name}: hair distortion ${edgeError}`)
+    assert.ok(edgeError < 1e-4, `${name}: part distortion ${edgeError}`)
     clips.push({ clip: name, samples: 25, maximum_head_binding_error_m: headError, maximum_edge_length_error_relative: edgeError })
   }
   assert.ok(maximumMotion > .1)
-  const report = { date: ranger ? '2026-10-08' : '2026-10-04', sources, rig_id: 'human_male_01_mixamo_candidate_v2',
+  const report = { date: bardHat ? '2026-10-11' : ranger ? '2026-10-08' : '2026-10-04', sources, rig_id: 'human_male_01_mixamo_candidate_v2',
     triangles: geometry.index.count / 3, bones: bones.length, normalized_weights: true,
     exact_head_following: true, maximum_animated_motion_m: maximumMotion, clips,
-    scope: 'Canonical modular binding and 200 sampled poses. Head-fixed hair; no secondary hair physics. Intersections and equipment compatibility require separate review.',
+    scope: 'Canonical modular binding and 200 sampled poses. Rigid Head binding; no secondary physics. Intersections and equipment compatibility require separate review.',
   }
-  const reportPath = ranger ? 'doc/assets/modular-ranger-tripo-hair-animation-v1.json' : 'doc/assets/modular-wavy-hair-animation-v1.json'
+  const reportPath = bardHat ? 'doc/assets/modular-bard-tripo-hat-animation-v1.json' : ranger ? 'doc/assets/modular-ranger-tripo-hair-animation-v1.json' : 'doc/assets/modular-wavy-hair-animation-v1.json'
   writeFileSync(new URL(reportPath, root), JSON.stringify(report, null, 2) + '\n')
-  if (!ranger)
+  if (!ranger || bardHat)
     writeFileSync(new URL(output + 'animation-snapshots.json', root), JSON.stringify(snapshots, null, 2) + '\n')
   console.log(JSON.stringify(report))
 } finally {
