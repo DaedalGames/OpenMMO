@@ -354,7 +354,7 @@
     "source_geometry_uv_normals_materials_images_preserved": true,
     "output": "assets/modular_human_female_01/rig_v1/female-base.glb"
   },
-  "animation_method": "Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.",
+  "animation_method": "Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; armed idle closes all four fingers around the steel longsword handle with an opposed thumb; both idle variants lift neck/head by 1.5/6.5 degrees; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.",
   "animation_sources": [
     {
       "path": "assets/modular_human_male_01/animations/animations.glb",
@@ -372,7 +372,7 @@
     },
     "output": {
       "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
-      "sha256": "9a8dd187bc126601a39c1a202dad89891efd0fff2f04f533468de11f79f037e8"
+      "sha256": "2eec519a5a6f70721c4ef277c3b9dcc7126df0c364a38323439eb6fe18fedbf3"
     },
     "bone_count": 65,
     "used_vertices": 23224,
@@ -384,6 +384,16 @@
     "idle_variants": {
       "original_left_hand_and_body_tracks_preserved": true,
       "maximum_mirrored_rotation_error_radians": 5.960464477539063e-08
+    },
+    "armed_idle_handle": {
+      "all_four_fingers_wrap_handle": true,
+      "thumb_over_index": true,
+      "sampled_frames": 121
+    },
+    "idle_gaze": {
+      "neck_lift_degrees": 1.5,
+      "head_lift_degrees": 6.5,
+      "both_idle_variants_identical": true
     },
     "fingers": [
       {
@@ -453,7 +463,7 @@
         "frames": 121,
         "minimum_y": -6.004764489402114e-08,
         "maximum_floor_y": 2.4624148698435076e-08,
-        "maximum_extent": 1.0665127159474665,
+        "maximum_extent": 1.0676285113697745,
         "maximum_face_rigid_error": 0
       },
       {
@@ -461,22 +471,8 @@
         "frames": 121,
         "minimum_y": -6.004764489402114e-08,
         "maximum_floor_y": 2.4624148698435076e-08,
-        "maximum_extent": 1.0663186153611306,
-        "maximum_face_rigid_error": 0,
-        "right_index_grip_angles_degrees": [
-          {
-            "minimum": 65.32925713003239,
-            "maximum": 65.3292583265433
-          },
-          {
-            "minimum": 40.60723062224055,
-            "maximum": 40.607231151719255
-          },
-          {
-            "minimum": 47.35640299030395,
-            "maximum": 47.356403982064485
-          }
-        ]
+        "maximum_extent": 1.0675657641026217,
+        "maximum_face_rigid_error": 0
       },
       {
         "clip": "walk",
@@ -632,23 +628,24 @@
     "active_render_triangles": 22175,
     "face_region_triangles_including_lashes": 4604,
     "face_region_criterion": "triangle centroid: .889 < Y < .967, Z > .01, abs(X) < .05 (unit-height rest model)",
-    "new_triangles": 0
+    "new_triangles": 0,
+    "with_steel_longsword_triangles_including_hidden_surfaces": 26377
   },
   "outputs": [
     {
       "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
-      "sha256": "9a8dd187bc126601a39c1a202dad89891efd0fff2f04f533468de11f79f037e8",
+      "sha256": "2eec519a5a6f70721c4ef277c3b9dcc7126df0c364a38323439eb6fe18fedbf3",
       "bytes": 26582616
     },
     {
       "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
-      "sha256": "42b706638f090445a0608ef6d0b962403573ca820206ffc6f7e81395eb401abd",
-      "bytes": 25166518
+      "sha256": "85043768ec520b2ece616e9b7a0c5c1356c7b9dc5f9eaf90e8945d50c5151e1b",
+      "bytes": 25167352
     }
   ],
   "limitations": [
     "Production character selection and equipment slots are not connected.",
-    "No facial animation, blinking, weapon attachment or fitted female equipment.",
+    "No facial animation, blinking or fitted female armor.",
     "Unit-height authoring scale preserved; game height not chosen.",
     "Visual review covers the included clips; arbitrary extreme poses and other animation packs are not certified."
   ],
@@ -815,7 +812,6 @@
     "reference": "User-supplied photograph codex-clipboard-95ec2737-bcfd-44ea-8890-4d3496c41fc4.png: fingers wrap a cylindrical handle in parallel, with the thumb supporting the side of the grip.",
     "reason": "User rejected the adducted index and requested a grip following the middle finger and the supplied handle-holding reference.",
     "clips": [
-      "idle_armed",
       "walk",
       "run",
       "jump",
@@ -1048,17 +1044,17 @@
       "armed": "idle_armed"
     },
     "method": "Preserve the original left-hand animation. Mirror each finger joint rotation delta in hand-local coordinates onto the right-hand rest orientation, retaining the independently fitted right-hand joints and lengths.",
-    "preserved": "Original eight clips retain exactly the same tracks and timing; original idle1 renamed idle_armed. Body, wrist and left-hand tracks are identical between the two idle variants.",
-    "preview": "Equipment selector defaults to unarmed and changes idle clip while preserving playback phase and pause state. Supports equipment=armed and motion=idle_armed URLs; selector is disabled outside idle.",
+    "preserved": "Body, wrist and left-hand tracks are identical between idle variants. Accepted unarmed hand tracks are unchanged. Both idles share the slight neck/head lift; armed idle uses the reference handle grip. Seven non-idle clips are unchanged.",
+    "preview": "Equipment selector toggles the steel longsword for any motion. In idle it also switches armed/unarmed hand animation, preserving phase and pause state. Supports equipment=armed and motion=idle_armed URLs.",
     "validation": {
       "sampled_frames_per_clip": 121,
       "all_nine_clips_pass": true,
       "original_left_hand_and_body_tracks_preserved": true,
       "maximum_mirrored_rotation_error_radians": 5.960464477539063e-08,
-      "original_eight_clips_preserved_exactly": true,
       "blender_actions": 9,
       "gltf_errors": 0,
-      "inherited_gltf_warnings": 1
+      "inherited_gltf_warnings": 1,
+      "seven_non_idle_clips_preserved_exactly": true
     },
     "browser": {
       "errors": [],
@@ -1069,8 +1065,8 @@
       ],
       "equipment_switch_preserves_phase_and_pause": true,
       "running_switch_stays_running": true,
-      "non_idle_disables_equipment": true,
-      "armed_url_alias": true
+      "armed_url_alias": true,
+      "equipment_enabled_for_all_motions": true
     },
     "sources_and_licenses": "Existing source mesh and licensed local animation packs recorded above. Local animation processing only; no new generated asset or paid service.",
     "previous_outputs_status": "[\ubbf8\uc0ac\uc6a9] Eight-clip pack superseded by nine-clip pack; original armed motion preserved.",
@@ -1129,6 +1125,144 @@
       "Packed editable female-base.blend with nine actions",
       "Original source assets",
       "Reusable generation and validation tools",
+      "Consolidated source and validation record"
+    ],
+    "hf_deletions": 0
+  },
+  "preview_weapon_attachment": {
+    "date": "2026-10-12",
+    "item": "steel_longsword",
+    "source": "client/public/models/weapons/steel_longsword.glb",
+    "sha256": "e04b022be2ec0fbfa2569bcd7b110c6a631ba19a5a599cd1fef298150137de7a",
+    "bone": "RightHand",
+    "position": [
+      0.028,
+      0.064,
+      0.011
+    ],
+    "rotation_z_radians": 0.2,
+    "scale": 0.5555555555555556,
+    "scope": "Female preview only. Existing sword asset reused without changes; seated closer to the palm to match the reference-fitted armed idle.",
+    "equipment": "Selector shows or hides the sword for any motion. Only idle changes between armed and unarmed animation clips.",
+    "validation": [
+      "RightHand parent and fixed local transform across animation verified",
+      "World transform follows animated hand",
+      "Equipment switch preserves idle phase and pause",
+      "Visible triangle count follows equipped state",
+      "Browser: no errors",
+      "npm run check and npm run lint passed"
+    ],
+    "source_conditions": "Existing steel longsword source and license apply; no new generated asset or paid service.",
+    "triangles": 4202
+  },
+  "reference_grip_and_gaze": {
+    "date": "2026-10-12",
+    "references": [
+      "codex-clipboard-a8ba793e-8f44-4b40-a36a-2fe2d94daf8c.png",
+      "codex-clipboard-549a9f29-5cf8-42b8-a338-92d5263302a6.png (left-hand reference interpreted for the right hand)"
+    ],
+    "reason": "User requested a closed handle grip matching the photos, then a very slight upward head adjustment to face forward in both idle variants.",
+    "grip": {
+      "clip": "idle_armed",
+      "method": "Fit three phalanx directions per finger around the actual handle axis; mildly adduct the outer fingers, then solve the thumb opposition with a two-link reach and distal direction. Preserve bone anchors, lengths, mesh and weights.",
+      "flexion_degrees": {
+        "Index": [
+          56,
+          88,
+          37
+        ],
+        "Middle": [
+          62,
+          96,
+          49
+        ],
+        "Ring": [
+          50,
+          92,
+          53
+        ],
+        "Pinky": [
+          20,
+          78,
+          63
+        ]
+      },
+      "handle_position": [
+        0.028,
+        0.064,
+        0.011
+      ],
+      "handle_rotation_z": 0.2,
+      "thumb_distal_joint_target_hand_local": [
+        0.024,
+        0.056,
+        0.027
+      ],
+      "thumb_tip_target_hand_local": [
+        0.014,
+        0.061,
+        0.026
+      ]
+    },
+    "gaze": {
+      "clips": [
+        "idle1",
+        "idle_armed"
+      ],
+      "neck_lift_degrees": 1.5,
+      "head_lift_degrees": 6.5,
+      "existing_motion_preserved": true,
+      "refinement": "2026-10-12: User requested another slight lift; add a further 2 degrees of head lift to both idle variants, for 8 degrees total relative to the original idle (neck 1.5, head 6.5). Only the two Head rotation tracks change; all hand and other animation tracks remain identical."
+    },
+    "validation": {
+      "all_nine_clips_pass": true,
+      "sampled_frames_per_clip": 121,
+      "accepted_unarmed_hand_tracks_identical": true,
+      "seven_non_idle_clips_identical": true,
+      "only_right_fingers_neck_head_changed": true,
+      "gltf_errors": 0,
+      "inherited_gltf_warnings": 1,
+      "blender_actions": 9
+    },
+    "browser": {
+      "reference_grip_reviewed_views": [
+        "front",
+        "steep underside"
+      ],
+      "gaze_before_after_front_review": true
+    },
+    "source_and_license": "Existing licensed character and weapon sources remain applicable. User photos used only as pose references; local rig animation edits, no generated or paid asset.",
+    "previous_outputs_status": "[\ubbf8\uc0ac\uc6a9] Earlier armed idle and slightly downward idle gaze superseded.",
+    "previous_outputs": [
+      {
+        "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+        "sha256": "9a8dd187bc126601a39c1a202dad89891efd0fff2f04f533468de11f79f037e8",
+        "bytes": 26582616
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
+        "sha256": "42b706638f090445a0608ef6d0b962403573ca820206ffc6f7e81395eb401abd",
+        "bytes": 25166518
+      }
+    ],
+    "user_review": "2026-10-12: User accepted the completed armed idle pose and final gaze, and requested cleanup and commit."
+  },
+  "reference_grip_cleanup": {
+    "date": "2026-10-12",
+    "reason": "User requested removal of intermediate models, comparison and validation images, temporary scripts and reports before committing the completed armed idle. Source and validation results remain consolidated here.",
+    "removed_files": 62,
+    "removed_bytes": 126938203,
+    "temporary_roots": [
+      "/tmp/female-sword-attachment",
+      "/tmp/female-reference-grip",
+      "/tmp/female-gaze-refinement",
+      "/tmp/female-gaze-refinement-2"
+    ],
+    "preserved": [
+      "Final female-base.glb",
+      "Editable packed female-base.blend with nine actions",
+      "Original character and sword sources",
+      "Reusable build and validation scripts",
       "Consolidated source and validation record"
     ],
     "hf_deletions": 0

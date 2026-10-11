@@ -40,6 +40,20 @@ try {
       assert.deepEqual(track.values, armedTrack.values, `Idle body or left-hand motion changed: ${track.name}`)
     }
   }
+  const sourceIdle = (await load('assets/modular_human_male_01/animations/animations.glb'))
+    .animations.find(c => c.name === 'idle1')
+  for (const [name, liftDegrees] of [['Neck', -1.5], ['Head', -6.5]]) {
+    const sourceTrack = sourceIdle.tracks.find(t => t.name === `${name}.quaternion`)
+    const track = unarmedIdle.tracks.find(t => t.name === sourceTrack.name)
+    assert.deepEqual(track.times, sourceTrack.times)
+    const correction = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0),
+      THREE.MathUtils.degToRad(liftDegrees))
+    for (let i = 0; i < track.values.length; i += 4) {
+      const expected = new THREE.Quaternion().fromArray(sourceTrack.values, i).multiply(correction).normalize()
+      const actual = new THREE.Quaternion().fromArray(track.values, i).normalize()
+      assert.ok(actual.angleTo(expected) < 1e-6, `${name} idle gaze lift differs from the source motion`)
+    }
+  }
   const bones = meshes[0].skeleton.bones
   assert.equal(bones.length, 65)
   const p = new THREE.Vector3(), q = new THREE.Vector3()
@@ -151,7 +165,7 @@ try {
   const sampler = clipSampler(result.scene, { samples: 121, restore: bones })
   const poses = [], checks = []
   const minimumTimes = []
-  const gripClips = new Set(['idle_armed', 'walk', 'run', 'jump', 'combat_idle', 'slash1'])
+  const gripClips = new Set(['walk', 'run', 'jump', 'combat_idle', 'slash1'])
   const jointPosition = name => result.scene.getObjectByName(name).getWorldPosition(new THREE.Vector3())
   for (const clip of result.animations) {
     assert.ok(clip.validate())
@@ -169,6 +183,30 @@ try {
           maximumIdleMirrorError = Math.max(maximumIdleMirrorError, difference)
           assert.ok(difference < 1e-4, `${finger}${joint} does not mirror the relaxed left hand: ${difference}`)
         }
+      }
+      if (clip.name === 'idle_armed') {
+        const hand = result.scene.getObjectByName('RightHand')
+        const center = new THREE.Vector3(.028, .064, .011)
+        const axis = new THREE.Vector3(Math.cos(.2), Math.sin(.2), 0)
+        for (const finger of ['Index', 'Middle', 'Ring', 'Pinky']) {
+          const points = [1, 2, 3, 4].map(i => hand.worldToLocal(jointPosition(`RightHand${finger}${i}`)))
+          const segments = points.slice(1).map((p, i) => p.clone().sub(points[i]))
+          const pip = THREE.MathUtils.radToDeg(segments[0].angleTo(segments[1]))
+          const dip = THREE.MathUtils.radToDeg(segments[1].angleTo(segments[2]))
+          assert.ok(pip >= 70 && pip <= 105 && dip >= 30 && dip <= 75,
+            `${finger} does not close smoothly around the sword: ${pip}, ${dip}`)
+          for (let i = 0; i < 3; i++) {
+            for (let step = 0; step <= 10; step++) {
+              const radial = points[i].clone().lerp(points[i + 1], step / 10).sub(center)
+              radial.addScaledVector(axis, -radial.dot(axis))
+              assert.ok(radial.length() >= .009 && radial.length() <= .017,
+                `${finger} crosses or floats away from the handle axis: ${radial.length()}`)
+            }
+          }
+        }
+        const thumbTip = hand.worldToLocal(jointPosition('RightHandThumb4'))
+        const indexTip = hand.worldToLocal(jointPosition('RightHandIndex4'))
+        assert.ok(thumbTip.distanceTo(indexTip) < .01, 'Thumb does not close over the index finger')
       }
       if (gripAngles) {
         const directions = [
@@ -239,6 +277,8 @@ try {
     maximum_rest_error: restError, maximum_weight_sum_error: weightError,
     right_index_anchor_longitudinal_offset_from_middle: indexAnchorOffset,
     idle_variants: { original_left_hand_and_body_tracks_preserved: true, maximum_mirrored_rotation_error_radians: maximumIdleMirrorError },
+    armed_idle_handle: { all_four_fingers_wrap_handle: true, thumb_over_index: true, sampled_frames: 121 },
+    idle_gaze: { neck_lift_degrees: 1.5, head_lift_degrees: 6.5, both_idle_variants_identical: true },
     fingers: fingerChecks, clips: checks }
   writeFileSync(new URL('../' + directory + 'validation.json', import.meta.url), JSON.stringify(report, null, 2) + '\n')
   writeFileSync(new URL('../' + directory + 'animation-snapshots.json', import.meta.url), JSON.stringify(poses) + '\n')

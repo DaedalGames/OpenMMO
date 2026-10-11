@@ -36,9 +36,9 @@ export async function showFemaleBase(
       <label for="female-equipment">장착 상태</label>
       <select id="female-equipment">
         <option value="unarmed">맨손</option>
-        <option value="armed">무기 장착</option>
+        <option value="armed">강철 장검</option>
       </select>
-      <p class="details">대기 동작에서 맨손과 무기를 쥔 손을 비교할 수 있습니다.</p>
+      <p class="details">강철 장검을 장착해 손잡이와 손가락 위치를 확인할 수 있습니다.</p>
       <button id="female-pause" type="button">일시정지</button>
       <label for="female-time">동작 시점</label>
       <input id="female-time" type="range" min="0" max="1" step="0.001" value="0" />
@@ -60,9 +60,18 @@ export async function showFemaleBase(
     <p class="details">여성 체형에 맞춘 뼈대와 동작을 확인할 수 있습니다. 복장 교체는 준비 중입니다.</p>`
   )
   status.textContent = '여성 베이스를 불러오는 중…'
-  const { scene: model, animations } = await new GLTFLoader().loadAsync(
-    '/__modular-character/parts/female_base.glb'
-  )
+  const loader = new GLTFLoader()
+  const [{ scene: model, animations }, { scene: weapon }] = await Promise.all([
+    loader.loadAsync('/__modular-character/parts/female_base.glb'),
+    loader.loadAsync('/models/weapons/steel_longsword.glb'),
+  ])
+  const hand = model.getObjectByName('RightHand')
+  if (!hand) throw new Error('검을 장착할 오른손 본을 찾지 못했습니다.')
+  weapon.name = 'femaleSteelLongsword'
+  weapon.scale.setScalar(1 / 1.8)
+  weapon.position.set(0.028, 0.064, 0.011)
+  weapon.rotation.z = 0.2
+  hand.add(weapon)
   resources.push(model)
   if (disposed()) {
     model.traverse((node) => {
@@ -112,7 +121,7 @@ export async function showFemaleBase(
       state.bone.quaternion.copy(state.quaternion)
       state.bone.scale.copy(state.scale)
     }
-    equipment.disabled = motion.value !== 'idle1'
+    weapon.visible = equipment.value === 'armed'
     const clipName =
       motion.value === 'idle1' && equipment.value === 'armed'
         ? 'idle_armed'
@@ -137,6 +146,7 @@ export async function showFemaleBase(
       motion.value === 'idle1'
         ? `대기 · ${equipment.selectedOptions[0].textContent}`
         : motion.selectedOptions[0].textContent
+    updateStats()
   }
   motion.onchange = play
   equipment.onchange = () => {
@@ -195,6 +205,7 @@ export async function showFemaleBase(
     skeleton.dispose()
   })
   let triangles = 0
+  let weaponTriangles = 0
   const materials = new Set<THREE.MeshStandardMaterial>()
   model.traverse((node) => {
     if (!(node instanceof THREE.Mesh)) return
@@ -207,6 +218,17 @@ export async function showFemaleBase(
       if (material instanceof THREE.MeshStandardMaterial)
         materials.add(material)
   })
+  weapon.traverse((node) => {
+    if (node instanceof THREE.Mesh)
+      weaponTriangles +=
+        (node.geometry.index?.count ??
+          node.geometry.attributes.position.count) / 3
+  })
+  const updateStats = () => {
+    const visibleTriangles = triangles - (weapon.visible ? 0 : weaponTriangles)
+    document.getElementById('female-stats')!.textContent =
+      `${visibleTriangles.toLocaleString()}삼각형 · ${bones.length}개 본 · ${animations.length}가지 동작`
+  }
   const host = document.getElementById('viewport')!
   const renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
@@ -336,8 +358,6 @@ export async function showFemaleBase(
     controls.update()
     renderer.render(scene, camera)
   })
-  document.getElementById('female-stats')!.textContent =
-    `${triangles.toLocaleString()}삼각형 · ${bones.length}개 본 · ${animations.length}가지 동작`
   const fieldset = document.getElementById(
     'female-controls'
   ) as HTMLFieldSetElement

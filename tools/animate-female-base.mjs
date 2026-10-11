@@ -122,6 +122,76 @@ function fitRightHandGrip(root, clip) {
   root.updateMatrixWorld(true)
 }
 
+function fitIdleHandle(root, clip) {
+  const hand = root.getObjectByName('RightHand')
+  const position = name => root.getObjectByName(name).getWorldPosition(new THREE.Vector3())
+  const setDirection = (bone, direction) => {
+    const current = position(bone.children.find(b => b.isBone).name).sub(position(bone.name)).normalize()
+    const desired = new THREE.Quaternion().setFromUnitVectors(current, direction)
+      .multiply(bone.getWorldQuaternion(new THREE.Quaternion()))
+    bone.quaternion.copy(bone.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(desired))
+    bone.updateMatrixWorld(true)
+  }
+  const curls = { Index: [56, 88, 37], Middle: [62, 96, 49], Ring: [50, 92, 53], Pinky: [20, 78, 63] }
+  const states = []
+  for (const finger of ['Thumb', ...Object.keys(curls)]) {
+    for (let i = 1; i <= 3; i++) {
+      const bone = root.getObjectByName(`RightHand${finger}${i}`)
+      states.push({ bone, rest: bone.quaternion.clone() })
+    }
+  }
+  root.updateMatrixWorld(true)
+  const handRotation = hand.getWorldQuaternion(new THREE.Quaternion())
+  for (const [finger, angles] of Object.entries(curls)) {
+    let angle = 0
+    for (const [i, degrees] of angles.entries()) {
+      angle += THREE.MathUtils.degToRad(degrees)
+      const direction = new THREE.Vector3(-Math.sin(.2) * Math.cos(angle),
+        Math.cos(.2) * Math.cos(angle), Math.sin(angle))
+      if (i === 0) {
+        const spread = { Index: -.12, Middle: 0, Ring: .10, Pinky: .18 }[finger]
+        direction.addScaledVector(new THREE.Vector3(Math.cos(.2), Math.sin(.2), 0), spread).normalize()
+      }
+      direction.applyQuaternion(handRotation)
+      setDirection(root.getObjectByName(`RightHand${finger}${i + 1}`), direction)
+    }
+  }
+  const thumb = [1, 2, 3, 4].map(i => root.getObjectByName(`RightHandThumb${i}`))
+  const origin = position(thumb[0].name)
+  const end = hand.localToWorld(new THREE.Vector3(.024, .056, .027))
+  const upperLength = position(thumb[1].name).distanceTo(origin)
+  const lowerLength = position(thumb[2].name).distanceTo(position(thumb[1].name))
+  const distance = origin.distanceTo(end)
+  assert.ok(distance < upperLength + lowerLength, 'Thumb target is out of reach')
+  const forward = end.clone().sub(origin).normalize()
+  const along = (upperLength ** 2 - lowerLength ** 2 + distance ** 2) / (2 * distance)
+  const outward = new THREE.Vector3(.5, 0, 1).applyQuaternion(handRotation)
+  outward.addScaledVector(forward, -outward.dot(forward)).normalize()
+  const elbow = origin.clone().addScaledVector(forward, along)
+    .addScaledVector(outward, Math.sqrt(upperLength ** 2 - along ** 2))
+  setDirection(thumb[0], elbow.sub(origin).normalize())
+  setDirection(thumb[1], end.sub(position(thumb[1].name)).normalize())
+  const tip = hand.localToWorld(new THREE.Vector3(.014, .061, .026))
+  setDirection(thumb[2], tip.sub(position(thumb[2].name)).normalize())
+  for (const { bone, rest } of states) {
+    const track = clip.tracks.find(t => t.name === `${bone.name}.quaternion`)
+    assert.ok(track, bone.name)
+    for (let k = 0; k < track.values.length; k += 4) bone.quaternion.toArray(track.values, k)
+    bone.quaternion.copy(rest)
+  }
+  root.updateMatrixWorld(true)
+}
+
+function liftIdleGaze(clip) {
+  for (const [name, degrees] of [['Neck', -1.5], ['Head', -6.5]]) {
+    const track = clip.tracks.find(t => t.name === `${name}.quaternion`)
+    assert.ok(track, name)
+    const lift = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), THREE.MathUtils.degToRad(degrees))
+    for (let i = 0; i < track.values.length; i += 4)
+      new THREE.Quaternion().fromArray(track.values, i).multiply(lift).normalize().toArray(track.values, i)
+  }
+}
+
 const { server, load } = await headlessThree()
 try {
   const donor = (await load('assets/modular_human_male_01/fitted/base.glb')).scene
@@ -207,9 +277,11 @@ try {
     clip.tracks = clip.tracks.filter(t => t.name !== 'Hips.position')
     clip.tracks.push(new THREE.VectorKeyframeTrack('Hips.position', times, positions))
     if (clip.name === 'idle1') {
+      liftIdleGaze(clip)
       clip.name = 'idle_armed'
       resetTarget()
       baked.push(THREE.AnimationClip.toJSON(relaxedIdle(target, clip)))
+      fitIdleHandle(target, clip)
     }
     baked.push(THREE.AnimationClip.toJSON(clip))
     console.log(clip.name, frames, 'floor correction', Math.min(...corrections).toFixed(4), Math.max(...corrections).toFixed(4))
@@ -217,7 +289,7 @@ try {
     sourceMixer.uncacheRoot(donor); mixer.uncacheRoot(target)
   }
   writeFileSync(new URL('../' + output + 'clips.json', import.meta.url), JSON.stringify({
-    method: 'Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.',
+    method: 'Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; armed idle closes all four fingers around the steel longsword handle with an opposed thumb; both idle variants lift neck/head by 1.5/6.5 degrees; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.',
     sources: sources.map(path => ({ path, sha256: hash(path) })), hip_ratio: ratio, clips: baked,
   }) + '\n')
 } finally { await server.close() }
