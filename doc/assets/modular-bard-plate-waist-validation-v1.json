@@ -1,0 +1,207 @@
+{
+  "date": "2026-10-11",
+  "sources": [
+    {
+      "path": "assets/modular_human_male_01/fitted/base.glb",
+      "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_pants_v1/pants_bard.glb",
+      "sha256": "87885b4a6459f124ea38024a2092f2b4c324fae7bb3b8f878328bf1b1cccb720"
+    },
+    {
+      "path": "assets/modular_human_male_01/fitted/top_plate.glb",
+      "sha256": "c29b772b91d9c7d6b5622758edc707ea2caea4d69618e5729f126d3f88ea47ce"
+    },
+    {
+      "path": "assets/modular_human_male_01/animations/animations.glb",
+      "sha256": "fc47d9613bd1fbc9f0d61ce0cc95a5c540d16ab8430bcf34ee7ddcd9cd958ac3"
+    },
+    {
+      "path": "client/public/models/characters/modular_male/animations/social.glb",
+      "sha256": "a9efe7a2d388011cdc039ca6778c2b3a929b07953941ee7bb7c50a511d4b083d"
+    }
+  ],
+  "implementation": [
+    {
+      "path": "client/src/lib/utils/modularClothing.ts",
+      "sha256": "a666cb9ce2e5af3cbb1595d9a8e241fff43ead8cebf3e6265ba94acf063e8534"
+    },
+    {
+      "path": "client/src/lib/utils/modularCharacter.ts",
+      "sha256": "b71de2c4d9b9af0d0772574252183decd70c4b22f154e311b340d7a213f6df7c"
+    }
+  ],
+  "motion": [
+    {
+      "clip": "idle1",
+      "samples": 25,
+      "minimum_vertical_overlap_m": 0.03444763882549151,
+      "worst": {
+        "time": 8.333333015441895,
+        "x": 0.08,
+        "front": true,
+        "armor_min_y": 1.007719608580862,
+        "pants_max_y": 1.0421672474063535
+      },
+      "minimum_rear_depth_clearance_m": 0.01248243691625478,
+      "rear_compared_samples": 7963,
+      "rear_worst": {
+        "time": 6.944444179534912,
+        "pants": [
+          -0.16365944594144824,
+          1.0513260987539463,
+          -0.0484469061993435
+        ],
+        "armor_z": -0.06092934311559828
+      }
+    },
+    {
+      "clip": "walk",
+      "samples": 25,
+      "minimum_vertical_overlap_m": 0.014126495005179152,
+      "worst": {
+        "time": 0.30138887961705524,
+        "x": 0.08,
+        "front": true,
+        "armor_min_y": 1.028594880176944,
+        "pants_max_y": 1.0427213751821232
+      },
+      "minimum_rear_depth_clearance_m": 0.009386633237034647,
+      "rear_compared_samples": 8735,
+      "rear_worst": {
+        "time": 0.81805553038915,
+        "pants": [
+          -0.15823588520288465,
+          1.0333625706070162,
+          -0.06485194606520832
+        ],
+        "armor_z": -0.07423857930224297
+      }
+    },
+    {
+      "clip": "run",
+      "samples": 25,
+      "minimum_vertical_overlap_m": 0.01128303047300605,
+      "worst": {
+        "time": 0.2902777741352717,
+        "x": -0.08,
+        "front": true,
+        "armor_min_y": 1.0318960956241439,
+        "pants_max_y": 1.04317912609715
+      },
+      "minimum_rear_depth_clearance_m": 0.00979581744499454,
+      "rear_compared_samples": 8869,
+      "rear_worst": {
+        "time": 0.3166666626930237,
+        "pants": [
+          -0.16505711277325946,
+          1.0379043448692085,
+          -0.053763639494653404
+        ],
+        "armor_z": -0.06355945693964794
+      }
+    },
+    {
+      "clip": "jump",
+      "samples": 25,
+      "minimum_vertical_overlap_m": 0.006997417319502874,
+      "worst": {
+        "time": 0.8708333224058151,
+        "x": -0.08,
+        "front": true,
+        "armor_min_y": 1.0362578948868486,
+        "pants_max_y": 1.0432553122063515
+      },
+      "minimum_rear_depth_clearance_m": 0.00767282586408187,
+      "rear_compared_samples": 9475,
+      "rear_worst": {
+        "time": 1.2666666507720947,
+        "pants": [
+          0.14414782449603078,
+          1.0150347983114312,
+          -0.07570867824813522
+        ],
+        "armor_z": -0.08338150411221709
+      }
+    },
+    {
+      "clip": "combat_idle",
+      "samples": 25,
+      "minimum_vertical_overlap_m": 0.011589845695754164,
+      "worst": {
+        "time": 2.566666603088379,
+        "x": 0.08,
+        "front": true,
+        "armor_min_y": 1.031250635384817,
+        "pants_max_y": 1.0428404810805711
+      },
+      "minimum_rear_depth_clearance_m": 0.015586779769934014,
+      "rear_compared_samples": 9150,
+      "rear_worst": {
+        "time": 1.1763888597488403,
+        "pants": [
+          0.12483205646276471,
+          1.0142829456121687,
+          -0.08549170033154682
+        ],
+        "armor_z": -0.10107848010148084
+      }
+    },
+    {
+      "clip": "slash1",
+      "samples": 25,
+      "minimum_vertical_overlap_m": 0.010860105827252164,
+      "worst": {
+        "time": 0.4472222129503886,
+        "x": 0.08,
+        "front": true,
+        "armor_min_y": 1.0319791302459655,
+        "pants_max_y": 1.0428392360732177
+      },
+      "minimum_rear_depth_clearance_m": 0.004018801441297751,
+      "rear_compared_samples": 9236,
+      "rear_worst": {
+        "time": 0.9583333134651184,
+        "pants": [
+          0.14414782449603086,
+          1.0150347983114312,
+          -0.0757086782481351
+        ],
+        "armor_z": -0.07972747968943285
+      }
+    },
+    {
+      "clip": "sit_idle",
+      "samples": 25,
+      "minimum_vertical_overlap_m": 0.049572037410627434,
+      "worst": {
+        "time": 3.4305556813875833,
+        "x": 0,
+        "front": true,
+        "armor_min_y": 1.0248569211372291,
+        "pants_max_y": 1.0744289585478566
+      },
+      "minimum_rear_depth_clearance_m": 0.008682684090491152,
+      "rear_compared_samples": 10782,
+      "rear_worst": {
+        "time": 1.4444444974263508,
+        "pants": [
+          0.1441478244960308,
+          1.0150347983114312,
+          -0.07570867824813521
+        ],
+        "armor_z": -0.08439136233862636
+      }
+    }
+  ],
+  "poses": 175,
+  "front_back_sections": 1750,
+  "minimum_vertical_overlap_m": 0.006997417319502874,
+  "minimum_rear_depth_clearance_m": 0.004018801441297751,
+  "original_triangles": 3017,
+  "fitted_triangles": 2413,
+  "normalized_weights": true,
+  "cached_variant_and_source_restoration": true,
+  "scope": "Hips-frame vertical overlap in five front/back sections plus rear depth against the outer armor surface at pants vertices, face centers and edge midpoints. Sampled poses and surfaces; not an exhaustive triangle collision certificate."
+}

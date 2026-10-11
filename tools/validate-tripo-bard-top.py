@@ -10,25 +10,8 @@ spec = importlib.util.spec_from_file_location('bard', ROOT / 'tools/fit-tripo-ba
 bard = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(bard)
 fit, io = bard.fit, bard.io
-
-
-from outfits.radial_sections import radii
-
-
-def section(garment, body, center, axis, limit=.35):
-    outer = radii(garment, center, axis, limit)
-    inner = radii(body, center, axis, limit)
-    common = np.isfinite(outer) & np.isfinite(inner)
-    gap = outer[common] - inner[common]
-    return dict(common_rays=int(common.sum()), missing_garment_rays=int((~np.isfinite(outer)).sum()),
-                missing_body_rays=int((~np.isfinite(inner)).sum()),
-                minimum_clearance_m=float(gap.min()) if len(gap) else None,
-                negative_rays=int((gap < 0).sum()))
-
-
-def deform(points, weights, matrices):
-    blended = np.einsum('vb,bij->vij', weights, matrices)
-    return np.einsum('vij,vj->vi', blended, np.column_stack([points, np.ones(len(points))]))[:, :3]
+from outfits.radial_sections import clearance
+from outfits.skinning import deform, deform_dense
 
 
 def main():
@@ -67,21 +50,19 @@ def main():
             axis = np.array(entry['normal'])
             axis /= np.linalg.norm(axis)
             center = np.array(entry['center']) + axis * offset
-            result = section(points[faces], body_points[body_faces], center, axis,
-                             .12 if entry['name'].startswith('glove') else .35)
+            result = clearance(points[faces], body_points[body_faces], center, axis,
+                               .12 if entry['name'].startswith('glove') else .35)
             sections.append(dict(interface=entry['name'], offset_m=offset, **result))
     animation = json.loads((ROOT / 'doc/assets/modular-bard-tripo-top-animation-v1.json').read_text())
     for entry in animation['sources']:
         assert fit.digest(ROOT / entry['path']) == entry['sha256']
     poses = json.loads((bard.OUTPUT / 'validation-poses.json').read_text())
-    skin = np.zeros((len(points), len(fit.NAMES)))
-    np.add.at(skin, (np.arange(len(points))[:, None], joints), weights)
     arms, arm_faces, arm_weights = fit.body_surface(('forearms', 'hands'))
     motion = []
     for pose in poses:
         matrices = np.asarray(pose['matrices']).reshape(-1, 4, 4).transpose(0, 2, 1)
-        cloth = deform(points, skin, matrices)
-        body = deform(arms, arm_weights, matrices)
+        cloth = deform(points, joints, weights, matrices)
+        body = deform_dense(arms, arm_weights, matrices)
         samples = []
         for entry in interfaces['interfaces']:
             if not entry['name'].startswith('glove_short_'):
@@ -95,7 +76,7 @@ def main():
             axis /= np.linalg.norm(axis)
             center = (matrix @ np.r_[entry['center'], 1])[:3]
             for offset in [0, .015, .030]:
-                result = section(cloth[faces[sleeve_faces]], body[arm_faces[same_arm]], center + axis * offset, axis, .12)
+                result = clearance(cloth[faces[sleeve_faces]], body[arm_faces[same_arm]], center + axis * offset, axis, .12)
                 samples.append(dict(side=side, offset_m=offset, **result))
         motion.append(dict(clip=pose['clip'], time=pose['time'], sections=samples))
     wrist_sections = [section for pose in motion for section in pose['sections']]

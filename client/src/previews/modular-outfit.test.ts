@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
 import {
+  BARD_MODULAR_OUTFIT,
   CAVEMAN_MODULAR_OUTFIT,
   KNIGHT_MODULAR_OUTFIT,
   PRIEST_MODULAR_OUTFIT,
@@ -49,6 +50,74 @@ const undressed: ModularOutfit = {
 }
 
 describe('bard top preview', () => {
+  it('cuts the bard waist under loaded plate armor and restores it when the top changes', () => {
+    const { body, parts } = fixture()
+    const source = new THREE.CylinderGeometry(0.19, 0.22, 0.9, 32, 24, true)
+    source.translate(0, 0.72, -0.035)
+    const pants = new THREE.SkinnedMesh(source)
+    parts.set('pants_bard', [pants])
+    parts.set('top_plate', [new THREE.SkinnedMesh()])
+    const outfit: ModularOutfit = { ...undressed, top: 'plate', pants: 'bard' }
+    showModularOutfit(body, parts, outfit)
+    const trimmed = pants.geometry
+    expect(trimmed).not.toBe(source)
+    trimmed.computeBoundingBox()
+    expect(trimmed.boundingBox!.max.y).toBeCloseTo(1.06)
+    expect(trimmed.boundingBox!.min.y).toBeCloseTo(0.27)
+    const positions = trimmed.attributes.position
+    for (let i = 0; i < positions.count; i++) {
+      if (positions.getY(i) > 1.02 && Math.abs(positions.getX(i)) < 0.05)
+        expect(
+          Math.hypot(
+            positions.getX(i) / 0.16,
+            (positions.getZ(i) + 0.035) / 0.1
+          )
+        ).toBeLessThanOrEqual(1.000001)
+    }
+    for (const side of [-1, 1]) {
+      const center = Array.from(
+        { length: positions.count },
+        (_, i) => i
+      ).filter(
+        (i) =>
+          Math.abs(positions.getX(i)) < 0.001 && positions.getZ(i) * side > 0.06
+      )
+      expect(Math.max(...center.map((i) => positions.getY(i)))).toBeCloseTo(
+        1.03
+      )
+    }
+    for (const top of ['none', 'bard', 'linen'] as const) {
+      showModularOutfit(body, parts, { ...outfit, top })
+      expect(pants.geometry).toBe(source)
+    }
+    showModularOutfit(body, parts, outfit)
+    expect(pants.geometry).toBe(trimmed)
+    parts.delete('top_plate')
+    showModularOutfit(body, parts, outfit)
+    expect(pants.geometry).toBe(source)
+  })
+
+  it('shows bard pants, restores skin on removal and handles an unavailable part', () => {
+    const { body, parts, visible } = fixture()
+    const pants = new THREE.SkinnedMesh()
+    parts.set('pants_bard', [pants])
+    const selected = showModularOutfit(body, parts, BARD_MODULAR_OUTFIT)
+    expect(selected.has('pants_bard')).toBe(true)
+    expect(selected.has('pants_cloth')).toBe(false)
+    expect(pants.visible).toBe(true)
+    for (const region of ['legs', 'ankles', 'boot_ankles'])
+      expect(visible(region)).toBe(false)
+    expect(visible('feet')).toBe(true)
+    showModularOutfit(body, parts, undressed)
+    expect(pants.visible).toBe(false)
+    expect(visible('legs')).toBe(true)
+    parts.delete('pants_bard')
+    expect(
+      showModularOutfit(body, parts, BARD_MODULAR_OUTFIT).has('pants_bard')
+    ).toBe(false)
+    expect(visible('legs')).toBe(true)
+  })
+
   it('keeps the underwear seam continuous and restores the rear hem when pants change', () => {
     const { body, parts } = fixture()
     const torso = body.find((mesh) => mesh.userData.region === 'torso')!
@@ -103,6 +172,7 @@ describe('bard top preview', () => {
       caveman: { x: 0.13, z: 0.085, extra: 0.019 },
       ranger: { x: 0.075, z: 0.065, extra: 0.039 },
       priest: { x: 0.075, z: 0.065, extra: 0.039 },
+      bard: { x: 0.035, z: 0.095, extra: 0.069 },
     } as const
     const tolerance = 1e-6
     for (const [pants, limits] of Object.entries(expandedHems) as [
@@ -144,7 +214,10 @@ describe('bard top preview', () => {
       parts.delete(`pants_${pants}`)
       const selected = showModularOutfit(body, parts, { ...outfit, pants })
       const fallbackToUnderwear =
-        pants === 'caveman' || pants === 'ranger' || pants === 'priest'
+        pants === 'caveman' ||
+        pants === 'ranger' ||
+        pants === 'priest' ||
+        pants === 'bard'
       expect(top.geometry).toBe(fallbackToUnderwear ? adjusted : source)
       if (fallbackToUnderwear)
         expect(selected.has(`pants_${pants}`)).toBe(false)

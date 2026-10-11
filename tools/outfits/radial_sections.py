@@ -8,6 +8,21 @@ def section_basis(axis):
     return basis, np.cross(axis, basis)
 
 
+def clearance(garment, body, center, axis, limit=.35, samples=64, angles=None):
+    outer = radii(garment, center, axis, limit, samples)
+    inner = radii(body, center, axis, limit, samples)
+    if angles:
+        theta = np.arange(samples) * 2 * np.pi / samples
+        selected = (theta > angles[0]) & (theta < angles[1])
+        outer, inner = outer[selected], inner[selected]
+    common = np.isfinite(outer) & np.isfinite(inner)
+    gap = outer[common] - inner[common]
+    return dict(common_rays=int(common.sum()), missing_garment_rays=int((~np.isfinite(outer)).sum()),
+        missing_body_rays=int((~np.isfinite(inner)).sum()),
+        minimum_clearance_m=float(gap.min()) if len(gap) else None,
+        negative_rays=int((gap < 0).sum()))
+
+
 def radii(triangles, center, axis, limit=.35, samples=64, return_faces=False):
     distances = (triangles - center) @ axis
     selected = np.flatnonzero((distances.min(1) <= 1e-8) & (distances.max(1) >= -1e-8))

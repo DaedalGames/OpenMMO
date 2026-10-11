@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-11",
+  "sources": [
+    {
+      "path": "assets/modular_human_male_01/fitted/base.glb",
+      "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_top_v1/top_bard.glb",
+      "sha256": "91c1c1d3b94ca6ba9184ba3c9a74d8131c2a452f024f61a58f0f38db0c8e5d76"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_pants_v1/pants_bard.glb",
+      "sha256": "87885b4a6459f124ea38024a2092f2b4c324fae7bb3b8f878328bf1b1cccb720"
+    },
+    {
+      "path": "assets/modular_human_male_01/animations/animations.glb",
+      "sha256": "fc47d9613bd1fbc9f0d61ce0cc95a5c540d16ab8430bcf34ee7ddcd9cd958ac3"
+    },
+    {
+      "path": "client/public/models/characters/modular_male/animations/social.glb",
+      "sha256": "a9efe7a2d388011cdc039ca6778c2b3a929b07953941ee7bb7c50a511d4b083d"
+    }
+  ],
+  "implementation": [
+    {
+      "path": "client/src/lib/utils/modularCharacter.ts",
+      "sha256": "b71de2c4d9b9af0d0772574252183decd70c4b22f154e311b340d7a213f6df7c"
+    },
+    {
+      "path": "client/src/lib/utils/modularClothing.ts",
+      "sha256": "a666cb9ce2e5af3cbb1595d9a8e241fff43ead8cebf3e6265ba94acf063e8534"
+    }
+  ],
+  "motion": [
+    {
+      "clip": "idle1",
+      "samples": 25,
+      "compared": 7762,
+      "minimum_clearance_m": 0.031249319686499022,
+      "worst": {
+        "time": 4.166666507720947,
+        "x": -0.02999999999999997,
+        "y": 1.11,
+        "coat_z": -0.14399382471260158,
+        "pants_z": -0.11274450502610256
+      }
+    },
+    {
+      "clip": "walk",
+      "samples": 25,
+      "compared": 8567,
+      "minimum_clearance_m": 0.029529727904191727,
+      "worst": {
+        "time": 0.30138887961705524,
+        "x": 0.09000000000000002,
+        "y": 1.05,
+        "coat_z": -0.16053618366098843,
+        "pants_z": -0.1310064557567967
+      }
+    },
+    {
+      "clip": "run",
+      "samples": 25,
+      "compared": 7586,
+      "minimum_clearance_m": 0.020188712482740567,
+      "worst": {
+        "time": 0.07916666567325592,
+        "x": 0.10000000000000002,
+        "y": 1.02,
+        "coat_z": -0.15834938269388088,
+        "pants_z": -0.1381606702111403
+      }
+    },
+    {
+      "clip": "jump",
+      "samples": 25,
+      "compared": 8682,
+      "minimum_clearance_m": 0.005145764128858699,
+      "worst": {
+        "time": 0.3166666626930237,
+        "x": 0.11000000000000001,
+        "y": 1.02,
+        "coat_z": -0.12372553253140228,
+        "pants_z": -0.11857976840254358
+      }
+    },
+    {
+      "clip": "combat_idle",
+      "samples": 25,
+      "compared": 11140,
+      "minimum_clearance_m": 0.022366527903777245,
+      "worst": {
+        "time": 2.2458332777023315,
+        "x": 0.08000000000000003,
+        "y": 1.07,
+        "coat_z": -0.14288655633766878,
+        "pants_z": -0.12052002843389154
+      }
+    },
+    {
+      "clip": "slash1",
+      "samples": 25,
+      "compared": 9814,
+      "minimum_clearance_m": 0.003089874451040253,
+      "worst": {
+        "time": 0.8944444259007772,
+        "x": 0.09000000000000002,
+        "y": 1,
+        "coat_z": -0.12466692154865533,
+        "pants_z": -0.12157704709761508
+      }
+    },
+    {
+      "clip": "sit_idle",
+      "samples": 25,
+      "compared": 7546,
+      "minimum_clearance_m": 0.010460256762260922,
+      "worst": {
+        "time": 1.2638889352480571,
+        "x": 0.10000000000000002,
+        "y": 1.03,
+        "coat_z": -0.1314492449497573,
+        "pants_z": -0.12098898818749637
+      }
+    }
+  ],
+  "minimum_clearance_m": 0.003089874451040253,
+  "scope": "Rear overlap on a 10mm Hips-frame XY grid, seven clips at 25 times; only rays intersecting both garments. Includes belt surfaces. Open tails are excluded where no top surface exists; not an exhaustive collision certificate.",
+  "pants_geometry_unchanged": true,
+  "cached_variant_and_restoration": true
+}

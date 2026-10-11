@@ -44,8 +44,10 @@ type Cut =
   | 'bard_barbarian_hem'
   | 'bard_caveman_hem'
   | 'bard_fitted_pants_hem'
+  | 'bard_matching_pants_hem'
   | 'tripo_covered_waist'
   | 'ranger_plate_waist'
+  | 'bard_plate_waist'
   | 'priest_plate_waist'
   | 'priest_fur'
   | 'rogue_pockets'
@@ -117,12 +119,17 @@ const cuts: Record<Cut, Distance | Distance[] | Reshape> = {
   bard_barbarian_hem: { reshape: bardHem(0.045, 0.09, true) },
   bard_caveman_hem: { reshape: bardHem(0.085, 0.13, true) },
   bard_fitted_pants_hem: { reshape: bardHem(0.065, 0.075, true) },
+  bard_matching_pants_hem: { reshape: bardHem(0.095, 0.035, true) },
   tripo_covered_waist: (point) => point.y - 1.105,
   ranger_plate_waist: (point) => {
     const rear = 1 - THREE.MathUtils.smoothstep(point.z, -0.06, -0.02)
-    const drop = Math.max(0, 0.09 - Math.abs(point.x) * 0.5)
-    return 1.06 - rear * drop - point.y
+    return 1.06 - rear * plateWaistDrop(point.x) - point.y
   },
+  bard_plate_waist: (point) =>
+    1.06 -
+    plateWaistDrop(point.x) +
+    0.06 * (1 - THREE.MathUtils.smoothstep(Math.abs(point.x), 0.03, 0.15)) -
+    point.y,
   priest_plate_waist: { reshape: tuckWaist(-0.035, 0.23, [0.17, 0.1], false) },
   priest_fur: { reshape: tuckWaist(-0.015, 0.22, [0.145, 0.145], true) },
   rogue_pockets: { reshape: removeRoguePockets },
@@ -130,6 +137,10 @@ const cuts: Record<Cut, Distance | Distance[] | Reshape> = {
   linen_untucked: { reshape: untuckLinen },
   linen_waist: (point) => point.y - 1.09,
   underwear_seat: { reshape: reshapeUnderwearSeat },
+}
+
+function plateWaistDrop(x: number) {
+  return Math.max(0, 0.09 - Math.abs(x) * 0.5)
 }
 
 function bardHem(rearClearance: number, sideClearance = 0, overPants = false) {
@@ -165,6 +176,67 @@ function bardHem(rearClearance: number, sideClearance = 0, overPants = false) {
         positions.getZ(i) === original.getZ(i)
     )
   }
+}
+
+function tuckBardWaist(
+  source: THREE.BufferGeometry,
+  skeleton?: THREE.Skeleton
+) {
+  const geometry = source.clone()
+  const positions = geometry.getAttribute('position')
+  const original = source.getAttribute('position')
+  const joints = geometry.getAttribute('skinIndex')
+  const weights = geometry.getAttribute('skinWeight')
+  const hips = skeleton?.bones.findIndex((bone) => bone.name === 'Hips') ?? -1
+  for (let i = 0; i < positions.count; i++) {
+    const x = original.getX(i),
+      y = original.getY(i),
+      z = original.getZ(i)
+    const hem = 1.06 - plateWaistDrop(x)
+    const amount = THREE.MathUtils.smoothstep(y, hem, hem + 0.025)
+    const radius = Math.hypot(x / 0.16, (z + 0.035) / 0.1)
+    if (amount && radius > 1) {
+      const scale = THREE.MathUtils.lerp(1, 1 / radius, amount)
+      positions.setXYZ(i, x * scale, y, (z + 0.035) * scale - 0.035)
+    }
+    if (z < -0.035) {
+      const rear = THREE.MathUtils.smoothstep(y, 0.84, 0.96)
+      const depth = -0.035 + (z + 0.035) * (1 - 0.55 * rear)
+      positions.setZ(i, Math.max(positions.getZ(i), depth))
+      const follow = THREE.MathUtils.smoothstep(y, 0.9, 1.01)
+      if (hips >= 0 && follow && joints && weights) {
+        const influences = new Map<number, number>([[hips, follow]])
+        for (let slot = 0; slot < 4; slot++) {
+          const joint = joints.getComponent(i, slot)
+          influences.set(
+            joint,
+            (influences.get(joint) ?? 0) +
+              weights.getComponent(i, slot) * (1 - follow)
+          )
+        }
+        topInfluences(influences).forEach(([joint, weight], slot) => {
+          joints.setComponent(i, slot, joint)
+          weights.setComponent(i, slot, weight)
+        })
+      }
+    }
+  }
+  return finishReshape(
+    source,
+    geometry,
+    (i) =>
+      positions.getX(i) === original.getX(i) &&
+      positions.getZ(i) === original.getZ(i)
+  )
+}
+
+function topInfluences(influences: Map<number, number>) {
+  const sorted = [...influences].sort((a, b) => b[1] - a[1]).slice(0, 4)
+  const total = sorted.reduce((sum, [, weight]) => sum + weight, 0)
+  return Array.from({ length: 4 }, (_, i) => [
+    sorted[i]?.[0] ?? 0,
+    total ? (sorted[i]?.[1] ?? 0) / total : 0,
+  ])
 }
 
 function finishReshape(
@@ -315,11 +387,9 @@ export function clipSkinnedGeometry(
             source.attributes.skinWeight.getComponent(index, i) * factor
           weights.set(joint, (weights.get(joint) ?? 0) + weight)
         }
-      const blended = [...weights].sort((a, b) => b[1] - a[1]).slice(0, 4)
-      const total = blended.reduce((sum, [, weight]) => sum + weight, 0)
-      for (let i = 0; i < 4; i++) {
-        values.skinIndex.push(blended[i]?.[0] ?? 0)
-        values.skinWeight.push(total ? (blended[i]?.[1] ?? 0) / total : 0)
+      for (const [joint, weight] of topInfluences(weights)) {
+        values.skinIndex.push(joint)
+        values.skinWeight.push(weight)
       }
     }
     edges.set(key, next)
@@ -418,7 +488,7 @@ export function trimModularClothing(
   const key = `${applied.join('+')}:${skin}`
   let geometry = cached.cuts.get(key)
   if (!geometry) {
-    geometry = applyCuts(cached.source, applied, skin)
+    geometry = applyCuts(cached.source, applied, skin, mesh.skeleton)
     cached.cuts.set(key, geometry)
     variants.set(geometry, cached)
   }
@@ -437,11 +507,7 @@ function drapePriestLappetsOverHair(source: THREE.BufferGeometry) {
         z - 0.045 * THREE.MathUtils.smoothstep(1.815 - y, 0, 0.065)
       )
   }
-  geometry.deleteAttribute('tangent')
-  geometry.computeVertexNormals()
-  geometry.boundingBox = null
-  geometry.boundingSphere = null
-  return geometry
+  return finishReshape(source, geometry, () => false)
 }
 
 function tuckHairUnderPriestHat(geometry: THREE.BufferGeometry) {
@@ -519,9 +585,7 @@ function tuckWaist(
       )
       if (radius > 1) positions.setXYZ(i, x / radius, y, z / radius + centerZ)
     }
-    geometry.deleteAttribute('tangent')
-    geometry.computeVertexNormals()
-    return geometry
+    return finishReshape(source, geometry, () => false)
   }
 }
 
@@ -541,7 +605,8 @@ function removeRoguePockets(source: THREE.BufferGeometry) {
 function applyCuts(
   source: THREE.BufferGeometry,
   applied: Cut[],
-  skin: boolean
+  skin: boolean,
+  skeleton?: THREE.Skeleton
 ): THREE.BufferGeometry {
   let geometry = source
   const replace = (next: THREE.BufferGeometry) => {
@@ -563,6 +628,7 @@ function applyCuts(
           )
         )
     if (name === 'priest_hat_hair') tuckHairUnderPriestHat(geometry)
+    if (name === 'bard_plate_waist') replace(tuckBardWaist(geometry, skeleton))
     if (name === 'ranger_pants_boots') tuckPantsIntoRangerBoots(geometry)
     if (name === 'caveman_pants_boots') tuckPantsIntoCavemanBoots(geometry)
     if (name === 'priest_pants_boots') tuckPantsIntoPriestBoots(geometry)

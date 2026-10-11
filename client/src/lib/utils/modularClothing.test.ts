@@ -90,6 +90,77 @@ it('rebuilds render bindings when a clothing variant removes or restores tangent
 })
 
 describe('modular clothing cuts', () => {
+  it('tucks the bard rear waist without reversing belt layers or moving lower and front cloth', () => {
+    const values = [-0.16, -0.175].flatMap((z) => [
+      -0.08,
+      0.92,
+      z,
+      0.08,
+      0.92,
+      z,
+      0,
+      0.95,
+      z,
+    ])
+    values.push(-0.08, 0.75, -0.16, 0.08, 0.75, -0.16, 0, 0.8, -0.16)
+    values.push(-0.08, 0.92, 0.1, 0.08, 0.92, 0.1, 0, 0.95, 0.1)
+    const source = new THREE.BufferGeometry()
+    source.setAttribute('position', new THREE.Float32BufferAttribute(values, 3))
+    source.setAttribute(
+      'skinIndex',
+      new THREE.Uint16BufferAttribute(
+        Array.from({ length: 12 }, () => [1, 2, 0, 0]).flat(),
+        4
+      )
+    )
+    source.setAttribute(
+      'skinWeight',
+      new THREE.Float32BufferAttribute(
+        Array.from({ length: 12 }, () => [0.7, 0.3, 0, 0]).flat(),
+        4
+      )
+    )
+    source.setIndex(Array.from({ length: 12 }, (_, i) => i))
+    const mesh = new THREE.SkinnedMesh(source)
+    mesh.skeleton = new THREE.Skeleton(
+      ['Root', 'LeftUpLeg', 'Hips'].map((name) => {
+        const bone = new THREE.Bone()
+        bone.name = name
+        return bone
+      })
+    )
+    trimModularClothing(mesh, 'bard_plate_waist')
+    const positions = mesh.geometry.attributes.position
+    const joints = mesh.geometry.attributes.skinIndex
+    const weights = mesh.geometry.attributes.skinWeight
+    for (let i = 0; i < 12; i++) {
+      let hip = 0,
+        total = 0
+      for (let slot = 0; slot < 4; slot++) {
+        const weight = weights.getComponent(i, slot)
+        total += weight
+        if (joints.getComponent(i, slot) === 2) hip += weight
+      }
+      expect(total).toBeCloseTo(1, 6)
+      if (i < 6) expect(hip).toBeGreaterThan(0.3)
+      else expect(hip).toBeCloseTo(0.3, 6)
+      expect(source.attributes.skinWeight.getX(i)).toBeCloseTo(0.7, 6)
+    }
+    for (let i = 0; i < 3; i++) {
+      expect(positions.getZ(i)).toBeGreaterThan(
+        source.attributes.position.getZ(i) + 0.03
+      )
+      expect(positions.getZ(i) - positions.getZ(i + 3)).toBeGreaterThan(0.004)
+    }
+    for (let i = 6; i < 12; i++)
+      for (let axis = 0; axis < 3; axis++)
+        expect(positions.getComponent(i, axis)).toBe(
+          source.attributes.position.getComponent(i, axis)
+        )
+    trimModularClothing(mesh)
+    expect(mesh.geometry).toBe(source)
+  })
+
   it.each([1, -1])(
     'fits the priest hem to the caveman boot rim on side %s',
     (side) => {

@@ -32,8 +32,6 @@ def clip_plane(points, uv, faces, normal):
 def add_mesh(doc, binary, name, points, uv, faces, material):
     used, remapped = np.unique(faces, return_inverse=True)
     points, uv, faces = points[used], uv[used], remapped.reshape(-1, 3)
-    if name.startswith('caveman_pelt_'):
-        points = drape_back(points)
     joints = np.zeros((len(points), 4), dtype=np.uint16)
     joints[:, 0] = fit.NAMES.index('Hips')
     weights = np.zeros((len(points), 4))
@@ -168,11 +166,11 @@ def main():
     loose = barbarian.clip_height(positions, uv, cloth_faces, 1.112, False)
     belt_triangles = positions[cloth_faces]
     physics_by_name = {}
-    for name, outward, pivot in [
-        ('front', [0, 0, 1], [0, 1.106, .107]),
-        ('back', [0, 0, -1], [0, 1.106, -.137]),
-        ('left', [1, 0, 0], [.160, 1.106, -.020]),
-        ('right', [-1, 0, 0], [-.160, 1.106, -.020]),
+    for name, outward, pivot, depth in [
+        ('front', [0, 0, 1], [0, 1.106, .107], .14),
+        ('back', [0, 0, -1], [0, 1.106, -.137], .130),
+        ('left', [1, 0, 0], [.160, 1.106, -.020], .14),
+        ('right', [-1, 0, 0], [-.160, 1.106, -.020], .14),
     ]:
         x, _, z = outward
         panel = clip_plane(*loose, [x + z, 0, z - x])
@@ -180,15 +178,13 @@ def main():
         region = 'caveman_pelt_' + name
         physics = barbarian.panel_physics('plate', 'Hips', pivot, outward,
             float(pivot[1] - panel[0][:, 1].min()))
-        physics['colliders'][0].update(center=[0, .98, -.010], radii=[.192, .15, .14])
-        if name == 'back':
-            physics['colliders'][0]['radii'][2] = .130
+        physics['colliders'][0].update(center=[0, .98, -.010], radii=[.192, .15, depth])
         if name in ('left', 'right'):
             sign = 1 if name == 'left' else -1
             p, t, f, physics = cloth_side(panel, belt_triangles, body_triangles, sign)
             barbarian.add_panel(doc, binary, region, p, t, f, fur_material)
         else:
-            add_mesh(doc, binary, region, *panel, material)
+            add_mesh(doc, binary, region, drape_back(panel[0]), *panel[1:], material)
         physics_by_name[region] = physics
     fit.with_rig(doc, binary, 'pants_caveman', 'tripo_caveman_pants_v2')
     for node in doc['nodes']:

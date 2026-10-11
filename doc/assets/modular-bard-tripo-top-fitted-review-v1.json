@@ -13,19 +13,27 @@
   "images": [
     {
       "path": "assets/modular_human_male_01/bard/tripo_top_v1/review/rest.png",
-      "sha256": "a9efc19a2a66924e0a2b610eb35e0139b47617598935e3fdc92976e93d62db04"
+      "sha256": "a9efc19a2a66924e0a2b610eb35e0139b47617598935e3fdc92976e93d62db04",
+      "retained": false,
+      "removed_date": "2026-10-11"
     },
     {
       "path": "assets/modular_human_male_01/bard/tripo_top_v1/review/openings.png",
-      "sha256": "bf82445bee3b0ed015164980d31a2339dde13859782dad2f574bc32ff2c59002"
+      "sha256": "bf82445bee3b0ed015164980d31a2339dde13859782dad2f574bc32ff2c59002",
+      "retained": false,
+      "removed_date": "2026-10-11"
     },
     {
       "path": "assets/modular_human_male_01/bard/tripo_top_v1/review/motion.png",
-      "sha256": "80683a4d735231a2d81d79a2095c92667e9784167c486295a7a112594681455c"
+      "sha256": "80683a4d735231a2d81d79a2095c92667e9784167c486295a7a112594681455c",
+      "retained": false,
+      "removed_date": "2026-10-11"
     },
     {
       "path": "assets/modular_human_male_01/bard/tripo_top_v1/review/motion-back.png",
-      "sha256": "c708c4b1c3847e67e03d9599a9590c5b10920c72ad971e7cebd927a3e34f4d50"
+      "sha256": "c708c4b1c3847e67e03d9599a9590c5b10920c72ad971e7cebd927a3e34f4d50",
+      "retained": false,
+      "removed_date": "2026-10-11"
     }
   ],
   "source": {

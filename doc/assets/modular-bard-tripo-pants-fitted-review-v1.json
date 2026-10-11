@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-11",
+  "blender_version": "5.2.0 LTS",
+  "model": {
+    "path": "assets/modular_human_male_01/bard/tripo_pants_v1/pants_bard.glb",
+    "sha256": "87885b4a6459f124ea38024a2092f2b4c324fae7bb3b8f878328bf1b1cccb720"
+  },
+  "editable": {
+    "path": "assets/items/bard_starter/tripo_pants_v1/bard-pants-fitting.blend",
+    "sha256": "efd7befe4a884c2be82319901cfe3cc26e4db6971b721f59a826ad1c9227510b"
+  },
+  "source": {
+    "path": "assets/items/bard_starter/tripo_pants_v1/source.glb",
+    "sha256": "ad7fbb83f55dfdd32c3e14272983b26dea422e0a46ecf1b4a7b2644d2c094c82"
+  },
+  "context": [
+    "canonical body and rig",
+    "bard top",
+    "crop hair",
+    "bare feet"
+  ],
+  "images_retained_in_asset_tree": false,
+  "unmasked_rest_views": true,
+  "review_scene_hidden_regions": [
+    "upper_arms",
+    "torso",
+    "legs",
+    "ankles",
+    "boot_ankles"
+  ],
+  "timeline": "Rest and sampled game poses, constant interpolation",
+  "triangles": {
+    "source_parts": {
+      "body": 13891,
+      "pants": 3017,
+      "top": 5201,
+      "hair": 934
+    },
+    "including_hidden": 23043,
+    "visible_review_scene": 16195,
+    "scope": "Base, crop hair, bard top and pants; no boots, gloves or weapon. Review-scene masking only."
+  },
+  "status": "Fitting review scene; runtime clothing masks and mixed-equipment support are separate"
+}

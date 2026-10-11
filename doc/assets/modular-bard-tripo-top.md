@@ -7,11 +7,7 @@
 - [피팅 명세](modular-bard-tripo-top-fitting-v1.json)
 - [런타임 바인드·7종 동작 검증](modular-bard-tripo-top-animation-v1.json)
 - [목·허리·손목 단면과 동작 중 손목 여유](modular-bard-tripo-top-validation-v1.json)
-- [편집본·검수 이미지 해시와 가림 범위](modular-bard-tripo-top-fitted-review-v1.json)
-
-![기준 자세의 앞·옆·뒤](../../assets/modular_human_male_01/bard/tripo_top_v1/review/rest.png)
-
-![목깃·양쪽 커프 확대](../../assets/modular_human_male_01/bard/tripo_top_v1/review/openings.png)
+- [편집본·과거 검수 이미지 해시와 가림 범위](modular-bard-tripo-top-fitted-review-v1.json)
 
 ## 피팅과 리깅
 
@@ -31,10 +27,6 @@ Blender 파일에는 공통 리그, 피팅 상의, 기존 크롭 헤어·천 바
 - 기준 자세 목·허리·손목 단면에서 음수 여유는 없다. 목깃의 열린 부분은 닫힌 단면으로 강제하지 않았다. 허리 단면의 피부 여유는 최소 약 5.4mm다.
 - 공격 자세의 손목 간섭은 해당 자세의 스키닝 변환을 역으로 적용해 국소 보정했다. 이 보정에 사용한 포즈·몸체·애니메이션 해시를 기록했다.
 
-![동작 표본](../../assets/modular_human_male_01/bard/tripo_top_v1/review/motion.png)
-
-![후면 동작 표본](../../assets/modular_human_male_01/bard/tripo_top_v1/review/motion-back.png)
-
 기준 자세와 커프 확대는 몸통·팔·목 피부를 남겨 검사한다. 동작 그림과 Blender 검수 장면에는 상의가 덮는 몸통·상완의 피부 가림을 적용했다. 아래 미리보기 연결에서 같은 범위를 착탈 가능한 런타임 가림으로 추가했다. 원본 몸체 파일은 변경하지 않았고 손과 팔뚝은 유지했다.
 
 이 결과는 피팅·리깅 결과이며 모든 연속 프레임의 천 충돌이나 다른 바지·장갑·투구와의 혼합 호환을 보장하지 않는다. 망토는 기존 본으로 움직이며 별도 천 시뮬레이션은 없다. 숫자상 유한 좌표·이음 검사는 전체 시각 검수를 대신하지 않는다.
@@ -53,17 +45,13 @@ Vite의 `top_bard` 경로로 피팅 GLB를 제공하고 공통 `bindModularPart`
 
 ### 속옷 조합의 후면 옷자락 보정 — 2026-10-10
 
-**[미사용] 초기 옷자락 변형과 아래 캡처는 판금과 동일한 25mm 보정으로 교체됐다.** 몸통·다리 경계와 허리 가림 수정은 유지한다.
+**[미사용] 초기 옷자락 변형은 판금과 동일한 25mm 보정으로 교체됐다.** 몸통·다리 경계와 허리 가림 수정은 유지한다.
 
 사용자 후면 캡처에서 속옷이 초록 옷자락을 뚫고 나오고 허리 아래가 비는 현상을 재현했다. 바드의 몸통 가림이 기존 `underwear_seat` 보정을 덮어쓰던 문제를 수정해 몸통·다리 경계를 연속으로 유지한다. 후면 몸통 가림 높이를 1.16m까지 남겨 조끼 아래 빈틈을 막는다.
 
 속옷 선택 시 뒤 옷자락에만 `bard_underwear_hem` 변형을 적용한다. 뒤쪽으로 최대 45mm 여유를 주고 안쪽 가장자리를 좌우 최대 55mm씩 벌리되, 위쪽 1.05–1.17m와 옆쪽 |X|=0.16–0.29m 구간에서 점진적으로 줄인다. 앞면·소매·상부의 좌표와 변경하지 않은 정점의 노멀은 유지한다. 바지를 다시 입거나 상의를 벗으면 원본 지오메트리로 복원한다. 초기 뒤쪽 30mm 변형만으로는 전투 대기·앉기에서 모서리 간섭이 남았다. 본 가중치 변경 시도도 충분하지 않아 폐기하고 최종본은 원래 리깅을 유지한 채 옷자락 간격을 보정했다.
 
 이것은 미리보기의 속옷 조합용 런타임 변형이며 저장된 GLB·Blender를 변경한 것은 아니다. 기존 피팅 보고서는 원본 GLB 기준이다. 몸통·다리 경계 일치와 하의 교체 시 복원을 회귀 테스트로 확인했다. `npm run check`, `npm run lint`, 관련 테스트 101개 통과. 7종 동작의 40% 시점과 앞·뒤·옆 확대를 확인하며 모든 연속 프레임의 충돌 합격으로 해석하지 않는다.
-
-![속옷 조합의 후면 보정](../../assets/modular_human_male_01/bard/tripo_top_v1/review/underwear/bard-hem-idle1.png)
-
-![앉기 표본의 옷자락 간격](../../assets/modular_human_male_01/bard/tripo_top_v1/review/underwear/bard-hem-sit_idle.png)
 
 ### 판금 바지 조합의 최소 여유 보정 — 2026-10-10
 
@@ -72,8 +60,6 @@ Vite의 `top_bard` 경로로 피팅 GLB를 제공하고 공통 `bindModularPart`
 대기 자세의 요청 부위와 앞·뒤·옆 실루엣을 확인했다. 7종 동작 40% 시점도 확인했으나 전투 대기의 작은 간섭과 앉기의 판금 관통은 남는다. 최소 이동 요청에 맞춘 대기 자세 보정이며 모든 자세의 충돌 해결로 기록하지 않는다. 원본 GLB·리그·판금 바지는 변경하지 않았다.
 
 판금 파츠 미로딩 시 미적용, 다른 하의로 교체 시 복원, 좌우 폭 유지와 최대 25mm 이동을 회귀 검사했다. 타입 검사·린트·관련 테스트 101개가 통과했다.
-
-![판금 조합 후면, 최대 25mm 보정](../../assets/modular_human_male_01/bard/tripo_top_v1/review/plate/idle-back.png)
 
 ### 속옷·판금 보정 통합 — 2026-10-10
 
@@ -85,8 +71,6 @@ Vite의 `top_bard` 경로로 피팅 GLB를 제공하고 공통 `bindModularPart`
 
 앞·뒤·옆 확대에서 요청한 후면 겹침 감소를 확인했다. 앞쪽 벨트와 옆 모피 및 큰 동작의 모든 간섭까지 해결한 것은 아니다. 하의 교체·로딩 실패 시 복원 검사를 포함한 관련 테스트 79개 통과.
 
-![바바리안 하의 조합 후면](../../assets/modular_human_male_01/bard/tripo_top_v1/review/barbarian/idle-back.png)
-
 ### 원시 전사 하의 조합 — 2026-10-10
 
 **[미사용] 아래 공통 25mm 시안은 후속 원시전사 전용 보정으로 교체했다.**
@@ -94,8 +78,6 @@ Vite의 `top_bard` 경로로 피팅 GLB를 제공하고 공통 `bindModularPart`
 사용자 후면 캡처의 모피·뼈 허리띠 조합에도 같은 `bard_rear_hem` 보정을 연결했다. 원시 전사 하의가 로딩되어 표시되면 뒤쪽 최대 25mm 이동하고 좌우 폭을 유지한다. 앞·뒤·옆 확대에서 요청 부위의 겹침 감소를 확인했다. 모피·허리 장식의 원본과 물리는 유지하므로 모든 장식 및 동작 중 관통까지 해결한 것은 아니다.
 
 원시 전사 하의 로딩 실패 시 기존 로직이 속옷으로 대체하므로 속옷용 공통 보정도 그대로 유지한다. 다른 하의 교체·미로딩·상의 해제의 동작을 포함한 관련 테스트 79개가 통과했다.
-
-![원시 전사 하의 조합 후면](../../assets/modular_human_male_01/bard/tripo_top_v1/review/caveman/idle-back.png)
 
 ### 원시 전사 하의 조합 추가 여유 — 2026-10-10
 
@@ -107,8 +89,6 @@ Vite의 `top_bard` 경로로 피팅 GLB를 제공하고 공통 `bindModularPart`
 후면·측면 대기 자세의 테두리 겹침 감소를 확인했다. 하의 미로딩 시 속옷 보정, 다른 하의로
 교체하거나 상의를 해제할 때 복원, 보정 지오메트리 재사용을 포함한 관련 테스트 79개가
 통과했다. 7종 동작 캡처와 재장착에서 브라우저 오류가 없었으며 모든 자세의 무관통 보장은 아니다.
-
-![원시전사 전용 여유를 적용한 후면](../../assets/modular_human_male_01/bard/tripo_top_v1/review/caveman-clearance/idle-back.png)
 
 ### 피팅 재생성
 
@@ -145,8 +125,6 @@ blender -b --python-exit-code 1 --python tools/blender-scripts/review_tripo_bard
 정면·후면·측면과 7종 동작 표본, 하의 재장착을 확인했다. 관련 테스트 80개를 통과했다.
 극단 자세의 모든 관통 해소를 보장하는 검사는 아니다.
 
-![로그 하의 장식 제거와 천 여유 보정](../../assets/modular_human_male_01/bard/tripo_top_v1/review/rogue/idle-back.png)
-
 ### 순찰자 하의 뒷자락 여유 — 2026-10-10
 
 순찰자 바지의 엉덩이 윗부분이 녹색 천을 뚫고 나오는 사용자 캡처에 따라, 해당 하의가
@@ -157,8 +135,6 @@ blender -b --python-exit-code 1 --python tools/blender-scripts/review_tripo_bard
 후면·측면 대기 자세에서 제보 부위가 가려지는 것을 확인했다. 하의 교체·미로딩·상의 해제 시
 복원과 지오메트리 재사용을 포함한 관련 테스트 80개를 통과했다. 모든 동작의 관통 해소를
 보장하는 검사는 아니다.
-
-![순찰자 바지와 뒷자락 보정](../../assets/modular_human_male_01/bard/tripo_top_v1/review/ranger/idle-back.png)
 
 ### 사제 하의 뒷자락·옆자락 여유 — 2026-10-10
 
@@ -171,8 +147,6 @@ blender -b --python-exit-code 1 --python tools/blender-scripts/review_tripo_bard
 상의 해제 시 복원과 지오메트리 재사용을 포함한 관련 테스트 80개를 통과했다.
 모든 자세의 관통 해소를 보장하는 검사는 아니다.
 
-![사제 바지와 천 여유 보정](../../assets/modular_human_male_01/bard/tripo_top_v1/review/priest/idle-back.png)
-
 ### 바바리안 손목 보호대의 소매 자르기 — 2026-10-10
 
 바바리안 보호대의 입구 아래로 바드 소매가 뚫고 나오는 사용자 캡처에 따라, 보호대가 실제
@@ -183,8 +157,6 @@ blender -b --python-exit-code 1 --python tools/blender-scripts/review_tripo_bard
 보호대 해제·미로딩 시 원래 소매로 복원하고, 상의 해제 시 원본 지오메트리로 돌아간다.
 정면·후면·측면에서 절단 경계를 확인했고, 양쪽 소매·옷자락 보정 동시 적용·복원·캐시 재사용을
 포함한 관련 테스트 81개를 통과했다.
-
-![바바리안 보호대 입구에 맞춘 바드 소매](../../assets/modular_human_male_01/bard/tripo_top_v1/review/barbarian-bracers/idle-front.png)
 
 ### 원시전사 손목 보호대의 소매 자르기 — 2026-10-10
 
@@ -198,8 +170,6 @@ blender -b --python-exit-code 1 --python tools/blender-scripts/review_tripo_bard
 통과했다. 제작 미리보기의 7동작에서 소매를 확인했고 재장착 시 페이지 오류가 없었다.
 `npm run check`와 `npm run lint`도 통과했다.
 
-![원시전사 보호대 입구에 맞춘 바드 소매](../../assets/modular_human_male_01/bard/tripo_top_v1/review/caveman-bracers/combat-top.png)
-
 ### 천바지 전투 대기의 후면 겹침 보정 — 2026-10-10
 
 전투 대기에서 천바지의 엉덩이 모서리가 초록색 뒷자락을 뚫고 나오는 것을 재현했다.
@@ -210,8 +180,6 @@ blender -b --python-exit-code 1 --python tools/blender-scripts/review_tripo_bard
 
 전투 대기의 앞·뒤·옆을 확인하고, 천바지 착용·미로딩·소매 절단과의 조합을 기존 회귀
 검사에 포함했다. 관련 테스트 82개와 `npm run check`, `npm run lint`가 통과했다.
-
-![천바지 전투 대기의 뒷자락](../../assets/modular_human_male_01/bard/tripo_top_v1/review/cloth-pants/combat-back.png)
 
 ### 속옷 전투 대기의 후면 겹침 재조정 — 2026-10-10
 
@@ -225,8 +193,6 @@ blender -b --python-exit-code 1 --python tools/blender-scripts/review_tripo_bard
 하의 교체·미로딩 대체·소매 절단과의 조합 및 복원을 포함한 관련 테스트 82개가 통과했다.
 전투 대기의 앞·뒤·옆을 확인했고 `npm run check`, `npm run lint`가 통과했다.
 원본 GLB·리깅·속옷 메시는 변경하지 않는다.
-
-![속옷 전투 대기의 뒷자락 재조정](../../assets/modular_human_male_01/bard/tripo_top_v1/review/underwear-combat/combat-back.png)
 
 ### 판금바지 전투 대기의 후면·측면 보정 — 2026-10-10
 
@@ -242,7 +208,14 @@ Z=-0.02–0.06과 |X|=0.06–0.14에서 점진적으로 최대 20mm 앞으로 �
 다른 하의의 보정과 원본 GLB·리깅은 유지한다. 장비 교체·미로딩·캐시 재사용을 포함한
 관련 테스트 82개와 `npm run check`, `npm run lint`를 통과했다.
 
-![판금바지 전투 대기의 뒷자락](../../assets/modular_human_male_01/bard/tripo_top_v1/review/plate-combat/combat-back.png)
+### 바드 하의와의 옷자락 겹침 — 2026-10-11
+
+전투 대기에서 바드 바지와 사선 벨트가 뒤 자락을 뚫는 현상을 수정했다.
+해당 하의가 실제 표시될 때 `bard_matching_pants_hem`으로 뒤 최대 95mm·좌우 각각 35mm·
+앞쪽 옆자락 최대 20mm의 여유를 주고 허리와 바깥 경계에서 부드럽게 줄인다.
+GLB를 변경하지 않는 런타임 보정이며 다른 하의의 설정은 유지한다.
+7동작 175자세의 뒤쪽 겹침 검사에서 최소 여유는 약 3.09mm다.
+[검사 범위와 결과](modular-bard-tripo-pants.md#바드-조끼와의-겹침--2026-10-11)를 참고한다.
 
 ### 바바리안 하의 전투 대기의 옆자락 펼치기 — 2026-10-10
 
@@ -256,8 +229,6 @@ Z=-0.02–0.06과 |X|=0.06–0.14에서 점진적으로 최대 20mm 앞으로 �
 모피 물리·리깅·원본 GLB와 다른 하의 보정은 유지한다. 하의 교체·미로딩·캐시 재사용을
 포함한 관련 테스트 82개와 `npm run check`, `npm run lint`를 통과했다.
 
-![바바리안 하의 위로 펼친 바드 옷자락](../../assets/modular_human_male_01/bard/tripo_top_v1/review/barbarian-combat/combat-back.png)
-
 ### 원시전사 하의 전투 대기의 옆자락 펼치기 — 2026-10-10
 
 사용자가 바바리안 하의와 같은 방식으로 옆자락을 펼치도록 요청했다.
@@ -270,8 +241,6 @@ Z=-0.02–0.06과 |X|=0.06–0.14에서 점진적으로 최대 20mm 앞으로 �
 모피 물리·메시·리깅은 유지한다. 다른 하의 교체·미로딩 대체·소매 절단과의 조합을
 포함한 관련 테스트 82개와 `npm run check`, `npm run lint`가 통과했다.
 
-![원시전사 하의 위로 펼친 바드 옷자락](../../assets/modular_human_male_01/bard/tripo_top_v1/review/caveman-combat/combat-back.png)
-
 ### 로그 하의 전투 대기의 옆자락 펼치기 — 2026-10-10
 
 전투 대기에서 로그 하의와 허리띠가 초록색 옷자락에 겹치는 사용자 캡처에 따라
@@ -282,8 +251,6 @@ Z=-0.02–0.06과 |X|=0.06–0.14에서 점진적으로 최대 20mm 앞으로 �
 기존 주머니·로프 숨김과 복원은 유지한다. 로그 바지 원본과 다른 하의 보정은 변경하지 않는다.
 전투 대기 앞·뒤·옆에서 경계를 확인하고 장비 교체·상의 해제 시의 복원 검사를 통과했다.
 관련 테스트 82개와 `npm run check`, `npm run lint`가 통과했다.
-
-![로그 하의 위로 펼친 바드 옷자락](../../assets/modular_human_male_01/bard/tripo_top_v1/review/rogue-combat/combat-back.png)
 
 ### 순찰자 하의 전투 대기의 옆자락 펼치기 — 2026-10-10
 
@@ -296,8 +263,6 @@ Z=-0.02–0.06과 |X|=0.06–0.14에서 점진적으로 최대 20mm 앞으로 �
 전투 대기 앞·뒤·옆에서 테두리 관통이 정리되는 것을 확인했다. 순찰자 바지의 원본
 메시·리깅과 로그 조합은 변경하지 않는다. 하의 교체·미로딩 대체·소매 절단과의 조합을
 포함한 관련 테스트 82개와 `npm run check`, `npm run lint`가 통과했다.
-
-![순찰자 하의 위로 펼친 바드 옷자락](../../assets/modular_human_male_01/bard/tripo_top_v1/review/ranger-combat/combat-back.png)
 
 ### 사제 사슬바지 전투 대기의 옆자락 펼치기 — 2026-10-11
 
@@ -315,8 +280,6 @@ Z=-0.02–0.06과 |X|=0.06–0.14에서 점진적으로 최대 20mm 앞으로 �
 위 `bard_rogue_hem`·`bard_ranger_hem`·`bard_priest_hem`은 같은 보정값이어서
 하나의 `bard_fitted_pants_hem`으로 합쳤다. 보정 결과와 적용 조건은 그대로이며,
 런타임이 같은 지오메트리를 세 번 만들어 보관하던 것을 한 번으로 줄였다.
-
-![사제 사슬바지 위로 펼친 바드 옷자락](../../assets/modular_human_male_01/bard/tripo_top_v1/review/priest-combat/combat-back.png)
 
 ## 원본 입수·기초 검수
 
@@ -357,3 +320,14 @@ Z=-0.02–0.06과 |X|=0.06–0.14에서 점진적으로 최대 20mm 앞으로 �
 ## 출처·이용 조건
 
 사용자 제공 Tripo 출력물이며 GLB generator 필드도 `Tripo`다. 입수일은 2026-10-10이다. 정확한 생성일·작업 ID·모델 버전·입력 시점·프롬프트·계정 구독 등급은 미확인이다. 이전 프로젝트 기록에 사용자 보고 약 USD 20/월 구독이 있으나 이 파일의 등급으로 확정하지 않는다. 원래 Tripo 출력물과 생성 계정의 이용 조건을 따른다. 원화는 ChatGPT Pro 20x로 제작했으며 별도 원화 출처 기록을 따른다.
+
+## 검수 캡처 정리 — 2026-10-11
+
+사용자 요청으로 `assets/modular_human_male_01/bard/tripo_top_v1/review/` 폴더 전체를
+삭제했다. 먼저 제거한 17개와 나머지 31개를 합쳐 검수 이미지 총 48개를 정리했다.
+`assets.lock` 항목과 문서의 이미지 링크도 제거했다. 검수 보고서의 과거 이미지 해시는
+`retained: false`로 남겼으며, 위 검수 설명은 당시 수행한 검사 이력이다.
+
+최종 GLB·현재 Blender 편집본·Tripo 원본·원화·재현용 포즈·수치 검증 기록은 유지한다.
+기존 Git/Hugging Face 리비전의 이력은 유지하며 현재 잠금 목록으로는 제거한 캡처를 다시 받지 않는다.
+검수 렌더 도구를 명시적으로 실행하면 기본 피팅 검수 이미지가 다시 생성될 수 있다.

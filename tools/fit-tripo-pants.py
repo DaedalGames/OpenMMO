@@ -68,12 +68,12 @@ def ankle_references():
     return result
 
 
-def surface_clearance(samples):
+def surface_clearance(samples, regions=('legs', 'ankles', 'torso')):
     correction = np.zeros_like(samples)
     signed = np.zeros(len(samples))
     for sign in [1, -1]:
         indices = np.where(samples[:, 0] * sign >= 0)[0]
-        surface = fit.body_surface(('legs', 'ankles', 'torso'), sign)
+        surface = fit.body_surface(regions, sign)
         for start in range(0, len(indices), 256):
             selected = indices[start:start + 256]
             nearest, normals, _ = fit.nearest_surface(samples[selected], surface, candidates=96)
@@ -83,14 +83,15 @@ def surface_clearance(samples):
     return correction, signed
 
 
-def clear_faces(points, faces, main_component, smoother, fixed_below=.30):
+def clear_faces(points, faces, main_component, smoother, fixed_below=.30,
+                regions=('legs', 'ankles', 'torso')):
     cloth_faces = faces[np.all(main_component[faces], axis=1)]
     sample_weights = np.array([[1 / 3, 1 / 3, 1 / 3], [.5, .5, 0], [0, .5, .5], [.5, 0, .5]])
     iterations = []
     movable = io.smoothstep((points[:, 1] - fixed_below) / .06)
     for step in range(20):
         samples = np.einsum('sk,fkj->fsj', sample_weights, points[cloth_faces]).reshape(-1, 3)
-        corrections, signed = surface_clearance(samples)
+        corrections, signed = surface_clearance(samples, regions)
         corrections = corrections.reshape(-1, 4, 3)
         active = np.linalg.norm(corrections, axis=2) > 1e-6
         accumulated = np.zeros_like(points)

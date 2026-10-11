@@ -138,8 +138,7 @@ async function main() {
   const priest = requestedOutfit === 'priest'
   const bard = requestedOutfit === 'bard'
   if (tripo || caveman || ranger || priest || bard) showWeapon.checked = false
-  if (caveman) cameraSelect.value = 'full'
-  if (ranger || priest || bard) cameraSelect.value = 'full'
+  if (caveman || ranger || priest || bard) cameraSelect.value = 'full'
   const load = async (url: string) => {
     const gltf = await loader.loadAsync(url)
     if (disposed) {
@@ -181,6 +180,7 @@ async function main() {
     'pants_priest',
     'boots_priest',
     'top_bard',
+    'pants_bard',
   ]
   const [base, sources, animations, sword, profile, candidateSources, social] =
     await Promise.all([
