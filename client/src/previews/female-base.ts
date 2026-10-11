@@ -12,7 +12,7 @@ export async function showFemaleBase(
   document.title = '여성 베이스 · 캐릭터 미리보기'
   document.querySelector('h1')!.textContent = '여성 베이스 미리보기'
   document.querySelector('header p:last-child')!.textContent =
-    '눈과 코 주변 표현, 입술의 광택을 다듬은 여성 기본 체형을 살펴보세요.'
+    '여성 기본 체형의 자세와 동작을 살펴보세요.'
   const status = document.getElementById('status')!
   const aside = document.querySelector('aside')!
   aside.replaceChildren(status)
@@ -21,6 +21,21 @@ export async function showFemaleBase(
     `
     <fieldset id="female-controls" disabled>
       <legend>모델 살펴보기</legend>
+      <label for="female-motion">동작</label>
+      <select id="female-motion">
+        <option value="rest">기본 A 포즈</option>
+        <option value="idle1">대기</option>
+        <option value="walk">걷기</option>
+        <option value="run">달리기</option>
+        <option value="jump">점프</option>
+        <option value="combat_idle">전투 대기</option>
+        <option value="slash1">베기</option>
+        <option value="dying">쓰러지기</option>
+        <option value="sit_idle">앉기</option>
+      </select>
+      <button id="female-pause" type="button">일시정지</button>
+      <label for="female-time">동작 시점</label>
+      <input id="female-time" type="range" min="0" max="1" step="0.001" value="0" />
       <label for="female-camera">시점</label>
       <select id="female-camera">
         <option value="face">얼굴 확대</option>
@@ -30,13 +45,14 @@ export async function showFemaleBase(
         <option value="feet">발 확대</option>
       </select>
       <label class="toggle"><input id="female-wireframe" type="checkbox" /> 와이어프레임</label>
+      <label class="toggle"><input id="female-skeleton" type="checkbox" /> 뼈대 보기</label>
       <button id="female-reset" type="button">시점 초기화</button>
     </fieldset>
     <p id="female-stats" class="details"></p>
-    <p class="details">여성 기본 체형 · 속눈썹 뿌리부터 중간까지 두께 보강 · 콧구멍 텍스처 정렬<br />리깅 전 모델입니다. 복장 교체와 동작은 아직 적용되지 않았습니다.</p>`
+    <p class="details">여성 체형에 맞춘 뼈대와 8가지 동작을 확인할 수 있습니다. 복장 교체는 준비 중입니다.</p>`
   )
   status.textContent = '여성 베이스를 불러오는 중…'
-  const { scene: model } = await new GLTFLoader().loadAsync(
+  const { scene: model, animations } = await new GLTFLoader().loadAsync(
     '/__modular-character/parts/female_base.glb'
   )
   resources.push(model)
@@ -58,6 +74,89 @@ export async function showFemaleBase(
     return
   }
   scene.add(model)
+  const bones: THREE.Bone[] = []
+  model.traverse((node) => {
+    if (node instanceof THREE.Bone) bones.push(node)
+  })
+  const rest = bones.map((bone) => ({
+    bone,
+    position: bone.position.clone(),
+    quaternion: bone.quaternion.clone(),
+    scale: bone.scale.clone(),
+  }))
+  const mixer = new THREE.AnimationMixer(model)
+  let action: THREE.AnimationAction | undefined
+  let paused = false
+  const motion = document.getElementById('female-motion') as HTMLSelectElement
+  const pause = document.getElementById('female-pause') as HTMLButtonElement
+  const time = document.getElementById('female-time') as HTMLInputElement
+  const setPaused = (value: boolean) => {
+    paused = value
+    pause.textContent = paused ? '재생' : '일시정지'
+  }
+  const play = () => {
+    mixer.stopAllAction()
+    for (const state of rest) {
+      state.bone.position.copy(state.position)
+      state.bone.quaternion.copy(state.quaternion)
+      state.bone.scale.copy(state.scale)
+    }
+    const clip = animations.find((entry) => entry.name === motion.value)
+    action = clip ? mixer.clipAction(clip).reset().play() : undefined
+    if (action) {
+      action.setLoop(
+        ['jump', 'slash1', 'dying'].includes(motion.value)
+          ? THREE.LoopOnce
+          : THREE.LoopRepeat,
+        Infinity
+      )
+      action.clampWhenFinished = true
+    }
+    time.value = '0'
+    time.disabled = pause.disabled = !action
+    setPaused(false)
+    mixer.update(0)
+    status.textContent = motion.selectedOptions[0].textContent
+  }
+  motion.onchange = play
+  pause.onclick = () => {
+    if (action && action.time >= action.getClip().duration) {
+      action.reset().play()
+      time.value = '0'
+      setPaused(false)
+    } else {
+      setPaused(!paused)
+    }
+  }
+  mixer.addEventListener('finished', () => {
+    setPaused(true)
+    pause.textContent = '다시 재생'
+  })
+  time.oninput = () => {
+    if (!action) return
+    setPaused(true)
+    action.paused = false
+    action.time = Number(time.value) * action.getClip().duration
+    mixer.update(0)
+  }
+  const skeleton = new THREE.SkeletonHelper(model)
+  skeleton.visible = false
+  for (const material of Array.isArray(skeleton.material)
+    ? skeleton.material
+    : [skeleton.material]) {
+    material.depthTest = false
+  }
+  skeleton.renderOrder = 10
+  scene.add(skeleton)
+  document.getElementById('female-skeleton')!.onchange = (event) => {
+    skeleton.visible = (event.target as HTMLInputElement).checked
+  }
+  cleanup.push(() => {
+    mixer.stopAllAction()
+    mixer.uncacheRoot(model)
+    scene.remove(skeleton)
+    skeleton.dispose()
+  })
   let triangles = 0
   const materials = new Set<THREE.MeshStandardMaterial>()
   model.traverse((node) => {
@@ -118,7 +217,8 @@ export async function showFemaleBase(
   }
   const select = document.getElementById('female-camera') as HTMLSelectElement
   const requested = new URLSearchParams(location.search).get('camera')
-  if (requested && Object.hasOwn(views, requested)) select.value = requested
+  select.value =
+    requested && Object.hasOwn(views, requested) ? requested : 'full'
   const reset = () => {
     const view = views[select.value]
     const aspect = host.clientWidth / host.clientHeight
@@ -148,13 +248,32 @@ export async function showFemaleBase(
   cleanup.push(() => observer.disconnect())
   resize()
   reset()
-  renderer.setAnimationLoop(() => {
+  const params = new URLSearchParams(location.search)
+  const requestedMotion = params.get('motion') ?? 'idle1'
+  motion.value =
+    requestedMotion === 'rest' ||
+    animations.some((clip) => clip.name === requestedMotion)
+      ? requestedMotion
+      : 'idle1'
+  play()
+  const requestedTime = Number(params.get('time'))
+  if (params.has('time') && Number.isFinite(requestedTime) && action) {
+    time.value = String(THREE.MathUtils.clamp(requestedTime, 0, 1))
+    time.dispatchEvent(new Event('input'))
+  }
+  let previousTime = performance.now()
+  renderer.setAnimationLoop((now) => {
+    const delta = Math.min((now - previousTime) / 1000, 0.05)
+    previousTime = now
+    if (!paused && action) {
+      mixer.update(delta)
+      time.value = String(action.time / action.getClip().duration)
+    }
     controls.update()
     renderer.render(scene, camera)
   })
   document.getElementById('female-stats')!.textContent =
-    `${triangles.toLocaleString()}삼각형 · 눈 반사·입술 광택 보정`
-  status.textContent = '눈의 반사와 코 음영, 입술 광택을 다듬은 모델'
+    `${triangles.toLocaleString()}삼각형 · ${bones.length}개 본 · ${animations.length}가지 동작`
   const fieldset = document.getElementById(
     'female-controls'
   ) as HTMLFieldSetElement

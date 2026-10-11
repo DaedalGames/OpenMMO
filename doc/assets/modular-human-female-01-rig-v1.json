@@ -1,0 +1,621 @@
+{
+  "started": "2026-10-11",
+  "completed": "2026-10-12",
+  "status": "locally_rigged_and_previewed",
+  "binding": {
+    "date": "2026-10-11",
+    "rig_id": "human_female_01_local_v1",
+    "method": "65-bone modular hierarchy fitted to female anatomical landmarks; Blender bone-heat binding; rigid head binding for separate eyelashes; four normalized influences",
+    "sources": [
+      {
+        "path": "assets/modular_human_female_01/ear_normals_v2/base-ear-normals-v2.glb",
+        "sha256": "078006e1a63a9e9fdb9309058d39b782813d1fcbaa022f10648f8368d3fd8fef"
+      },
+      {
+        "path": "assets/modular_human_male_01/fitted/base.glb",
+        "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+      }
+    ],
+    "source_conditions": "Original Tripo API and image-edit source/license records remain applicable; donor Mixamo skeleton uses the existing project license. Local processing only, no paid generation.",
+    "height": 1,
+    "joints": 65,
+    "landmarks": {
+      "Hips": [
+        0.0,
+        0.568,
+        -0.022
+      ],
+      "Spine": [
+        0.0,
+        0.635,
+        -0.021
+      ],
+      "Spine1": [
+        0.0,
+        0.709,
+        -0.029
+      ],
+      "Spine2": [
+        0.0,
+        0.783,
+        -0.031
+      ],
+      "Neck": [
+        0.0,
+        0.856,
+        -0.025
+      ],
+      "Head": [
+        0.0,
+        0.901,
+        -0.008
+      ],
+      "HeadTop_End": [
+        0.0,
+        0.993,
+        -0.008
+      ],
+      "LeftUpLeg": [
+        0.06,
+        0.55,
+        -0.017
+      ],
+      "RightUpLeg": [
+        -0.06,
+        0.55,
+        -0.017
+      ],
+      "LeftLeg": [
+        0.092,
+        0.322,
+        -0.028
+      ],
+      "RightLeg": [
+        -0.092,
+        0.322,
+        -0.028
+      ],
+      "LeftFoot": [
+        0.13,
+        0.055,
+        -0.022
+      ],
+      "RightFoot": [
+        -0.13,
+        0.055,
+        -0.022
+      ],
+      "LeftToeBase": [
+        0.142,
+        0.012,
+        0.04
+      ],
+      "RightToeBase": [
+        -0.142,
+        0.012,
+        0.04
+      ],
+      "LeftToe_End": [
+        0.15,
+        0.008,
+        0.073
+      ],
+      "RightToe_End": [
+        -0.15,
+        0.008,
+        0.073
+      ],
+      "LeftShoulder": [
+        0.034,
+        0.825,
+        -0.026
+      ],
+      "RightShoulder": [
+        -0.034,
+        0.825,
+        -0.026
+      ],
+      "LeftArm": [
+        0.089,
+        0.81,
+        -0.026
+      ],
+      "RightArm": [
+        -0.089,
+        0.81,
+        -0.026
+      ],
+      "LeftForeArm": [
+        0.178,
+        0.697,
+        -0.026
+      ],
+      "RightForeArm": [
+        -0.178,
+        0.697,
+        -0.026
+      ],
+      "LeftHand": [
+        0.263,
+        0.601,
+        -0.019
+      ],
+      "RightHand": [
+        -0.263,
+        0.601,
+        -0.019
+      ],
+      "LeftHandIndex1": [
+        0.3,
+        0.552,
+        0.002
+      ],
+      "RightHandIndex1": [
+        -0.3,
+        0.552,
+        0.002
+      ],
+      "LeftHandIndex2": [
+        0.31134,
+        0.5381400000000001,
+        0.002
+      ],
+      "RightHandIndex2": [
+        -0.31134,
+        0.5381400000000001,
+        0.002
+      ],
+      "LeftHandIndex3": [
+        0.32025000000000003,
+        0.52725,
+        0.002
+      ],
+      "RightHandIndex3": [
+        -0.32025000000000003,
+        0.52725,
+        0.002
+      ],
+      "LeftHandIndex4": [
+        0.327,
+        0.519,
+        0.002
+      ],
+      "RightHandIndex4": [
+        -0.327,
+        0.519,
+        0.002
+      ],
+      "LeftHandMiddle1": [
+        0.3,
+        0.548,
+        -0.011
+      ],
+      "RightHandMiddle1": [
+        -0.3,
+        0.548,
+        -0.011
+      ],
+      "LeftHandMiddle2": [
+        0.31428,
+        0.53498,
+        -0.011
+      ],
+      "RightHandMiddle2": [
+        -0.31428,
+        0.53498,
+        -0.011
+      ],
+      "LeftHandMiddle3": [
+        0.3255,
+        0.52475,
+        -0.011
+      ],
+      "RightHandMiddle3": [
+        -0.3255,
+        0.52475,
+        -0.011
+      ],
+      "LeftHandMiddle4": [
+        0.334,
+        0.517,
+        -0.011
+      ],
+      "RightHandMiddle4": [
+        -0.334,
+        0.517,
+        -0.011
+      ],
+      "LeftHandRing1": [
+        0.295,
+        0.551,
+        -0.025
+      ],
+      "RightHandRing1": [
+        -0.295,
+        0.551,
+        -0.025
+      ],
+      "LeftHandRing2": [
+        0.30928,
+        0.5379800000000001,
+        -0.02542
+      ],
+      "RightHandRing2": [
+        -0.30928,
+        0.5379800000000001,
+        -0.02542
+      ],
+      "LeftHandRing3": [
+        0.3205,
+        0.52775,
+        -0.025750000000000002
+      ],
+      "RightHandRing3": [
+        -0.3205,
+        0.52775,
+        -0.025750000000000002
+      ],
+      "LeftHandRing4": [
+        0.329,
+        0.52,
+        -0.026
+      ],
+      "RightHandRing4": [
+        -0.329,
+        0.52,
+        -0.026
+      ],
+      "LeftHandPinky1": [
+        0.286,
+        0.558,
+        -0.037
+      ],
+      "RightHandPinky1": [
+        -0.286,
+        0.558,
+        -0.037
+      ],
+      "LeftHandPinky2": [
+        0.29944,
+        0.5458200000000001,
+        -0.037419999999999995
+      ],
+      "RightHandPinky2": [
+        -0.29944,
+        0.5458200000000001,
+        -0.037419999999999995
+      ],
+      "LeftHandPinky3": [
+        0.31,
+        0.5362500000000001,
+        -0.03775
+      ],
+      "RightHandPinky3": [
+        -0.31,
+        0.5362500000000001,
+        -0.03775
+      ],
+      "LeftHandPinky4": [
+        0.318,
+        0.529,
+        -0.038
+      ],
+      "RightHandPinky4": [
+        -0.318,
+        0.529,
+        -0.038
+      ],
+      "LeftHandThumb1": [
+        0.27,
+        0.579,
+        -0.004
+      ],
+      "RightHandThumb1": [
+        -0.27,
+        0.579,
+        -0.004
+      ],
+      "LeftHandThumb2": [
+        0.275,
+        0.557,
+        0.004
+      ],
+      "RightHandThumb2": [
+        -0.275,
+        0.557,
+        0.004
+      ],
+      "LeftHandThumb3": [
+        0.282,
+        0.542,
+        0.01
+      ],
+      "RightHandThumb3": [
+        -0.282,
+        0.542,
+        0.01
+      ],
+      "LeftHandThumb4": [
+        0.288,
+        0.533,
+        0.012
+      ],
+      "RightHandThumb4": [
+        -0.288,
+        0.533,
+        0.012
+      ]
+    },
+    "triangles": 22175,
+    "body_vertices": 21826,
+    "unweighted_vertices": 0,
+    "clothing_vertices_with_body_surface_weights": 3644,
+    "max_weight_sum_error": 3.3306690738754696e-16,
+    "source_geometry_uv_normals_materials_images_preserved": true,
+    "output": "assets/modular_human_female_01/rig_v1/female-base.glb"
+  },
+  "animation_method": "Existing local rotation tracks applied to the fitted bone axes; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.",
+  "animation_sources": [
+    {
+      "path": "assets/modular_human_male_01/animations/animations.glb",
+      "sha256": "fc47d9613bd1fbc9f0d61ce0cc95a5c540d16ab8430bcf34ee7ddcd9cd958ac3"
+    },
+    {
+      "path": "client/public/models/characters/modular_male/animations/social.glb",
+      "sha256": "a9efe7a2d388011cdc039ca6778c2b3a929b07953941ee7bb7c50a511d4b083d"
+    }
+  ],
+  "validation": {
+    "source": {
+      "path": "assets/modular_human_female_01/ear_normals_v2/base-ear-normals-v2.glb",
+      "sha256": "078006e1a63a9e9fdb9309058d39b782813d1fcbaa022f10648f8368d3fd8fef"
+    },
+    "output": {
+      "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+      "sha256": "b4c0429285cd72d8934e5d09b6dacd7bf3201d733dd597f5fa594734db6fe967"
+    },
+    "bone_count": 65,
+    "used_vertices": 23224,
+    "unchanged_geometry_normals_uv_indices": true,
+    "unchanged_materials_and_embedded_images": true,
+    "maximum_rest_error": 6.373398378100131e-08,
+    "maximum_weight_sum_error": 4.470348358154297e-08,
+    "clips": [
+      {
+        "clip": "idle1",
+        "frames": 121,
+        "minimum_y": -6.004764489402114e-08,
+        "maximum_floor_y": 2.4624148698435076e-08,
+        "maximum_extent": 1.0650819532383922,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "walk",
+        "frames": 121,
+        "minimum_y": -0.0001495960493222389,
+        "maximum_floor_y": 0.0010904160440304823,
+        "maximum_extent": 1.1797819754576035,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "run",
+        "frames": 121,
+        "minimum_y": -7.693489062890761e-05,
+        "maximum_floor_y": 0.07203954461010592,
+        "maximum_extent": 1.2949115742005752,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "jump",
+        "frames": 121,
+        "minimum_y": 0.0013391456999394956,
+        "maximum_floor_y": 0.5508195421739501,
+        "maximum_extent": 1.3139499992065673,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "combat_idle",
+        "frames": 121,
+        "minimum_y": -1.125594251860304e-05,
+        "maximum_floor_y": 4.133805629948084e-06,
+        "maximum_extent": 1.1924883702853497,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "slash1",
+        "frames": 121,
+        "minimum_y": -0.00037669962587674353,
+        "maximum_floor_y": 0.012353575186052058,
+        "maximum_extent": 1.310647799053931,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "dying",
+        "frames": 121,
+        "minimum_y": -0.00025867437406678034,
+        "maximum_floor_y": 0.04565301674148253,
+        "maximum_extent": 1.2219758937986245,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "sit_idle",
+        "frames": 121,
+        "minimum_y": -1.4056000777524125e-07,
+        "maximum_floor_y": 9.623388303568335e-07,
+        "maximum_extent": 0.8478383450897775,
+        "maximum_face_rigid_error": 0
+      }
+    ]
+  },
+  "gltf_validation": {
+    "errors": 0,
+    "warnings": 1,
+    "inherited_warning": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE"
+  },
+  "browser": {
+    "one_shot_replay": true,
+    "errors": [],
+    "pause_and_resume": true,
+    "scrub_pauses": true,
+    "rest_disables_timeline": true,
+    "wireframe_and_skeleton": true,
+    "side_and_back_review": true
+  },
+  "frontend_checks": [
+    "npm run check: 0 errors, 0 warnings",
+    "npm run lint: passed"
+  ],
+  "budget": {
+    "assembled_triangles_including_hidden_surfaces": 22175,
+    "active_render_triangles": 22175,
+    "face_region_triangles_including_lashes": 4604,
+    "face_region_criterion": "triangle centroid: .889 < Y < .967, Z > .01, abs(X) < .05 (unit-height rest model)",
+    "new_triangles": 0
+  },
+  "outputs": [
+    {
+      "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+      "sha256": "b4c0429285cd72d8934e5d09b6dacd7bf3201d733dd597f5fa594734db6fe967",
+      "bytes": 26233332
+    },
+    {
+      "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
+      "sha256": "4eb735bca3a0a7c3f515a7d8b286503facf358182df784b8babb2289dcf0711d",
+      "bytes": 24575277
+    }
+  ],
+  "limitations": [
+    "Production character selection and equipment slots are not connected.",
+    "No facial animation, blinking, weapon attachment or fitted female equipment.",
+    "Unit-height authoring scale preserved; game height not chosen.",
+    "Visual review covers the included clips; arbitrary extreme poses and other animation packs are not certified."
+  ],
+  "cleanup": {
+    "date": "2026-10-12",
+    "reason": "User requested removing intermediate results before committing. Final GLB, editable Blender source, original inputs, scripts and this consolidated record are preserved.",
+    "removed_files": [
+      {
+        "path": "assets/modular_human_female_01/rig_v1/animation-snapshots.json",
+        "bytes": 550874,
+        "sha256": "dbdebd78e909221b3629768d3b226652bcab86003aabe957e4f0554375ca5310"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/binding.json",
+        "bytes": 5815,
+        "sha256": "92ee3bcd9159e1c1132b159f48865fd88ac7d3c6292f855158d729ed89928389"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/clips.json",
+        "bytes": 3480384,
+        "sha256": "541cb245b549b50f99cd0d68bbaba50a431649e2fa3bffa9cc78415557c3431b"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/floor-samples.json",
+        "bytes": 56156,
+        "sha256": "fab3dd9098b897e5c76b6910ea431212cf22025ec04693cce40bcb687e20cfe3"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/gltf-validation.json",
+        "bytes": 3890,
+        "sha256": "4b336b71a4d39d2a97a8374a3d68d01623ed593aca8881e6769765e2a4545da4"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/browser-validation.json",
+        "bytes": 198,
+        "sha256": "0bf15289d05703b26922fe0f0a6cb39678ead117bab7a19ec6d7dead2d62a8bd"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/combat_idle.png",
+        "bytes": 89175,
+        "sha256": "890350f607f90fee7ba0c175f79c6da633348ace688f1518572b111bd33c4a9f"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/dying.png",
+        "bytes": 51796,
+        "sha256": "c3858d444a8d2904044265415bf9f7d92ec859506cc7c7334f3824ece38d6613"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/face.png",
+        "bytes": 205366,
+        "sha256": "3d9fc08cb240866b62bad30bd4a9f175297ee0be4f565e12350695b5b53b0395"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/idle-side.png",
+        "bytes": 82354,
+        "sha256": "f58f69ba4207d0290c7c6040a6133cefbc9122c839bec013d8c7d7af2e3c6f5d"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/idle1-back.png",
+        "bytes": 106987,
+        "sha256": "d31c05e5e9c4451b68a85029ff4ac0151d3c9838031b7032b454900ed1604df6"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/idle1.png",
+        "bytes": 103858,
+        "sha256": "05319f2ee2571f8842ffa81562cd1bf7a66f49754f0c7f22788402481f8a72ee"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/jump.png",
+        "bytes": 95876,
+        "sha256": "7affcd46b5e23417a95bdef33c3d09752871b8e6672e2f46e24980194ea0b465"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/overview.jpg",
+        "bytes": 66224,
+        "sha256": "2a9f40ee4a9365f57326a9d2af77e23141fdc614b91e34297d8e16848b0b55ee"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/rest.png",
+        "bytes": 108374,
+        "sha256": "6780f1e3cb98386c93d1bb773a66ffbb92110a3bb107a9e21a5736d954771e17"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/run-side.png",
+        "bytes": 101761,
+        "sha256": "1403918adb58811bd2ec9ee2a9b7ea55bd435f49c8d13dfa190056cf45dc11a0"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/run.png",
+        "bytes": 91775,
+        "sha256": "9fd903c559ed78586ea063f59331d221ee7b4b8f73b1c1464b36c5fd0388bccf"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/sit_idle-side.png",
+        "bytes": 77101,
+        "sha256": "4620f0bb5b62e1087dce1bb47da6e11b61ff079da994375c11a831eaebe00f0b"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/sit_idle.png",
+        "bytes": 91606,
+        "sha256": "59b51940654815d0dd16625fcc3435138279ad33b3f533de171e2cfc6dc32fc9"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/skeleton.png",
+        "bytes": 115769,
+        "sha256": "793b67002d3917b1a3868a4df5d34b3400f597fbd06c3f8333c7e9a8a803c5fc"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/slash1-back.png",
+        "bytes": 74331,
+        "sha256": "2ecfa595ea6c8d12dd8aa76302e01264ee0f63abb49e80f634673a01767ceccd"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/slash1.png",
+        "bytes": 104681,
+        "sha256": "b6e0030fa579b6c0e9a610de3f74b316e35d2976addee4d49add3b83ab627155"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/review/walk.png",
+        "bytes": 96071,
+        "sha256": "15979f92db0e02ccf5f76c398410066d70fccd8beb9bee1b81471c08e0922fc1"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/validation.json",
+        "bytes": 2442,
+        "sha256": "0b960ee0f2c79469b8cd482be0b575786bc6aac38e3925f9534dd1f1eaeee7e1"
+      }
+    ],
+    "removed_bytes": 5762864,
+    "previously_uploaded": false
+  }
+}

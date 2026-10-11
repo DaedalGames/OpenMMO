@@ -111,7 +111,7 @@ function modularCharacterPreview(): Plugin {
   ])
   const fixed: Record<string, URL> = {
     female_base: new URL(
-      '../assets/modular_human_female_01/ear_normals_v2/base-ear-normals-v2.glb',
+      '../assets/modular_human_female_01/rig_v1/female-base.glb',
       import.meta.url
     ),
     helmet_bard: part('bard/tripo_hat_v1/helmet_bard.glb'),
