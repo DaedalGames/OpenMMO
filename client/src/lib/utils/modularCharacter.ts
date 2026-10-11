@@ -63,6 +63,7 @@ export const MODULAR_BOOTS = [
   'caveman',
   'ranger',
   'priest',
+  'bard',
 ] as const
 
 export interface ModularOutfit {
@@ -381,7 +382,7 @@ export const PRIEST_MODULAR_OUTFIT: ModularOutfit = {
   helmet: 'priest',
 }
 
-const BARD_MODULAR_PARTS = ['top_bard', 'pants_bard'] as const
+const BARD_MODULAR_PARTS = ['top_bard', 'pants_bard', 'boots_bard'] as const
 
 const BARD_HEMS = {
   none: 'bard_underwear_hem',
@@ -400,7 +401,7 @@ export const BARD_MODULAR_OUTFIT: ModularOutfit = {
   top: 'bard',
   pants: 'bard',
   gloves: 'none',
-  boots: 'none',
+  boots: 'bard',
   helmet: 'none',
 }
 
@@ -426,7 +427,8 @@ export function showModularOutfit(
     pants === 'ranger' ||
     pants === 'priest' ||
     pants === 'bard'
-  const tallBoots = boots === 'caveman' || boots === 'ranger'
+  const tallBoots =
+    boots === 'caveman' || boots === 'ranger' || boots === 'bard'
   const priest = top === 'priest'
   for (const id of ['pants_barbarian', 'pants_caveman'])
     for (const mesh of parts.get(id) ?? []) setPeltPhysicsEnabled(mesh, !priest)
@@ -487,6 +489,10 @@ export function showModularOutfit(
     for (const id of ['pants_plate', 'pants_cloth'])
       for (const mesh of parts.get(id) ?? [])
         if (mesh.visible) trimModularClothing(mesh, 'priest_pants_boots')
+  if (boots === 'bard')
+    for (const id of ['pants_plate', 'pants_cloth'])
+      for (const mesh of parts.get(id) ?? [])
+        if (mesh.visible) trimModularClothing(mesh, 'bard_pants_boots')
   if (priest) {
     const bootCut = tallBoots
       ? 'tall_boots'
@@ -516,9 +522,11 @@ export function showModularOutfit(
       )
   const longHem = priest || top === 'bard'
   const bootHem =
-    boots === 'ranger'
-      ? 'ranger_pants_boots'
-      : boots === 'priest' && 'priest_pants_boots'
+    boots === 'bard'
+      ? 'bard_pants_boots'
+      : boots === 'ranger'
+        ? 'ranger_pants_boots'
+        : boots === 'priest' && 'priest_pants_boots'
   for (const mesh of parts.get('pants_rogue') ?? [])
     trimModularClothing(
       mesh,
@@ -547,13 +555,14 @@ export function showModularOutfit(
       caveman: 'caveman_pants_boots',
       ranger: 'ranger_pants_boots',
       priest: 'priest_pants_boots',
+      bard: 'bard_pants_boots',
     } as const
   )[boots]
   const plateWaist = top === 'plate' && worn('top_plate')
   for (const mesh of parts.get('pants_bard') ?? [])
     trimModularClothing(
       mesh,
-      pants === 'bard' && plateWaist && 'bard_plate_waist'
+      pants === 'bard' && [plateWaist && 'bard_plate_waist', bootHem]
     )
   const priestRogueWaist =
     pants === 'priest' && top === 'rogue' && worn('top_rogue')

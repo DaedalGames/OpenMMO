@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-11",
+  "sources": [
+    {
+      "path": "assets/modular_human_male_01/fitted/base.glb",
+      "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+    },
+    {
+      "path": "assets/modular_human_male_01/fitted/hair_crop.glb",
+      "sha256": "5e8acb389f575331008c36dd94afcbf3831c90f53ca21ab0a7bbe666539f2472"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_top_v1/top_bard.glb",
+      "sha256": "91c1c1d3b94ca6ba9184ba3c9a74d8131c2a452f024f61a58f0f38db0c8e5d76"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_pants_v1/pants_bard.glb",
+      "sha256": "87885b4a6459f124ea38024a2092f2b4c324fae7bb3b8f878328bf1b1cccb720"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_boots_v1/boots_bard.glb",
+      "sha256": "033658dbf434e1bd308f93de239989a20d49150ed5da96b84a865a1fe4746b66"
+    },
+    {
+      "path": "assets/modular_human_male_01/animations/animations.glb",
+      "sha256": "fc47d9613bd1fbc9f0d61ce0cc95a5c540d16ab8430bcf34ee7ddcd9cd958ac3"
+    },
+    {
+      "path": "client/public/models/characters/modular_male/animations/social.glb",
+      "sha256": "a9efe7a2d388011cdc039ca6778c2b3a929b07953941ee7bb7c50a511d4b083d"
+    }
+  ],
+  "sole_offset_m": 0.011000251088465335,
+  "hem_vertices": 66,
+  "minimum_actual_cuff_wall_clearance_m": 0.008974494980681008,
+  "maximum_hem_relative_to_leg_motion_error_m": 3.004656841373784e-06,
+  "maximum_boot_uv_seam_gap_m": 0,
+  "clips": [
+    "idle1",
+    "walk",
+    "run",
+    "jump",
+    "combat_idle",
+    "slash1",
+    "sit_idle"
+  ],
+  "motion_samples": 91,
+  "snapshot": {
+    "path": "assets/items/bard_starter/tripo_boots_v1/pants-bard-boots-review.glb",
+    "sha256": "f037fa653eb3f302eee313fdde8cf9a76d8db8f707168f45ed6c100f3649711d",
+    "retained": false
+  },
+  "budget": {
+    "preserved_glb_triangles_including_hidden": 26449,
+    "runtime_triangles_including_hidden": 24003,
+    "visible_triangles": 18004,
+    "face_triangles": 1505,
+    "scope": "Body, crop hair, bard top, pants and boots; no gloves or weapon"
+  },
+  "boot_removal_and_missing_asset_restore_pants_and_feet": true,
+  "scope": "Actual GLB binding, cuff wall intersections at hem vertices, rigid hem motion and finite boot/pants vertices in 91 poses; not a full surface collision or mixed-outfit certification.",
+  "temporary_pose_files_retained": false
+}

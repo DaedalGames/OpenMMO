@@ -7,6 +7,7 @@ type BootCuff = {
   overlap: number
   inset: number
   taper: number
+  hold?: number
   leftLeg: number
   rightLeg: number
 }
@@ -48,7 +49,12 @@ export function createBootCuff(cuff: BootCuff) {
       const rim = rimAt(point)
       const hem = rim.height - cuff.overlap
       const blend =
-        1 - THREE.MathUtils.smoothstep(point.y, hem, rim.height + cuff.taper)
+        1 -
+        THREE.MathUtils.smoothstep(
+          point.y,
+          hem + (cuff.hold ?? 0),
+          rim.height + cuff.taper + (cuff.hold ?? 0)
+        )
       if (!blend) continue
       const radius = THREE.MathUtils.lerp(
         rim.radius,

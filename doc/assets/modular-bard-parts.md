@@ -1,6 +1,8 @@
-# 바드 상의·하의 전면·후면 원화
+# 바드 부위별 제작 원화
 
 사용자가 전달한 3D 결과와 후속 피팅·리깅은 [Tripo 상의 제작 기록](modular-bard-tripo-top.md)에 기록했다.
+
+신발 한 짝의 정면·측면은 [부츠 원화](#부츠-한-짝-정면측면-원화--2026-10-11)를 참고한다.
 
 2026-10-10. [남성 바드 v2](modular-bard-concept.md)를 기준으로 전면과 후면을 각각 독립 이미지로 제작했다. 원화 검토 단계이며 3D 생성·피팅·게임 적용은 진행하지 않았다.
 
@@ -33,5 +35,21 @@
 가려졌던 허리·종아리와 후면 봉제 구조는 보완한 제안이다. 발목까지 좁아지는 천 밑단은 별도 부츠 안에 넣도록 구성했다. 허벅지 띠는 전면 이미지 오른쪽, 후면 이미지 왼쪽에 있으며 후면에 전면 버클과 지퍼 덮개를 반복하지 않았다. 벨트의 세부 연결과 앞뒤 치수는 3D 제작 시 정리해야 한다.
 
 알파 채널 범위는 0–254이며 주변에 색 번짐이 보여 3D 입력 전 배경·가장자리 정리가 필요하다. 현재 원화 검토 단계로 3D 생성·피팅·게임 적용은 진행하지 않았다. 후속 피팅은 현재 `assets/modular_human_male_01/fitted/base.glb`, `human_male_01_mixamo_candidate_v2`, `interfaces/v1`을 기준으로 한다. 상의가 바지 허리를 덮고 부츠가 바지 밑단을 덮으며, 벨트 간섭·겹침 여유·가림·동작·혼합 장비 호환은 미검증이다.
+
+제작 도구: OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**, 2026-10-11. OpenAI 생성 출력물 이용 조건을 적용하며 참조 원화의 기존 출처·이용 조건을 유지한다.
+
+## 부츠 한 짝 정면·측면 원화 — 2026-10-11
+
+사용자 제공 메시의 피팅·대칭 제작은 [Tripo 부츠 제작 기록](modular-bard-tripo-boots.md)에 기록했다.
+
+[남성 바드 v2](modular-bard-concept.md)의 긴 가죽 부츠를 착용자 오른발 한 짝으로 분리했다. Tripo 입력용으로 시점마다 독립된 1024×1536 RGB PNG를 저장했다. 흰색 불투명 배경이며 몸체와 바지는 없다.
+
+- [정면 PNG](../../assets/items/bard_starter/concepts/boots/boot-bard-right-front-v1.png)
+- [바깥쪽 측면 PNG](../../assets/items/bard_starter/concepts/boots/boot-bard-right-side-v1.png): 발끝이 이미지 오른쪽을 향한다.
+- [전체 프롬프트·참조·해시·검수](../../assets/items/bard_starter/concepts/boots/generation.json)
+
+갈색 가죽, 접힌 입구, 정면 황동 마름모 장식, 정면 끈, 종아리 상단·발목 스트랩을 유지했다. 긴 끈 끝은 짧게 정리했다. 정면을 먼저 생성하고 이를 측면의 직접 참조로 사용했다. 측면에서도 장식과 끈은 앞 가장자리에 있고 버클은 바깥쪽 앞에 있다. 원본에 가려진 측면·뒤꿈치는 보완한 제안이며, 세부 봉제·주름·끈 차이는 정면을 우선해 3D에서 정리한다.
+
+이 단계는 원화 제작이며 Tripo 생성·피팅은 아직 진행하지 않았다. 후속 작업에서는 한 짝을 생성하고 반대쪽을 3D에서 대칭 제작하며 좌우 본 대응과 면 방향도 수정한다. 현재 공통 몸체 `assets/modular_human_male_01/fitted/base.glb`, 리그 `human_male_01_mixamo_candidate_v2`, `interfaces/v1`의 `boot_calf` 후보를 기준으로 부츠가 바지를 덮도록 피팅한다. 입구 여유·겹침·가림·동작·혼합 장비 호환은 미검증이다.
 
 제작 도구: OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**, 2026-10-11. OpenAI 생성 출력물 이용 조건을 적용하며 참조 원화의 기존 출처·이용 조건을 유지한다.

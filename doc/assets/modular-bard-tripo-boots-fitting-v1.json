@@ -1,0 +1,120 @@
+{
+  "date": "2026-10-11",
+  "source": {
+    "path": "assets/items/bard_starter/tripo_boots_v1/source.glb",
+    "sha256": "b3ee950470e6287bf2cb65d55a342317fdf3dd03a774fe9ddda5cb060681923c"
+  },
+  "base": {
+    "path": "assets/modular_human_male_01/fitted/base.glb",
+    "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+  },
+  "interfaces": {
+    "path": "assets/modular_human_male_01/interfaces/v1/interfaces.json",
+    "sha256": "52cbd59252b2c80740553182f347273afd3706adf1da3f26b9a11d79400eb23e"
+  },
+  "method": "Fit right calf to current body sections, retain open cuff and original topology/UV/texture, mirror X with reversed triangle winding and side-specific Leg/Foot/ToeBase weights.",
+  "initial_transform": {
+    "scale": [
+      0.7,
+      0.55,
+      0.54
+    ],
+    "translation": [
+      -0.1664,
+      -0.006,
+      0.025
+    ],
+    "right_foot_x_shear_per_z": -0.1
+  },
+  "source_triangles": 1703,
+  "mirrored_triangles": 3406,
+  "foot_clearance_iterations": [
+    {
+      "minimum_sample_clearance_m": -0.010470764771297273,
+      "maximum_correction_m": 0.007255362803924823
+    },
+    {
+      "minimum_sample_clearance_m": -0.0037409361755779604,
+      "maximum_correction_m": 0.005656527336646376
+    },
+    {
+      "minimum_sample_clearance_m": -0.0008111766420798236,
+      "maximum_correction_m": 0.0032927157376311626
+    },
+    {
+      "minimum_sample_clearance_m": 0.0011091355505191917,
+      "maximum_correction_m": 0.001479026188296225
+    },
+    {
+      "minimum_sample_clearance_m": 0.0022456394507531846,
+      "maximum_correction_m": 0.0007637079322698496
+    },
+    {
+      "minimum_sample_clearance_m": 0.00250213524451368,
+      "maximum_correction_m": 0.000410206335017578
+    },
+    {
+      "minimum_sample_clearance_m": 0.0028573324109492787,
+      "maximum_correction_m": 0.0003808891940910764
+    },
+    {
+      "minimum_sample_clearance_m": 0.003238221602781176,
+      "maximum_correction_m": 0.0002539261309001653
+    },
+    {
+      "minimum_sample_clearance_m": 0.003492147732175243,
+      "maximum_correction_m": 0.00016928408827084616
+    },
+    {
+      "minimum_sample_clearance_m": 0.003661431819441981,
+      "maximum_correction_m": 0.00011285605951662442
+    },
+    {
+      "minimum_sample_clearance_m": 0.0037742878782892515,
+      "maximum_correction_m": 7.523737345732821e-05
+    },
+    {
+      "minimum_sample_clearance_m": 0.0038495252513003333,
+      "maximum_correction_m": 5.01582492690525e-05
+    },
+    {
+      "minimum_sample_clearance_m": 0.0038996835002718952,
+      "maximum_correction_m": 3.343883304436622e-05
+    },
+    {
+      "minimum_sample_clearance_m": 0.003933122333117939,
+      "maximum_correction_m": 2.229255549512999e-05
+    }
+  ],
+  "preserved_source_topology_uv_and_embedded_texture": true,
+  "cuff": {
+    "path": "client/src/lib/data/bardBootCuff.json",
+    "measured_section_height_m": 0.455,
+    "hem_height_m": 0.445,
+    "inset_m": 0.009,
+    "minimum_section_radius_m": 0.05959026981561161,
+    "samples": 128,
+    "sampled_height_range_m": [
+      0.445,
+      0.525
+    ],
+    "rigid_tuck_through_height_m": 0.535
+  },
+  "skin_cut_height_m": 0.43,
+  "validation": {
+    "path": "assets/modular_human_male_01/bard/tripo_boots_v1/boots_bard.glb",
+    "sha256": "033658dbf434e1bd308f93de239989a20d49150ed5da96b84a865a1fe4746b66",
+    "triangles": 3406,
+    "bones": 65,
+    "exact_rest_hierarchy_and_inverse_bind_match": true,
+    "maximum_weight_sum_error": 0,
+    "active_bones": [
+      "LeftFoot",
+      "LeftLeg",
+      "LeftToeBase",
+      "RightFoot",
+      "RightLeg",
+      "RightToeBase"
+    ]
+  }
+}

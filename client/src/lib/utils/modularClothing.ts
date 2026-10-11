@@ -11,6 +11,7 @@ import {
   tuckPantsIntoPriestBoots,
 } from './priestBootCuff'
 import underwearSeat from '../data/underwearSeat.json'
+import { bardPantsBootDistance, tuckPantsIntoBardBoots } from './bardBootCuff'
 import {
   cavemanPantsBootDistance,
   tuckPantsIntoCavemanBoots,
@@ -33,6 +34,7 @@ type Cut =
   | 'tall_boots'
   | 'ranger_pants_boots'
   | 'priest_pants_boots'
+  | 'bard_pants_boots'
   | 'collar'
   | 'tripo_collar'
   | 'ranger_collar'
@@ -96,6 +98,7 @@ const cuts: Record<Cut, Distance | Distance[] | Reshape> = {
   tall_boots: (point) => point.y - 0.43,
   ranger_pants_boots: rangerPantsBootDistance,
   priest_pants_boots: priestPantsBootDistance,
+  bard_pants_boots: bardPantsBootDistance,
   collar: (point) => Math.max(1.61 - point.y, Math.abs(point.x) - 0.075),
   tripo_collar: (point) => Math.max(1.54 - point.y, Math.abs(point.x) - 0.075),
   ranger_collar: [
@@ -624,7 +627,8 @@ function applyCuts(
             (point) => distance(point) * (skin ? -1 : 1),
             name === 'ranger_pants_boots' ||
               name === 'caveman_pants_boots' ||
-              name === 'priest_pants_boots'
+              name === 'priest_pants_boots' ||
+              name === 'bard_pants_boots'
           )
         )
     if (name === 'priest_hat_hair') tuckHairUnderPriestHat(geometry)
@@ -632,6 +636,7 @@ function applyCuts(
     if (name === 'ranger_pants_boots') tuckPantsIntoRangerBoots(geometry)
     if (name === 'caveman_pants_boots') tuckPantsIntoCavemanBoots(geometry)
     if (name === 'priest_pants_boots') tuckPantsIntoPriestBoots(geometry)
+    if (name === 'bard_pants_boots') tuckPantsIntoBardBoots(geometry)
     if (name === 'ranger_sleeves' && !skin) {
       const transition = sleeveCut(0.2)
       const halves = [

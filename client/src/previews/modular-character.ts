@@ -181,6 +181,7 @@ async function main() {
     'boots_priest',
     'top_bard',
     'pants_bard',
+    'boots_bard',
   ]
   const [base, sources, animations, sword, profile, candidateSources, social] =
     await Promise.all([
@@ -323,7 +324,7 @@ async function main() {
       !inspectingBard &&
       !inspectingPriest
     note.textContent = inspectingBard
-      ? '바드 조끼·케이프 상의 · 다른 장비와의 혼합 조합은 검수 중입니다.'
+      ? '바드 조끼·케이프·녹색 바지·가죽 부츠'
       : inspectingPriest
         ? '사제 성의·사슬 바지·가죽 앵클부츠'
         : inspectingRanger

@@ -64,6 +64,7 @@ const lazyStates = new WeakMap<
   }
 >()
 const soleOffsets: Record<ModularOutfit['boots'], number> = {
+  bard: modularSoleOffsets.none,
   ...modularSoleOffsets,
 }
 

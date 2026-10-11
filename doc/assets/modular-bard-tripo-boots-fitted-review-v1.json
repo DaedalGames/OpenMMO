@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-11",
+  "blend": {
+    "path": "assets/items/bard_starter/tripo_boots_v1/bard-boots-fitting.blend",
+    "sha256": "71ebeffa430a1392b9b21c4704272c2619cb2706b3fdbe5ae25f6c1fc29985e3"
+  },
+  "sources": [
+    {
+      "path": "assets/modular_human_male_01/fitted/base.glb",
+      "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+    },
+    {
+      "path": "assets/modular_human_male_01/fitted/hair_crop.glb",
+      "sha256": "5e8acb389f575331008c36dd94afcbf3831c90f53ca21ab0a7bbe666539f2472"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_top_v1/top_bard.glb",
+      "sha256": "91c1c1d3b94ca6ba9184ba3c9a74d8131c2a452f024f61a58f0f38db0c8e5d76"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_pants_v1/pants_bard.glb",
+      "sha256": "87885b4a6459f124ea38024a2092f2b4c324fae7bb3b8f878328bf1b1cccb720"
+    },
+    {
+      "path": "assets/modular_human_male_01/bard/tripo_boots_v1/boots_bard.glb",
+      "sha256": "033658dbf434e1bd308f93de239989a20d49150ed5da96b84a865a1fe4746b66"
+    },
+    {
+      "path": "assets/modular_human_male_01/animations/animations.glb",
+      "sha256": "fc47d9613bd1fbc9f0d61ce0cc95a5c540d16ab8430bcf34ee7ddcd9cd958ac3"
+    },
+    {
+      "path": "client/public/models/characters/modular_male/animations/social.glb",
+      "sha256": "a9efe7a2d388011cdc039ca6778c2b3a929b07953941ee7bb7c50a511d4b083d"
+    }
+  ],
+  "images_directory": "/home/jake/.codex/visualizations/2026/10/11/01a128ca-d9a9-7263-81d4-9d97a3555073/bard-boots",
+  "note": "Matching-set assembly and fixed game pose samples; no continuous Blender animation or mixed-outfit certification.",
+  "images_retained": false,
+  "cleanup_date": "2026-10-11"
+}
