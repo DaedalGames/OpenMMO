@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { femaleSeat, femaleSeatOffset } from './female-seat'
+import { femaleTorchClips, femaleTorchMotions, levelGaze } from './female-torch'
 
 export async function showFemaleBase(
   scene: THREE.Scene,
@@ -38,8 +39,11 @@ export async function showFemaleBase(
       <select id="female-equipment">
         <option value="unarmed">맨손</option>
         <option value="armed">강철 장검</option>
+        <option value="torch">왼손 횃불</option>
+        <option value="armed-torch">강철 장검 + 횃불</option>
       </select>
       <p class="details">대기와 걷기에서 장착 상태에 따라 손 모양이 바뀝니다.</p>
+      <p class="details">횃불을 장착하면 대기·걷기·달리기·전투 대기에서 왼손에 횃불을 듭니다.</p>
       <button id="female-pause" type="button">일시정지</button>
       <label for="female-time">동작 시점</label>
       <input id="female-time" type="range" min="0" max="1" step="0.001" value="0" />
@@ -62,12 +66,34 @@ export async function showFemaleBase(
   )
   status.textContent = '여성 베이스를 불러오는 중…'
   const loader = new GLTFLoader()
-  const [{ scene: model, animations }, { scene: weapon }, { scene: chair }] =
-    await Promise.all([
-      loader.loadAsync('/__modular-character/parts/female_base.glb'),
-      loader.loadAsync('/models/weapons/steel_longsword.glb'),
-      loader.loadAsync(`/models/${femaleSeat.chair.model}`),
-    ])
+  const [
+    { scene: model, animations },
+    { scene: weapon },
+    { scene: chair },
+    { scene: torch },
+    torchPack,
+  ] = await Promise.all([
+    loader.loadAsync('/__modular-character/parts/female_base.glb'),
+    loader.loadAsync('/models/weapons/steel_longsword.glb'),
+    loader.loadAsync(`/models/${femaleSeat.chair.model}`),
+    loader.loadAsync('/models/weapons/torch.glb'),
+    loader.loadAsync('/models/characters/modular_male/animations/offhand.glb'),
+  ])
+  const swordGrip = animations.find((clip) => clip.name === 'idle_armed')
+  const catwalk = animations.find((clip) => clip.name === 'walk')
+  const combatIdle = animations.find((clip) => clip.name === 'combat_idle')
+  if (!swordGrip || !catwalk || !combatIdle)
+    throw new Error('검을 쥐는 손 자세 또는 걷기 동작을 찾지 못했습니다.')
+  levelGaze(model, combatIdle)
+  animations.push(
+    ...(await femaleTorchClips(
+      model,
+      torchPack,
+      swordGrip,
+      catwalk,
+      combatIdle
+    ))
+  )
   chair.scale.setScalar(1 / femaleSeat.characterHeight)
   chair.visible = false
   resources.push(chair)
@@ -78,6 +104,14 @@ export async function showFemaleBase(
   weapon.position.set(0.028, 0.064, 0.011)
   weapon.rotation.z = 0.2
   hand.add(weapon)
+  const leftHand = model.getObjectByName('LeftHand')
+  if (!leftHand) throw new Error('횃불을 장착할 왼손 본을 찾지 못했습니다.')
+  torch.name = 'femaleTorch'
+  torch.visible = false
+  torch.scale.setScalar(1 / femaleSeat.characterHeight)
+  torch.position.set(-0.004, 0.049, 0.009)
+  torch.rotation.set(0, Math.PI, 0.2)
+  leftHand.add(torch)
   resources.push(model)
   if (disposed()) {
     for (const resource of [model, chair]) {
@@ -143,9 +177,14 @@ export async function showFemaleBase(
   }
   const updateAnimation = (delta: number) => {
     mixer.update(delta)
-    if (!['idle1', 'walk'].includes(motion.value)) return
-    const pose =
-      equipment.value === 'armed' ? handPoses.armed : handPoses.unarmed
+    if (
+      !['idle1', 'walk'].includes(motion.value) &&
+      !(equipment.value === 'armed-torch' && motion.value === 'run')
+    )
+      return
+    const pose = ['armed', 'armed-torch'].includes(equipment.value)
+      ? handPoses.armed
+      : handPoses.unarmed
     for (const { bone, rotation } of pose) bone.quaternion.copy(rotation)
   }
   const setPaused = (value: boolean) => {
@@ -161,8 +200,17 @@ export async function showFemaleBase(
       state.bone.quaternion.copy(state.quaternion)
       state.bone.scale.copy(state.scale)
     }
-    weapon.visible = equipment.value === 'armed'
-    const clip = animations.find((entry) => entry.name === motion.value)
+    weapon.visible = ['armed', 'armed-torch'].includes(equipment.value)
+    torch.visible =
+      ['torch', 'armed-torch'].includes(equipment.value) &&
+      !!femaleTorchMotions[motion.value]
+    const clipName =
+      torch.visible && weapon.visible && motion.value === 'idle1'
+        ? 'torch_sword_idle1'
+        : torch.visible
+          ? femaleTorchMotions[motion.value]
+          : motion.value
+    const clip = animations.find((entry) => entry.name === clipName)
     action = clip ? mixer.clipAction(clip).reset().play() : undefined
     if (action) {
       action.setLoop(
@@ -177,8 +225,10 @@ export async function showFemaleBase(
     time.disabled = pause.disabled = !action
     setPaused(false)
     updateAnimation(0)
-    if (select.value.endsWith('-hand')) reset()
-    status.textContent = ['idle1', 'walk'].includes(motion.value)
+    if (select.value === 'full' || select.value.endsWith('-hand')) reset()
+    status.textContent = ['idle1', 'walk', 'run', 'combat_idle'].includes(
+      motion.value
+    )
       ? `${motion.selectedOptions[0].textContent} · ${equipment.selectedOptions[0].textContent}`
       : motion.selectedOptions[0].textContent
     updateStats()
@@ -241,6 +291,7 @@ export async function showFemaleBase(
   })
   let triangles = 0
   let weaponTriangles = 0
+  let torchTriangles = 0
   const materials = new Set<THREE.MeshStandardMaterial>()
   model.traverse((node) => {
     if (!(node instanceof THREE.Mesh)) return
@@ -259,8 +310,17 @@ export async function showFemaleBase(
         (node.geometry.index?.count ??
           node.geometry.attributes.position.count) / 3
   })
+  torch.traverse((node) => {
+    if (node instanceof THREE.Mesh)
+      torchTriangles +=
+        (node.geometry.index?.count ??
+          node.geometry.attributes.position.count) / 3
+  })
   const updateStats = () => {
-    const visibleTriangles = triangles - (weapon.visible ? 0 : weaponTriangles)
+    const visibleTriangles =
+      triangles -
+      (weapon.visible ? 0 : weaponTriangles) -
+      (torch.visible ? 0 : torchTriangles)
     document.getElementById('female-stats')!.textContent =
       `${visibleTriangles.toLocaleString()}삼각형 · ${bones.length}개 본 · ${animations.length}가지 동작`
   }
@@ -326,6 +386,10 @@ export async function showFemaleBase(
     const aspect = host.clientWidth / host.clientHeight
     controls.target.fromArray(view.target)
     camera.position.fromArray(view.position)
+    if (select.value === 'full' && torch.visible) {
+      controls.target.y = 0.6
+      camera.position.set(0, 0.65, 2.3)
+    }
     camera.position
       .sub(controls.target)
       .multiplyScalar(Math.max(1, 1 / aspect))
@@ -365,8 +429,12 @@ export async function showFemaleBase(
   reset()
   const params = new URLSearchParams(location.search)
   const requestedMotion = params.get('motion') ?? 'idle1'
-  equipment.value =
-    params.get('equipment') === 'armed' || requestedMotion === 'idle_armed'
+  const requestedEquipment = params.get('equipment') ?? ''
+  equipment.value = ['unarmed', 'armed', 'torch', 'armed-torch'].includes(
+    requestedEquipment
+  )
+    ? requestedEquipment
+    : requestedMotion === 'idle_armed'
       ? 'armed'
       : 'unarmed'
   motion.value =
