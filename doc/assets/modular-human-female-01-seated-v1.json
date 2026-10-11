@@ -1,0 +1,370 @@
+{
+  "date": "2026-10-12",
+  "source_conditions": "Existing project Mixamo animation, game Chair, and female Tripo/image-edit source/license records apply. Local editing only; no new generation or paid API usage.",
+  "sources": [
+    {
+      "path": "client/public/models/characters/modular_male/animations/social.glb",
+      "sha256": "a9efe7a2d388011cdc039ca6778c2b3a929b07953941ee7bb7c50a511d4b083d"
+    },
+    {
+      "path": "client/public/models/objects/chair.glb",
+      "sha256": "58112cb05ee4411aea371e42944990903091abcc9bade31530c39ca69547a568"
+    },
+    {
+      "path": "data/object_catalog.json",
+      "sha256": "a500d03be49590e018f81d780e18286fad45a020cd47cbe9b8c51f240ba01e72"
+    }
+  ],
+  "method": "Use the game Chair at a 1.8-unit review height with the catalog interaction lift. Lower the pelvis underside 0.03 world units into the seat to remove the side-view thigh gap while keeping both feet planted. Lean the spine forward by 8 degrees, lower both clavicles by 29 degrees, hold elbows beside the body, level gaze through neck/head compensation and fit hands to the knee surface at 60 Hz.",
+  "diagnosis": "The prior pose put knees above the pelvis and hands below the female knee surface. No arm/hand influence was found in the thigh region. The chair fit removes the excessive thigh flexion without changing skin weights.",
+  "unchanged": {
+    "other_eight_animation_clips": true,
+    "geometry_normals_uv_indices": true,
+    "skin_weights": true
+  },
+  "contact_validation": {
+    "samples": 61,
+    "character_review_height": 1.8,
+    "chair_model": "objects/chair.glb",
+    "interaction_offset": {
+      "x": 0,
+      "y": 0.08,
+      "z": 0
+    },
+    "seat_compression": 0.03,
+    "maximum_head_pitch_degrees": 0.002131435824531951,
+    "maximum_elbow_offset": 0.09961186859701912,
+    "minimum_hand_surface_gap": 0.001489635522316235,
+    "maximum_hand_contact_gap": 0.0015063411970560603,
+    "minimum_seat_gap": -0.016666757953156863,
+    "maximum_seat_gap": -0.01666673156235171
+  },
+  "rig_validation": {
+    "source": {
+      "path": "assets/modular_human_female_01/ear_normals_v2/base-ear-normals-v2.glb",
+      "sha256": "078006e1a63a9e9fdb9309058d39b782813d1fcbaa022f10648f8368d3fd8fef"
+    },
+    "output": {
+      "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+      "sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732"
+    },
+    "bone_count": 65,
+    "used_vertices": 23224,
+    "unchanged_geometry_normals_uv_indices": true,
+    "unchanged_materials_and_embedded_images": true,
+    "maximum_rest_error": 6.373398378100131e-08,
+    "maximum_weight_sum_error": 4.470348358154297e-08,
+    "right_index_anchor_longitudinal_offset_from_middle": 0.004331365552979763,
+    "idle_variants": {
+      "original_left_hand_and_body_tracks_preserved": true,
+      "maximum_mirrored_rotation_error_radians": 5.960464477539063e-08
+    },
+    "armed_idle_handle": {
+      "all_four_fingers_wrap_handle": true,
+      "thumb_over_index": true,
+      "sampled_frames": 121
+    },
+    "idle_gaze": {
+      "neck_lift_degrees": 1.5,
+      "head_lift_degrees": 6.5,
+      "both_idle_variants_identical": true
+    },
+    "catwalk": {
+      "source_action": "walk_cat",
+      "closed_loop": true,
+      "maximum_ankle_offset_from_pelvis": 0.03187912283187769
+    },
+    "walk_hand": {
+      "default_matches_unarmed_idle": true,
+      "right_finger_tracks": 15
+    },
+    "fingers": [
+      {
+        "finger": "LeftHandThumb",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022410336112403336,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandIndex",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02009435783838247,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandMiddle",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02162937023377971,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandRing",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022441790153440312,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandPinky",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02070317809247361,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandThumb",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022555266100129753,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandIndex",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.01740826208169942,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandMiddle",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02143434096305023,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandRing",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022409527109544795,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandPinky",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.020696622778095433,
+        "maximum_neighbor_movement": 0
+      }
+    ],
+    "clips": [
+      {
+        "clip": "idle1",
+        "frames": 121,
+        "minimum_y": -6.004764489402114e-08,
+        "maximum_floor_y": 2.4624148698435076e-08,
+        "maximum_extent": 1.0676285113697745,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "idle_armed",
+        "frames": 121,
+        "minimum_y": -6.004764489402114e-08,
+        "maximum_floor_y": 2.4624148698435076e-08,
+        "maximum_extent": 1.0675657641026217,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "walk",
+        "frames": 121,
+        "minimum_y": -0.000609187586950269,
+        "maximum_floor_y": 0.0007129227984859828,
+        "maximum_extent": 1.1343124969846743,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "run",
+        "frames": 121,
+        "minimum_y": -7.693489062890761e-05,
+        "maximum_floor_y": 0.07203954461010592,
+        "maximum_extent": 1.2947904011261664,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.3292541393122,
+            "maximum": 65.32926090175421
+          },
+          {
+            "minimum": 40.60722842388417,
+            "maximum": 40.607232889718816
+          },
+          {
+            "minimum": 47.356401283956025,
+            "maximum": 47.35640626314322
+          }
+        ]
+      },
+      {
+        "clip": "jump",
+        "frames": 121,
+        "minimum_y": 0.0013391456999394956,
+        "maximum_floor_y": 0.5508195421739501,
+        "maximum_extent": 1.3178721449745594,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925700963911,
+            "maximum": 65.32926045183831
+          },
+          {
+            "minimum": 40.60723006491276,
+            "maximum": 40.60723257749806
+          },
+          {
+            "minimum": 47.356400998827965,
+            "maximum": 47.356404255776646
+          }
+        ]
+      },
+      {
+        "clip": "combat_idle",
+        "frames": 121,
+        "minimum_y": -1.125594251860304e-05,
+        "maximum_floor_y": 4.133805629948084e-06,
+        "maximum_extent": 1.1925542155431301,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925539165258,
+            "maximum": 65.32925832654328
+          },
+          {
+            "minimum": 40.60723115171889,
+            "maximum": 40.607232092012325
+          },
+          {
+            "minimum": 47.35640299030395,
+            "maximum": 47.35640513159899
+          }
+        ]
+      },
+      {
+        "clip": "slash1",
+        "frames": 121,
+        "minimum_y": -0.00037669962587674353,
+        "maximum_floor_y": 0.012353575186052058,
+        "maximum_extent": 1.29508487456705,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925601682406,
+            "maximum": 65.32926260165841
+          },
+          {
+            "minimum": 40.60722755937672,
+            "maximum": 40.6072329299622
+          },
+          {
+            "minimum": 47.35639976356915,
+            "maximum": 47.35640520121029
+          }
+        ]
+      },
+      {
+        "clip": "dying",
+        "frames": 121,
+        "minimum_y": -0.00025867437406678034,
+        "maximum_floor_y": 0.04565301674148253,
+        "maximum_extent": 1.2219758969296661,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "sit_idle",
+        "frames": 121,
+        "minimum_y": -4.2862993765435675e-08,
+        "maximum_floor_y": 2.063180951777932e-08,
+        "maximum_extent": 0.9517186042378918,
+        "maximum_face_rigid_error": 0
+      }
+    ]
+  },
+  "browser": {
+    "views": [
+      "front",
+      "side",
+      "back"
+    ],
+    "fractions": [
+      0,
+      0.25,
+      0.5,
+      0.75
+    ],
+    "page_errors": [],
+    "side_contact_gap_visually_checked": true,
+    "relaxed_shoulders_front_checked": true
+  },
+  "outputs": [
+    {
+      "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+      "sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732"
+    },
+    {
+      "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
+      "sha256": "67cc95b500ee53e2c3d1ed0d176f9fa6fbc7d8c5bda4e2d0da52f24143e7743c"
+    }
+  ],
+  "relaxed_arms_and_gaze": {
+    "before": {
+      "head_pitch_degrees": [
+        -29.71383528092595,
+        -23.347570561539943
+      ],
+      "elbow_distance_from_center": [
+        0.12851567093201674,
+        0.15350808747418784
+      ]
+    },
+    "after": {
+      "head_pitch_degrees": [
+        -0.0024116610458449666,
+        0.0012820143590556623
+      ],
+      "elbow_distance_from_center": [
+        0.09477355056585399,
+        0.09821731457535703
+      ]
+    },
+    "samples": 121,
+    "other_eight_clips_unchanged": true
+  },
+  "seated_shoulder_adjustment": {
+    "samples": 121,
+    "shoulder_depression_degrees": 29,
+    "additional_shoulder_depression_degrees": 13,
+    "minimum_shoulder_joint_drop": 0.01109255528381714,
+    "maximum_shoulder_joint_drop": 0.01172616570024787,
+    "maximum_wrist_position_change": 3.800157917652118e-08,
+    "other_eight_clips_unchanged": true,
+    "other_seated_body_tracks_unchanged": true
+  },
+  "additional_seat_drop": {
+    "sampled_frames": 121,
+    "minimum_additional_pelvis_drop_world": 0.021033239364624024,
+    "maximum_additional_pelvis_drop_world": 0.021038245707745484,
+    "other_eight_clips_identical": true
+  },
+  "commit_cleanup": {
+    "reason": "Preserve validation in this document; remove disposable bake and diagnostic outputs. Retain both final editable/runtime assets and the catwalk build input.",
+    "deleted": [
+      {
+        "path": "assets/modular_human_female_01/rig_v1/animation-snapshots.json",
+        "bytes": 619835,
+        "sha256": "78ba02e956684c365f6e0e4e6e6bc5da0f6f7aa6849e116c6391521243287a36"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/clips.json",
+        "bytes": 5264639,
+        "sha256": "504cb1527d977465c082875d4646a1109e929269117dd2ec3e2bd354129e0e4a"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/floor-samples.json",
+        "bytes": 63125,
+        "sha256": "424ab5f3eb86e4c8cf64faf2af92c5c681a927fba879c635257ea7265dd41ee6"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/seated-validation.json",
+        "bytes": 484,
+        "sha256": "f7bc1917d226cf5095e5f4c5643af9358194fe74dedbb5c7d83af7a4acae5572"
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/validation.json",
+        "bytes": 6491,
+        "sha256": "bfb221e07289d94147be54a6fa93d0dbee6588de6892a769aa00a3c8e036b5ec"
+      }
+    ]
+  }
+}

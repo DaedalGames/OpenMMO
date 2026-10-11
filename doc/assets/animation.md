@@ -304,7 +304,9 @@ tip followed the handle. Other rigs and offhand props kept their previous placem
     확인했다(three 리타게팅 하네스로 gnoll/knight 힙·발끝 좌표 비교). 정규화 전 blend 백업은
     보관하지 않는다 — 필요하면 HF에서 이전 리비전을 받을 것.
 - 어느 팩도 참조하지 않는 잔재 액션: `torch_idle`(= `torch_idle1`),
-  `run_down`, `run_sword`, `walk_cat`, `walk_female`, `walk_tough`, `mixamo.com*`.
+  `run_down`, `run_sword`, `walk_female`, `walk_tough`, `mixamo.com*`.
+- `walk_cat`은 여성 모듈형 리깅본의 전용 걷기 제작에 사용한다.
+  [여성 캣워크 제작·검증 기록](modular-human-female-01.md)을 참고한다.
 - `dying`은 2026-08-14에 힙을 4cm 내렸다 (시체가 지면에서 떠 있었다). blend와
   배포본 `combat_melee.glb` 양쪽에 반영돼 있으므로 재export해도 유지된다
   (blend는 `Armature_combat`의 `Hips` location[2]에 +0.04 — 정규화 전 단위로 +0.4, 배포본은

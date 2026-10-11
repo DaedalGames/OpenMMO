@@ -1,0 +1,287 @@
+{
+  "date": "2026-10-12",
+  "source_action": "walk_cat",
+  "sources": [
+    {
+      "path": "assets/all_animation.blend",
+      "sha256": "2fdc40e9a7b0386e3292046dbd6adfbf3ef5e2c10b9146cc5f8ca12a8f1abf72"
+    },
+    {
+      "path": "assets/modular_human_female_01/rig_v1/catwalk-source.glb",
+      "sha256": "f33e00e34c4dcabd8ee0f5c76cae9148ef4c0f1e6981b953f0adf351fcdb6358"
+    }
+  ],
+  "source_conditions": "Existing project Mixamo animation and female Tripo/image-edit source/license records apply. Local processing only; no new generation, paid API or subscription usage.",
+  "method": "Retarget existing catwalk to female bones; narrow ankle paths to 28% around the pelvis while preserving world foot orientations; retain accepted relaxed fingers; close the in-place loop and bake sole grounding at 60 Hz. Depress both clavicles by 6 degrees with upper-arm world rotation compensation to retain the arm swing.",
+  "other_eight_clips_identical_to_previous": true,
+  "browser": {
+    "views": [
+      "front",
+      "side",
+      "back"
+    ],
+    "fractions": [
+      0,
+      0.25,
+      0.5,
+      0.75
+    ],
+    "page_errors": []
+  },
+  "validation": {
+    "source": {
+      "path": "assets/modular_human_female_01/ear_normals_v2/base-ear-normals-v2.glb",
+      "sha256": "078006e1a63a9e9fdb9309058d39b782813d1fcbaa022f10648f8368d3fd8fef"
+    },
+    "output": {
+      "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+      "sha256": "4869401eaf43115059ab71c30ae18f213e7120506afe34f087ec24da2ef4c8c0"
+    },
+    "bone_count": 65,
+    "used_vertices": 23224,
+    "unchanged_geometry_normals_uv_indices": true,
+    "unchanged_materials_and_embedded_images": true,
+    "maximum_rest_error": 6.373398378100131e-8,
+    "maximum_weight_sum_error": 4.470348358154297e-8,
+    "right_index_anchor_longitudinal_offset_from_middle": 0.004331365552979763,
+    "idle_variants": {
+      "original_left_hand_and_body_tracks_preserved": true,
+      "maximum_mirrored_rotation_error_radians": 5.960464477539063e-8
+    },
+    "armed_idle_handle": {
+      "all_four_fingers_wrap_handle": true,
+      "thumb_over_index": true,
+      "sampled_frames": 121
+    },
+    "idle_gaze": {
+      "neck_lift_degrees": 1.5,
+      "head_lift_degrees": 6.5,
+      "both_idle_variants_identical": true
+    },
+    "catwalk": {
+      "source_action": "walk_cat",
+      "closed_loop": true,
+      "maximum_ankle_offset_from_pelvis": 0.03187912283187769
+    },
+    "walk_hand": {
+      "default_matches_unarmed_idle": true,
+      "right_finger_tracks": 15
+    },
+    "fingers": [
+      {
+        "finger": "LeftHandThumb",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022410336112403336,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandIndex",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02009435783838247,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandMiddle",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02162937023377971,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandRing",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022441790153440312,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandPinky",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02070317809247361,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandThumb",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022555266100129753,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandIndex",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.01740826208169942,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandMiddle",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02143434096305023,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandRing",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022409527109544795,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandPinky",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.020696622778095433,
+        "maximum_neighbor_movement": 0
+      }
+    ],
+    "clips": [
+      {
+        "clip": "idle1",
+        "frames": 121,
+        "minimum_y": -6.004764489402114e-8,
+        "maximum_floor_y": 2.4624148698435076e-8,
+        "maximum_extent": 1.0676285113697745,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "idle_armed",
+        "frames": 121,
+        "minimum_y": -6.004764489402114e-8,
+        "maximum_floor_y": 2.4624148698435076e-8,
+        "maximum_extent": 1.0675657641026217,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "walk",
+        "frames": 121,
+        "minimum_y": -0.000609187586950269,
+        "maximum_floor_y": 0.0007129227984859828,
+        "maximum_extent": 1.1343124969846743,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "run",
+        "frames": 121,
+        "minimum_y": -0.00007693489062890761,
+        "maximum_floor_y": 0.07203954461010592,
+        "maximum_extent": 1.2947904011261664,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.3292541393122,
+            "maximum": 65.32926090175421
+          },
+          {
+            "minimum": 40.60722842388417,
+            "maximum": 40.607232889718816
+          },
+          {
+            "minimum": 47.356401283956025,
+            "maximum": 47.35640626314322
+          }
+        ]
+      },
+      {
+        "clip": "jump",
+        "frames": 121,
+        "minimum_y": 0.0013391456999394956,
+        "maximum_floor_y": 0.5508195421739501,
+        "maximum_extent": 1.3178721449745594,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925700963911,
+            "maximum": 65.32926045183831
+          },
+          {
+            "minimum": 40.60723006491276,
+            "maximum": 40.60723257749806
+          },
+          {
+            "minimum": 47.356400998827965,
+            "maximum": 47.356404255776646
+          }
+        ]
+      },
+      {
+        "clip": "combat_idle",
+        "frames": 121,
+        "minimum_y": -0.00001125594251860304,
+        "maximum_floor_y": 0.000004133805629948084,
+        "maximum_extent": 1.1925542155431301,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925539165258,
+            "maximum": 65.32925832654328
+          },
+          {
+            "minimum": 40.60723115171889,
+            "maximum": 40.607232092012325
+          },
+          {
+            "minimum": 47.35640299030395,
+            "maximum": 47.35640513159899
+          }
+        ]
+      },
+      {
+        "clip": "slash1",
+        "frames": 121,
+        "minimum_y": -0.00037669962587674353,
+        "maximum_floor_y": 0.012353575186052058,
+        "maximum_extent": 1.29508487456705,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925601682406,
+            "maximum": 65.32926260165841
+          },
+          {
+            "minimum": 40.60722755937672,
+            "maximum": 40.6072329299622
+          },
+          {
+            "minimum": 47.35639976356915,
+            "maximum": 47.35640520121029
+          }
+        ]
+      },
+      {
+        "clip": "dying",
+        "frames": 121,
+        "minimum_y": -0.00025867437406678034,
+        "maximum_floor_y": 0.04565301674148253,
+        "maximum_extent": 1.2219758969296661,
+        "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "sit_idle",
+        "frames": 121,
+        "minimum_y": -1.4056000777524125e-7,
+        "maximum_floor_y": 9.623388303568335e-7,
+        "maximum_extent": 0.8478383450897775,
+        "maximum_face_rigid_error": 0
+      }
+    ]
+  },
+  "outputs": [
+    {
+      "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+      "sha256": "4869401eaf43115059ab71c30ae18f213e7120506afe34f087ec24da2ef4c8c0"
+    },
+    {
+      "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
+      "sha256": "8ac9f29f00b7ac752b43560be174f502ae412e2800dcaac2a97152f4848e6c98"
+    }
+  ],
+  "repeat_application_byte_identical": true,
+  "gltf_validation": {
+    "errors": 0,
+    "warnings": 1,
+    "warning": "Existing generated tangent-space warning"
+  },
+  "shoulder_adjustment": {
+    "shoulder_depression_degrees": 6,
+    "sampled_frames": 121,
+    "minimum_shoulder_joint_drop": 0.005223963450789126,
+    "maximum_shoulder_joint_drop": 0.005621776725458383,
+    "maximum_arm_world_rotation_difference_degrees": 0.16996670867369978,
+    "other_eight_clips_unchanged": true
+  }
+}

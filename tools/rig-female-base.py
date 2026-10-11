@@ -213,7 +213,16 @@ def build():
 def embed_animations():
     path = OUT / 'female-base.glb'
     doc, binary = io.read_glb(path)
-    assert not doc.get('animations'), 'Rebuild the binding before embedding again'
+    if doc.get('animations'):
+        animation_accessors = {s[k] for a in doc['animations'] for s in a['samplers'] for k in ['input', 'output']}
+        first_accessor = min(animation_accessors)
+        assert animation_accessors == set(range(first_accessor, len(doc['accessors'])))
+        animation_views = {doc['accessors'][i]['bufferView'] for i in animation_accessors}
+        first_view = min(animation_views)
+        assert animation_views == set(range(first_view, len(doc['bufferViews'])))
+        binary = binary[:doc['bufferViews'][first_view].get('byteOffset', 0)]
+        doc['accessors'] = doc['accessors'][:first_accessor]
+        doc['bufferViews'] = doc['bufferViews'][:first_view]
     binary = bytearray(binary)
     clips = json.loads((OUT / 'clips.json').read_text())
     indices = {n['name']: i for i, n in enumerate(doc['nodes'])}

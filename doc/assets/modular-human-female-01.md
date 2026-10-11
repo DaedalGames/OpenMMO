@@ -1,5 +1,81 @@
 # 여성 모듈형 공통 몸체
 
+## 실제 의자 기준 앉기 보정 — 2026-10-12
+
+앉기에서 손이 무릎에 묻히고 허벅지가 과하게 솟던 자세를 게임의 `Chair`로 맞췄다.
+미리보기의 앉기 선택 시 `objects/chair.glb`를 함께 표시하고, 게임 카탈로그의
+상호작용 높이 보정 **0.08**도 적용한다. 여성 모델은 높이 1의 제작 좌표를 유지한다.
+기존 무기 미리보기와 같은 **키 1.8 기준**으로 의자 크기를 환산했으며, 여성 캐릭터의
+최종 게임 키를 확정하거나 게임 캐릭터 선택에 연결한 변경은 아니다.
+
+엉덩이 아래 표면을 좌석에 맞추고 발바닥을 바닥에 고정한 뒤 무릎·발목 각도를 다시 풀었다.
+기존에는 무릎이 골반보다 높았지만 보정 후 자연스럽게 아래로 내려온다.
+상체는 8도 앞으로 기울이고 손을 실제 변형된 무릎 쪽 허벅지 표면 위에 맞췄다.
+추가 피드백에 따라 팔꿈치를 몸 옆으로 모으고, 목·머리 회전을 나눠 보정해 정면을 바라보게 했다.
+양쪽 쇄골도 아래로 29도 내려 움츠린 어깨를 완화하고, 팔 관절을 다시 풀어 손의 무릎 접촉을 유지했다.
+좌석에 체중이 실려 살이 눌리는 느낌을 위해 엉덩이 아래 표면을 게임 크기 기준
+**0.03(약 3cm)** 좌석 안으로 내렸다. 첫 1cm 보정에서 약 2cm 더 내린 설정이다.
+이는 골반 높이 보정이며 별도의 연부조직 변형은 아니다.
+발바닥 고정과 손의 무릎 접촉은 다시 계산해 유지했다.
+허벅지에 팔·손 본의 잘못된 영향은 발견하지 못했다. 가중치나 형상을 변경하지 않고
+과한 허벅지 굽힘을 완화했으며, 다른 8개 동작은 트랙 값까지 동일하다.
+
+- 현재 모델·편집용 원본: `rig_v1/female-base.glb`, `rig_v1/female-base.blend`.
+- 61시점에서 양손의 무릎 표면 접촉, 의도한 좌석 눌림, 정면 시선과 팔꿈치 위치를 검사한다.
+  수치는 높이 1의 제작 좌표 기준이다. 기존 리그 검사도 9동작 × 121시점 통과했다.
+- 실제 브라우저의 정면·측면·후면, 각 4시점에서 확인했다. 페이지 오류 없음.
+- 기존 Mixamo 동작·게임 의자·여성 Tripo/이미지 편집 출처와 이용 조건을 따른다.
+  신규 생성·유료 API 호출은 없다.
+- [출처·파일 해시·접촉 검사](modular-human-female-01-seated-v1.json).
+
+```sh
+node tools/tune-female-seated.mjs
+.venv/bin/python tools/rig-female-base.py --animations
+node tools/validate-female-rig.mjs
+node tools/validate-female-seated.mjs
+blender -b -t 4 --python tools/blender-scripts/save_female_rig.py
+```
+
+전체 재생성용 `animate-female-base.mjs`에도 같은 앉기 보정을 적용했다.
+아래 캣워크 기록의 출력 해시는 앉기 보정 전 이력이며, 현재 출력은 위 기록을 따른다.
+커밋 정리 후 `rig_v1/`에는 최종 GLB·Blender와 제작 입력 `catwalk-source.glb`를 보관한다.
+중간 클립 JSON·포즈 스냅샷·접지 샘플 등 5개 파일은 제거했고 검증 결과는 위 기록에 보존했다.
+
+## 여성 전용 캣워크 — 2026-10-12
+
+현재 여성 리깅본의 `walk`를 패션 모델 스타일의 캣워크로 교체했다.
+기존 `assets/all_animation.blend`의 Mixamo `walk_cat` 액션을 여성 골격으로 리타게팅하고,
+골반 기준 발목의 좌우 이동 폭을 28%로 좁혔다. 발의 월드 회전은 유지해 발바닥이 안쪽으로 기울지 않게 했다.
+골반·어깨·팔의 원본 캣워크 움직임과 기존 편안한 손가락 자세를 사용하며,
+제자리 반복 연결과 60 Hz 발바닥 접지를 보정했다. 이전 걷기에 적용했던 남성 원본 기준 시선 보정은
+새 캣워크의 목·머리 동작으로 대체했다.
+
+사용자 피드백에 따라 양쪽 쇄골을 아래로 6도 돌려 올라간 어깨를 완화했다.
+상완의 월드 회전을 보상해 팔 스윙을 유지했다. 121시점에서 어깨 관절이 모델 높이의
+약 0.52–0.56% 내려갔고, 보간에 따른 상완 회전 차이는 최대 0.17도였다.
+
+- 미리보기: `/modular-character-preview.html?character=female&camera=full&motion=walk`.
+- 결과: `rig_v1/female-base.glb`와 텍스처·9개 액션을 내장한 `female-base.blend`.
+- 다른 8개 동작의 시간·트랙 값은 직전 여성 모델과 동일하다. 형상·재질·텍스처도 유지했다.
+- 정면·측면·후면의 네 시점을 브라우저에서 확인했으며 페이지 오류는 없었다.
+  9개 동작 각각 121시점의 기존 리그 검사와 캣워크의 반복 연결·중앙선 근처 발 디딤 검사를 통과했다.
+- 출처·이용 조건: 기존 프로젝트 Mixamo 애니메이션과 여성 Tripo/이미지 편집 기록을 따른다.
+  로컬 편집만 수행했으며 신규 생성·유료 API·추가 구독 사용은 없다.
+- [출처 해시와 검사 결과](modular-human-female-01-catwalk-v1.json).
+
+기존 여성 리깅본에서 걷기만 다시 적용하는 명령:
+
+```sh
+blender -b -t 4 --python tools/blender-scripts/export_female_catwalk.py
+node tools/tune-female-catwalk.mjs
+.venv/bin/python tools/rig-female-base.py --animations
+node tools/validate-female-rig.mjs
+blender -b -t 4 --python tools/blender-scripts/save_female_rig.py
+```
+
+리깅부터 전체 재생성할 때에도 먼저 캣워크 원본을 추출한다.
+아래 `animate-female-base.mjs`가 같은 캣워크 보정을 포함한다.
+
 ## 로컬 리깅과 동작 미리보기 — 2026-10-12
 
 현재 미리보기는 `assets/modular_human_female_01/rig_v1/female-base.glb`다.

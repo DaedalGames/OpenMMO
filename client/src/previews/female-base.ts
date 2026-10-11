@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
+import { femaleSeat, femaleSeatOffset } from './female-seat'
 
 export async function showFemaleBase(
   scene: THREE.Scene,
@@ -61,10 +62,15 @@ export async function showFemaleBase(
   )
   status.textContent = '여성 베이스를 불러오는 중…'
   const loader = new GLTFLoader()
-  const [{ scene: model, animations }, { scene: weapon }] = await Promise.all([
-    loader.loadAsync('/__modular-character/parts/female_base.glb'),
-    loader.loadAsync('/models/weapons/steel_longsword.glb'),
-  ])
+  const [{ scene: model, animations }, { scene: weapon }, { scene: chair }] =
+    await Promise.all([
+      loader.loadAsync('/__modular-character/parts/female_base.glb'),
+      loader.loadAsync('/models/weapons/steel_longsword.glb'),
+      loader.loadAsync(`/models/${femaleSeat.chair.model}`),
+    ])
+  chair.scale.setScalar(1 / femaleSeat.characterHeight)
+  chair.visible = false
+  resources.push(chair)
   const hand = model.getObjectByName('RightHand')
   if (!hand) throw new Error('검을 장착할 오른손 본을 찾지 못했습니다.')
   weapon.name = 'femaleSteelLongsword'
@@ -74,23 +80,26 @@ export async function showFemaleBase(
   hand.add(weapon)
   resources.push(model)
   if (disposed()) {
-    model.traverse((node) => {
-      if (!(node instanceof THREE.Mesh)) return
-      node.geometry.dispose()
-      for (const material of Array.isArray(node.material)
-        ? node.material
-        : [node.material]) {
-        for (const value of Object.values(material))
-          if (value instanceof THREE.Texture) {
-            if (value.image instanceof ImageBitmap) value.image.close()
-            value.dispose()
-          }
-        material.dispose()
-      }
-    })
+    for (const resource of [model, chair]) {
+      resource.traverse((node) => {
+        if (!(node instanceof THREE.Mesh)) return
+        node.geometry.dispose()
+        for (const material of Array.isArray(node.material)
+          ? node.material
+          : [node.material]) {
+          for (const value of Object.values(material))
+            if (value instanceof THREE.Texture) {
+              if (value.image instanceof ImageBitmap) value.image.close()
+              value.dispose()
+            }
+          material.dispose()
+        }
+      })
+    }
     return
   }
   scene.add(model)
+  scene.add(chair)
   const bones: THREE.Bone[] = []
   model.traverse((node) => {
     if (node instanceof THREE.Bone) bones.push(node)
@@ -145,6 +154,8 @@ export async function showFemaleBase(
   }
   const play = () => {
     mixer.stopAllAction()
+    chair.visible = motion.value === 'sit_idle'
+    model.position.y = chair.visible ? femaleSeatOffset : 0
     for (const state of rest) {
       state.bone.position.copy(state.position)
       state.bone.quaternion.copy(state.quaternion)

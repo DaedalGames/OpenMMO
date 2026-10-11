@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { writeFileSync } from 'node:fs'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, hash } from './lib/headless-three.mjs'
+import { femaleCatwalk, catwalkSource } from './lib/female-catwalk.mjs'
+import { femaleSeated } from './lib/female-seated.mjs'
 
 const output = 'assets/modular_human_female_01/rig_v1/'
 const gripClips = new Set(['idle1', 'walk', 'run', 'jump', 'combat_idle', 'slash1'])
@@ -276,7 +278,6 @@ try {
     for (let i = 1; i < positions.length; i += 3) positions[i] -= soleOffset
     clip.tracks = clip.tracks.filter(t => t.name !== 'Hips.position')
     clip.tracks.push(new THREE.VectorKeyframeTrack('Hips.position', times, positions))
-    if (clip.name === 'walk') liftGaze(clip, 3, 11)
     if (clip.name === 'idle1') {
       liftGaze(clip)
       clip.name = 'idle_armed'
@@ -298,8 +299,16 @@ try {
     assert.ok(track, reference.name)
     track.values = track.values.map((_, i) => reference.values[i % 4])
   }
+  resetTarget()
+  baked[baked.indexOf(walk)] = THREE.AnimationClip.toJSON(
+    await femaleCatwalk(target, THREE.AnimationClip.parse(walk), { server, load }))
+  resetTarget()
+  baked[baked.findIndex(clip => clip.name === 'sit_idle')] = THREE.AnimationClip.toJSON(
+    await femaleSeated(target, { server, load }))
   writeFileSync(new URL('../' + output + 'clips.json', import.meta.url), JSON.stringify({
-    method: 'Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; walking defaults to the accepted unarmed right-hand pose; the preview layers either accepted hand pose over the shared idle or walk body motion; armed idle closes all four fingers around the steel longsword handle with an opposed thumb; both idle variants lift neck/head by 1.5/6.5 degrees and walking by 3/11 degrees; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.',
-    sources: sources.map(path => ({ path, sha256: hash(path) })), hip_ratio: ratio, clips: baked,
+    method: 'Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; walking defaults to the accepted unarmed right-hand pose; the preview layers either accepted hand pose over the shared idle or walk body motion; armed idle closes all four fingers around the steel longsword handle with an opposed thumb; both idle variants lift neck/head by 1.5/6.5 degrees; the final female catwalk replaces the intermediate walk; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.',
+    walk_method: 'Existing walk_cat retargeted to the female skeleton, ankle paths narrowed to 28% about the pelvis with world foot orientation preserved, closed in-place loop and 60 Hz sole grounding; accepted relaxed fingers preserved.',
+    seated_method: 'Fit pelvis to the game Chair with 0.03-unit seat compression, plant feet with the catalog interaction offset, lower clavicles by 29 degrees, relax elbows and level gaze, solve knees and hands against the female surface at 60 Hz; use a 1.8-unit review height.',
+    sources: [...sources, catwalkSource].map(path => ({ path, sha256: hash(path) })), hip_ratio: ratio, clips: baked,
   }) + '\n')
 } finally { await server.close() }

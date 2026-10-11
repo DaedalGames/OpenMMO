@@ -22,6 +22,7 @@ for (const image of before.doc.images) {
 }
 const { server, load } = await headlessThree()
 try {
+  const { femaleSeatOffset } = await server.ssrLoadModule('/src/previews/female-seat.ts')
   const original = await load(originalPath), result = await load(path)
   const originalMeshes = [], meshes = []
   original.scene.traverse(n => { if (n.isMesh) originalMeshes.push(n) })
@@ -41,7 +42,7 @@ try {
     }
   }
   const sourceAnimations = (await load('assets/modular_human_male_01/animations/animations.glb')).animations
-  for (const [clipName, neckDegrees, headDegrees] of [['idle1', -1.5, -6.5], ['walk', -3, -11]]) {
+  for (const [clipName, neckDegrees, headDegrees] of [['idle1', -1.5, -6.5]]) {
     const source = sourceAnimations.find(c => c.name === clipName)
     const adjusted = result.animations.find(c => c.name === clipName)
     for (const [name, liftDegrees] of [['Neck', neckDegrees], ['Head', headDegrees]]) {
@@ -58,6 +59,14 @@ try {
     }
   }
   const walkClip = result.animations.find(c => c.name === 'walk')
+  for (const track of walkClip.tracks) {
+    const size = track.getValueSize()
+    const first = track.values.slice(0, size), last = track.values.slice(-size)
+    const error = size === 4
+      ? new THREE.Quaternion().fromArray(first).normalize().angleTo(new THREE.Quaternion().fromArray(last).normalize())
+      : Math.max(...first.map((value, i) => Math.abs(value - last[i])))
+    assert.ok(error < 1e-6, `Catwalk loop discontinuity: ${track.name} (${error})`)
+  }
   const relaxedFingerTracks = unarmedIdle.tracks.filter(t =>
     /^RightHand(Thumb|Index|Middle|Ring|Pinky)[123]\.quaternion$/.test(t.name))
   assert.equal(relaxedFingerTracks.length, 15)
@@ -178,6 +187,7 @@ try {
       inverseRightRest: handRelativeRotation('Right', finger, i + 1).invert() }))
   )
   let maximumIdleMirrorError = 0
+  let maximumWalkAnkleOffset = 0
   const sampler = clipSampler(result.scene, { samples: 121, restore: bones })
   const poses = [], checks = []
   const minimumTimes = []
@@ -191,6 +201,14 @@ try {
       : undefined
     const times = []
     for (const { sample, time } of sampler(clip)) {
+      if (clip.name === 'walk') {
+        const hipX = jointPosition('Hips').x
+        for (const side of ['Left', 'Right']) {
+          const offset = Math.abs(jointPosition(`${side}Foot`).x - hipX)
+          maximumWalkAnkleOffset = Math.max(maximumWalkAnkleOffset, offset)
+          assert.ok(offset < .04, `Catwalk foot leaves the narrow path: ${offset}`)
+        }
+      }
       if (clip.name === 'idle1') {
         for (const { finger, joint, inverseLeftRest, inverseRightRest } of relaxedJoints) {
           const left = handRelativeRotation('Left', finger, joint).multiply(inverseLeftRest)
@@ -268,6 +286,7 @@ try {
           if (face) facialError = Math.max(facialError, p.distanceTo(q))
         }
       }
+      if (clip.name === 'sit_idle') floor += femaleSeatOffset
       minY = Math.min(minY, floor)
       maxFloor = Math.max(maxFloor, floor)
       maxExtent = Math.max(maxExtent, box.getSize(q).length())
@@ -295,7 +314,7 @@ try {
     idle_variants: { original_left_hand_and_body_tracks_preserved: true, maximum_mirrored_rotation_error_radians: maximumIdleMirrorError },
     armed_idle_handle: { all_four_fingers_wrap_handle: true, thumb_over_index: true, sampled_frames: 121 },
     idle_gaze: { neck_lift_degrees: 1.5, head_lift_degrees: 6.5, both_idle_variants_identical: true },
-    walk_gaze: { neck_lift_degrees: 3, head_lift_degrees: 11, source_motion_preserved: true },
+    catwalk: { source_action: 'walk_cat', closed_loop: true, maximum_ankle_offset_from_pelvis: maximumWalkAnkleOffset },
     walk_hand: { default_matches_unarmed_idle: true, right_finger_tracks: 15 },
     fingers: fingerChecks, clips: checks }
   writeFileSync(new URL('../' + directory + 'validation.json', import.meta.url), JSON.stringify(report, null, 2) + '\n')
