@@ -38,7 +38,7 @@ export async function showFemaleBase(
         <option value="unarmed">맨손</option>
         <option value="armed">강철 장검</option>
       </select>
-      <p class="details">강철 장검을 장착해 손잡이와 손가락 위치를 확인할 수 있습니다.</p>
+      <p class="details">대기와 걷기에서 장착 상태에 따라 손 모양이 바뀝니다.</p>
       <button id="female-pause" type="button">일시정지</button>
       <label for="female-time">동작 시점</label>
       <input id="female-time" type="range" min="0" max="1" step="0.001" value="0" />
@@ -110,6 +110,35 @@ export async function showFemaleBase(
   ) as HTMLSelectElement
   const pause = document.getElementById('female-pause') as HTMLButtonElement
   const time = document.getElementById('female-time') as HTMLInputElement
+  const handPose = (clipName: string) => {
+    const clip = animations.find((entry) => entry.name === clipName)
+    if (!clip) throw new Error(`손 자세를 찾지 못했습니다: ${clipName}`)
+    return clip.tracks
+      .filter((track) =>
+        /^RightHand(Thumb|Index|Middle|Ring|Pinky)[123]\.quaternion$/.test(
+          track.name
+        )
+      )
+      .map((track) => {
+        const bone = model.getObjectByName(track.name.split('.')[0])
+        if (!bone) throw new Error(`손가락 본을 찾지 못했습니다: ${track.name}`)
+        return {
+          bone,
+          rotation: new THREE.Quaternion().fromArray(track.values),
+        }
+      })
+  }
+  const handPoses = {
+    unarmed: handPose('idle1'),
+    armed: handPose('idle_armed'),
+  }
+  const updateAnimation = (delta: number) => {
+    mixer.update(delta)
+    if (!['idle1', 'walk'].includes(motion.value)) return
+    const pose =
+      equipment.value === 'armed' ? handPoses.armed : handPoses.unarmed
+    for (const { bone, rotation } of pose) bone.quaternion.copy(rotation)
+  }
   const setPaused = (value: boolean) => {
     paused = value
     pause.textContent = paused ? '재생' : '일시정지'
@@ -122,11 +151,7 @@ export async function showFemaleBase(
       state.bone.scale.copy(state.scale)
     }
     weapon.visible = equipment.value === 'armed'
-    const clipName =
-      motion.value === 'idle1' && equipment.value === 'armed'
-        ? 'idle_armed'
-        : motion.value
-    const clip = animations.find((entry) => entry.name === clipName)
+    const clip = animations.find((entry) => entry.name === motion.value)
     action = clip ? mixer.clipAction(clip).reset().play() : undefined
     if (action) {
       action.setLoop(
@@ -140,12 +165,11 @@ export async function showFemaleBase(
     time.value = '0'
     time.disabled = pause.disabled = !action
     setPaused(false)
-    mixer.update(0)
+    updateAnimation(0)
     if (select.value.endsWith('-hand')) reset()
-    status.textContent =
-      motion.value === 'idle1'
-        ? `대기 · ${equipment.selectedOptions[0].textContent}`
-        : motion.selectedOptions[0].textContent
+    status.textContent = ['idle1', 'walk'].includes(motion.value)
+      ? `${motion.selectedOptions[0].textContent} · ${equipment.selectedOptions[0].textContent}`
+      : motion.selectedOptions[0].textContent
     updateStats()
   }
   motion.onchange = play
@@ -156,7 +180,7 @@ export async function showFemaleBase(
     if (action) {
       action.time = fraction * action.getClip().duration
       time.value = String(fraction)
-      mixer.update(0)
+      updateAnimation(0)
       setPaused(wasPaused)
     }
     if (select.value.endsWith('-hand')) reset()
@@ -179,7 +203,7 @@ export async function showFemaleBase(
     setPaused(true)
     action.paused = false
     action.time = Number(time.value) * action.getClip().duration
-    mixer.update(0)
+    updateAnimation(0)
     if (select.value.endsWith('-hand')) reset()
   }
   const skeleton = new THREE.SkeletonHelper(model)
@@ -352,7 +376,7 @@ export async function showFemaleBase(
     const delta = Math.min((now - previousTime) / 1000, 0.05)
     previousTime = now
     if (!paused && action) {
-      mixer.update(delta)
+      updateAnimation(delta)
       time.value = String(action.time / action.getClip().duration)
     }
     controls.update()

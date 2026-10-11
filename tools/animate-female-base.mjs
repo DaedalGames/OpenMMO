@@ -182,8 +182,8 @@ function fitIdleHandle(root, clip) {
   root.updateMatrixWorld(true)
 }
 
-function liftIdleGaze(clip) {
-  for (const [name, degrees] of [['Neck', -1.5], ['Head', -6.5]]) {
+function liftGaze(clip, neckDegrees = 1.5, headDegrees = 6.5) {
+  for (const [name, degrees] of [['Neck', -neckDegrees], ['Head', -headDegrees]]) {
     const track = clip.tracks.find(t => t.name === `${name}.quaternion`)
     assert.ok(track, name)
     const lift = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), THREE.MathUtils.degToRad(degrees))
@@ -276,8 +276,9 @@ try {
     for (let i = 1; i < positions.length; i += 3) positions[i] -= soleOffset
     clip.tracks = clip.tracks.filter(t => t.name !== 'Hips.position')
     clip.tracks.push(new THREE.VectorKeyframeTrack('Hips.position', times, positions))
+    if (clip.name === 'walk') liftGaze(clip, 3, 11)
     if (clip.name === 'idle1') {
-      liftIdleGaze(clip)
+      liftGaze(clip)
       clip.name = 'idle_armed'
       resetTarget()
       baked.push(THREE.AnimationClip.toJSON(relaxedIdle(target, clip)))
@@ -288,8 +289,17 @@ try {
     sourceMixer.stopAllAction(); mixer.stopAllAction()
     sourceMixer.uncacheRoot(donor); mixer.uncacheRoot(target)
   }
+  const relaxedHand = baked.find(c => c.name === 'idle1').tracks
+    .filter(t => /^RightHand(Thumb|Index|Middle|Ring|Pinky)[123]\.quaternion$/.test(t.name))
+  assert.equal(relaxedHand.length, 15)
+  const walk = baked.find(c => c.name === 'walk')
+  for (const reference of relaxedHand) {
+    const track = walk.tracks.find(t => t.name === reference.name)
+    assert.ok(track, reference.name)
+    track.values = track.values.map((_, i) => reference.values[i % 4])
+  }
   writeFileSync(new URL('../' + output + 'clips.json', import.meta.url), JSON.stringify({
-    method: 'Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; armed idle closes all four fingers around the steel longsword handle with an opposed thumb; both idle variants lift neck/head by 1.5/6.5 degrees; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.',
+    method: 'Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; walking defaults to the accepted unarmed right-hand pose; the preview layers either accepted hand pose over the shared idle or walk body motion; armed idle closes all four fingers around the steel longsword handle with an opposed thumb; both idle variants lift neck/head by 1.5/6.5 degrees and walking by 3/11 degrees; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.',
     sources: sources.map(path => ({ path, sha256: hash(path) })), hip_ratio: ratio, clips: baked,
   }) + '\n')
 } finally { await server.close() }
