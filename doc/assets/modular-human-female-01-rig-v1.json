@@ -3,9 +3,9 @@
   "completed": "2026-10-12",
   "status": "locally_rigged_and_previewed",
   "binding": {
-    "date": "2026-10-11",
+    "date": "2026-10-12",
     "rig_id": "human_female_01_local_v1",
-    "method": "65-bone modular hierarchy fitted to female anatomical landmarks; Blender bone-heat binding; rigid head binding for separate eyelashes; four normalized influences",
+    "method": "65-bone modular hierarchy fitted to female anatomical landmarks with independently fitted right-hand joints; Blender bone-heat binding; rigid head binding for separate eyelashes; four normalized influences",
     "sources": [
       {
         "path": "assets/modular_human_female_01/ear_normals_v2/base-ear-normals-v2.glb",
@@ -21,37 +21,37 @@
     "joints": 65,
     "landmarks": {
       "Hips": [
-        0.0,
+        0,
         0.568,
         -0.022
       ],
       "Spine": [
-        0.0,
+        0,
         0.635,
         -0.021
       ],
       "Spine1": [
-        0.0,
+        0,
         0.709,
         -0.029
       ],
       "Spine2": [
-        0.0,
+        0,
         0.783,
         -0.031
       ],
       "Neck": [
-        0.0,
+        0,
         0.856,
         -0.025
       ],
       "Head": [
-        0.0,
+        0,
         0.901,
         -0.008
       ],
       "HeadTop_End": [
-        0.0,
+        0,
         0.993,
         -0.008
       ],
@@ -141,9 +141,9 @@
         -0.019
       ],
       "RightHand": [
-        -0.263,
-        0.601,
-        -0.019
+        -0.26354,
+        0.60084,
+        -0.00281
       ],
       "LeftHandIndex1": [
         0.3,
@@ -151,9 +151,9 @@
         0.002
       ],
       "RightHandIndex1": [
-        -0.3,
-        0.552,
-        0.002
+        -0.30264,
+        0.54704,
+        0.02136
       ],
       "LeftHandIndex2": [
         0.31134,
@@ -161,9 +161,9 @@
         0.002
       ],
       "RightHandIndex2": [
-        -0.31134,
-        0.5381400000000001,
-        0.002
+        -0.3125772,
+        0.5352506,
+        0.021662400000000002
       ],
       "LeftHandIndex3": [
         0.32025000000000003,
@@ -171,9 +171,9 @@
         0.002
       ],
       "RightHandIndex3": [
-        -0.32025000000000003,
-        0.52725,
-        0.002
+        -0.320385,
+        0.5259875,
+        0.0219
       ],
       "LeftHandIndex4": [
         0.327,
@@ -181,9 +181,9 @@
         0.002
       ],
       "RightHandIndex4": [
-        -0.327,
-        0.519,
-        0.002
+        -0.3263,
+        0.51897,
+        0.02208
       ],
       "LeftHandMiddle1": [
         0.3,
@@ -191,9 +191,9 @@
         -0.011
       ],
       "RightHandMiddle1": [
-        -0.3,
-        0.548,
-        -0.011
+        -0.3001,
+        0.54792,
+        0.00744
       ],
       "LeftHandMiddle2": [
         0.31428,
@@ -201,9 +201,9 @@
         -0.011
       ],
       "RightHandMiddle2": [
-        -0.31428,
-        0.53498,
-        -0.011
+        -0.3143842,
+        0.5349378,
+        0.0083262
       ],
       "LeftHandMiddle3": [
         0.3255,
@@ -211,9 +211,9 @@
         -0.011
       ],
       "RightHandMiddle3": [
-        -0.3255,
-        0.52475,
-        -0.011
+        -0.32560750000000005,
+        0.5247375,
+        0.0090225
       ],
       "LeftHandMiddle4": [
         0.334,
@@ -221,9 +221,9 @@
         -0.011
       ],
       "RightHandMiddle4": [
-        -0.334,
-        0.517,
-        -0.011
+        -0.33411,
+        0.51701,
+        0.00955
       ],
       "LeftHandRing1": [
         0.295,
@@ -231,9 +231,9 @@
         -0.025
       ],
       "RightHandRing1": [
-        -0.295,
-        0.551,
-        -0.025
+        -0.29598,
+        0.55093,
+        -0.00684
       ],
       "LeftHandRing2": [
         0.30928,
@@ -241,9 +241,9 @@
         -0.02542
       ],
       "RightHandRing2": [
-        -0.30928,
-        0.5379800000000001,
-        -0.02542
+        -0.31029360000000006,
+        0.5379436000000001,
+        -0.006373800000000001
       ],
       "LeftHandRing3": [
         0.3205,
@@ -251,9 +251,9 @@
         -0.025750000000000002
       ],
       "RightHandRing3": [
-        -0.3205,
-        0.52775,
-        -0.025750000000000002
+        -0.32154000000000005,
+        0.52774,
+        -0.0060075
       ],
       "LeftHandRing4": [
         0.329,
@@ -261,9 +261,9 @@
         -0.026
       ],
       "RightHandRing4": [
-        -0.329,
-        0.52,
-        -0.026
+        -0.33006,
+        0.52001,
+        -0.00573
       ],
       "LeftHandPinky1": [
         0.286,
@@ -271,9 +271,9 @@
         -0.037
       ],
       "RightHandPinky1": [
-        -0.286,
-        0.558,
-        -0.037
+        -0.28774,
+        0.55792,
+        -0.01938
       ],
       "LeftHandPinky2": [
         0.29944,
@@ -281,9 +281,9 @@
         -0.037419999999999995
       ],
       "RightHandPinky2": [
-        -0.29944,
-        0.5458200000000001,
-        -0.037419999999999995
+        -0.3012094,
+        0.5457736000000001,
+        -0.0189642
       ],
       "LeftHandPinky3": [
         0.31,
@@ -291,9 +291,9 @@
         -0.03775
       ],
       "RightHandPinky3": [
-        -0.31,
-        0.5362500000000001,
-        -0.03775
+        -0.31179250000000003,
+        0.53623,
+        -0.0186375
       ],
       "LeftHandPinky4": [
         0.318,
@@ -301,9 +301,9 @@
         -0.038
       ],
       "RightHandPinky4": [
-        -0.318,
+        -0.31981,
         0.529,
-        -0.038
+        -0.01839
       ],
       "LeftHandThumb1": [
         0.27,
@@ -311,9 +311,9 @@
         -0.004
       ],
       "RightHandThumb1": [
-        -0.27,
-        0.579,
-        -0.004
+        -0.26964,
+        0.57884,
+        0.01258
       ],
       "LeftHandThumb2": [
         0.275,
@@ -321,9 +321,9 @@
         0.004
       ],
       "RightHandThumb2": [
-        -0.275,
-        0.557,
-        0.004
+        -0.27418,
+        0.55684,
+        0.02085
       ],
       "LeftHandThumb3": [
         0.282,
@@ -331,9 +331,9 @@
         0.01
       ],
       "RightHandThumb3": [
-        -0.282,
-        0.542,
-        0.01
+        -0.28083,
+        0.54185,
+        0.02726
       ],
       "LeftHandThumb4": [
         0.288,
@@ -341,20 +341,20 @@
         0.012
       ],
       "RightHandThumb4": [
-        -0.288,
-        0.533,
-        0.012
+        -0.28671,
+        0.53286,
+        0.02962
       ]
     },
     "triangles": 22175,
     "body_vertices": 21826,
     "unweighted_vertices": 0,
     "clothing_vertices_with_body_surface_weights": 3644,
-    "max_weight_sum_error": 3.3306690738754696e-16,
+    "max_weight_sum_error": 2.220446049250313e-16,
     "source_geometry_uv_normals_materials_images_preserved": true,
     "output": "assets/modular_human_female_01/rig_v1/female-base.glb"
   },
-  "animation_method": "Existing local rotation tracks applied to the fitted bone axes; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.",
+  "animation_method": "Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.",
   "animation_sources": [
     {
       "path": "assets/modular_human_male_01/animations/animations.glb",
@@ -372,7 +372,7 @@
     },
     "output": {
       "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
-      "sha256": "b4c0429285cd72d8934e5d09b6dacd7bf3201d733dd597f5fa594734db6fe967"
+      "sha256": "9a8dd187bc126601a39c1a202dad89891efd0fff2f04f533468de11f79f037e8"
     },
     "bone_count": 65,
     "used_vertices": 23224,
@@ -380,61 +380,220 @@
     "unchanged_materials_and_embedded_images": true,
     "maximum_rest_error": 6.373398378100131e-08,
     "maximum_weight_sum_error": 4.470348358154297e-08,
+    "right_index_anchor_longitudinal_offset_from_middle": 0.004331365552979763,
+    "idle_variants": {
+      "original_left_hand_and_body_tracks_preserved": true,
+      "maximum_mirrored_rotation_error_radians": 5.960464477539063e-08
+    },
+    "fingers": [
+      {
+        "finger": "LeftHandThumb",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022410336112403336,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandIndex",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02009435783838247,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandMiddle",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02162937023377971,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandRing",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022441790153440312,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "LeftHandPinky",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02070317809247361,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandThumb",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022555266100129753,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandIndex",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.01740826208169942,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandMiddle",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.02143434096305023,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandRing",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.022409527109544795,
+        "maximum_neighbor_movement": 0
+      },
+      {
+        "finger": "RightHandPinky",
+        "minimum_own_weight": 1,
+        "isolated_bend_movement": 0.020696622778095433,
+        "maximum_neighbor_movement": 0
+      }
+    ],
     "clips": [
       {
         "clip": "idle1",
         "frames": 121,
         "minimum_y": -6.004764489402114e-08,
         "maximum_floor_y": 2.4624148698435076e-08,
-        "maximum_extent": 1.0650819532383922,
+        "maximum_extent": 1.0665127159474665,
         "maximum_face_rigid_error": 0
+      },
+      {
+        "clip": "idle_armed",
+        "frames": 121,
+        "minimum_y": -6.004764489402114e-08,
+        "maximum_floor_y": 2.4624148698435076e-08,
+        "maximum_extent": 1.0663186153611306,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925713003239,
+            "maximum": 65.3292583265433
+          },
+          {
+            "minimum": 40.60723062224055,
+            "maximum": 40.607231151719255
+          },
+          {
+            "minimum": 47.35640299030395,
+            "maximum": 47.356403982064485
+          }
+        ]
       },
       {
         "clip": "walk",
         "frames": 121,
         "minimum_y": -0.0001495960493222389,
         "maximum_floor_y": 0.0010904160440304823,
-        "maximum_extent": 1.1797819754576035,
-        "maximum_face_rigid_error": 0
+        "maximum_extent": 1.1805171463106854,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925772525795,
+            "maximum": 65.32926075638025
+          },
+          {
+            "minimum": 40.60723027860185,
+            "maximum": 40.60723168720516
+          },
+          {
+            "minimum": 47.356401153403134,
+            "maximum": 47.35640337037634
+          }
+        ]
       },
       {
         "clip": "run",
         "frames": 121,
         "minimum_y": -7.693489062890761e-05,
         "maximum_floor_y": 0.07203954461010592,
-        "maximum_extent": 1.2949115742005752,
-        "maximum_face_rigid_error": 0
+        "maximum_extent": 1.2947904011261664,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.3292541393122,
+            "maximum": 65.32926090175421
+          },
+          {
+            "minimum": 40.60722842388417,
+            "maximum": 40.607232889718816
+          },
+          {
+            "minimum": 47.356401283956025,
+            "maximum": 47.35640626314322
+          }
+        ]
       },
       {
         "clip": "jump",
         "frames": 121,
         "minimum_y": 0.0013391456999394956,
         "maximum_floor_y": 0.5508195421739501,
-        "maximum_extent": 1.3139499992065673,
-        "maximum_face_rigid_error": 0
+        "maximum_extent": 1.3178721449745594,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925700963911,
+            "maximum": 65.32926045183831
+          },
+          {
+            "minimum": 40.60723006491276,
+            "maximum": 40.60723257749806
+          },
+          {
+            "minimum": 47.356400998827965,
+            "maximum": 47.356404255776646
+          }
+        ]
       },
       {
         "clip": "combat_idle",
         "frames": 121,
         "minimum_y": -1.125594251860304e-05,
         "maximum_floor_y": 4.133805629948084e-06,
-        "maximum_extent": 1.1924883702853497,
-        "maximum_face_rigid_error": 0
+        "maximum_extent": 1.1925542155431301,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925539165258,
+            "maximum": 65.32925832654328
+          },
+          {
+            "minimum": 40.60723115171889,
+            "maximum": 40.607232092012325
+          },
+          {
+            "minimum": 47.35640299030395,
+            "maximum": 47.35640513159899
+          }
+        ]
       },
       {
         "clip": "slash1",
         "frames": 121,
         "minimum_y": -0.00037669962587674353,
         "maximum_floor_y": 0.012353575186052058,
-        "maximum_extent": 1.310647799053931,
-        "maximum_face_rigid_error": 0
+        "maximum_extent": 1.29508487456705,
+        "maximum_face_rigid_error": 0,
+        "right_index_grip_angles_degrees": [
+          {
+            "minimum": 65.32925601682406,
+            "maximum": 65.32926260165841
+          },
+          {
+            "minimum": 40.60722755937672,
+            "maximum": 40.6072329299622
+          },
+          {
+            "minimum": 47.35639976356915,
+            "maximum": 47.35640520121029
+          }
+        ]
       },
       {
         "clip": "dying",
         "frames": 121,
         "minimum_y": -0.00025867437406678034,
         "maximum_floor_y": 0.04565301674148253,
-        "maximum_extent": 1.2219758937986245,
+        "maximum_extent": 1.2219758969296661,
         "maximum_face_rigid_error": 0
       },
       {
@@ -459,11 +618,14 @@
     "scrub_pauses": true,
     "rest_disables_timeline": true,
     "wireframe_and_skeleton": true,
-    "side_and_back_review": true
+    "side_and_back_review": true,
+    "hand_closeups_with_skeleton": true,
+    "equipment_idle_switch": true
   },
   "frontend_checks": [
-    "npm run check: 0 errors, 0 warnings",
-    "npm run lint: passed"
+    "npm run format: passed",
+    "npm run lint: passed",
+    "npm run check: 0 errors, 0 warnings"
   ],
   "budget": {
     "assembled_triangles_including_hidden_surfaces": 22175,
@@ -475,13 +637,13 @@
   "outputs": [
     {
       "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
-      "sha256": "b4c0429285cd72d8934e5d09b6dacd7bf3201d733dd597f5fa594734db6fe967",
-      "bytes": 26233332
+      "sha256": "9a8dd187bc126601a39c1a202dad89891efd0fff2f04f533468de11f79f037e8",
+      "bytes": 26582616
     },
     {
       "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
-      "sha256": "4eb735bca3a0a7c3f515a7d8b286503facf358182df784b8babb2289dcf0711d",
-      "bytes": 24575277
+      "sha256": "42b706638f090445a0608ef6d0b962403573ca820206ffc6f7e81395eb401abd",
+      "bytes": 25166518
     }
   ],
   "limitations": [
@@ -617,5 +779,358 @@
     ],
     "removed_bytes": 5762864,
     "previously_uploaded": false
+  },
+  "hand_rerig": {
+    "date": "2026-10-12",
+    "reason": "Mirrored left-hand landmarks missed the right-hand surface, causing neighboring-finger binding and a straight right index fingertip.",
+    "previous_outputs_status": "[\ubbf8\uc0ac\uc6a9] Superseded by corrected hand rig.",
+    "previous_outputs": [
+      {
+        "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+        "sha256": "b4c0429285cd72d8934e5d09b6dacd7bf3201d733dd597f5fa594734db6fe967",
+        "bytes": 26233332
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
+        "sha256": "4eb735bca3a0a7c3f515a7d8b286503facf358182df784b8babb2289dcf0711d",
+        "bytes": 24575277
+      }
+    ],
+    "fitting": "Right-hand surface registered independently against the mirrored left hand, then wrist, thumb and four finger chains placed in the measured right-hand frame. Source mesh positions and rest pose remain unchanged.",
+    "surface_registration_median_error": 7.50718287e-05,
+    "surface_registration_p99_error": 0.00062744901,
+    "binding": "Recomputed Blender bone-heat weights and normalized four influences, then rebaked all eight animations and saved the packed Blender source.",
+    "validation": "All ten fingertip neighborhoods have 100% weight on their own finger chain. Isolating each second joint by 45 degrees moves its tip by over 0.02 unit without moving another fingertip. The previous GLB fails the right index binding assertion (minimum own-chain weight 0.631177294999361).",
+    "browser": {
+      "errors": [],
+      "same_idle_pose_before_after_review": true,
+      "both_hand_closeups_with_skeleton": true,
+      "preview_query": "?character=female&camera=right-hand&motion=idle1&time=0.4&skeleton=1"
+    },
+    "sources_and_licenses": "Existing source and license records remain applicable. Local fitting and rebinding only; no new generated asset or paid service."
+  },
+  "right_hand_grip": {
+    "date": "2026-10-12",
+    "revision": 5,
+    "reference": "User-supplied photograph codex-clipboard-95ec2737-bcfd-44ea-8890-4d3496c41fc4.png: fingers wrap a cylindrical handle in parallel, with the thumb supporting the side of the grip.",
+    "reason": "User rejected the adducted index and requested a grip following the middle finger and the supplied handle-holding reference.",
+    "clips": [
+      "idle_armed",
+      "walk",
+      "run",
+      "jump",
+      "combat_idle",
+      "slash1"
+    ],
+    "index_method": "Transfer each middle-finger segment orientation to the corresponding index segment with rest-axis compensation, preserving the index lengths and anchors. Remove the manually chosen flexion and inward adduction.",
+    "thumb_method": "Damped three-joint CCD (48 iterations) places the thumb beside the proximal index phalanx at 20% of its length, offset 0.006 unit toward the thumb side. The more proximal contact stays within thumb reach after moving the index anchor.",
+    "validation": {
+      "sampled_frames_per_clip": 121,
+      "all_eight_clips_pass": true,
+      "ten_independent_finger_bends_pass": true,
+      "each_index_segment_within_five_degrees_of_middle": true,
+      "thumb_contact_error_below_0_002_unit": true,
+      "all_tracks_except_right_index_and_thumb_and_all_keyframe_times_identical_to_previous": true,
+      "gltf_errors": 0,
+      "inherited_gltf_warnings": 1
+    },
+    "browser": {
+      "errors": [],
+      "reviewed_views": [
+        "front",
+        "steep_below"
+      ],
+      "thumb_contact_candidates_reviewed": 3
+    },
+    "previous_outputs_status": "[\ubbf8\uc0ac\uc6a9] User rejected the inward-adducted index grip.",
+    "previous_outputs": [
+      {
+        "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+        "sha256": "cf554c29f83c8e4662e1dfa9da30b0a0a508fd3a1f67ffcdc2f39dcb1d74b914",
+        "bytes": 26233340
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
+        "sha256": "5df85c851c61ee7882c5af315a5ecf5280c5b0fb391bc999ce8ea008702e004f",
+        "bytes": 24573411
+      }
+    ],
+    "previous_attempt": {
+      "date": "2026-10-12",
+      "reason": "The previous 52/52/30-degree curl still left the first index segment visibly flared away from the middle finger. Flex the proximal joint farther into the palm and adduct it toward the middle finger.",
+      "previous_outputs_status": "[\ubbf8\uc0ac\uc6a9] Superseded by the redistributed right index grip.",
+      "previous_outputs": [
+        {
+          "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+          "sha256": "9c864dc9abc0cbf2d5e7d259438487a0ab8313d6c311b80b4b9e9e4394259cf4",
+          "bytes": 26233340
+        },
+        {
+          "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
+          "sha256": "9553af4406956c1c2ef5c8608ebabb83f7bb0c328fa865a106dfccecadbfc3b2",
+          "bytes": 24573243
+        }
+      ],
+      "clips": [
+        "idle1",
+        "walk",
+        "run",
+        "jump",
+        "combat_idle",
+        "slash1"
+      ],
+      "rest_relative_flexion_degrees": {
+        "before": [
+          52,
+          52,
+          30
+        ],
+        "after": [
+          75,
+          45,
+          22
+        ]
+      },
+      "method": "Use the measured palm flexion plane, adduct the proximal index joint 8 degrees toward the middle finger, then flex the three index joints by 75/45/22 degrees.",
+      "validation": {
+        "sampled_frames_per_clip": 121,
+        "all_eight_clips_pass": true,
+        "ten_independent_finger_bends_pass": true,
+        "all_other_tracks_and_all_keyframe_times_identical_to_previous": true,
+        "previous_grip_fails_new_geometric_bend_bounds": true,
+        "gltf_errors": 0,
+        "inherited_gltf_warnings": 1,
+        "previous_grip_fails_index_spread_bound": true
+      },
+      "browser": {
+        "errors": [],
+        "same_camera_before_after_views": [
+          "front",
+          "steep_below"
+        ],
+        "reviewed_candidates": 4
+      },
+      "sources_and_licenses": "Same source mesh and licensed local animation packs as the binding and animation source records; local pose editing only.",
+      "revision": 3,
+      "proximal_adduction_degrees": 8,
+      "proximal_index_to_middle_angle_degrees": [
+        {
+          "version": "before",
+          "minimum": 20.09624601882615,
+          "maximum": 20.096248899245445
+        },
+        {
+          "version": "after",
+          "minimum": 8.876734995731399,
+          "maximum": 8.876736197017355
+        }
+      ],
+      "previous_attempt": {
+        "status": "[\ubbf8\uc0ac\uc6a9] User rejected the outward-looking proximal segment.",
+        "rest_relative_flexion_degrees": [
+          52,
+          52,
+          30
+        ],
+        "proximal_adduction_degrees": 0,
+        "outputs": [
+          {
+            "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+            "sha256": "9c864dc9abc0cbf2d5e7d259438487a0ab8313d6c311b80b4b9e9e4394259cf4",
+            "bytes": 26233340
+          },
+          {
+            "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
+            "sha256": "9553af4406956c1c2ef5c8608ebabb83f7bb0c328fa865a106dfccecadbfc3b2",
+            "bytes": 24573243
+          }
+        ]
+      }
+    },
+    "sources_and_licenses": "Existing licensed mesh and animation source records remain applicable. User image used only as a visual reference; local animation edits, no generated or paid asset."
+  },
+  "index_anchor_correction": {
+    "date": "2026-10-12",
+    "reason": "User clarified that the marked index proximal segment should move farther from the palm center toward the blue-marked middle-finger line along the hand length, rather than changing dorsal height or flexion angles.",
+    "reference": "User-annotated codex-clipboard-5c77bfe1-a3f2-40d2-b242-246755c998ff.png",
+    "previous_outputs_status": "[\ubbf8\uc0ac\uc6a9] Index anchor too recessed toward palm center.",
+    "previous_outputs": [
+      {
+        "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+        "sha256": "b5d85af1c876abae3c7ede03ba54f99690e8c9e0fcf45ec2b4fd40310c0b0afe",
+        "bytes": 26233340
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
+        "sha256": "94f4814ac9777390705da2412ad98274c96547a85e499caf311a2cc0061b83a3",
+        "bytes": 24572888
+      }
+    ],
+    "rest_anchor_before": [
+      -0.29927,
+      0.55191,
+      0.02042
+    ],
+    "rest_anchor_after": [
+      -0.30264,
+      0.54704,
+      0.02136
+    ],
+    "method": "Advance the right index root about 0.006 unit along the palm longitudinal direction; retain the terminal landmark and refit intermediate joints. Recompute skin weights and bake the existing middle-aligned grip with reachable thumb contact.",
+    "source_geometry_normals_uv_and_materials_preserved": true,
+    "comparison": [
+      {
+        "label": "before",
+        "rest_anchor": [
+          -0.29926999999999987,
+          0.55191,
+          0.020420000000000056
+        ],
+        "longitudinal_offset_from_middle": -0.0016650805107193108,
+        "posed_index_proximal_midpoint": [
+          -0.13266928737484612,
+          0.4642485380281197,
+          0.010028034572359356
+        ],
+        "posed_middle_proximal_midpoint": [
+          -0.1361761155951875,
+          0.4600158393851423,
+          -0.002409991263439065
+        ],
+        "index_midpoint_distance_from_wrist": 0.06918099508132923,
+        "middle_midpoint_distance_from_wrist": 0.06971997105171715
+      },
+      {
+        "label": "after",
+        "rest_anchor": [
+          -0.3026399999999999,
+          0.54704,
+          0.021360000000000077
+        ],
+        "longitudinal_offset_from_middle": 0.004331365552979763,
+        "posed_index_proximal_midpoint": [
+          -0.13402567362426393,
+          0.4589687652981208,
+          0.011282347964330194
+        ],
+        "posed_middle_proximal_midpoint": [
+          -0.1361761155951875,
+          0.4600158393851423,
+          -0.002409991263439065
+        ],
+        "index_midpoint_distance_from_wrist": 0.07437741835084755,
+        "middle_midpoint_distance_from_wrist": 0.06971997105171715
+      }
+    ],
+    "validation": {
+      "all_eight_clips_pass": true,
+      "ten_independent_finger_bends_pass": true,
+      "rest_anchor_forward_of_middle_within_0_006_unit": true,
+      "index_segments_remain_parallel_to_middle": true,
+      "thumb_contact_within_0_002_unit": true,
+      "gltf_errors": 0,
+      "inherited_gltf_warnings": 1
+    },
+    "browser": {
+      "errors": [],
+      "same_camera_before_after_views": [
+        "front",
+        "steep_below"
+      ]
+    },
+    "source_and_license": "Existing source and license records remain applicable; local joint fitting and rebinding only."
+  },
+  "idle_equipment_variants": {
+    "date": "2026-10-12",
+    "reason": "Separate relaxed unarmed and weapon-grip idle; user requested that the right hand match the existing naturally open left hand.",
+    "clips": {
+      "unarmed": "idle1",
+      "armed": "idle_armed"
+    },
+    "method": "Preserve the original left-hand animation. Mirror each finger joint rotation delta in hand-local coordinates onto the right-hand rest orientation, retaining the independently fitted right-hand joints and lengths.",
+    "preserved": "Original eight clips retain exactly the same tracks and timing; original idle1 renamed idle_armed. Body, wrist and left-hand tracks are identical between the two idle variants.",
+    "preview": "Equipment selector defaults to unarmed and changes idle clip while preserving playback phase and pause state. Supports equipment=armed and motion=idle_armed URLs; selector is disabled outside idle.",
+    "validation": {
+      "sampled_frames_per_clip": 121,
+      "all_nine_clips_pass": true,
+      "original_left_hand_and_body_tracks_preserved": true,
+      "maximum_mirrored_rotation_error_radians": 5.960464477539063e-08,
+      "original_eight_clips_preserved_exactly": true,
+      "blender_actions": 9,
+      "gltf_errors": 0,
+      "inherited_gltf_warnings": 1
+    },
+    "browser": {
+      "errors": [],
+      "reviewed_views": [
+        "unarmed right hand",
+        "unarmed left hand",
+        "armed right hand"
+      ],
+      "equipment_switch_preserves_phase_and_pause": true,
+      "running_switch_stays_running": true,
+      "non_idle_disables_equipment": true,
+      "armed_url_alias": true
+    },
+    "sources_and_licenses": "Existing source mesh and licensed local animation packs recorded above. Local animation processing only; no new generated asset or paid service.",
+    "previous_outputs_status": "[\ubbf8\uc0ac\uc6a9] Eight-clip pack superseded by nine-clip pack; original armed motion preserved.",
+    "previous_outputs": [
+      {
+        "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+        "sha256": "649ac0ad6bc513426b071118b8490afe77a7e939a890c7341be1dc9206e6fade",
+        "bytes": 26233336
+      },
+      {
+        "path": "assets/modular_human_female_01/rig_v1/female-base.blend",
+        "sha256": "d3ddb23911f9454b0b1442ebfdce99b0118d3e168ec20682e70711b4bb2f76f8",
+        "bytes": 24573332
+      }
+    ],
+    "user_review": "2026-10-12: User accepted the relaxed unarmed idle and requested intermediate cleanup and commit."
+  },
+  "hand_iteration_cleanup": {
+    "date": "2026-10-12",
+    "reason": "User requested removal of hand-rig comparison images, validation intermediates, candidate models and superseded local backups before committing. Validation and source records are consolidated in this document.",
+    "removed_files": 134,
+    "removed_bytes": 530393231,
+    "temporary_roots": [
+      "/tmp/female-cylinder-grip-before",
+      "/tmp/female-cylinder-grip-final.cjs",
+      "/tmp/female-cylinder-grip-review",
+      "/tmp/female-hand-rerig-before",
+      "/tmp/female-hand-rerig-review",
+      "/tmp/female-hand-rerig-review.cjs",
+      "/tmp/female-hand-rig-audit.png",
+      "/tmp/female-idle-blender.log",
+      "/tmp/female-idle-preview.cjs",
+      "/tmp/female-idle-split-before",
+      "/tmp/female-idle-split-review",
+      "/tmp/female-idle-validation.log",
+      "/tmp/female-index-anchor-before",
+      "/tmp/female-index-anchor-review",
+      "/tmp/female-index-anchor-review.cjs",
+      "/tmp/female-index-grip-before",
+      "/tmp/female-index-grip-review",
+      "/tmp/female-index-grip-review.cjs",
+      "/tmp/female-index-grip-underside.cjs",
+      "/tmp/female-index-root-before",
+      "/tmp/female-index-root-final.cjs",
+      "/tmp/female-index-root-review",
+      "/tmp/female-index-root-review.cjs",
+      "/tmp/female-index-root-variants.mjs",
+      "/tmp/female-right-hand-rig-audit.png",
+      "/tmp/female-thumb-grip-review.cjs",
+      "/tmp/female-thumb-grip-variants.mjs",
+      "/tmp/update-female-idle.py",
+      "/tmp/validate-female-idle-update.py"
+    ],
+    "preserved": [
+      "Final female-base.glb",
+      "Packed editable female-base.blend with nine actions",
+      "Original source assets",
+      "Reusable generation and validation tools",
+      "Consolidated source and validation record"
+    ],
+    "hf_deletions": 0
   }
 }

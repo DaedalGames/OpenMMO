@@ -27,7 +27,19 @@ try {
   original.scene.traverse(n => { if (n.isMesh) originalMeshes.push(n) })
   result.scene.traverse(n => { if (n.isSkinnedMesh) meshes.push(n) })
   assert.equal(meshes.length, originalMeshes.length)
-  assert.equal(result.animations.length, 8)
+  assert.equal(result.animations.length, 9)
+  const unarmedIdle = result.animations.find(c => c.name === 'idle1')
+  const armedIdle = result.animations.find(c => c.name === 'idle_armed')
+  assert.ok(unarmedIdle && armedIdle, 'Both equipment-specific idle clips must exist')
+  assert.equal(unarmedIdle.duration, armedIdle.duration)
+  for (const track of unarmedIdle.tracks) {
+    const armedTrack = armedIdle.tracks.find(t => t.name === track.name)
+    assert.ok(armedTrack, track.name)
+    if (!/^RightHand(Thumb|Index|Middle|Ring|Pinky)\d\.quaternion$/.test(track.name)) {
+      assert.deepEqual(track.times, armedTrack.times)
+      assert.deepEqual(track.values, armedTrack.values, `Idle body or left-hand motion changed: ${track.name}`)
+    }
+  }
   const bones = meshes[0].skeleton.bones
   assert.equal(bones.length, 65)
   const p = new THREE.Vector3(), q = new THREE.Vector3()
@@ -55,14 +67,134 @@ try {
   })
   assert.ok(restError < 1e-6, 'Rest surface drift')
   assert.ok(weightError < 1e-6, 'Unnormalized weights')
+  const restJoint = name => result.scene.getObjectByName(name).getWorldPosition(new THREE.Vector3())
+  const palmForward = restJoint('RightHandMiddle1').sub(restJoint('RightHand')).normalize()
+  const indexAnchorOffset = restJoint('RightHandIndex1').sub(restJoint('RightHandMiddle1')).dot(palmForward)
+  assert.ok(indexAnchorOffset >= 0 && indexAnchorOffset < .006,
+    `Right index anchor is recessed toward the wrist or too far forward: ${indexAnchorOffset}`)
+  const handMesh = meshes[0]
+  const handGeometry = handMesh.geometry.attributes
+  const tipAnchors = {
+    Left: {
+      Thumb: [.288, .533, .013], Index: [.328, .516, .003],
+      Middle: [.336, .514, -.011], Ring: [.331, .516, -.026],
+      Pinky: [.320, .526, -.038],
+    },
+    Right: {
+      Thumb: [-.287, .533, .031], Index: [-.327, .516, .024],
+      Middle: [-.335, .514, .010], Ring: [-.332, .516, -.006],
+      Pinky: [-.322, .526, -.019],
+    },
+  }
+  const fingertips = []
+  for (const [side, anchors] of Object.entries(tipAnchors)) {
+    for (const [finger, anchor] of Object.entries(anchors)) {
+      const name = `${side}Hand${finger}`
+      const center = new THREE.Vector3().fromArray(anchor)
+      const indices = samples[0].indices.filter(i =>
+        p.fromBufferAttribute(handGeometry.position, i).distanceTo(center) < .004
+      )
+      assert.ok(indices.length >= 3, `${name} tip surface is missing`)
+      let minimumOwnWeight = 1
+      for (const i of indices) {
+        let ownWeight = 0
+        for (let k = 0; k < 4; k++) {
+          const joint = handGeometry.skinIndex.array[i * 4 + k]
+          if (bones[joint].name.startsWith(name))
+            ownWeight += handGeometry.skinWeight.array[i * 4 + k]
+        }
+        minimumOwnWeight = Math.min(minimumOwnWeight, ownWeight)
+      }
+      assert.ok(minimumOwnWeight > .95, `${name} tip follows another finger: ${minimumOwnWeight}`)
+      fingertips.push({ name, indices, minimumOwnWeight })
+    }
+  }
+  const tipCenter = ({ indices }) => {
+    const center = new THREE.Vector3()
+    for (const i of indices) {
+      p.fromBufferAttribute(handGeometry.position, i)
+      handMesh.applyBoneTransform(i, p).applyMatrix4(handMesh.matrixWorld)
+      center.add(p)
+    }
+    return center.divideScalar(indices.length)
+  }
+  const tipRest = fingertips.map(tipCenter)
+  const fingerChecks = []
+  for (const [index, tip] of fingertips.entries()) {
+    const bone = result.scene.getObjectByName(`${tip.name}2`)
+    const rotation = bone.quaternion.clone()
+    bone.rotateX(Math.PI / 4)
+    result.scene.updateMatrixWorld(true)
+    handMesh.skeleton.update()
+    const movement = tipCenter(tip).distanceTo(tipRest[index])
+    const neighborMovement = Math.max(...fingertips.map((other, i) =>
+      i === index ? 0 : tipCenter(other).distanceTo(tipRest[i])
+    ))
+    bone.quaternion.copy(rotation)
+    result.scene.updateMatrixWorld(true)
+    handMesh.skeleton.update()
+    assert.ok(movement > .005, `${tip.name} does not bend at its second joint`)
+    assert.ok(neighborMovement < .001, `${tip.name} bends another fingertip`)
+    fingerChecks.push({ finger: tip.name, minimum_own_weight: tip.minimumOwnWeight,
+      isolated_bend_movement: movement, maximum_neighbor_movement: neighborMovement })
+  }
+  console.log(JSON.stringify({ fingers: fingerChecks }))
+  const handRelativeRotation = (side, finger, joint) => result.scene.getObjectByName(`${side}Hand`)
+    .getWorldQuaternion(new THREE.Quaternion()).invert()
+    .multiply(result.scene.getObjectByName(`${side}Hand${finger}${joint}`).getWorldQuaternion(new THREE.Quaternion()))
+  const relaxedJoints = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky'].flatMap(finger =>
+    Array.from({ length: 3 }, (_, i) => ({ finger, joint: i + 1,
+      inverseLeftRest: handRelativeRotation('Left', finger, i + 1).invert(),
+      inverseRightRest: handRelativeRotation('Right', finger, i + 1).invert() }))
+  )
+  let maximumIdleMirrorError = 0
   const sampler = clipSampler(result.scene, { samples: 121, restore: bones })
   const poses = [], checks = []
   const minimumTimes = []
+  const gripClips = new Set(['idle_armed', 'walk', 'run', 'jump', 'combat_idle', 'slash1'])
+  const jointPosition = name => result.scene.getObjectByName(name).getWorldPosition(new THREE.Vector3())
   for (const clip of result.animations) {
     assert.ok(clip.validate())
     let minY = Infinity, maxFloor = -Infinity, maxExtent = 0, facialError = 0
+    const gripAngles = gripClips.has(clip.name)
+      ? Array.from({ length: 3 }, () => ({ minimum: Infinity, maximum: -Infinity }))
+      : undefined
     const times = []
     for (const { sample, time } of sampler(clip)) {
+      if (clip.name === 'idle1') {
+        for (const { finger, joint, inverseLeftRest, inverseRightRest } of relaxedJoints) {
+          const left = handRelativeRotation('Left', finger, joint).multiply(inverseLeftRest)
+          const right = handRelativeRotation('Right', finger, joint).multiply(inverseRightRest)
+          const difference = right.normalize().angleTo(new THREE.Quaternion(left.x, -left.y, -left.z, left.w).normalize())
+          maximumIdleMirrorError = Math.max(maximumIdleMirrorError, difference)
+          assert.ok(difference < 1e-4, `${finger}${joint} does not mirror the relaxed left hand: ${difference}`)
+        }
+      }
+      if (gripAngles) {
+        const directions = [
+          jointPosition('RightHandMiddle1').sub(jointPosition('RightHand')),
+          ...Array.from({ length: 3 }, (_, i) =>
+            jointPosition(`RightHandIndex${i + 2}`).sub(jointPosition(`RightHandIndex${i + 1}`))
+          ),
+        ]
+        for (let i = 0; i < 3; i++) {
+          const middleDirection = jointPosition(`RightHandMiddle${i + 2}`).sub(jointPosition(`RightHandMiddle${i + 1}`))
+          const difference = THREE.MathUtils.radToDeg(directions[i + 1].angleTo(middleDirection))
+          assert.ok(difference < 5, `${clip.name}: right index segment ${i + 1} diverges from the middle grip: ${difference}`)
+        }
+        const across = jointPosition('RightHandIndex1').sub(jointPosition('RightHandPinky1')).normalize()
+        const contact = jointPosition('RightHandIndex1').lerp(jointPosition('RightHandIndex2'), .2)
+          .addScaledVector(across, .006)
+        const thumbGap = jointPosition('RightHandThumb4').distanceTo(contact)
+        assert.ok(thumbGap < .002, `${clip.name}: thumb misses the side of the index grip: ${thumbGap}`)
+        for (const [i, [minimum, maximum]] of [[45, 100], [15, 90], [15, 80]].entries()) {
+          const degrees = THREE.MathUtils.radToDeg(directions[i].angleTo(directions[i + 1]))
+          assert.ok(degrees >= minimum && degrees <= maximum,
+            `${clip.name}: right index joint ${i + 1} has an abrupt grip bend: ${degrees}`)
+          gripAngles[i].minimum = Math.min(gripAngles[i].minimum, degrees)
+          gripAngles[i].maximum = Math.max(gripAngles[i].maximum, degrees)
+        }
+      }
       let floor = Infinity
       const box = new THREE.Box3()
       const headDelta = new THREE.Matrix4().multiplyMatrices(
@@ -98,12 +230,16 @@ try {
     assert.ok(maxExtent < 2, `${clip.name} has an exploded surface`)
     assert.ok(facialError < 1e-6, `${clip.name} distorts the face`)
     const check = { clip: clip.name, frames: 121, minimum_y: minY, maximum_floor_y: maxFloor, maximum_extent: maxExtent, maximum_face_rigid_error: facialError }
+    if (gripAngles) check.right_index_grip_angles_degrees = gripAngles
     checks.push(check); minimumTimes.push({ clip: clip.name, times })
     console.log(JSON.stringify(check))
   }
   const report = { source: { path: originalPath, sha256: hash(originalPath) }, output: { path, sha256: hash(path) },
     bone_count: bones.length, used_vertices: usedVertices, unchanged_geometry_normals_uv_indices: true, unchanged_materials_and_embedded_images: true,
-    maximum_rest_error: restError, maximum_weight_sum_error: weightError, clips: checks }
+    maximum_rest_error: restError, maximum_weight_sum_error: weightError,
+    right_index_anchor_longitudinal_offset_from_middle: indexAnchorOffset,
+    idle_variants: { original_left_hand_and_body_tracks_preserved: true, maximum_mirrored_rotation_error_radians: maximumIdleMirrorError },
+    fingers: fingerChecks, clips: checks }
   writeFileSync(new URL('../' + directory + 'validation.json', import.meta.url), JSON.stringify(report, null, 2) + '\n')
   writeFileSync(new URL('../' + directory + 'animation-snapshots.json', import.meta.url), JSON.stringify(poses) + '\n')
   writeFileSync(new URL('../' + directory + 'floor-samples.json', import.meta.url), JSON.stringify(minimumTimes) + '\n')

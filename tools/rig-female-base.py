@@ -6,6 +6,7 @@ import json
 import subprocess
 import sys
 import tempfile
+from datetime import date
 from pathlib import Path
 
 import numpy as np
@@ -48,6 +49,22 @@ def landmarks():
     for name, p in left.items():
         points['Left' + name] = p
         points['Right' + name] = [-p[0], p[1], p[2]]
+    # The source hands are not mirror images.
+    points['RightHand'] = [-.26354, .60084, -.00281]
+    right_fingers = {
+        'Index': ([-.30264, .54704, .02136], [-.32630, .51897, .02208]),
+        'Middle': ([-.30010, .54792, .00744], [-.33411, .51701, .00955]),
+        'Ring': ([-.29598, .55093, -.00684], [-.33006, .52001, -.00573]),
+        'Pinky': ([-.28774, .55792, -.01938], [-.31981, .52900, -.01839]),
+    }
+    for finger, (start, end) in right_fingers.items():
+        for index, t in enumerate([0, .42, .75, 1], 1):
+            points[f'RightHand{finger}{index}'] = (
+                np.array(start) * (1 - t) + np.array(end) * t
+            ).tolist()
+    for index, p in enumerate([[-.26964, .57884, .01258], [-.27418, .55684, .02085],
+                              [-.28083, .54185, .02726], [-.28671, .53286, .02962]], 1):
+        points[f'RightHandThumb{index}'] = p
     return {name: np.array(p, dtype=float) for name, p in points.items()}
 
 
@@ -179,7 +196,7 @@ def build():
     doc['buffers'][0]['byteLength'] = len(binary)
     output = OUT / 'female-base.glb'
     io.write_glb(output, doc, binary)
-    report = {'date': '2026-10-11', 'rig_id': RIG_ID, 'method': '65-bone modular hierarchy fitted to female anatomical landmarks; Blender bone-heat binding; rigid head binding for separate eyelashes; four normalized influences',
+    report = {'date': date.today().isoformat(), 'rig_id': RIG_ID, 'method': '65-bone modular hierarchy fitted to female anatomical landmarks with independently fitted right-hand joints; Blender bone-heat binding; rigid head binding for separate eyelashes; four normalized influences',
               'sources': [{'path': str(p.relative_to(ROOT)), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()} for p in [SOURCE, DONOR]],
               'source_conditions': 'Original Tripo API and image-edit source/license records remain applicable; donor Mixamo skeleton uses the existing project license. Local processing only, no paid generation.',
               'height': 1, 'joints': len(names), 'landmarks': {k: v.tolist() for k, v in positions.items()},

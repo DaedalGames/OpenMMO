@@ -4,6 +4,124 @@ import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, hash } from './lib/headless-three.mjs'
 
 const output = 'assets/modular_human_female_01/rig_v1/'
+const gripClips = new Set(['idle1', 'walk', 'run', 'jump', 'combat_idle', 'slash1'])
+
+function relaxedIdle(root, armed) {
+  const clip = armed.clone()
+  clip.name = 'idle1'
+  root.updateMatrixWorld(true)
+  const leftHand = root.getObjectByName('LeftHand')
+  const rightHand = root.getObjectByName('RightHand')
+  const relativeRotation = (hand, bone) => hand.getWorldQuaternion(new THREE.Quaternion()).invert()
+    .multiply(bone.getWorldQuaternion(new THREE.Quaternion()))
+  const mirror = q => new THREE.Quaternion(q.x, -q.y, -q.z, q.w)
+  const joints = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky'].flatMap(finger =>
+    Array.from({ length: 3 }, (_, i) => {
+      const left = root.getObjectByName(`LeftHand${finger}${i + 1}`)
+      const right = root.getObjectByName(`RightHand${finger}${i + 1}`)
+      const reference = clip.tracks.find(t => t.name === `${left.name}.quaternion`)
+      const track = clip.tracks.find(t => t.name === `${right.name}.quaternion`)
+      assert.ok(reference && track, `${clip.name} is missing finger rotations`)
+      return { left, right, track, reference, sample: reference.createInterpolant(), values: [],
+        leftRest: left.quaternion.clone(), rightRest: right.quaternion.clone(),
+        inverseLeftRest: relativeRotation(leftHand, left).invert(),
+        rightRelativeRest: relativeRotation(rightHand, right) }
+    })
+  )
+  const times = [...new Set(joints.flatMap(j => [...j.reference.times]))].sort((a, b) => a - b)
+  for (const time of times) {
+    for (const joint of joints) joint.left.quaternion.fromArray(joint.sample.evaluate(time))
+    root.updateMatrixWorld(true)
+    for (const joint of joints) {
+      const delta = relativeRotation(leftHand, joint.left).multiply(joint.inverseLeftRest)
+      const desired = rightHand.getWorldQuaternion(new THREE.Quaternion())
+        .multiply(mirror(delta)).multiply(joint.rightRelativeRest)
+      joint.right.quaternion.copy(joint.right.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(desired))
+      joint.right.updateMatrixWorld(true)
+      joint.values.push(...joint.right.quaternion.toArray())
+    }
+  }
+  for (const joint of joints) {
+    joint.track.times = new Float32Array(times)
+    joint.track.values = new Float32Array(joint.values)
+    joint.left.quaternion.copy(joint.leftRest)
+    joint.right.quaternion.copy(joint.rightRest)
+  }
+  root.updateMatrixWorld(true)
+  return clip
+}
+
+function fitRightHandGrip(root, clip) {
+  if (!gripClips.has(clip.name)) return
+  root.updateMatrixWorld(true)
+  const position = name => root.getObjectByName(name).getWorldPosition(new THREE.Vector3())
+  const joints = Array.from({ length: 3 }, (_, i) => {
+    const index = root.getObjectByName(`RightHandIndex${i + 1}`)
+    const middle = root.getObjectByName(`RightHandMiddle${i + 1}`)
+    const indexDirection = position(`RightHandIndex${i + 2}`).sub(position(index.name)).normalize()
+    const middleDirection = position(`RightHandMiddle${i + 2}`).sub(position(middle.name)).normalize()
+    const correction = middle.getWorldQuaternion(new THREE.Quaternion()).invert()
+      .multiply(new THREE.Quaternion().setFromUnitVectors(indexDirection, middleDirection))
+      .multiply(index.getWorldQuaternion(new THREE.Quaternion()))
+    const track = clip.tracks.find(t => t.name === `${index.name}.quaternion`)
+    const reference = clip.tracks.find(t => t.name === `${middle.name}.quaternion`)
+    assert.ok(track && reference, `${clip.name} is missing finger rotations`)
+    return { index, middle, correction, track, reference,
+      indexRest: index.quaternion.clone(), middleRest: middle.quaternion.clone(),
+      sample: reference.createInterpolant(), values: [] }
+  })
+  const thumbs = Array.from({ length: 3 }, (_, i) => {
+    const bone = root.getObjectByName(`RightHandThumb${i + 1}`)
+    const track = clip.tracks.find(t => t.name === `${bone.name}.quaternion`)
+    assert.ok(track, `${clip.name} is missing ${bone.name}`)
+    return { bone, track, rest: bone.quaternion.clone(), sample: track.createInterpolant(), values: [] }
+  })
+  const times = [...new Set([
+    ...joints.flatMap(j => [...j.track.times, ...j.reference.times]),
+    ...thumbs.flatMap(j => [...j.track.times]),
+  ])].sort((a, b) => a - b)
+  for (const time of times) {
+    for (const joint of joints) joint.middle.quaternion.fromArray(joint.sample.evaluate(time))
+    for (const joint of thumbs) joint.bone.quaternion.fromArray(joint.sample.evaluate(time))
+    root.updateMatrixWorld(true)
+    for (const joint of joints) {
+      const desired = joint.middle.getWorldQuaternion(new THREE.Quaternion()).multiply(joint.correction)
+      joint.index.quaternion.copy(joint.index.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(desired))
+      joint.index.updateMatrixWorld(true)
+      joint.values.push(...joint.index.quaternion.toArray())
+    }
+    const across = position('RightHandIndex1').sub(position('RightHandPinky1')).normalize()
+    const contact = position('RightHandIndex1').lerp(position('RightHandIndex2'), .2)
+      .addScaledVector(across, .006)
+    for (let iteration = 0; iteration < 48; iteration++) {
+      for (let i = thumbs.length - 1; i >= 0; i--) {
+        const bone = thumbs[i].bone
+        const origin = bone.getWorldPosition(new THREE.Vector3())
+        const from = position('RightHandThumb4').sub(origin).normalize()
+        const to = contact.clone().sub(origin).normalize()
+        const delta = new THREE.Quaternion().setFromUnitVectors(from, to)
+          .slerp(new THREE.Quaternion(), .3)
+        const desired = delta.multiply(bone.getWorldQuaternion(new THREE.Quaternion()))
+        bone.quaternion.copy(bone.parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(desired))
+        bone.updateMatrixWorld(true)
+      }
+    }
+    for (const joint of thumbs) joint.values.push(...joint.bone.quaternion.toArray())
+  }
+  for (const joint of thumbs) {
+    joint.track.times = new Float32Array(times)
+    joint.track.values = new Float32Array(joint.values)
+    joint.bone.quaternion.copy(joint.rest)
+  }
+  for (const joint of joints) {
+    joint.track.times = new Float32Array(times)
+    joint.track.values = new Float32Array(joint.values)
+    joint.index.quaternion.copy(joint.indexRest)
+    joint.middle.quaternion.copy(joint.middleRest)
+  }
+  root.updateMatrixWorld(true)
+}
+
 const { server, load } = await headlessThree()
 try {
   const donor = (await load('assets/modular_human_male_01/fitted/base.glb')).scene
@@ -64,6 +182,7 @@ try {
         }
       }
     }
+    fitRightHandGrip(target, clip)
     const sourceMixer = new THREE.AnimationMixer(donor), mixer = new THREE.AnimationMixer(target)
     for (const [m, c] of [[sourceMixer, original], [mixer, clip]]) {
       const action = m.clipAction(c).setLoop(THREE.LoopOnce, 1)
@@ -87,13 +206,18 @@ try {
     for (let i = 1; i < positions.length; i += 3) positions[i] -= soleOffset
     clip.tracks = clip.tracks.filter(t => t.name !== 'Hips.position')
     clip.tracks.push(new THREE.VectorKeyframeTrack('Hips.position', times, positions))
+    if (clip.name === 'idle1') {
+      clip.name = 'idle_armed'
+      resetTarget()
+      baked.push(THREE.AnimationClip.toJSON(relaxedIdle(target, clip)))
+    }
     baked.push(THREE.AnimationClip.toJSON(clip))
     console.log(clip.name, frames, 'floor correction', Math.min(...corrections).toFixed(4), Math.max(...corrections).toFixed(4))
     sourceMixer.stopAllAction(); mixer.stopAllAction()
     sourceMixer.uncacheRoot(donor); mixer.uncacheRoot(target)
   }
   writeFileSync(new URL('../' + output + 'clips.json', import.meta.url), JSON.stringify({
-    method: 'Existing local rotation tracks applied to the fitted bone axes; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.',
+    method: 'Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.',
     sources: sources.map(path => ({ path, sha256: hash(path) })), hip_ratio: ratio, clips: baked,
   }) + '\n')
 } finally { await server.close() }

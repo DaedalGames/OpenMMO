@@ -33,6 +33,12 @@ export async function showFemaleBase(
         <option value="dying">쓰러지기</option>
         <option value="sit_idle">앉기</option>
       </select>
+      <label for="female-equipment">장착 상태</label>
+      <select id="female-equipment">
+        <option value="unarmed">맨손</option>
+        <option value="armed">무기 장착</option>
+      </select>
+      <p class="details">대기 동작에서 맨손과 무기를 쥔 손을 비교할 수 있습니다.</p>
       <button id="female-pause" type="button">일시정지</button>
       <label for="female-time">동작 시점</label>
       <input id="female-time" type="range" min="0" max="1" step="0.001" value="0" />
@@ -43,13 +49,15 @@ export async function showFemaleBase(
         <option value="side">전신 측면</option>
         <option value="back">전신 후면</option>
         <option value="feet">발 확대</option>
+        <option value="right-hand">오른손 확대</option>
+        <option value="left-hand">왼손 확대</option>
       </select>
       <label class="toggle"><input id="female-wireframe" type="checkbox" /> 와이어프레임</label>
       <label class="toggle"><input id="female-skeleton" type="checkbox" /> 뼈대 보기</label>
       <button id="female-reset" type="button">시점 초기화</button>
     </fieldset>
     <p id="female-stats" class="details"></p>
-    <p class="details">여성 체형에 맞춘 뼈대와 8가지 동작을 확인할 수 있습니다. 복장 교체는 준비 중입니다.</p>`
+    <p class="details">여성 체형에 맞춘 뼈대와 동작을 확인할 수 있습니다. 복장 교체는 준비 중입니다.</p>`
   )
   status.textContent = '여성 베이스를 불러오는 중…'
   const { scene: model, animations } = await new GLTFLoader().loadAsync(
@@ -88,6 +96,9 @@ export async function showFemaleBase(
   let action: THREE.AnimationAction | undefined
   let paused = false
   const motion = document.getElementById('female-motion') as HTMLSelectElement
+  const equipment = document.getElementById(
+    'female-equipment'
+  ) as HTMLSelectElement
   const pause = document.getElementById('female-pause') as HTMLButtonElement
   const time = document.getElementById('female-time') as HTMLInputElement
   const setPaused = (value: boolean) => {
@@ -101,7 +112,12 @@ export async function showFemaleBase(
       state.bone.quaternion.copy(state.quaternion)
       state.bone.scale.copy(state.scale)
     }
-    const clip = animations.find((entry) => entry.name === motion.value)
+    equipment.disabled = motion.value !== 'idle1'
+    const clipName =
+      motion.value === 'idle1' && equipment.value === 'armed'
+        ? 'idle_armed'
+        : motion.value
+    const clip = animations.find((entry) => entry.name === clipName)
     action = clip ? mixer.clipAction(clip).reset().play() : undefined
     if (action) {
       action.setLoop(
@@ -116,9 +132,25 @@ export async function showFemaleBase(
     time.disabled = pause.disabled = !action
     setPaused(false)
     mixer.update(0)
-    status.textContent = motion.selectedOptions[0].textContent
+    if (select.value.endsWith('-hand')) reset()
+    status.textContent =
+      motion.value === 'idle1'
+        ? `대기 · ${equipment.selectedOptions[0].textContent}`
+        : motion.selectedOptions[0].textContent
   }
   motion.onchange = play
+  equipment.onchange = () => {
+    const fraction = action ? action.time / action.getClip().duration : 0
+    const wasPaused = paused
+    play()
+    if (action) {
+      action.time = fraction * action.getClip().duration
+      time.value = String(fraction)
+      mixer.update(0)
+      setPaused(wasPaused)
+    }
+    if (select.value.endsWith('-hand')) reset()
+  }
   pause.onclick = () => {
     if (action && action.time >= action.getClip().duration) {
       action.reset().play()
@@ -138,9 +170,14 @@ export async function showFemaleBase(
     action.paused = false
     action.time = Number(time.value) * action.getClip().duration
     mixer.update(0)
+    if (select.value.endsWith('-hand')) reset()
   }
   const skeleton = new THREE.SkeletonHelper(model)
-  skeleton.visible = false
+  const skeletonToggle = document.getElementById(
+    'female-skeleton'
+  ) as HTMLInputElement
+  skeleton.visible = skeletonToggle.checked =
+    new URLSearchParams(location.search).get('skeleton') === '1'
   for (const material of Array.isArray(skeleton.material)
     ? skeleton.material
     : [skeleton.material]) {
@@ -148,8 +185,8 @@ export async function showFemaleBase(
   }
   skeleton.renderOrder = 10
   scene.add(skeleton)
-  document.getElementById('female-skeleton')!.onchange = (event) => {
-    skeleton.visible = (event.target as HTMLInputElement).checked
+  skeletonToggle.onchange = () => {
+    skeleton.visible = skeletonToggle.checked
   }
   cleanup.push(() => {
     mixer.stopAllAction()
@@ -214,6 +251,14 @@ export async function showFemaleBase(
     side: { target: [0, 0.5, 0], position: [1.9, 0.55, 0] },
     back: { target: [0, 0.5, 0], position: [0, 0.55, -1.9] },
     feet: { target: [0, 0.065, 0], position: [0.24, 0.16, 0.45] },
+    'right-hand': {
+      target: [-0.12, 0.48, 0.015],
+      position: [-0.45, 0.49, 0.13],
+    },
+    'left-hand': {
+      target: [0.145, 0.48, -0.01],
+      position: [0.475, 0.49, 0.105],
+    },
   }
   const select = document.getElementById('female-camera') as HTMLSelectElement
   const requested = new URLSearchParams(location.search).get('camera')
@@ -228,6 +273,19 @@ export async function showFemaleBase(
       .sub(controls.target)
       .multiplyScalar(Math.max(1, 1 / aspect))
       .add(controls.target)
+    if (select.value.endsWith('-hand')) {
+      model.updateMatrixWorld(true)
+      const side = select.value === 'right-hand' ? 'Right' : 'Left'
+      const wrist = model
+        .getObjectByName(`${side}Hand`)!
+        .getWorldPosition(new THREE.Vector3())
+      const tip = model
+        .getObjectByName(`${side}HandMiddle4`)!
+        .getWorldPosition(new THREE.Vector3())
+      const target = wrist.add(tip).multiplyScalar(0.5)
+      camera.position.add(target.clone().sub(controls.target))
+      controls.target.copy(target)
+    }
     controls.update()
   }
   select.onchange = reset
@@ -250,11 +308,17 @@ export async function showFemaleBase(
   reset()
   const params = new URLSearchParams(location.search)
   const requestedMotion = params.get('motion') ?? 'idle1'
+  equipment.value =
+    params.get('equipment') === 'armed' || requestedMotion === 'idle_armed'
+      ? 'armed'
+      : 'unarmed'
   motion.value =
-    requestedMotion === 'rest' ||
-    animations.some((clip) => clip.name === requestedMotion)
-      ? requestedMotion
-      : 'idle1'
+    requestedMotion === 'idle_armed'
+      ? 'idle1'
+      : requestedMotion === 'rest' ||
+          animations.some((clip) => clip.name === requestedMotion)
+        ? requestedMotion
+        : 'idle1'
   play()
   const requestedTime = Number(params.get('time'))
   if (params.has('time') && Number.isFinite(requestedTime) && action) {
