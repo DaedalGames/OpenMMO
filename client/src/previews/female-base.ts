@@ -12,7 +12,7 @@ export async function showFemaleBase(
   document.title = '여성 베이스 · 캐릭터 미리보기'
   document.querySelector('h1')!.textContent = '여성 베이스 미리보기'
   document.querySelector('header p:last-child')!.textContent =
-    '눈꺼풀 경계를 다듬은 눈과 여성 기본 체형을 살펴보세요.'
+    '눈과 코 주변 텍스처를 다듬은 여성 기본 체형을 살펴보세요.'
   const status = document.getElementById('status')!
   const aside = document.querySelector('aside')!
   aside.replaceChildren(status)
@@ -33,7 +33,7 @@ export async function showFemaleBase(
       <button id="female-reset" type="button">시점 초기화</button>
     </fieldset>
     <p id="female-stats" class="details"></p>
-    <p class="details">여성 기본 체형 · 속눈썹 뿌리 밀착 v10<br />리깅 전 모델입니다. 복장 교체와 동작은 아직 적용되지 않았습니다.</p>`
+    <p class="details">여성 기본 체형 · 속눈썹 뿌리 두께 2배 · 콧구멍 텍스처 정렬<br />리깅 전 모델입니다. 복장 교체와 동작은 아직 적용되지 않았습니다.</p>`
   )
   status.textContent = '여성 베이스를 불러오는 중…'
   const { scene: model } = await new GLTFLoader().loadAsync(
@@ -153,8 +153,8 @@ export async function showFemaleBase(
     renderer.render(scene, camera)
   })
   document.getElementById('female-stats')!.textContent =
-    `${triangles.toLocaleString()}삼각형 · 속눈썹 뿌리 밀착 v10`
-  status.textContent = '피부에 밀착한 속눈썹 뿌리'
+    `${triangles.toLocaleString()}삼각형 · 눈 반사 보정`
+  status.textContent = '눈의 반사와 코 음영을 다듬은 모델'
   const fieldset = document.getElementById(
     'female-controls'
   ) as HTMLFieldSetElement

@@ -1,0 +1,101 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "[미사용] Intermediate output removed after final acceptance; retained as production history.",
+  "request": "Move the dark marks on the front of the nose downward to the nostrils.",
+  "source_model": "assets/modular_human_female_01/eyelashes_v11/base-eyelashes-v11.glb",
+  "source_record": "doc/assets/modular-human-female-01-eyelashes-v11-sources.json",
+  "tools": [
+    "Blender 5.2.0 LTS Cycles emission bake",
+    "Local NumPy validation",
+    "Chromium / Three.js preview"
+  ],
+  "tier": "Not applicable; no new AI generation",
+  "license": "Existing ImageGen, Tripo and user image provenance retained.",
+  "method": "Render original unlit albedo from below (camera direction 0,-2,-1.3); shift sampling upward by 0.0032 normalized model units in that projection to move the visible pattern down over the nose underside. Blend within two feathered nose masks, bake back to the original UV atlas, and restore every pixel outside support. Replace only the embedded base-color image in the source GLB.",
+  "script": "tools/blender-scripts/align_female_nostril_texture.py",
+  "command": "blender -b --python tools/blender-scripts/align_female_nostril_texture.py -- --version v1",
+  "output": "assets/modular_human_female_01/nose_v1/base-nose-v1.glb",
+  "blend": "assets/modular_human_female_01/nose_v1/base-nose-v1.blend",
+  "validation": {
+    "source_sha256": "6a20bae16c330b94c4d7e1d079fbc9111334932acd45011e00a5dbacfad10c18",
+    "output_sha256": "fae609fd962d23a67ca92fe924cc4d53230acc499f8eba6ca59a7b9c12c21de0",
+    "projection_shift": 0.0032,
+    "changed_map": "baseColor",
+    "outside_support_float_pixels_unchanged": true,
+    "support_pixels": 18656,
+    "triangles": 22175,
+    "independent_validation": {
+      "changed_buffer_views": [
+        5
+      ],
+      "changed_pixels": 17884,
+      "outside_support_changed_pixels": 0,
+      "geometry_normals_uv_materials_lashes_unchanged": true,
+      "normal_and_orm_maps_byte_identical": true,
+      "triangles": 22175
+    }
+  },
+  "browser": {
+    "errors": [],
+    "views": [
+      "face",
+      "frontal nose close-up",
+      "nose from below"
+    ],
+    "findings": [
+      "Front-facing dark marks moved to the nostril rims/interiors.",
+      "Original specular highlights remain; normal and ORM maps were preserved."
+    ]
+  },
+  "additional_paid_generation": false,
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/nose_v1/base-color-nose-v1.png",
+      "bytes": 14154740,
+      "sha256": "7f4688bc38b4ee1bfab37c8b6a131625169ff2a2aaa095cb0b18aec0af44745a"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v1/base-nose-v1.blend",
+      "bytes": 20211779,
+      "sha256": "164704dcea4203c71faeb8a385f8ff3663baa1c8d516c5363bb53753ef079b80"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v1/base-nose-v1.glb",
+      "bytes": 21622252,
+      "sha256": "fae609fd962d23a67ca92fe924cc4d53230acc499f8eba6ca59a7b9c12c21de0"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v1/browser-below.png",
+      "bytes": 554534,
+      "sha256": "a0c1b6794ff501f5a3f0b2ee08b2a347d623936e44e2130ea443c846477b9a84"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v1/browser-detail.png",
+      "bytes": 463106,
+      "sha256": "d3df793fd21c5812f08f023d28a17e05c4ac8687fe13dc6c3221df47f99bc2d2"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v1/browser-face.png",
+      "bytes": 252372,
+      "sha256": "099ee6caef25d3e896830af8daa49239217ad31846bff769449239a26fa73555"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v1/nose-albedo-projection.png",
+      "bytes": 4058502,
+      "sha256": "979e8a9d4f8e41d2c58d848ba03768e0d43598834a330115c3f1c972523985da"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v1/nose-support-mask.png",
+      "bytes": 247184,
+      "sha256": "f8e145603a1fe1f84b83c5ff560cba8c97a1e0277cbe59f665e8efdb1120ea19"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v1/validation.json",
+      "bytes": 617,
+      "sha256": "b3251f9eb061157811a73ded8be22fe832e8edce8490a1a5a3df2ad6b4db7622"
+    }
+  ],
+  "cleanup_record": "doc/assets/modular-human-female-01-final-cleanup.json",
+  "file_inventory_note": "File hashes describe the reviewed outputs before cleanup. Intermediate binaries and all review images listed in the cleanup record were intentionally removed; final GLB/Blender and small validation records are retained."
+}

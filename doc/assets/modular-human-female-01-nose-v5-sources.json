@@ -1,0 +1,140 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "source_model": "assets/modular_human_female_01/eyelashes_v11/base-eyelashes-v11.glb",
+  "source_record": "doc/assets/modular-human-female-01-eyelashes-v11-sources.json",
+  "tools": [
+    "Blender 5.2.0 LTS Cycles emission bake",
+    "Local NumPy validation",
+    "Chromium / Three.js preview"
+  ],
+  "tier": "Not applicable; no new AI generation",
+  "license": "Existing ImageGen, Tripo and user image provenance retained.",
+  "status": "[미사용] Intermediate output removed after final acceptance; retained as production history.",
+  "request": "Move both dark nostril regions slightly toward the center of the nose.",
+  "previous_review": "doc/assets/modular-human-female-01-nose-v4-sources.json",
+  "method": "Move each projected albedo pattern and cavity center 0.0004 model units toward the nose center. Preserve v4 height, depth, radii, color, and 50% darkening strength. Only base color differs from v4; geometry, UVs, normal and ORM maps remain unchanged.",
+  "script": "tools/blender-scripts/align_female_nostril_texture.py",
+  "command": "blender -b --python tools/blender-scripts/align_female_nostril_texture.py -- --version v5",
+  "output": "assets/modular_human_female_01/nose_v5/base-nose-v5.glb",
+  "blend": "assets/modular_human_female_01/nose_v5/base-nose-v5.blend",
+  "validation": {
+    "source_sha256": "6a20bae16c330b94c4d7e1d079fbc9111334932acd45011e00a5dbacfad10c18",
+    "output_sha256": "873d21d6704e6948005bccff14ec2750759828fe2cc0f7c7d465595a636c2254",
+    "projection_shift": 0.0042,
+    "changed_maps": [
+      "baseColor",
+      "normal",
+      "ORM"
+    ],
+    "cavity_center": [
+      0.0,
+      -0.04729999974370003,
+      0.911300003528595
+    ],
+    "inward_shift_per_nostril": 0.0004,
+    "cavity_centers_x": [
+      -0.0034,
+      0.0060999999999999995
+    ],
+    "cavity_radius": [
+      0.0025,
+      0.0027
+    ],
+    "cavity_color_linear": [
+      0.017999999225139618,
+      0.009999999776482582,
+      0.007000000216066837,
+      1.0
+    ],
+    "cavity_strength": 0.5,
+    "nostril_projection_scale": [
+      1.25,
+      2
+    ],
+    "outside_support_float_pixels_unchanged": true,
+    "support_pixels": 18656,
+    "triangles": 22175,
+    "independent_validation": {
+      "comparison_source": "nose_v4",
+      "changed_buffer_views": [
+        5
+      ],
+      "changed_color_pixels": 16551,
+      "outside_support_changed_pixels": 0,
+      "cavity_height_depth_radius_color_and_strength_unchanged": true,
+      "inward_shift_per_nostril": 0.0004,
+      "geometry_normals_uv_materials_lashes_unchanged": true,
+      "normal_and_orm_maps_byte_identical": true,
+      "triangles": 22175
+    }
+  },
+  "browser": {
+    "errors": [],
+    "views": [
+      "face",
+      "frontal nose close-up",
+      "nose from below"
+    ]
+  },
+  "additional_paid_generation": false,
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/nose_v5/base-color-nose-v5.png",
+      "bytes": 14156331,
+      "sha256": "9ff49b94241cc366fb10c59b8ba2090cfd8834bf28dc8d5c429e880500c79d82"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v5/base-nose-v5.blend",
+      "bytes": 25934366,
+      "sha256": "32bf5b1bcca86487dc90262fa6b71f6d75c7034bdb02b392ff5b88205818ca8a"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v5/base-nose-v5.glb",
+      "bytes": 27344776,
+      "sha256": "873d21d6704e6948005bccff14ec2750759828fe2cc0f7c7d465595a636c2254"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v5/browser-below.png",
+      "bytes": 548695,
+      "sha256": "293e0730087184c3cd52c00a797ab3abd276afe1934d1a606428398d587a5589"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v5/browser-detail.png",
+      "bytes": 459483,
+      "sha256": "244995718833320191cf1f6a24c804c205b633d2c9d69ed79b6d1c6cd400c089"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v5/browser-face.png",
+      "bytes": 254272,
+      "sha256": "aaa45a11311823924770cf7c73d40253e706eb8e58937320d25746ea6d95e75a"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v5/normal-nose-v5.png",
+      "bytes": 3752949,
+      "sha256": "f3d923adac6b1d46d21394685ddc6982e31b2352181c9364fff1a1297eb8c386"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v5/nose-albedo-projection.png",
+      "bytes": 4058502,
+      "sha256": "264777cd9e908a26c772522d767eecb83c047e26e1667709f9052bd889a1d31b"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v5/nose-support-mask.png",
+      "bytes": 247184,
+      "sha256": "f8e145603a1fe1f84b83c5ff560cba8c97a1e0277cbe59f665e8efdb1120ea19"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v5/orm-nose-v5.png",
+      "bytes": 6910685,
+      "sha256": "5cdfbbd489ac90dbcc5fb057529a44156ae9cd69668c8922340eb2cc2b85c298"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v5/validation.json",
+      "bytes": 1239,
+      "sha256": "d966481efdd1e64d5016489c92e9c2a24321729e67dd09041e3f3612550486eb"
+    }
+  ],
+  "cleanup_record": "doc/assets/modular-human-female-01-final-cleanup.json",
+  "file_inventory_note": "File hashes describe the reviewed outputs before cleanup. Intermediate binaries and all review images listed in the cleanup record were intentionally removed; final GLB/Blender and small validation records are retained."
+}

@@ -1,0 +1,163 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "Current preview: isolated lower-right-eye normal repair",
+  "request": "Investigate and correct the triangular highlight under the character-right iris.",
+  "source_model": "assets/modular_human_female_01/nose_v11/base-nose-v11.glb",
+  "source_record": "doc/assets/modular-human-female-01-nose-v11-sources.json",
+  "tools": [
+    "Local NumPy GLB normal repair",
+    "Blender 5.2.0 LTS source preservation",
+    "Chromium / Three.js diagnostic comparison"
+  ],
+  "tier": "Not applicable; no new AI generation",
+  "license": "Existing ImageGen, Tripo and user image provenance retained.",
+  "diagnosis": "Highlight disappears with unlit or matte rendering; persists without the normal map and with uniform roughness; disappears with face normals. One lower-eye rim point has an upward Y normal (+0.3525) while its immediate neighbors point downward (-0.3954 and -0.3630).",
+  "method": "Interpolate the two adjacent same-row rim normals by position and update all five coincident UV-seam copies. Preserve all other bytes in the GLB.",
+  "script": "tools/blender-scripts/fix_female_eye_highlight.py",
+  "command": "blender -b --python tools/blender-scripts/fix_female_eye_highlight.py",
+  "output": "assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.glb",
+  "blend": "assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.blend",
+  "validation": {
+    "source": "assets/modular_human_female_01/nose_v11/base-nose-v11.glb",
+    "source_sha256": "645f750b1aee61539750d24943de0acdd2f7c7522366e1186ca18be4bea4ee8e",
+    "output_sha256": "2b6493dac52aeba36bafeaaef4d85ff5ff521807f42246cf5ae1a474b6691d50",
+    "affected_vertex_indices": [
+      4219,
+      4220,
+      4221,
+      4222,
+      4223
+    ],
+    "surface_position": [
+      -0.01664324849843979,
+      0.9335613250732422,
+      0.03887900710105896
+    ],
+    "previous_normals": [
+      [
+        0.0039000133983790874,
+        0.3525012135505676,
+        0.935803234577179
+      ],
+      [
+        0.003899875795468688,
+        0.3525887727737427,
+        0.9357702136039734
+      ],
+      [
+        0.004000012297183275,
+        0.3525010645389557,
+        0.9358028769493103
+      ],
+      [
+        0.0038000144995748997,
+        0.3525013327598572,
+        0.9358035922050476
+      ],
+      [
+        0.0039000133983790874,
+        0.3525012135505676,
+        0.935803234577179
+      ]
+    ],
+    "corrected_normal": [
+      -0.051655836403369904,
+      -0.3809007406234741,
+      0.923171877861023
+    ],
+    "neighbor_indices": {
+      "left": [
+        4215,
+        4216
+      ],
+      "right": [
+        4232,
+        4233,
+        4234,
+        4235
+      ]
+    },
+    "method": "Interpolate adjacent lower-eye rim normals by horizontal position; update all coincident UV-seam copies.",
+    "triangles": 22175,
+    "positions_uv_indices_materials_textures_unchanged": true,
+    "independent_validation": {
+      "changed_bytes": 54,
+      "bytes_changed_outside_five_normals": 0,
+      "glb_structure_and_all_other_buffer_data_identical": true
+    }
+  },
+  "browser": {
+    "errors": [],
+    "views": [
+      "front",
+      "side",
+      "above"
+    ]
+  },
+  "additional_paid_generation": false,
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.blend",
+      "bytes": 25932507,
+      "sha256": "821ce63f690a772cd8ed43e0d2b9ae707eef9cdd1ef0f3631105a229380dc401"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.glb",
+      "bytes": 27342908,
+      "sha256": "2b6493dac52aeba36bafeaaef4d85ff5ff521807f42246cf5ae1a474b6691d50"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/browser-above.png",
+      "bytes": 269596,
+      "sha256": "90e74df8fff2ed6f9b8743cc4e2b4b135b57993a5b2520b976c13372a748f497"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/browser-front.png",
+      "bytes": 295477,
+      "sha256": "0570dbe42f8d9366cca337faa64c3f6a86de12b7a014171aebdd245b7e36c5be"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/browser-side.png",
+      "bytes": 335896,
+      "sha256": "b94a66d4d47d754a87fff43456fefb65621bcbe0a0375afad96a4f44475cdb1c"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/diagnosis-albedo.png",
+      "bytes": 273464,
+      "sha256": "5efac7cfd68633bf4cd954e6e8cd00f18cdde6b068b1e2aab2044317a31253f0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/diagnosis-flat.png",
+      "bytes": 293548,
+      "sha256": "0d71df2c1f2ba63160f55f1f086ad19030e6c0892f4e947df2dcd64e28db8d3c"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/diagnosis-matte.png",
+      "bytes": 271872,
+      "sha256": "728641b51fcb3a4f047b1f6c0b01c447babd3f6cfaabb06677fae906029af9cc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/diagnosis-no-normal.png",
+      "bytes": 284398,
+      "sha256": "33923226868f2b589ab15a6ac6c5bb7b61986d95c6d9ea8e50a68c8d084bac7e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/diagnosis-original.png",
+      "bytes": 295810,
+      "sha256": "7ceb9eecf209f79010bd297f27cca96b316f4e0340b263825657d9ba7e588f54"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/diagnosis-uniform-gloss.png",
+      "bytes": 281859,
+      "sha256": "3e4250a0fa7cb8fd46033ce7862ccbd3d87e59bbe332467aa5abeeb2646a918a"
+    },
+    {
+      "path": "assets/modular_human_female_01/eye_normals_v1/validation.json",
+      "bytes": 1541,
+      "sha256": "a8bd48e175b5980d543d5b5258a847aa69e7f58ae28afbb3690aa3caaa62d22c"
+    }
+  ],
+  "cleanup_record": "doc/assets/modular-human-female-01-final-cleanup.json",
+  "file_inventory_note": "File hashes describe the reviewed outputs before cleanup. Intermediate binaries and all review images listed in the cleanup record were intentionally removed; final GLB/Blender and small validation records are retained."
+}

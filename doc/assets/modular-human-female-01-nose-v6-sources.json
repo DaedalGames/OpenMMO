@@ -1,0 +1,210 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "source_model": "assets/modular_human_female_01/eyelashes_v11/base-eyelashes-v11.glb",
+  "source_record": "doc/assets/modular-human-female-01-eyelashes-v11-sources.json",
+  "tools": [
+    "Blender 5.2.0 LTS Cycles emission bake",
+    "Local NumPy validation",
+    "Chromium / Three.js preview"
+  ],
+  "tier": "Not applicable; no new AI generation",
+  "license": "Existing ImageGen, Tripo and user image provenance retained.",
+  "status": "[미사용] Intermediate output removed after final acceptance; retained as production history.",
+  "request": "Remove dark stains from exterior nose skin marked by the user, preserving nostril interiors.",
+  "previous_review": "doc/assets/modular-human-female-01-nose-v5-sources.json",
+  "method": "Protect both nostril openings with feathered convex boundaries in the underside projection. Replace exterior color within the existing nose support with clean skin sampled from the upper nose, retaining lateral color variation. Preserve v5 shading in the protected interiors. Only base color differs from v5; geometry, UVs, normals and ORM remain unchanged.",
+  "script": "tools/blender-scripts/align_female_nostril_texture.py",
+  "command": "blender -b --python tools/blender-scripts/align_female_nostril_texture.py -- --version v6",
+  "output": "assets/modular_human_female_01/nose_v6/base-nose-v6.glb",
+  "blend": "assets/modular_human_female_01/nose_v6/base-nose-v6.blend",
+  "validation": {
+    "source_sha256": "6a20bae16c330b94c4d7e1d079fbc9111334932acd45011e00a5dbacfad10c18",
+    "output_sha256": "2ad81ed88d0028b5e7569f1144456fa99a113be1396d8f43e415a4a355aebfdc",
+    "exterior_skin_cleanup": true,
+    "projection_shift": 0.0042,
+    "changed_maps": [
+      "baseColor",
+      "normal",
+      "ORM"
+    ],
+    "cavity_center": [
+      0.0,
+      -0.04729999974370003,
+      0.911300003528595
+    ],
+    "inward_shift_per_nostril": 0.0004,
+    "cavity_centers_x": [
+      -0.0034,
+      0.0060999999999999995
+    ],
+    "cavity_radius": [
+      0.0025,
+      0.0027
+    ],
+    "cavity_color_linear": [
+      0.017999999225139618,
+      0.009999999776482582,
+      0.007000000216066837,
+      1.0
+    ],
+    "cavity_strength": 0.5,
+    "nostril_projection_scale": [
+      1.25,
+      2
+    ],
+    "outside_support_float_pixels_unchanged": true,
+    "support_pixels": 18656,
+    "triangles": 22175,
+    "independent_validation": {
+      "comparison_source": "nose_v5",
+      "changed_buffer_views": [
+        5
+      ],
+      "changed_color_pixels": 15574,
+      "outside_support_changed_pixels": 0,
+      "geometry_normals_uv_materials_lashes_unchanged": true,
+      "normal_and_orm_maps_byte_identical": true,
+      "triangles": 22175
+    },
+    "protected_openings_projection_1600px": [
+      [
+        [
+          722,
+          755
+        ],
+        [
+          692,
+          775
+        ],
+        [
+          672,
+          810
+        ],
+        [
+          650,
+          880
+        ],
+        [
+          710,
+          930
+        ],
+        [
+          780,
+          890
+        ],
+        [
+          775,
+          835
+        ],
+        [
+          740,
+          778
+        ]
+      ],
+      [
+        [
+          906,
+          755
+        ],
+        [
+          884,
+          775
+        ],
+        [
+          878,
+          804
+        ],
+        [
+          870,
+          890
+        ],
+        [
+          960,
+          930
+        ],
+        [
+          990,
+          870
+        ],
+        [
+          955,
+          805
+        ],
+        [
+          923,
+          769
+        ]
+      ]
+    ],
+    "skin_sample_v": "0.625 + 0.2 * (projection_v - 0.5)"
+  },
+  "browser": {
+    "errors": [],
+    "views": [
+      "face",
+      "frontal nose close-up",
+      "nose from below"
+    ]
+  },
+  "additional_paid_generation": false,
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/nose_v6/base-color-nose-v6.png",
+      "bytes": 14153952,
+      "sha256": "a9fa80f8d2c660d232e1c1726f48520871968838b84cb7d540ca13586325598a"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v6/base-nose-v6.blend",
+      "bytes": 25931957,
+      "sha256": "15c665a60dea31268914ee199cbc84f68a294a188d5e5a0cdb566e7f245cb836"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v6/base-nose-v6.glb",
+      "bytes": 27342396,
+      "sha256": "2ad81ed88d0028b5e7569f1144456fa99a113be1396d8f43e415a4a355aebfdc"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v6/browser-below.png",
+      "bytes": 546282,
+      "sha256": "df88416b59f4057b58fbe03cd08d3b1de2e01846bdfa1c2d696b049701418b2c"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v6/browser-detail.png",
+      "bytes": 457968,
+      "sha256": "52b52d9cb43772b16d9161498e6fb589fd3ee9aeca3f9206d7f86c559fc6acdc"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v6/browser-face.png",
+      "bytes": 254117,
+      "sha256": "2000fb80ad2a8e22bbd73c1b5c91cfb726b3df673093cedd485aad8a6e1d3752"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v6/normal-nose-v6.png",
+      "bytes": 3752949,
+      "sha256": "f3d923adac6b1d46d21394685ddc6982e31b2352181c9364fff1a1297eb8c386"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v6/nose-albedo-projection.png",
+      "bytes": 4058502,
+      "sha256": "a4552be24310613e1991a31d66b283a8c719c1bdd2b9821c80a19522aa64c342"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v6/nose-support-mask.png",
+      "bytes": 247184,
+      "sha256": "f8e145603a1fe1f84b83c5ff560cba8c97a1e0277cbe59f665e8efdb1120ea19"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v6/orm-nose-v6.png",
+      "bytes": 6910685,
+      "sha256": "5cdfbbd489ac90dbcc5fb057529a44156ae9cd69668c8922340eb2cc2b85c298"
+    },
+    {
+      "path": "assets/modular_human_female_01/nose_v6/validation.json",
+      "bytes": 1964,
+      "sha256": "5de83eb937f1c74fe52f638c70bf06f1e20b1215f010e847581eaa74dc96e9dd"
+    }
+  ],
+  "cleanup_record": "doc/assets/modular-human-female-01-final-cleanup.json",
+  "file_inventory_note": "File hashes describe the reviewed outputs before cleanup. Intermediate binaries and all review images listed in the cleanup record were intentionally removed; final GLB/Blender and small validation records are retained."
+}
