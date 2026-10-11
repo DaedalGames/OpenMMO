@@ -291,7 +291,7 @@ GLB를 변경하지 않는 런타임 보정이며 다른 하의의 설정은 유
 - [검수 설정](../../assets/items/bard_starter/tripo_top_v1/review-config.json)
 - [참조 원화](modular-bard-parts.md)
 
-![원본 앞뒤 검수](../../assets/items/bard_starter/tripo_top_v1/raw-review.png)
+원본 앞뒤 검수 이미지는 2026-10-11 중간 결과물 정리 때 삭제했다. 원본 GLB와 검수 기록은 보존한다.
 
 ## 실측
 
