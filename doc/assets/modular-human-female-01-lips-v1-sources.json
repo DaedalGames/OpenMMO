@@ -1,0 +1,83 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "[\ubbf8\uc0ac\uc6a9] Intermediate binary removed after final acceptance; retained as reproducible production history.",
+  "source_model": "assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.glb",
+  "source_record": "doc/assets/modular-human-female-01-eye-normals-v1-sources.json",
+  "diagnosis": "The broad grey-white upper-lip band disappears when the normal map is disabled; flat normals and metallic changes are unnecessary. The base-color texture is unchanged.",
+  "method": "Rasterize a feathered 3D lip mask into the existing UV atlas with a 2-pixel gutter. Reduce tangent normal XY strength to 6%, normalize, and use dielectric roughness 0.34 upper / 0.30 lower.",
+  "tools": [
+    "Local NumPy/Pillow/SciPy numeric PBR map processing",
+    "Blender 5.2.0 LTS packed source preservation",
+    "Chromium / Three.js preview"
+  ],
+  "tier": "Not applicable; no new AI generation",
+  "license": "Existing ImageGen, Tripo and user image provenance retained.",
+  "additional_paid_generation": false,
+  "script": "tools/tune-female-lip-gloss.py",
+  "command": ".venv/bin/python tools/tune-female-lip-gloss.py",
+  "output": "assets/modular_human_female_01/lips_v1/base-lips-v1.glb",
+  "blend": "assets/modular_human_female_01/lips_v1/base-lips-v1.blend",
+  "validation": {
+    "source": "assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.glb",
+    "source_sha256": "2b6493dac52aeba36bafeaaef4d85ff5ff521807f42246cf5ae1a474b6691d50",
+    "output_sha256": "124901d903d59139e7c20677a40d70954acf3278f9a65c54d92e5ea431ce3225",
+    "lip_mask_center_xy": [
+      0.0007,
+      0.899
+    ],
+    "lip_mask_radius_xy": [
+      0.0148,
+      0.0066
+    ],
+    "normal_xy_strength": 0.06,
+    "upper_roughness": 0.34,
+    "lower_roughness": 0.3,
+    "metalness": 0,
+    "uv_gutter_pixels": 2,
+    "support_pixels": 28268,
+    "changed_pixels": {
+      "normal": 8133,
+      "orm": 26723
+    },
+    "pixels_outside_support_unchanged": true,
+    "other_buffer_views_unchanged": true,
+    "geometry_uv_materials_base_color_occlusion_unchanged": true,
+    "triangles": 22175
+  },
+  "independent_validation": {
+    "changed_buffer_views": [
+      4,
+      6
+    ],
+    "only_normal_and_orm_images_changed": true
+  },
+  "browser": {
+    "views": [
+      "front",
+      "below",
+      "side",
+      "face"
+    ],
+    "errors": []
+  },
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/lips_v1/base-lips-v1.blend",
+      "bytes": 22855283,
+      "sha256": "b80fa2d75778890c733c7bc020c64952ede38c9bfefbe2918412f459efc663a0"
+    },
+    {
+      "path": "assets/modular_human_female_01/lips_v1/base-lips-v1.glb",
+      "bytes": 24260104,
+      "sha256": "124901d903d59139e7c20677a40d70954acf3278f9a65c54d92e5ea431ce3225"
+    },
+    {
+      "path": "assets/modular_human_female_01/lips_v1/validation.json",
+      "bytes": 756,
+      "sha256": "dc942c4d7be06811f9101511838a9647dbcffa6353e9bb0752c229b0f810207d"
+    }
+  ],
+  "cleanup_record": "doc/assets/modular-human-female-01-detail-cleanup.json",
+  "file_inventory_note": "File hashes record the reviewed outputs before cleanup. Intermediate binaries and all preview images listed in the cleanup record were removed; final ear_normals_v2 GLB/Blender, the eye_normals_v1 rebuild input, scripts and small validation records are retained."
+}

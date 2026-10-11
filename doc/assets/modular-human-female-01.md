@@ -387,3 +387,105 @@ UV가 여러 조각으로 나뉘어 있어 정면 무조명 색상 투영을 Ima
 blender -b --python tools/blender-scripts/align_female_nostril_texture.py -- --version v11
 blender -b --python tools/blender-scripts/fix_female_eye_highlight.py
 ```
+
+## 입술 노멀맵과 광택 보정 — 2026-10-11
+
+윗입술에 회백색 띠처럼 보이던 반사는 노멀맵을 해제했을 때 사라졌다. 입술의 부드러운 3D 마스크를 기존 UV에 투영하고, 이 영역의 노멀맵 XY 강도를 6%로 줄였다. 거칠기는 윗입술 0.34·아랫입술 0.30으로 정리하고 금속성을 제거해 입술색 위에 부드러운 윤기가 남도록 했다. UV 경계에는 2픽셀 여유를 적용했다.
+
+- 현재 모델과 텍스처를 포함한 Blender 원본: `assets/modular_human_female_01/lips_v1/`.
+- **[미사용]** `eye_normals_v1`은 이번 보정의 입력 원본으로 보관한다.
+- 노멀맵 **8,133픽셀**, ORM **26,723픽셀**을 변경했다. 마스크 밖 픽셀·색상 텍스처·정점 노멀·형태·UV·재질 설정·AO·속눈썹은 동일하다. **22,175삼각형**.
+- 정면 확대·아래쪽·측면·얼굴 전체를 실제 미리보기에서 확인했고 브라우저 오류는 없었다.
+- 기존 출처·이용 조건을 따르며 새 AI 생성이나 유료 API 사용은 없다.
+- 재현: `.venv/bin/python tools/tune-female-lip-gloss.py`.
+- [제작·검증·파일 해시](modular-human-female-01-lips-v1-sources.json).
+
+## 눈썹 주변 삼각형 이음선 보정 — 2026-10-11
+
+눈썹 주변의 메시 선 같은 자국은 노멀맵을 해제하면 사라졌다. 사용자 제안에 따라 가까운 정점을 합친 비교본도 확인했지만 선은 남았다. 눈썹 주변 동일 위치 정점 75개 그룹의 노멀 방향 차이는 최대 약 0.028도였고 UV 좌표가 달랐다. 정점 병합·탄젠트 재계산·밉맵 해제로는 해결되지 않아, 최종 모델은 양쪽 눈썹 주변 노멀맵만 부드러운 경계로 중립화했다.
+
+- 현재 GLB와 텍스처를 포함한 Blender 원본: `assets/modular_human_female_01/brow_normals_v1/`.
+- **[미사용]** `lips_v1`은 이번 보정의 입력 원본으로 보관한다. 입술 광택 보정은 유지했다.
+- 노멀맵 **32,742픽셀**만 변경했다. 마스크 밖 픽셀과 색상·ORM·형태·정점 노멀·UV·속눈썹·재질은 동일하다. **22,175삼각형**.
+- 눈썹 확대·양쪽 아래 시점·얼굴 전체를 확인했고 브라우저 오류는 없었다.
+- 기존 출처·이용 조건을 따르며 추가 AI 생성이나 유료 API 사용은 없다.
+- 재현: `.venv/bin/python tools/fix-female-normal-seams.py --region brows`.
+- [진단·정점 병합 비교·검증·파일 해시](modular-human-female-01-brow-normals-v1-sources.json).
+
+## 속눈썹 중간 구간 두께 보강 v12 — 2026-10-11
+
+사용자 요청으로 얼굴 전체가 보이는 거리에서도 속눈썹이 보이도록 뿌리뿐 아니라 중간 구간까지 넓혔다. 직전 모델 대비 뿌리는 1.5배, 길이 25–62.5% 구간은 2.5배로 조정하고 이후 끝까지 부드럽게 줄였다. 끝 정점과 정면 중심선·길이는 유지했다. 윗속눈썹 뿌리를 눈꺼풀에 다시 맞추고 변경한 리본의 노멀을 갱신했다.
+
+- 현재 GLB와 텍스처를 포함한 Blender 원본: `assets/modular_human_female_01/eyelashes_v12/`.
+- **[미사용]** `brow_normals_v1`은 입력 원본으로 보관한다. 입술·눈썹 노멀맵·코 보정은 유지했다.
+- **86가닥**의 위치·노멀 버퍼만 바뀌었다. 몸체·텍스처·UV·인덱스·재질과 **22,175삼각형**은 동일하다.
+- 얼굴 전체 거리·눈 확대·위쪽 시점을 이전 모델과 비교했고 브라우저 오류는 없었다.
+- 기존 출처·이용 조건을 따르며 추가 AI 생성이나 유료 API 사용은 없다.
+- 재현: `.venv/bin/python tools/thicken-female-eyelash-roots.py --version v12 --root-scale 1.5 --mid-scale 2.5`.
+- [제작·검증·파일 해시](modular-human-female-01-eyelashes-v12-sources.json).
+
+## 표시된 속눈썹 뿌리 국소 정렬 v13 — 2026-10-11
+
+사용자가 빨간색으로 표시한 두 가닥과 파란색으로 표시한 안쪽 구간만 조금씩 조정했다. +X 쪽 윗속눈썹 14·15번의 뿌리를 양옆 13·16번 뿌리 사이로 보간해 높이를 약 0.000084·0.000181 낮추고 깊이도 맞췄다. 3–10번은 뿌리를 앞으로 0.00009–0.00018 옮겨 눈꺼풀에 가려진 부분을 꺼냈다. 모두 모델 좌표 단위이며, 조정량은 첫 세 단면에 100%·75%·25%로 줄여 적용했다.
+
+- 현재 GLB와 텍스처를 포함한 Blender 원본: `assets/modular_human_female_01/eyelashes_v13/`.
+- **[미사용]** `eyelashes_v12`는 입력 원본으로 보관한다.
+- 총 **10가닥**, 위치 정점 **60개**와 인접 노멀 **80개**만 변경했다. 두께·끝·중간 이후 형태와 반대쪽 눈·아랫속눈썹은 유지했다.
+- 몸체·텍스처·UV·인덱스·재질·기존 얼굴 보정과 **22,175삼각형**은 동일하다.
+- 정면·비스듬한 아래쪽·위쪽 확대에서 비교했고 브라우저 오류는 없었다.
+- 기존 출처·이용 조건을 따르며 추가 AI 생성이나 유료 API 사용은 없다.
+- 재현: `.venv/bin/python tools/seat-female-lash-details.py`.
+- [가닥별 이동량·검증·파일 해시](modular-human-female-01-eyelashes-v13-sources.json).
+
+## 안쪽 뿌리 곡선과 정면 방향 미세 조정 v14 — 2026-10-11
+
+사용자의 새 표시를 기준으로 +X 쪽 윗속눈썹만 조정했다. 빨간 구간 3–10번 뿌리는 눈꺼풀 곡선을 따라 최대 0.00020 위로 올리고, 묻히지 않도록 앞으로 최대 0.00004 이동했다. 첫 네 단면에 100%·80%·40%·10%를 적용하고 중간 이후는 유지했다. 파란 구간 12–22번은 각 가닥의 뿌리 양끝을 축으로 정면 방향으로 3–10도 회전했다. 양끝 가닥의 회전량은 줄여 주변과 연결했다.
+
+- 현재 GLB와 텍스처를 포함한 Blender 원본: `assets/modular_human_female_01/eyelashes_v14/`.
+- **[미사용]** `eyelashes_v13`은 입력 원본으로 보관한다.
+- 표시한 **19가닥**의 위치·노멀만 변경했다. 파란 구간은 뿌리 위치와 가닥 길이·두께를 유지한 회전이며, 빨간 구간은 두께와 중간 이후 형태를 유지했다.
+- 몸체·반대쪽 눈·아랫속눈썹·텍스처·UV·인덱스·재질과 **22,175삼각형**은 동일하다.
+- 정면·비스듬한 아래쪽·측면 확대에서 비교했고 브라우저 오류는 없었다.
+- 기존 출처·이용 조건을 따르며 추가 AI 생성이나 유료 API 사용은 없다.
+- 재현: `.venv/bin/python tools/seat-female-lash-details.py --version v14`.
+- [가닥별 이동·회전·검증·파일 해시](modular-human-female-01-eyelashes-v14-sources.json).
+
+## 귀 안쪽 격자형 노멀맵 이음선 완화 — 2026-10-11
+
+사용자가 표시한 -X 쪽 귀를 색상만 표시·노멀맵 해제로 비교했다. 안쪽 격자형 선은 노멀맵을 끄면 대부분 사라졌고, 귀의 큰 굴곡은 유지됐다. 해당 귀 안쪽에 부드러운 3D 마스크를 투영해 노멀맵을 중립화했다. 색상만 표시했을 때 남는 미세한 색상·UV 흔적은 이번 노멀맵 보정에 포함하지 않았다.
+
+- 현재 GLB와 텍스처를 포함한 Blender 원본: `assets/modular_human_female_01/ear_normals_v1/`.
+- **[미사용]** `eyelashes_v14`는 입력 원본으로 보관한다. 기존 속눈썹 조정은 유지했다.
+- 노멀맵 **24,178픽셀**만 변경했다. 마스크 밖 픽셀·색상·ORM·메시·정점 노멀·UV·재질과 **22,175삼각형**은 동일하다.
+- 정면에 가까운 사선·측면·위쪽 시점에서 확인했고 브라우저 오류는 없었다.
+- 기존 출처·이용 조건을 따르며 추가 AI 생성이나 유료 API 사용은 없다.
+- 재현: `.venv/bin/python tools/fix-female-normal-seams.py --region ear`.
+- [진단·검증·파일 해시](modular-human-female-01-ear-normals-v1-sources.json).
+
+## 반대편 귀 안쪽 노멀맵 이음선 완화 v2 — 2026-10-11
+
+사용자가 추가로 표시한 +X 쪽 귀도 노멀맵을 해제하면 격자형 선이 사라졌다. 앞선 귀 보정과 같은 범위의 마스크를 반대쪽에 적용해 안쪽 노멀맵을 중립화했다.
+
+- 현재 GLB와 텍스처를 포함한 Blender 원본: `assets/modular_human_female_01/ear_normals_v2/`.
+- **[미사용]** `ear_normals_v1`은 입력 원본으로 보관한다. 먼저 보정한 귀와 기존 속눈썹 조정은 유지했다.
+- 노멀맵 **23,045픽셀**만 변경했다. 마스크 밖 픽셀·색상·ORM·메시·정점 노멀·UV·재질과 **22,175삼각형**은 동일하다.
+- 사선·측면·위쪽 시점에서 확인했고 브라우저 오류는 없었다.
+- 기존 출처·이용 조건을 따르며 추가 AI 생성이나 유료 API 사용은 없다.
+- 재현: `.venv/bin/python tools/fix-female-normal-seams.py --region opposite-ear`.
+- [진단·검증·파일 해시](modular-human-female-01-ear-normals-v2-sources.json).
+
+## 얼굴·속눈썹 보정 최종 정리와 재현 — 2026-10-11
+
+사용자 요청으로 이번 보정의 중간 GLB·Blender·비교 스크린샷 **29개(약 273MiB)**와 임시 비교 결과 **81개(약 126MiB)**를 삭제했다. 최종 `ear_normals_v2`의 GLB·텍스처가 포함된 Blender 원본·검증 기록, 재현 입력인 `eye_normals_v1` 원본과 작은 단계별 기록은 남겼다. 앞선 단계의 파일 목록은 검토 당시 이력이며 현재 보관 목록을 뜻하지 않는다. [삭제 목록·해시·재현 검증](modular-human-female-01-detail-cleanup.json).
+
+아래 일곱 단계를 별도 임시 디렉터리에서 실행해 각 단계의 GLB가 검토본과 바이트까지 같은 것을 확인했다. 이 순서로 중간 파일과 최종 모델을 다시 만들 수 있다.
+
+```sh
+.venv/bin/python tools/tune-female-lip-gloss.py
+.venv/bin/python tools/fix-female-normal-seams.py --region brows
+.venv/bin/python tools/thicken-female-eyelash-roots.py --version v12 --root-scale 1.5 --mid-scale 2.5
+.venv/bin/python tools/seat-female-lash-details.py --version v13
+.venv/bin/python tools/seat-female-lash-details.py --version v14
+.venv/bin/python tools/fix-female-normal-seams.py --region ear
+.venv/bin/python tools/fix-female-normal-seams.py --region opposite-ear
+```

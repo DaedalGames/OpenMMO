@@ -1,8 +1,9 @@
-"""Widen lash roots, preserving their frontal centerlines, tips, and triangle counts."""
+"""Widen lash ribbons while preserving frontal centerlines, tips, and topology."""
 import argparse
 import hashlib
 import json
 import struct
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -13,16 +14,22 @@ BASE = ROOT / 'assets/modular_human_female_01'
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--version', choices=['v4', 'v5', 'v11'], default='v4')
+    parser.add_argument('--version', choices=['v4', 'v5', 'v11', 'v12'], default='v4')
     parser.add_argument('--root-scale', type=float, default=1.6)
+    parser.add_argument('--mid-scale', type=float, default=2.5)
     args = parser.parse_args()
     if not np.isfinite(args.root_scale) or args.root_scale < 1:
         parser.error('--root-scale must be finite and at least 1')
+    if not np.isfinite(args.mid_scale) or args.mid_scale < 1:
+        parser.error('--mid-scale must be finite and at least 1')
     out = BASE / f'eyelashes_{args.version}'
-    seated = args.version == 'v11'
-    source_path = BASE / ('eyelashes_v10/base-eyelashes-v10.glb' if seated else 'eyelashes_v3/base-eyelashes-v3.glb')
+    extended = args.version == 'v12'
+    seated = args.version in ('v11', 'v12')
+    source_path = BASE / ('brow_normals_v1/base-brow-normals-v1.glb' if extended else
+                          'eyelashes_v10/base-eyelashes-v10.glb' if seated else 'eyelashes_v3/base-eyelashes-v3.glb')
     source = source_path.read_bytes()
-    expected = ('abfe7f89a437594c2e7072e66a820506c038dcc49937d242ae700af74148e6d5' if seated
+    expected = ('88cf89fe24e6aa6e7020d212a0c3181de9cb4b678cbf04809201929c8cbd920c' if extended else
+                'abfe7f89a437594c2e7072e66a820506c038dcc49937d242ae700af74148e6d5' if seated
                 else 'd579a613dc5ff7a41128abda662b050630293bb5e6d4b41c36b4711f6e48da68')
     assert hashlib.sha256(source).hexdigest() == expected
     size = struct.unpack_from('<I', source, 12)[0]
@@ -70,13 +77,20 @@ def main():
         strands = sorted({v // 18 for v in vertices})
         for strand in strands:
             assert set(range(strand * 18, (strand + 1) * 18)) <= vertices
-            for segment in range(4):
+            for segment in range(8 if extended else 4):
                 pair = slice(strand * 18 + segment * 2, strand * 18 + segment * 2 + 2)
                 center = before[pair].astype(np.float64).mean(axis=0)
                 t = segment / 8
-                blend = np.clip(t / .5, 0, 1)
-                blend = blend * blend * (3 - 2 * blend)
-                scale = 1 + (args.root_scale - 1) * (1 - blend)
+                if extended:
+                    rise = np.clip(t / .25, 0, 1)
+                    rise = rise * rise * (3 - 2 * rise)
+                    taper = np.clip((t - .625) / .375, 0, 1)
+                    taper = taper * taper * (3 - 2 * taper)
+                    scale = 1 + (args.root_scale - 1 + (args.mid_scale - args.root_scale) * rise) * (1 - taper)
+                else:
+                    blend = np.clip(t / .5, 0, 1)
+                    blend = blend * blend * (3 - 2 * blend)
+                    scale = 1 + (args.root_scale - 1) * (1 - blend)
                 positions[pair] = center + (before[pair].astype(np.float64) - center) * scale
             if seated:
                 start = strand * 18
@@ -100,8 +114,9 @@ def main():
                 assert (lengths > 0).all()
                 accumulated /= lengths[:, None]
                 accumulated[np.sum(accumulated * normals[start:start + 18], axis=1) < 0] *= -1
-                normals[start:start + 10] = accumulated[:10]
-            tip = slice(strand * 18 + 8, (strand + 1) * 18)
+                count = 18 if extended else 10
+                normals[start:start + count] = accumulated[:count]
+            tip = slice(strand * 18 + (16 if extended else 8), (strand + 1) * 18)
             assert np.array_equal(positions[tip], before[tip])
         assert np.isfinite(positions).all()
         binary[offset:offset + positions.nbytes] = positions.tobytes()
@@ -115,13 +130,22 @@ def main():
     output += struct.pack('<II', len(encoded), 0x4e4f534a) + encoded
     output += struct.pack('<II', len(binary), 0x004e4942) + binary
     out.mkdir(exist_ok=True)
-    (out / f'base-eyelashes-{args.version}.glb').write_bytes(output)
+    model_path = out / f'base-eyelashes-{args.version}.glb'
+    model_path.write_bytes(output)
+    if extended:
+        subprocess.run(['blender', '-b', '--python-expr',
+                        'import bpy; bpy.ops.wm.read_factory_settings(use_empty=True); '
+                        f'bpy.ops.import_scene.gltf(filepath={str(model_path)!r}); '
+                        'bpy.context.preferences.filepaths.save_version = 0; bpy.ops.file.pack_all(); '
+                        f'bpy.ops.wm.save_as_mainfile(filepath={str(model_path.with_suffix(".blend"))!r})'], check=True)
     report = {'source_sha256': hashlib.sha256(source).hexdigest(), 'output_sha256': hashlib.sha256(output).hexdigest(),
               'source_model': str(source_path.relative_to(ROOT)),
-              'root_width_scale': args.root_scale, 'falloff_end_fraction': .5, 'strand_centers_unchanged': not seated,
+              'root_width_scale': args.root_scale, 'falloff_end_fraction': 1 if extended else .5, 'strand_centers_unchanged': not seated,
               'strand_centers_xy_unchanged': True, 'upper_root_surface_clearance': -.000012 if seated else None,
-              'outer_half_and_tips_unchanged': True, 'triangle_count_before': 22175, 'triangle_count_after': 22175,
+              'outer_half_and_tips_unchanged': not extended, 'tip_positions_unchanged': True, 'triangle_count_before': 22175, 'triangle_count_after': 22175,
               'adjusted_strands': sum(r['strands'] for r in results), 'primitives': results}
+    if extended:
+        report.update(mid_width_scale=args.mid_scale, mid_plateau_fraction=[.25, .625])
     (out / 'validation.json').write_text(json.dumps(report, indent=2) + '\n')
     print(json.dumps(report))
 

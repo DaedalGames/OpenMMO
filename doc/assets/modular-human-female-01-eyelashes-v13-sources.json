@@ -1,0 +1,193 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "[\ubbf8\uc0ac\uc6a9] Intermediate binary removed after final acceptance; retained as reproducible production history.",
+  "request": "Make small precise adjustments to the marked raised roots and buried roots.",
+  "source_model": "assets/modular_human_female_01/eyelashes_v12/base-eyelashes-v12.glb",
+  "source_record": "doc/assets/modular-human-female-01-eyelashes-v12-sources.json",
+  "method": "Lower roots 14 and 15 by interpolating neighboring roots 13 and 16. Advance roots 3\u201310 by 0.00009\u20130.00018 along +Z with feathered strand selection. Apply translation weights 1, 0.75, 0.25 only to the first three sections; retain ribbon widths, outer positions and tips.",
+  "tools": [
+    "Local NumPy geometry editing",
+    "Blender 5.2.0 LTS",
+    "Chromium / Three.js labeled strand diagnosis and visual comparison"
+  ],
+  "tier": "Not applicable; no new AI generation",
+  "license": "Existing ImageGen, Tripo and user image provenance retained.",
+  "additional_paid_generation": false,
+  "script": "tools/seat-female-lash-details.py",
+  "command": ".venv/bin/python tools/seat-female-lash-details.py",
+  "output": "assets/modular_human_female_01/eyelashes_v13/base-eyelashes-v13.glb",
+  "blend": "assets/modular_human_female_01/eyelashes_v13/base-eyelashes-v13.blend",
+  "validation": {
+    "source": "assets/modular_human_female_01/eyelashes_v12/base-eyelashes-v12.glb",
+    "source_sha256": "34151dafdbe251218cd29aa70e9055e29812ea250052d5fc754ae68a49f1b40a",
+    "output_sha256": "79596a842cbb527a30c7a0da165dd3fda284e36089aed251557c3c3295de86c3",
+    "primitive": 2,
+    "side": "positive X upper lashes",
+    "strands": [
+      {
+        "strand": 14,
+        "reason": "lower_raised_root",
+        "root_delta": [
+          0.0,
+          -8.4051024457521e-05,
+          -9.264155512978683e-05
+        ]
+      },
+      {
+        "strand": 15,
+        "reason": "lower_raised_root",
+        "root_delta": [
+          0.0,
+          -0.00018135475321079397,
+          -0.0001853808446623667
+        ]
+      },
+      {
+        "strand": 3,
+        "reason": "expose_buried_root",
+        "root_delta": [
+          0.0,
+          0.0,
+          9e-05
+        ]
+      },
+      {
+        "strand": 4,
+        "reason": "expose_buried_root",
+        "root_delta": [
+          0.0,
+          0.0,
+          0.000135
+        ]
+      },
+      {
+        "strand": 5,
+        "reason": "expose_buried_root",
+        "root_delta": [
+          0.0,
+          0.0,
+          0.00018
+        ]
+      },
+      {
+        "strand": 6,
+        "reason": "expose_buried_root",
+        "root_delta": [
+          0.0,
+          0.0,
+          0.00018
+        ]
+      },
+      {
+        "strand": 7,
+        "reason": "expose_buried_root",
+        "root_delta": [
+          0.0,
+          0.0,
+          0.00018
+        ]
+      },
+      {
+        "strand": 8,
+        "reason": "expose_buried_root",
+        "root_delta": [
+          0.0,
+          0.0,
+          0.00018
+        ]
+      },
+      {
+        "strand": 9,
+        "reason": "expose_buried_root",
+        "root_delta": [
+          0.0,
+          0.0,
+          0.000135
+        ]
+      },
+      {
+        "strand": 10,
+        "reason": "expose_buried_root",
+        "root_delta": [
+          0.0,
+          0.0,
+          9e-05
+        ]
+      }
+    ],
+    "segment_translation_weights": [
+      1,
+      0.75,
+      0.25,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "changed_position_vertices": 60,
+    "changed_normal_vertices": 80,
+    "unselected_vertices_unchanged": true,
+    "widths_preserved": true,
+    "outer_62_5_percent_positions_unchanged": true,
+    "triangle_count": 22175,
+    "independent_validation": {
+      "changed_buffer_views": [
+        16,
+        17
+      ],
+      "changed_vertex_counts": {
+        "POSITION": 60,
+        "NORMAL": 80
+      },
+      "only_selected_root_vertices_and_adjacent_normals_changed": true,
+      "all_other_glb_buffers_identical": true,
+      "finite_unit_normals": true,
+      "triangles": 22175
+    }
+  },
+  "browser": {
+    "views": [
+      "oblique below",
+      "front",
+      "above"
+    ],
+    "errors": []
+  },
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v13/base-eyelashes-v13.blend",
+      "bytes": 22843293,
+      "sha256": "3ef5497b2f05c98a75b22da0011fc23da3a0c7b5446b8311c6b2d8a4447f8dd4"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v13/base-eyelashes-v13.glb",
+      "bytes": 24247048,
+      "sha256": "79596a842cbb527a30c7a0da165dd3fda284e36089aed251557c3c3295de86c3"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v13/preview-above.png",
+      "bytes": 206621,
+      "sha256": "488a497c327681150884a4910538658ea646eebf4a27653fb24e75597f0d9820"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v13/preview-angle.png",
+      "bytes": 250670,
+      "sha256": "56efaf93679c97096fe06c362ff627d65eff3cb3c8a93c98e79ab3eb3fde2168"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v13/preview-front.png",
+      "bytes": 205418,
+      "sha256": "63270fcb7fbee51994c4167644559e436ea4d6a774aca8983c8d57f384ef8c44"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v13/validation.json",
+      "bytes": 2483,
+      "sha256": "0edf50c0934bb2b5b9b9dfa068d26f07839ec5220ef875e716d9b8a9588ccbe7"
+    }
+  ],
+  "cleanup_record": "doc/assets/modular-human-female-01-detail-cleanup.json",
+  "file_inventory_note": "File hashes record the reviewed outputs before cleanup. Intermediate binaries and all preview images listed in the cleanup record were removed; final ear_normals_v2 GLB/Blender, the eye_normals_v1 rebuild input, scripts and small validation records are retained."
+}

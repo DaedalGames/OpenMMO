@@ -1,0 +1,92 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "[\ubbf8\uc0ac\uc6a9] Intermediate binary removed after final acceptance; retained as reproducible production history.",
+  "source_model": "assets/modular_human_female_01/lips_v1/base-lips-v1.glb",
+  "source_record": "doc/assets/modular-human-female-01-lips-v1-sources.json",
+  "diagnosis": "Triangle-shaped lines disappear without the normal map, but remain with unfiltered normal sampling, regenerated tangents and welded vertices.",
+  "weld_comparison": {
+    "distance": 1e-06,
+    "mesh_vertices_before": 23224,
+    "mesh_vertices_after": 12153,
+    "lines_remained": true,
+    "applied_to_final": false,
+    "brow_coincident_groups": 75,
+    "maximum_normal_difference_degrees": 0.028,
+    "different_uv_coordinates": true
+  },
+  "method": "Neutralize the tangent-space normal XY components in a feathered mask around both brows, with two pixels of UV gutter. Retain all other buffers.",
+  "tools": [
+    "Local NumPy/Pillow/SciPy numeric normal-map processing",
+    "Blender 5.2.0 LTS",
+    "Chromium / Three.js comparison"
+  ],
+  "tier": "Not applicable; no new AI generation",
+  "license": "Existing ImageGen, Tripo and user image provenance retained.",
+  "additional_paid_generation": false,
+  "script": "tools/fix-female-normal-seams.py",
+  "command": ".venv/bin/python tools/fix-female-normal-seams.py --region brows",
+  "output": "assets/modular_human_female_01/brow_normals_v1/base-brow-normals-v1.glb",
+  "blend": "assets/modular_human_female_01/brow_normals_v1/base-brow-normals-v1.blend",
+  "validation": {
+    "source": "assets/modular_human_female_01/lips_v1/base-lips-v1.glb",
+    "source_sha256": "124901d903d59139e7c20677a40d70954acf3278f9a65c54d92e5ea431ce3225",
+    "output_sha256": "88cf89fe24e6aa6e7020d212a0c3181de9cb4b678cbf04809201929c8cbd920c",
+    "mask_abs_x": [
+      0.003,
+      0.007,
+      0.033,
+      0.037
+    ],
+    "mask_y": [
+      0.941,
+      0.945,
+      0.954,
+      0.958
+    ],
+    "mask_z": [
+      0.025,
+      0.033
+    ],
+    "uv_gutter_pixels": 2,
+    "support_pixels": 48054,
+    "normal_changed_pixels": 32742,
+    "pixels_outside_support_unchanged": true,
+    "all_other_buffer_views_unchanged": true,
+    "triangles": 22175
+  },
+  "independent_validation": {
+    "only_normal_image_buffer_changed": true,
+    "changed_buffer_views": [
+      4
+    ]
+  },
+  "browser": {
+    "views": [
+      "brow-front",
+      "face",
+      "brow-below",
+      "opposite-brow-below"
+    ],
+    "errors": []
+  },
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/brow_normals_v1/base-brow-normals-v1.blend",
+      "bytes": 22842106,
+      "sha256": "5783349a83c80b071f12b35b045f91bd662cafa9f02b7ab51b048002ce43e0e4"
+    },
+    {
+      "path": "assets/modular_human_female_01/brow_normals_v1/base-brow-normals-v1.glb",
+      "bytes": 24247048,
+      "sha256": "88cf89fe24e6aa6e7020d212a0c3181de9cb4b678cbf04809201929c8cbd920c"
+    },
+    {
+      "path": "assets/modular_human_female_01/brow_normals_v1/validation.json",
+      "bytes": 612,
+      "sha256": "c3c7ee89782513f5b7a776469c08757b5021375bffc068a075a89f44a7f8d95f"
+    }
+  ],
+  "cleanup_record": "doc/assets/modular-human-female-01-detail-cleanup.json",
+  "file_inventory_note": "File hashes record the reviewed outputs before cleanup. Intermediate binaries and all preview images listed in the cleanup record were removed; final ear_normals_v2 GLB/Blender, the eye_normals_v1 rebuild input, scripts and small validation records are retained."
+}
