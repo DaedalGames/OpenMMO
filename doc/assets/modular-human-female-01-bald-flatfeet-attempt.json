@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-11",
+  "requested_change": "Create separate front and side references with a bald scalp and heels/forefeet resting on the ground, preserving the selected character and clothing.",
+  "status": "IMAGEGEN_OUTPUT_MODERATION_BLOCKED",
+  "request_id": "b2ade494-e410-448b-947f-424a9cc3feec",
+  "tool": "OpenAI Codex built-in ImageGen",
+  "tier": "ChatGPT Pro 20x",
+  "reference": "doc/images/characters/modular_human_female_01/base-front-v2.png",
+  "front_prompt": "Use case: identity-preserve.\nEdit the supplied adult female fantasy game character modeling reference. Make precisely two corrections: (1) remove ALL scalp hair including bun, bangs and hairline, creating a completely bald natural smooth scalp; retain eyebrows and eyelashes; (2) correct BOTH feet to a neutral plantigrade stance, with heels and balls of the feet resting on the same horizontal ground plane, toes relaxed flat forward, natural medial arches preserved. Ankles must not be plantarflexed or extended like a high-heel stance. Legs remain straight with soft unlocked knees and feet hip-width apart. Show clear subtle contact shadows under both heels and forefeet so the flat-footed stance is unambiguous.\nPreserve this same adult woman's facial identity, neutral expression, body proportions, skin tone, and EXACT existing opaque white clothing with unchanged coverage, fit and color. Keep the symmetrical front A-pose, straight arms angled outward/down, neutral wrists with palms down/inward as in the source. No changes to costume or body shape.\nOne complete full-body FRONT view only, orthographic camera at mid-body height with no downward tilt, all scalp/fingers/toes in frame, portrait 1024x1536. Plain light warm-gray studio backdrop and visible flat studio floor, soft even light. High-quality realistic game concept render matching the source. No hair, shoes, props, labels, text, inset panels, extra people or perspective foreshortening. This image will be the definitive front reference for a separately generated matching side view.",
+  "front_output": null,
+  "side_status": "Not attempted; planned matching front reference was not produced"
+}

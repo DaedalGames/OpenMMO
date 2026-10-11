@@ -1,0 +1,93 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "eye_texture_correction_candidate",
+  "tool": "OpenAI Codex built-in ImageGen and Blender projection baking",
+  "tier": "ChatGPT Pro 20x",
+  "license": "OpenAI generated output terms for image edit; original Tripo model and input reference terms remain applicable",
+  "source_model": "assets/modular_human_female_01/tripo_api_v1/base-review.glb",
+  "prompt": "Use case: precise-object-edit.\nEdit target: the supplied 1024x1024 front orthographic ALBEDO texture projection of an adult female game character. This is technical texture restoration, not a new portrait.\nCorrect ONLY both eyes and a very small surrounding eyelid region: remove smeared dark marks, doubled lash fragments, and irregular bright patches at the inner and outer corners and lower lash lines. Restore crisp, natural, anatomically coherent eyelid borders. Keep natural subdued off-white sclera, exactly one round dark-brown iris and one centered pupil per eye, matching catchlights, and a calm straight-ahead gaze. Retain restrained upper eyelashes without thick makeup; clean lower eyelid transitions into the surrounding skin.\nCRITICAL registration: eye centers and all inner/outer eye corner positions must stay exactly where they are, with identical eye width, eye height, eyelid opening, and perspective. Keep the entire face outline, eyebrows, nose, lips, skin color, texture, scalp, neck, clothing, background, lighting, framing and image dimensions unchanged. Do not enlarge, lift or reposition eyes, change expression, add highlights to skin, beautify the face or change any other pixels. Match the original flat unlit color appearance; do not introduce new lighting or shadows.\nOutput one 1024x1024 image with the identical composition. No text or overlays.",
+  "input_projection": "assets/modular_human_female_01/eyes_v1/face-albedo-front.png",
+  "generated_edit": "assets/modular_human_female_01/eyes_v1/face-albedo-edited.png",
+  "requested_projection_dimensions": [
+    1024,
+    1024
+  ],
+  "generated_dimensions": [
+    1254,
+    1254
+  ],
+  "method": "ImageGen eye cleanup from an unlit orthographic face projection; normalized projection UVs and feathered eye masks baked back to the original 4096x4096 atlas. Eye normal-map deviations attenuated 85% at mask center. Outside the baked support mask original pixel values restored. Final GLB replaces only base-color and normal image buffer views, preserving all geometry and UV buffers byte for byte.",
+  "outputs": {
+    "glb": "assets/modular_human_female_01/eyes_v1/base-eyes-v1.glb",
+    "blend": "assets/modular_human_female_01/eyes_v1/base-eyes-v1.blend",
+    "color": "assets/modular_human_female_01/eyes_v1/base-color-eyes-v1.png",
+    "normal": "assets/modular_human_female_01/eyes_v1/normal-eyes-v1.png"
+  },
+  "validation": "assets/modular_human_female_01/eyes_v1/validation.json",
+  "script": "tools/blender-scripts/correct_female_eye_texture.py",
+  "review": [
+    "Front and both oblique views inspected.",
+    "Cleaner iris and eyelid color boundaries; reduced eye-corner normal-map artifacts.",
+    "Mouth texture, garment edges and production rigging remain outside this correction."
+  ],
+  "additional_tripo_credits": 0,
+  "hashes": {
+    "assets/modular_human_female_01/tripo_api_v1/base-review.glb": {
+      "sha256": "aab783a038aa1da55e86ebcaacc2258a20878ab5f70cfd3fe6817587239cc5b1",
+      "bytes": 7530272
+    },
+    "assets/modular_human_female_01/eyes_v1/face-albedo-front.png": {
+      "sha256": "088ca291bd97b39f40248fcbc8c060e58334574d62afd051164ec48a7b5cc9d1",
+      "bytes": 944105
+    },
+    "assets/modular_human_female_01/eyes_v1/face-albedo-edited.png": {
+      "sha256": "da296dc81c956b18c6d2131ad4371d94d47725000e7877025f1475f13ba3f6c6",
+      "bytes": 1378221
+    },
+    "tools/blender-scripts/correct_female_eye_texture.py": {
+      "sha256": "b0fa28fdf34096007876bd42a421dd49d79eaf919d4b7c0bf52d73c37cf7592f",
+      "bytes": 10294
+    },
+    "assets/modular_human_female_01/eyes_v1/validation.json": {
+      "sha256": "ccb6463d6b67fc66eca51c428f178fa671030df1cfd43d0c079be38aa56822c4",
+      "bytes": 464
+    },
+    "assets/modular_human_female_01/eyes_v1/base-eyes-v1.glb": {
+      "sha256": "70856fbc36f84b1920b40f1b2461462ab8a3bcba6b9e5caa17e6f048d1b75a80",
+      "bytes": 17648652
+    },
+    "assets/modular_human_female_01/eyes_v1/base-eyes-v1.blend": {
+      "sha256": "d5507bbb7a178afc28fc025fa32487596d42df1955211bab3c347e66108b8265",
+      "bytes": 37538724
+    },
+    "assets/modular_human_female_01/eyes_v1/base-color-eyes-v1.png": {
+      "sha256": "9620c812490db67784a30e647aef89cde8e802033c907de7305a94c8c5e08211",
+      "bytes": 9855800
+    },
+    "assets/modular_human_female_01/eyes_v1/normal-eyes-v1.png": {
+      "sha256": "f9de603f5b7dc09bd40bb4aee0c6c609bb7143a978f569200a6f3da5525f6cee",
+      "bytes": 3585832
+    }
+  },
+  "validation_result": {
+    "triangles": 12208,
+    "geometry_uv_vertex_normals_unchanged": true,
+    "all_non_image_buffer_views_byte_identical": true,
+    "materials_roughness_and_metallic_unchanged": true,
+    "changed_buffer_views": [
+      4,
+      5
+    ],
+    "base_color": {
+      "changed_pixels": 23989,
+      "eye_mask_pixels": 25631,
+      "outside_mask_max_difference": 0,
+      "total_pixels": 16777216
+    },
+    "normal_map": {
+      "changed_pixels": 24126,
+      "outside_mask_max_difference": 0
+    }
+  }
+}

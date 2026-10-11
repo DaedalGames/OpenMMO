@@ -27,6 +27,12 @@ These guidelines were confirmed by the user on 2026-09-20 and apply until the us
 - Record **ChatGPT Pro 20x** as the tier for ChatGPT/Codex ImageGen assets.
 - Use the user-confirmed tier even when tool metadata omits it. Do not label it as undisclosed.
 
+## Tripo API Authentication
+
+- The Tripo API key is stored at **`~/.config/tripo/key`** (user-confirmed 2026-10-11).
+- Read it locally and never print it or place it in prompts, source files, or generation records.
+- Record request parameters and task IDs before polling; never automatically resubmit a paid task after an ambiguous response.
+
 ## Meshy API Authentication
 
 - The Meshy API key is stored at **`~/.config/meshy/key`** (user-confirmed 2026-09-21).

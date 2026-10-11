@@ -1,0 +1,1421 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "lash_root_surface_attachment_reviewed_not_rigged",
+  "request": "Front view is good, but the lash roots float above skin when seen from above.",
+  "source_model": "assets/modular_human_female_01/eyelashes_v9/base-eyelashes-v9.glb",
+  "source_record": "doc/assets/modular-human-female-01-eyelashes-v9-sources.json",
+  "tools": "Local Python root-depth fitting and Blender review",
+  "tier": "Not applicable; no new AI generation",
+  "license": "Existing ImageGen, Tripo and user image provenance retained.",
+  "method": "Keep every vertex x/y coordinate unchanged. Fit both root-edge vertices of each upper/corner ribbon to the local front skin depth with 0.000012 inward overlap. Fade this depth adjustment with smoothstep over sections 0–3; clamp adjusted non-root sections to at least 0.00001 outside the skin. Sections 3–8 retain their original positions exactly. Recalculate normals only on affected root-adjacent vertices.",
+  "script": "tools/align-female-eyelash-roots.py",
+  "command": ".venv/bin/python tools/align-female-eyelash-roots.py --version v10",
+  "output": "assets/modular_human_female_01/eyelashes_v10/base-eyelashes-v10.glb",
+  "blend": "assets/modular_human_female_01/eyelashes_v10/base-eyelashes-v10.blend",
+  "validation": {
+    "source_sha256": "06fe8b317ae6970924f5d761b9ac04e9bb9816e799a80576dc4a409121282f95",
+    "output_sha256": "abfe7f89a437594c2e7072e66a820506c038dcc49937d242ae700af74148e6d5",
+    "triangles": 22175,
+    "moved_upper_strands": 56,
+    "moved_corner_strands": 6,
+    "lower_lashes_unchanged": true,
+    "rigid_strand_transforms": false,
+    "surface_clearance": -1.2e-05,
+    "front_depth_preserved": false,
+    "strands": [
+      {
+        "group": "corner",
+        "strand": 5,
+        "root_before": [
+          0.02677938900887966,
+          0.9365701675415039,
+          0.036069050431251526
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0013003061977739233
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.02677938900887966,
+          0.9365701675415039,
+          0.0347687442334776
+        ]
+      },
+      {
+        "group": "corner",
+        "strand": 6,
+        "root_before": [
+          0.02754739485681057,
+          0.9368213415145874,
+          0.035037197172641754
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0003563389899684244
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.02754739485681057,
+          0.9368213415145874,
+          0.03468085818267333
+        ]
+      },
+      {
+        "group": "corner",
+        "strand": 7,
+        "root_before": [
+          0.028315400704741478,
+          0.9370725750923157,
+          0.034029655158519745
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.00014022110748264371
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.028315400704741478,
+          0.9370725750923157,
+          0.0338894340510371
+        ]
+      },
+      {
+        "group": "corner",
+        "strand": 13,
+        "root_before": [
+          -0.0243441890925169,
+          0.9366801977157593,
+          0.03743242844939232
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0007474580672256412
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.0243441890925169,
+          0.9366801977157593,
+          0.03668497038216668
+        ]
+      },
+      {
+        "group": "corner",
+        "strand": 14,
+        "root_before": [
+          -0.02511429600417614,
+          0.9367854595184326,
+          0.036686014384031296
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0003653931026816465
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.02511429600417614,
+          0.9367854595184326,
+          0.03632062128134965
+        ]
+      },
+      {
+        "group": "corner",
+        "strand": 15,
+        "root_before": [
+          -0.02588440105319023,
+          0.9371017813682556,
+          0.03604719787836075
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.00015766363008893475
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.02588440105319023,
+          0.9371017813682556,
+          0.035889534248271814
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 0,
+        "root_before": [
+          0.012626155279576778,
+          0.9359217882156372,
+          0.03895329311490059
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -9.553261860481554e-05
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.012626155279576778,
+          0.9359217882156372,
+          0.03885776049629577
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 1,
+        "root_before": [
+          0.013215995393693447,
+          0.936283528804779,
+          0.03911346569657326
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.00018961387093197057
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.013215995393693447,
+          0.936283528804779,
+          0.03892385182564129
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 2,
+        "root_before": [
+          0.013691960833966732,
+          0.9365180134773254,
+          0.03925812616944313
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0003534543153266151
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.013691960833966732,
+          0.9365180134773254,
+          0.038904671854116515
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 3,
+        "root_before": [
+          0.014288749545812607,
+          0.936812162399292,
+          0.03942503780126572
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0005486379362769356
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.014288749545812607,
+          0.936812162399292,
+          0.03887639986498878
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 4,
+        "root_before": [
+          0.014871216379106045,
+          0.9370998740196228,
+          0.03955893591046333
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.000950592336628267
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.014871216379106045,
+          0.9370998740196228,
+          0.038608343573835066
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 5,
+        "root_before": [
+          0.015348056331276894,
+          0.9373366236686707,
+          0.03966270573437214
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0009402558829548144
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.015348056331276894,
+          0.9373366236686707,
+          0.038722449851417325
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 6,
+        "root_before": [
+          0.015951290726661682,
+          0.9376360476016998,
+          0.039793919771909714
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0009826282270335995
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.015951290726661682,
+          0.9376360476016998,
+          0.038811291544876114
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 7,
+        "root_before": [
+          0.01652604527771473,
+          0.9379213452339172,
+          0.03989332914352417
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0009979841815345308
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.01652604527771473,
+          0.9379213452339172,
+          0.03889534496198964
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 8,
+        "root_before": [
+          0.017004622146487236,
+          0.9380640387535095,
+          0.03997134044766426
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.001015975253214417
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.017004622146487236,
+          0.9380640387535095,
+          0.038955365194449844
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 9,
+        "root_before": [
+          0.01761372573673725,
+          0.9382162094116211,
+          0.04007483273744583
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0010328720629506766
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.01761372573673725,
+          0.9382162094116211,
+          0.039041960674495155
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 10,
+        "root_before": [
+          0.018180513754487038,
+          0.938357800245285,
+          0.04016903601586819
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0010580262079473712
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.018180513754487038,
+          0.938357800245285,
+          0.039111009807920816
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 11,
+        "root_before": [
+          0.018661674112081528,
+          0.9384736120700836,
+          0.040227729827165604
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0004823448075117129
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.018661674112081528,
+          0.9384736120700836,
+          0.03974538501965389
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 12,
+        "root_before": [
+          0.019276002421975136,
+          0.9385966658592224,
+          0.04010888934135437
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.00035878131916775025
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.019276002421975136,
+          0.9385966658592224,
+          0.03975010802218662
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 13,
+        "root_before": [
+          0.019834665581583977,
+          0.9387085437774658,
+          0.039999909698963165
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.00024816163525313156
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.019834665581583977,
+          0.9387085437774658,
+          0.039751748063710034
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 14,
+        "root_before": [
+          0.020319221541285515,
+          0.9388056397438049,
+          0.039900828152894974
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0001475985094360338
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.020319221541285515,
+          0.9388056397438049,
+          0.03975322964345894
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 15,
+        "root_before": [
+          0.020938072353601456,
+          0.9389196038246155,
+          0.03978201374411583
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -3.699050841783624e-05
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.020938072353601456,
+          0.9389196038246155,
+          0.03974502323569799
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 16,
+        "root_before": [
+          0.02148853987455368,
+          0.938753068447113,
+          0.039674315601587296
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.00023650578196210414
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.02148853987455368,
+          0.938753068447113,
+          0.03943780981962519
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 17,
+        "root_before": [
+          0.021977270022034645,
+          0.9385550618171692,
+          0.03945494443178177
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0003464311992780744
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.021977270022034645,
+          0.9385550618171692,
+          0.039108513232503694
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 18,
+        "root_before": [
+          0.02259988896548748,
+          0.938302755355835,
+          0.03918268531560898
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.000493745304282707
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.02259988896548748,
+          0.938302755355835,
+          0.03868894001132627
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 19,
+        "root_before": [
+          0.023142186924815178,
+          0.9380829930305481,
+          0.03888691961765289
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0005652094878305092
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.023142186924815178,
+          0.9380829930305481,
+          0.038321710129822384
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 20,
+        "root_before": [
+          0.02363581769168377,
+          0.9378959536552429,
+          0.038609687238931656
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0006315377763662228
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.02363581769168377,
+          0.9378959536552429,
+          0.03797814946256543
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 21,
+        "root_before": [
+          0.02426140382885933,
+          0.9376809000968933,
+          0.03813273832201958
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0006021108611474688
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.02426140382885933,
+          0.9376809000968933,
+          0.03753062746087211
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 22,
+        "root_before": [
+          0.0247956495732069,
+          0.9374973177909851,
+          0.03771491348743439
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0005675755656193437
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.0247956495732069,
+          0.9374973177909851,
+          0.03714733792181504
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 23,
+        "root_before": [
+          0.025294853374361992,
+          0.9372462630271912,
+          0.03727398440241814
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0010503768858105417
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.025294853374361992,
+          0.9372462630271912,
+          0.036223607516607595
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 24,
+        "root_before": [
+          0.025922579690814018,
+          0.9369194209575653,
+          0.03680965676903725
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.001410168971949663
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.025922579690814018,
+          0.9369194209575653,
+          0.035399487797087584
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 25,
+        "root_before": [
+          0.02644898183643818,
+          0.9366452395915985,
+          0.03641814365983009
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0015037087934659799
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.02644898183643818,
+          0.9366452395915985,
+          0.034914434866364114
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 26,
+        "root_before": [
+          0.026954369619488716,
+          0.9365773499011993,
+          0.03588179312646389
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0011187511165056604
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.026954369619488716,
+          0.9365773499011993,
+          0.03476304200995823
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 27,
+        "root_before": [
+          0.027583379298448563,
+          0.9367831349372864,
+          0.03509625419974327
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0005246953155153555
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          0.027583379298448563,
+          0.9367831349372864,
+          0.034571558884227915
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 28,
+        "root_before": [
+          -0.010152255184948444,
+          0.9358841180801392,
+          0.03963664919137955
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0003207583582636453
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.010152255184948444,
+          0.9358841180801392,
+          0.0393158908331159
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 29,
+        "root_before": [
+          -0.010743708349764347,
+          0.9362494051456451,
+          0.03983614593744278
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.00037100776412479775
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.010743708349764347,
+          0.9362494051456451,
+          0.03946513817331798
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 30,
+        "root_before": [
+          -0.011220975778996944,
+          0.936491847038269,
+          0.04001172073185444
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.00046628511369684045
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.011220975778996944,
+          0.936491847038269,
+          0.0395454356181576
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 31,
+        "root_before": [
+          -0.011819395236670971,
+          0.9367958307266235,
+          0.040234699845314026
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0005986738113528262
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.011819395236670971,
+          0.9367958307266235,
+          0.0396360260339612
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 32,
+        "root_before": [
+          -0.012403455562889576,
+          0.937091588973999,
+          0.04043098911643028
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.001005361307188507
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.012403455562889576,
+          0.937091588973999,
+          0.039425627809241776
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 33,
+        "root_before": [
+          -0.012881598435342312,
+          0.9373326301574707,
+          0.040566276758909225
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0009784828220921818
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.012881598435342312,
+          0.9373326301574707,
+          0.039587793936817044
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 34,
+        "root_before": [
+          -0.013486483134329319,
+          0.9376375377178192,
+          0.040737422183156013
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0010220313730285938
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.013486483134329319,
+          0.9376375377178192,
+          0.03971539081012742
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 35,
+        "root_before": [
+          -0.014062807895243168,
+          0.9379280805587769,
+          0.04088669642806053
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0010504610029910127
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.014062807895243168,
+          0.9379280805587769,
+          0.03983623542506952
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 36,
+        "root_before": [
+          -0.014542694203555584,
+          0.9380680918693542,
+          0.04100026190280914
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.001071610191237693
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.014542694203555584,
+          0.9380680918693542,
+          0.03992865171157145
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 37,
+        "root_before": [
+          -0.015153462998569012,
+          0.938220739364624,
+          0.04112192988395691
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0010619409035600158
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.015153462998569012,
+          0.938220739364624,
+          0.04005998898039689
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 38,
+        "root_before": [
+          -0.015721803065389395,
+          0.9383628070354462,
+          0.0412371177226305
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0010807586394793942
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.015721803065389395,
+          0.9383628070354462,
+          0.04015635908315111
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 39,
+        "root_before": [
+          -0.01620427705347538,
+          0.9384560286998749,
+          0.04129057377576828
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0004952235987561726
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.01620427705347538,
+          0.9384560286998749,
+          0.04079535017701211
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 40,
+        "root_before": [
+          -0.016820287331938744,
+          0.9384560286998749,
+          0.04118696041405201
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0004943804194161849
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.016820287331938744,
+          0.9384560286998749,
+          0.040692579994635825
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 41,
+        "root_before": [
+          -0.017380475997924805,
+          0.9384559988975525,
+          0.041092706844210625
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0004943797920871074
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.017380475997924805,
+          0.9384559988975525,
+          0.04059832705212352
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 42,
+        "root_before": [
+          -0.017866358160972595,
+          0.9384559988975525,
+          0.041010983288288116
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0004943812471947251
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.017866358160972595,
+          0.9384559988975525,
+          0.04051660204109339
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 43,
+        "root_before": [
+          -0.018486900255084038,
+          0.9384559988975525,
+          0.04090660996735096
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0004943825896268836
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.018486900255084038,
+          0.9384559988975525,
+          0.040412227377724076
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 44,
+        "root_before": [
+          -0.01903887279331684,
+          0.9383566975593567,
+          0.04079094156622887
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0005810872382404006
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.01903887279331684,
+          0.9383566975593567,
+          0.040209854327988466
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 45,
+        "root_before": [
+          -0.019528940320014954,
+          0.9382600486278534,
+          0.04061221703886986
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.000570102586528197
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.019528940320014954,
+          0.9382600486278534,
+          0.04004211445234166
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 46,
+        "root_before": [
+          -0.020153259858489037,
+          0.9381367564201355,
+          0.04038451611995697
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0005700069424573462
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.020153259858489037,
+          0.9381367564201355,
+          0.039814509177499624
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 47,
+        "root_before": [
+          -0.020697040483355522,
+          0.9380293786525726,
+          0.040186187252402306
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0005699122941599591
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.020697040483355522,
+          0.9380293786525726,
+          0.039616274958242347
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 48,
+        "root_before": [
+          -0.021192021667957306,
+          0.9379230737686157,
+          0.0400054045021534
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0006001630898200064
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.021192021667957306,
+          0.9379230737686157,
+          0.03940524141233339
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 49,
+        "root_before": [
+          -0.02181931957602501,
+          0.9377698302268982,
+          0.03960297629237175
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0005373671843050681
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.02181931957602501,
+          0.9377698302268982,
+          0.03906560910806668
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 50,
+        "root_before": [
+          -0.02235502563416958,
+          0.9376389980316162,
+          0.039252277463674545
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0005024249412953763
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.02235502563416958,
+          0.9376389980316162,
+          0.03874985252237917
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 51,
+        "root_before": [
+          -0.022855596616864204,
+          0.9375167489051819,
+          0.038910213857889175
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.00048406334791747246
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.022855596616864204,
+          0.9375167489051819,
+          0.0384261505099717
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 52,
+        "root_before": [
+          -0.023485038429498672,
+          0.9371758699417114,
+          0.038406603038311005
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0004392700261333371
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.023485038429498672,
+          0.9371758699417114,
+          0.03796733301217767
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 53,
+        "root_before": [
+          -0.02401288039982319,
+          0.9368405938148499,
+          0.037933697924017906
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.001009245124227419
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.02401288039982319,
+          0.9368405938148499,
+          0.03692445279979049
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 54,
+        "root_before": [
+          -0.024519650265574455,
+          0.9365187287330627,
+          0.037458956241607666
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.0014436314723027949
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.024519650265574455,
+          0.9365187287330627,
+          0.03601532476930487
+        ]
+      },
+      {
+        "group": "upper",
+        "strand": 55,
+        "root_before": [
+          -0.025150379166007042,
+          0.9367502927780151,
+          0.03699582815170288
+        ],
+        "translation": [
+          0.0,
+          0.0,
+          -0.000726311410966074
+        ],
+        "outward_rotation_degrees": 0.0,
+        "eyelid_crest_depth": null,
+        "root_after": [
+          -0.025150379166007042,
+          0.9367502927780151,
+          0.03626951674073681
+        ]
+      }
+    ],
+    "independent_validation": {
+      "triangle_counts": [
+        20799,
+        96,
+        1280
+      ],
+      "changed_buffer_views": [
+        12,
+        13,
+        16,
+        17
+      ],
+      "body_uv_materials_textures_unchanged": true,
+      "lower_lashes_unchanged": true,
+      "front_xy_positions_byte_identical": true,
+      "strand_sections_3_to_8_byte_identical": true,
+      "root_vertices_checked": 124,
+      "root_surface_gap_range": [
+        -1.2001835247410497e-05,
+        -1.1998160842428829e-05
+      ],
+      "finite_unit_normals_and_nondegenerate_lash_geometry": true
+    },
+    "browser": {
+      "errors": [],
+      "stats": "22,175삼각형 · 속눈썹 뿌리 밀착 v10",
+      "checks": [
+        "face",
+        "full",
+        "side",
+        "wireframe",
+        "reset",
+        "top-down eye close-up"
+      ]
+    }
+  },
+  "visual_review": [
+    "Both eyes reviewed from above, with same-camera v9 before images. Gaps at roots closed.",
+    "Frontal shape and outer lash curves retained.",
+    "Top-down view checked in actual browser."
+  ],
+  "additional_tripo_credits": 0,
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/base-eyelashes-v10.blend",
+      "bytes": 20202662,
+      "sha256": "d3a0c5251c416e266054696b01d77ea64d71e0a91538702d15143ec7d561165d"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/base-eyelashes-v10.glb",
+      "bytes": 21617408,
+      "sha256": "abfe7f89a437594c2e7072e66a820506c038dcc49937d242ae700af74148e6d5"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/browser-eye-top.png",
+      "bytes": 370419,
+      "sha256": "c648b481a9a9909dc6e9031de0cd7d574a4e54a72cd160364f7061f318a2eee0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/browser-face.png",
+      "bytes": 252433,
+      "sha256": "de82d87ece0efb02c23711c6b5588d339107e293cf6b990b7c7ab1982e5ba6f6"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/browser-full.png",
+      "bytes": 145920,
+      "sha256": "5c8a2429d07257a14a92324fec79befb636f116a67a0de4678de67fcee913390"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/eye-left-top.png",
+      "bytes": 516181,
+      "sha256": "f3d9185bc3b2657fc664577cb14b551a74274ab59fecdf385f38c10b5b213f1b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/eye-top.png",
+      "bytes": 514692,
+      "sha256": "c5c0ca60ea6abc5e73ac3b8cd5940e8e16e25ec9051394b6966a720454c2bbd3"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/review.py",
+      "bytes": 2514,
+      "sha256": "4485a01bf038a627e61e1e42f73acf710cdcf0fcb4669e1f7305bca9732a5d4f"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/validation.json",
+      "bytes": 29355,
+      "sha256": "d658621a23fd1d392bc989a0de7f060fcfe99c9ae17c6e1d57318378f69f40fd"
+    }
+  ],
+  "cleanup_record": "doc/assets/modular-human-female-01-cleanup.json",
+  "rebuild_note": "Historical step command; its v9 intermediate input was removed at user request. Continue editing the retained v10 .blend. Earlier scripts and validation records are retained as process history."
+}

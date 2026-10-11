@@ -1,0 +1,115 @@
+{
+  "config": {
+    "asset": "modular_human_female_01",
+    "generation_date": "2026-10-11",
+    "tool": "Tripo API",
+    "tier": "Paid API credits; user purchased 1000 credits",
+    "license": "Tripo Terms of User Agreement; source image provenance retained separately",
+    "license_url": "https://developers.tripo3d.ai/en/terms",
+    "image": {
+      "path": "doc/images/characters/modular_human_female_01/base-front-v3.png",
+      "sha256": "e01d0d99b448c366faaaf0eb1c6df3e2bb59308aeff63e48b7cf3e8b41dc5ae0"
+    },
+    "parameters": {
+      "model": "P2-20260801",
+      "quad": true,
+      "face_limit": 6000,
+      "texture": true,
+      "pbr": true,
+      "texture_quality": "detailed",
+      "texture_version": "v3.5-20260815",
+      "delight": true,
+      "enable_image_autofix": false,
+      "texture_alignment": "original_image",
+      "orientation": "align_image",
+      "auto_size": false,
+      "export_uv": true,
+      "model_seed": 101101,
+      "texture_seed": 101101
+    },
+    "estimated_credits": 120,
+    "pricing_url": "https://developers.tripo3d.ai/en/pricing",
+    "api_docs": "https://developers.tripo3d.ai/en/docs/generation-image-to-model/p",
+    "record": "doc/assets/modular-human-female-01-tripo-api-v1-sources.json",
+    "output_dir": "assets/modular_human_female_01/tripo_api_v1",
+    "scope": "One generation task; preserve raw outputs and review before fitting or rigging"
+  },
+  "status": "success",
+  "balance_before": {
+    "balance": 1000.0,
+    "frozen": 0.0
+  },
+  "file_token": "file_5a793049-e80d-4f5a-af09-6a3a6a53e51a",
+  "request": {
+    "input": "file_5a793049-e80d-4f5a-af09-6a3a6a53e51a",
+    "model": "P2-20260801",
+    "quad": true,
+    "face_limit": 6000,
+    "texture": true,
+    "pbr": true,
+    "texture_quality": "detailed",
+    "texture_version": "v3.5-20260815",
+    "delight": true,
+    "enable_image_autofix": false,
+    "texture_alignment": "original_image",
+    "orientation": "align_image",
+    "auto_size": false,
+    "export_uv": true,
+    "model_seed": 101101,
+    "texture_seed": 101101
+  },
+  "task_id": "5acba197-8120-45d0-bf58-31486ae80d58",
+  "task": {
+    "type": "image_to_model",
+    "status": "success",
+    "progress": 100,
+    "input": {
+      "pbr": true,
+      "file": {
+        "type": "jpeg",
+        "object": {
+          "key": "tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/5acba197-8120-45d0-bf58-31486ae80d58/image.jpeg",
+          "bucket": "tripo-data"
+        }
+      },
+      "quad": true,
+      "delight": true,
+      "texture": true,
+      "auto_size": false,
+      "export_uv": true,
+      "face_limit": 6000,
+      "model_seed": 101101,
+      "orientation": "align_image",
+      "texture_seed": 101101,
+      "model_version": "P2-20260801",
+      "texture_quality": "detailed",
+      "texture_version": "v3.5-20260815",
+      "texture_alignment": "original_image",
+      "enable_image_autofix": false
+    },
+    "output": {
+      "model_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/5acba197-8120-45d0-bf58-31486ae80d58/tripo_pbr_model_5acba197-8120-45d0-bf58-31486ae80d58.fbx?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfZDQ0N2Y5NzczZGQzNDA5M2JiZDY2MWEyMWNkM2I5ZDIvMjAyNjEwMTEvNWFjYmExOTctODEyMC00NWQwLWJmNTgtMzE0ODZhZTgwZDU4L3RyaXBvX3Bicl9tb2RlbF81YWNiYTE5Ny04MTIwLTQ1ZDAtYmY1OC0zMTQ4NmFlODBkNTguZmJ4IiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzkxNzkyMDUxfX19XX0_&Signature=r2XEjhsAr5jo88faw3bEldMNMrE-xicVJeA0Bb~NtuTQSjQV4xtf0276yO0j87NX4Kt-1MfcaeFCN1twC3XzlOip4HeJa3bvnWqt06ZS0v0UvV4zX0rGVh2Kb2t47tFKd2BhOsWBz8xNgvm1U2rrFExqlhQGIb8XLTeyN3NNHFr5syU-r74a14pbG41P54n8vC4kaqVMPNkib0hJmc0fU7-oee51hIDtvRKN0KRUGp9bmmBWRuZQwfSniFT0B8k4cOJgPZnkK6eXz3-chDM5-zwxe6-sxM-MrGgvFjEZ36bUIewh6HtbpmPkUlTSEQ~aRaVojdT-a3H-5fhpTqGN7w__&Key-Pair-Id=K1676C64NMVM2J",
+      "rendered_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/5acba197-8120-45d0-bf58-31486ae80d58/legacy_mesh.webp?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfZDQ0N2Y5NzczZGQzNDA5M2JiZDY2MWEyMWNkM2I5ZDIvMjAyNjEwMTEvNWFjYmExOTctODEyMC00NWQwLWJmNTgtMzE0ODZhZTgwZDU4L2xlZ2FjeV9tZXNoLndlYnAiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3OTE3OTIwNTF9fX1dfQ__&Signature=VVQVpsH8UvmacGY5WTRMv37YSsOnw-dDk68atQRlPKFv7G6IJVAJnz8YZaNx4KsJfW4uwWYT5pYTBAs0~AzaTxR3tj0mQUmBrqO5R5eSYz-3i-v0rJFviomtyNgXYkwBsBHvslEj~zJ4XJutmPi-SS5ckMrqd8M79yDOe1c5ChR7X-fsaYXfsE946GzO3oVeoGlwZT7nploP3wy~K1XaMwZw7tL31k6teB9CGDVbxKC-iBbNXvyqFBRpfA-tCa7bUE-KYpgP2G3rXhIyX-icCGjUcKa6naEiTPK9lDdM7SoklojDiLZaPkpGVoD44C5qzVYDKvpyth9YSV7Z1TFXvA__&Key-Pair-Id=K1676C64NMVM2J"
+    },
+    "task_id": "5acba197-8120-45d0-bf58-31486ae80d58",
+    "created_at": "2026-10-11T07:59:21.354578Z",
+    "completed_at": "2026-10-11T08:00:16.322881Z",
+    "credits_consumed": 120.0
+  },
+  "balance_latest": {
+    "balance": 880.0,
+    "frozen": 0.0
+  },
+  "files": {
+    "model_url": {
+      "path": "assets/modular_human_female_01/tripo_api_v1/model_url.fbx",
+      "bytes": 4412220,
+      "sha256": "3cc259574e7da8cfa8fe33b004ab6b4482efa93b3c833522480ec24e4d088f8d"
+    },
+    "rendered_image_url": {
+      "path": "assets/modular_human_female_01/tripo_api_v1/rendered_image_url.png",
+      "bytes": 86791,
+      "sha256": "11213827be754409d3d5331fd0f7ececc6ce65a742a75bd4742832e2da6925e0"
+    }
+  }
+}

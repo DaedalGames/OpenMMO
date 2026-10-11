@@ -1,0 +1,175 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "generated_candidate_reviewed_not_fitted_or_rigged",
+  "task_id": "5acba197-8120-45d0-bf58-31486ae80d58",
+  "generation_record": "doc/assets/modular-human-female-01-tripo-api-v1-sources.json",
+  "geometry": {
+    "triangles": 12208,
+    "mesh_count": 1,
+    "meshes": [
+      {
+        "name": "tripo_node_5acba197",
+        "components_vertex_counts": [
+          4220,
+          767,
+          765,
+          389,
+          215
+        ],
+        "boundary_edges": 527,
+        "nonmanifold_edges": 528,
+        "degenerate_faces": 0,
+        "collapsed_uv_triangles": 0
+      }
+    ],
+    "source_extent_blender": [
+      0.1844455599784851,
+      0.6850528120994568,
+      0.99951171875
+    ],
+    "rigged": false,
+    "polygon_sizes": {
+      "3": 1504,
+      "4": 5352
+    },
+    "textures": [
+      {
+        "name": "tripo_image_5acba197_0",
+        "size": [
+          4096,
+          4096
+        ],
+        "packed": true
+      },
+      {
+        "name": "tripo_image_5acba197_1",
+        "size": [
+          4096,
+          4096
+        ],
+        "packed": true
+      },
+      {
+        "name": "tripo_image_5acba197_2",
+        "size": [
+          4096,
+          4096
+        ],
+        "packed": true
+      },
+      {
+        "name": "tripo_image_5acba197_3",
+        "size": [
+          4096,
+          4096
+        ],
+        "packed": true
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.09222277998924255,
+        -0.3425264060497284,
+        -0.499755859375
+      ],
+      "max": [
+        0.09222277998924255,
+        0.3425264060497284,
+        0.499755859375
+      ]
+    }
+  },
+  "derived_files": [
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/source.glb",
+      "sha256": "e64dc633b24f7ca4bb510ebbbfef74e5b7c3bc28e9f909a220084b58976e7789",
+      "bytes": 7530368
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/source.blend",
+      "sha256": "9a3d40b6b2e42fdd59fe194a6963f1353bf080bce1536c189710bb523cc98b32",
+      "bytes": 4274675
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/base-review.glb",
+      "sha256": "aab783a038aa1da55e86ebcaacc2258a20878ab5f70cfd3fe6817587239cc5b1",
+      "bytes": 7530272
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/review_source.py",
+      "sha256": "5e209d51cdfe0f7a458afd9df2689b333adcce3bad16a312b3b3df6e300e4baf",
+      "bytes": 4427
+    }
+  ],
+  "render_files": [
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/back.png",
+      "sha256": "91fb2534989eef3f0095b8760ad0ee84040ce6f5d14e9678d6ed9eae2de3716e",
+      "bytes": 468610
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/feet-side.png",
+      "sha256": "078b9fea3e4f4df2bc07b28e9a03fcf94adfb75a03c030373a689714517a1d16",
+      "bytes": 475905
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/front.png",
+      "sha256": "fdac7c5c9fb0e155a6ecf87366756760cfbffaf944f9bdd84cb7e49e56fb1863",
+      "bytes": 470560
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/hand-top.png",
+      "sha256": "0cb95e04eb1b71956204f4a6e67cfb013431bf634098db13eb3765c3903ade6a",
+      "bytes": 439889
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/hand.png",
+      "sha256": "70fe2fb1d5b00ae56d5be20b89927485e68a2049969ec14c2dd7e2136e7efa19",
+      "bytes": 436963
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/head-clay.png",
+      "sha256": "14f004ea8b87934b16da259e92252547437e5f1314c5495b20968a3f8ee3466c",
+      "bytes": 434482
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/head.png",
+      "sha256": "a58d4c574b8c2027f92f0992b17e22340d78798c5b4aff8f319634db41f9706e",
+      "bytes": 513907
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/side.png",
+      "sha256": "21aae9390e710a44a3b5c72dece82cc90b7da321f7c3892fc17d01f78e52125e",
+      "bytes": 437260
+    }
+  ],
+  "normalization": {
+    "purpose": "comparison only; not final character height",
+    "display_height": 1,
+    "blender_z_rotation_degrees": -90,
+    "origin": "centered horizontally, lowest vertex at ground",
+    "raw_fbx_preserved": true,
+    "glb_materials": "Base color, normal and packed metallic/roughness retained; Blender export warns combined texture sampler uses first image node settings."
+  },
+  "review": {
+    "positive": [
+      "Bald scalp is present.",
+      "Heel and forefoot are nearly level in side view, unlike the previous Tripo mesh.",
+      "Five fingers are visibly separated in hand-top view; thumb is smoother than Meshy.",
+      "Eye and lip geometry is clearer than the Meshy candidate."
+    ],
+    "remaining": [
+      "Eye corners and mouth texture need cleanup; texture suggests open mouth more than the neutral geometry.",
+      "Underarm and clothing edges have rough transitions; separate modular underwear and restore covered body as needed.",
+      "Boundary diagnostics need local inspection before rigging; no watertight or animation-ready claim.",
+      "Anatomical and rigging review of both hands, toes and ground contact remains before production."
+    ],
+    "selected_for_production": false
+  },
+  "cost": {
+    "credits_consumed": 120,
+    "balance_remaining": 880,
+    "tasks_submitted": 1
+  }
+}

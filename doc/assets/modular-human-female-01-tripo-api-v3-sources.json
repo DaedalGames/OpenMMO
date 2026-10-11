@@ -1,0 +1,134 @@
+{
+  "config": {
+    "asset": "modular_human_female_01",
+    "generation_date": "2026-10-11",
+    "tool": "Tripo API",
+    "tier": "Paid API credits; user purchased 1000 credits",
+    "license": "Tripo Terms of User Agreement; source image provenance retained separately",
+    "license_url": "https://developers.tripo3d.ai/en/terms",
+    "parameters": {
+      "model": "P2-20260801",
+      "quad": false,
+      "face_limit": 20000,
+      "texture": true,
+      "pbr": true,
+      "texture_quality": "detailed",
+      "texture_version": "v3.5-20260815",
+      "delight": true,
+      "texture_alignment": "original_image",
+      "orientation": "align_image",
+      "auto_size": false,
+      "export_uv": true,
+      "model_seed": 101101,
+      "texture_seed": 101101,
+      "enable_image_autofix": false
+    },
+    "estimated_credits": 120,
+    "pricing_url": "https://developers.tripo3d.ai/en/pricing",
+    "api_docs": "https://developers.tripo3d.ai/en/docs/generation-image-to-model/p",
+    "record": "doc/assets/modular-human-female-01-tripo-api-v3-sources.json",
+    "output_dir": "assets/modular_human_female_01/tripo_api_v3",
+    "scope": "One user-requested single-front-image generation at 20000 triangles; preserve output and inspect face before rigging",
+    "reference_provenance": {
+      "tool": "ComfyUI / Qwen Image 2.1 (user supplied)",
+      "provided_date": "2026-10-11",
+      "tier": "Not provided",
+      "license": "User-provided references; exact Qwen model/service terms not verified",
+      "notes": "Original front PNG bytes preserved; single input explicitly requested by user after multiview rejection."
+    },
+    "polygon_target": {
+      "triangles": 20000,
+      "reason": "User explicitly requested a single front image and 20000 triangles"
+    },
+    "estimated_credits_basis": "Conservative balance check based on prior P2 quad+detailed generation; actual cost is recorded from API",
+    "image": {
+      "path": "doc/images/characters/modular_human_female_01/Qwen_image_2.1_00012.png",
+      "sha256": "94793908eb08c118e6348497457064df94d221418e4caf419843ee214976439e",
+      "original_path": "/home/jake/work/image-kiln/vendor/ComfyUI/output/Qwen_image_2.1_00012.png",
+      "attachment_matches_original": true,
+      "size": [
+        1024,
+        1536
+      ]
+    }
+  },
+  "status": "success",
+  "balance_before": {
+    "balance": 880.0,
+    "frozen": 0.0
+  },
+  "file_token": "file_167c0e74-2d97-4b4a-9b77-f2c0fd5c3ac4",
+  "endpoint": "/generation/image-to-model",
+  "request": {
+    "model": "P2-20260801",
+    "quad": false,
+    "face_limit": 20000,
+    "texture": true,
+    "pbr": true,
+    "texture_quality": "detailed",
+    "texture_version": "v3.5-20260815",
+    "delight": true,
+    "texture_alignment": "original_image",
+    "orientation": "align_image",
+    "auto_size": false,
+    "export_uv": true,
+    "model_seed": 101101,
+    "texture_seed": 101101,
+    "enable_image_autofix": false,
+    "input": "file_167c0e74-2d97-4b4a-9b77-f2c0fd5c3ac4"
+  },
+  "task_id": "073e85e0-595b-4a12-9030-2dc3e30566e9",
+  "task": {
+    "type": "image_to_model",
+    "status": "success",
+    "progress": 100,
+    "input": {
+      "pbr": true,
+      "file": {
+        "type": "jpeg",
+        "object": {
+          "key": "tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/073e85e0-595b-4a12-9030-2dc3e30566e9/image.jpeg",
+          "bucket": "tripo-data"
+        }
+      },
+      "quad": false,
+      "delight": true,
+      "texture": true,
+      "auto_size": false,
+      "export_uv": true,
+      "face_limit": 20000,
+      "model_seed": 101101,
+      "orientation": "align_image",
+      "texture_seed": 101101,
+      "model_version": "P2-20260801",
+      "texture_quality": "detailed",
+      "texture_version": "v3.5-20260815",
+      "texture_alignment": "original_image",
+      "enable_image_autofix": false
+    },
+    "output": {
+      "model_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/073e85e0-595b-4a12-9030-2dc3e30566e9/tripo_pbr_model_073e85e0-595b-4a12-9030-2dc3e30566e9.glb?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfZDQ0N2Y5NzczZGQzNDA5M2JiZDY2MWEyMWNkM2I5ZDIvMjAyNjEwMTEvMDczZTg1ZTAtNTk1Yi00YTEyLTkwMzAtMmRjM2UzMDU2NmU5L3RyaXBvX3Bicl9tb2RlbF8wNzNlODVlMC01OTViLTRhMTItOTAzMC0yZGMzZTMwNTY2ZTkuZ2xiIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzkxNzk0MzY1fX19XX0_&Signature=dlilr~XBzdkxDOmUk7QpkErxpZYwK90V76Vf3viBm-jYrQVSjFp7eFV16r07~6eFwopmzIDMjzrvv0-75Dwb9D~s91tDL7cTcR2qKjEJq2pvXZmlhcgGKzKvdkI6qXo8-~ZXBHszudLjt1ZyGvrdzFTP6QQhObZf6YYTUNMd7E0K3Jf2XRQ2rtgVaBb8AivnnoYGlQQTSuCEOmhi40GkPkkTEek3lfDsKBTepal-XPGuINcq-InsCb0NEBzFRhsC6jl1WAMD4kzbGi6mxMiXUYrKtgfQGwmqGYs2m1KTt7wVjPa8vO~oKgFxfuDnU~JHot0LAyL1KbW4~Do9zOG2OA__&Key-Pair-Id=K1676C64NMVM2J",
+      "rendered_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/073e85e0-595b-4a12-9030-2dc3e30566e9/legacy_mesh.webp?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfZDQ0N2Y5NzczZGQzNDA5M2JiZDY2MWEyMWNkM2I5ZDIvMjAyNjEwMTEvMDczZTg1ZTAtNTk1Yi00YTEyLTkwMzAtMmRjM2UzMDU2NmU5L2xlZ2FjeV9tZXNoLndlYnAiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3OTE3OTQzNjV9fX1dfQ__&Signature=kHgmd2SkfkUsNGKvmTK5u7gdTOrSN~YokoYvuqigtDzguQNBk6urFNedf4INks~NWWiVzvJ-uXMnfzg5gn5eKTdVNjvJRDNMX-WYgtrBslxAc0zXvZHUeV7b-2J-loaoVfnVwvPxwxG-exh6H~LZhAeJ~ACOWuKS7Sse-KuNF0aqGninzaEae~WmubDn~q5wzGS0xhoeKwla3vnRptirkF6ZZQIwTMb0rOe-L4m6HjR21jHSwhbqsAejLxvEabENvgAKb-JfDrfz~HizMmqLP1IjVNPMo89u73OMVIZkZI0qojkCZ0pE6RH4InmTA2UQTyMzFybEkg1Xg6SB87~yQg__&Key-Pair-Id=K1676C64NMVM2J"
+    },
+    "task_id": "073e85e0-595b-4a12-9030-2dc3e30566e9",
+    "created_at": "2026-10-11T08:37:39.944118Z",
+    "completed_at": "2026-10-11T08:39:13.516687Z",
+    "credits_consumed": 120.0
+  },
+  "balance_latest": {
+    "balance": 760.0,
+    "frozen": 0.0
+  },
+  "files": {
+    "model_url": {
+      "path": "assets/modular_human_female_01/tripo_api_v3/model_url.glb",
+      "bytes": 7202688,
+      "sha256": "cf11bba1febbb5cb13976237748ae22d477971087473b8a3cccc131fae357b00"
+    },
+    "rendered_image_url": {
+      "path": "assets/modular_human_female_01/tripo_api_v3/rendered_image_url.png",
+      "bytes": 80419,
+      "sha256": "ac5f2fb3a75963157c0b23e3f3e9048dcd7b4fe2fc85517547d517edee5f29ec"
+    }
+  }
+}

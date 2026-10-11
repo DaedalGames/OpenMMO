@@ -1,0 +1,73 @@
+{
+  "asset": "modular_human_female_01",
+  "status": "raw_mesh_reviewed_not_fitted_or_rigged",
+  "supplied_date": "2026-10-11",
+  "generation_date": null,
+  "tool": "Tripo (user-provided; GLB generator confirms Tripo)",
+  "tier": "Not supplied",
+  "license": "Tripo account/model output terms not supplied or verified",
+  "source": {
+    "path": "assets/modular_human_female_01/tripo_base_v1/source.glb",
+    "original_path": "/mnt/y/web_downloads/fitness+model+3d+model.glb",
+    "sha256": "4a319482af06eba4981ffe91fd1fb3b8eadb0382fe2fafbb223d3c3dca2e0676"
+  },
+  "concept": "doc/images/characters/modular_human_female_01/base-front-v2.png",
+  "requested_quads": null,
+  "original_quad_count": null,
+  "discussion_target_quads": 6000,
+  "geometry": {
+    "triangles": 11493,
+    "mesh_count": 1,
+    "meshes": [
+      {
+        "name": "tripo_node_54050f83-974b-4e33-95f6-c54ba54e9c95",
+        "components_vertex_counts": [
+          2879,
+          1633,
+          838,
+          228,
+          73,
+          70,
+          66,
+          55,
+          48,
+          32,
+          28,
+          28,
+          26,
+          22,
+          6,
+          5
+        ],
+        "boundary_edges": 575,
+        "nonmanifold_edges": 587,
+        "degenerate_faces": 0,
+        "collapsed_uv_triangles": 0
+      }
+    ],
+    "source_extent_blender": [
+      0.64404296875,
+      0.16650390625,
+      0.99951171875
+    ],
+    "rigged": false
+  },
+  "review": {
+    "images": [
+      "assets/modular_human_female_01/tripo_base_v1/review/front.png",
+      "assets/modular_human_female_01/tripo_base_v1/review/side.png",
+      "assets/modular_human_female_01/tripo_base_v1/review/head.png",
+      "assets/modular_human_female_01/tripo_base_v1/review/feet-side.png"
+    ],
+    "findings": [
+      "One mesh object and one material; no separate hair object or rig. Disconnected components exist, so object count does not prove welded hair/body geometry.",
+      "Complete underlying bald scalp has not been verified; hair separation and possible scalp reconstruction are needed for interchangeable hairstyles.",
+      "Side view shows visibly elevated heels and pointed feet; correct neutral foot contact before rigging."
+    ],
+    "next_steps": [
+      "Inspect hair component boundaries and reconstruct a continuous bald scalp as needed.",
+      "Separate hair and underwear into interchangeable parts; preserve body coverage under garments.",
+      "Correct foot posture and inspect fingers before rigging."
+    ]
+  }
+}

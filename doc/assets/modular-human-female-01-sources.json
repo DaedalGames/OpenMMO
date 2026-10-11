@@ -1,0 +1,108 @@
+{
+  "asset": "modular_human_female_01",
+  "status": "concept_selected_by_user",
+  "references": [
+    {
+      "path": "client/public/character_concepts/female_rogue.webp",
+      "role": "User-provided repository reference for style, face and physique",
+      "sha256": "1ee497e6f3bae48627c674450f92c4cd64e06078f80ec60f87276710624714f1"
+    },
+    {
+      "path": "client/public/character_concepts/female_knight.webp",
+      "role": "User-provided repository reference for style, face and physique",
+      "sha256": "0e15464d6b7f0a447644437e5cbdbc3252bc43dc1928609020052adadf6f717a"
+    }
+  ],
+  "images": [
+    {
+      "path": "doc/images/characters/modular_human_female_01/base-front-v1.png",
+      "view": "front",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "sha256": "cb464f7c82574ac17f89e98e23027b5cd29cb32a0581c5ea1403fc9574113ff1",
+      "prompt": "Use case: stylized-concept.\nAsset type: front-view base-body concept artwork for an adult female modular player character in OpenMMO, intended as an image-to-3D modeling reference with separately interchangeable clothing.\nInput images: Image 1 female_rogue.webp and Image 2 female_knight.webp are visual style, face and physique references only. Create a NEW common female base character, not a costume variant.\nSubject: one clearly adult woman around 25 years old. Match the references' polished realistic Korean fantasy RPG aesthetic, beautiful refined face, almond-shaped eyes, natural defined nose and lips, light neutral skin, elegant long legs, feminine curvy athletic build and softly defined waist. Believable balanced anatomy, not exaggerated hourglass. Neutral calm expression, eyes looking straight ahead. Dark brown hair neatly slicked back into a small compact bun entirely behind the skull, ears and neck fully exposed, no loose hair covering the shoulders or face.\nClothing: simple opaque matte charcoal-gray fitted sleeveless modeling crop top with broad straps and a modest scoop neckline, and matching plain fitted mid-thigh modeling shorts with a flat waistband. Smooth neutral cloth with minimal seams; no padding, laces, buckles, pockets, decorations or logos. Midriff, shoulders, arms, lower thighs, knees, calves, ankles and feet visible for anatomy reference. Bare hands and bare feet.\nPose: exact symmetrical neutral front-facing A-pose. Head level, shoulders and pelvis level, spine straight, no contrapposto. Arms straight diagonally down and outward about 35 degrees away from the torso, elbows relaxed but not bent. Wrists straight and forearms in natural rigging orientation: palms face downward and inward toward the body, NOT forward toward the camera. Hands seen obliquely from the back/thumb side, with exactly five anatomically correct gently separated fingers per hand; do not twist forearms to display palms. Legs straight, feet comfortably hip-width apart, toes pointing forward, soles on the same ground plane.\nStyle: high-quality realistic fantasy game character concept render, detailed readable face, clean anatomical forms, restrained skin texture, soft broad even neutral studio lighting.\nComposition: portrait 2:3, one full-body FRONT view only, near orthographic camera centered at torso height, entire head to toes and all fingertips inside frame with ample margins. Plain uniform pale warm-gray background with only subtle foot contact shadow.\nConstraints: maintain the references' mature feminine character appeal while making a clean unarmored common base body. No armor, boots, heels, gloves, hood, cape, weapons, jewelry, tattoos, props, text, labels, cut lines, panels or inset faces. No dynamic pose or perspective distortion.",
+      "status": "unused",
+      "status_label": "[미사용]",
+      "superseded_by": "doc/images/characters/modular_human_female_01/base-front-v2.png",
+      "generation_date": "2026-10-11",
+      "tool": "OpenAI Codex built-in ImageGen",
+      "tier": "ChatGPT Pro 20x",
+      "license": "OpenAI generated output terms"
+    },
+    {
+      "path": "doc/images/characters/modular_human_female_01/base-front-v2.png",
+      "status": "unused",
+      "view": "front",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "sha256": "1e1b64a19500f39b1ba6c8bda4994accd038c04ffaf586b8dd84fbeb4a2f0836",
+      "source": "User-provided edited image",
+      "source_filename": "Qwen_image_2.1_00001.png",
+      "user_reported_source_path": "..\\image-kiln\\vendor\\ComfyUI\\output\\Qwen_image_2.1_00001.png",
+      "supplied_date": "2026-10-11",
+      "generation_date": null,
+      "generation_date_note": "Exact generation date not supplied",
+      "tool": "ComfyUI / Qwen Image 2.1 (user-reported)",
+      "tier": "Not supplied; user-operated ComfyUI",
+      "license": "Qwen model/service output terms not supplied or verified; original ImageGen reference provenance retained in v1 record",
+      "prompt": null,
+      "prompt_note": "User generation prompt and workflow not supplied",
+      "reference": "doc/images/characters/modular_human_female_01/base-front-v1.png",
+      "status_label": "[미사용]",
+      "superseded_by": "doc/images/characters/modular_human_female_01/base-front-v3.png"
+    },
+    {
+      "path": "doc/images/characters/modular_human_female_01/base-front-v3.png",
+      "status": "current_user_provided_reference",
+      "view": "front",
+      "dimensions": [
+        1024,
+        1536
+      ],
+      "sha256": "e01d0d99b448c366faaaf0eb1c6df3e2bb59308aeff63e48b7cf3e8b41dc5ae0",
+      "source": "User-provided bald revision",
+      "source_filename": "Qwen_image_2.1_00002.png",
+      "user_reported_source_path": "Z:\\image-kiln\\vendor\\ComfyUI\\output\\Qwen_image_2.1_00002.png",
+      "supplied_date": "2026-10-11",
+      "generation_date": null,
+      "generation_date_note": "Exact generation date not supplied",
+      "tool": "ComfyUI / Qwen Image 2.1 (user-reported)",
+      "tier": "Not supplied; user-operated ComfyUI",
+      "license": "Qwen model/service output terms not supplied or verified; earlier reference provenance retained",
+      "prompt": null,
+      "prompt_note": "User generation prompt and workflow not supplied",
+      "reference": "doc/images/characters/modular_human_female_01/base-front-v2.png"
+    }
+  ],
+  "revision_requests": [
+    {
+      "date": "2026-10-11",
+      "requested_change": "Replace crop top and shorts with simple bikini-style base underwear to reduce protrusion under short or open outfits.",
+      "status": "IMAGEGEN_INPUT_MODERATION_BLOCKED",
+      "request_id": "9914fce3-6cb7-40c4-8eb4-856695214e9e",
+      "prompt": "Use case: identity-preserve.\nEdit target: the supplied full-body front-view adult female game-character base concept, age approximately 25.\nChange ONLY her charcoal crop top and shorts into a simple matching opaque matte charcoal-gray two-piece bikini-style base undergarment, for modular outfit modeling. Top: plain fitted triangular bikini cups with adequate opaque coverage, simple slim shoulder straps and a narrow underbust band. Bottom: plain low-rise conventional bikini briefs, full opaque front and rear coverage, narrow flat side bands at the hips, no shorts legs; expose the upper thighs and leave the waist unobstructed for fitting skirts and fantasy armor. Minimal clean construction, no bows, dangling ties, lace, hardware, patterns, logos or translucent fabric.\nPreserve exactly the same adult character identity, face, expression, hair, skin tone, body proportions and volume, neutral symmetrical A-pose, hand orientation, anatomy, bare feet resting flat on the ground, camera, framing, lighting and plain gray background. Do not reshape the body or enlarge breasts or hips. This is a neutral technical game-character modeling reference.\nKeep a single complete full-body front view, 1024x1536 portrait. No additional views, text, annotations, props or armor.",
+      "output": null
+    }
+  ],
+  "review": {
+    "stage": "Bald front reference used for Meshy and Tripo API candidates; matching side concept and production fitting remain pending",
+    "observations": [
+      "Bald scalp, white top and briefs, front A-pose.",
+      "Feet appear planted from the front; heel contact cannot be conclusively verified without a side view.",
+      "Matching side reference not supplied.",
+      "Existing Tripo mesh was generated from v2 and does not represent this revision.",
+      "Tripo P2 API v1 generated from v3; task 5acba197-8120-45d0-bf58-31486ae80d58, reviewed separately."
+    ],
+    "not_completed": [
+      "Matching side reference and heel-contact verification",
+      "Body dimensions and clothing interface definition",
+      "Rigging and outfit compatibility validation"
+    ]
+  },
+  "selected_image": "doc/images/characters/modular_human_female_01/base-front-v3.png",
+  "selection_date": "2026-10-11"
+}

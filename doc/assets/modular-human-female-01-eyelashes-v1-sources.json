@@ -1,0 +1,665 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "eyelash_opacity_corrected_not_rigged",
+  "source_model": "assets/modular_human_female_01/tripo_api_v3/base-review.glb",
+  "source_record": "doc/assets/modular-human-female-01-tripo-api-v3-sources.json",
+  "user_request": "Preserve eyelash planes and apply an opacity mask with alpha cutout",
+  "image_generation": {
+    "tool": "OpenAI Codex built-in image_gen",
+    "tier": "ChatGPT Pro 20x",
+    "date": "2026-10-11",
+    "transparent_background": true,
+    "prompt": "Create a production 3D eyelash-card RGBA texture on a truly transparent background. Asset: a SINGLE straight horizontal strip of natural delicate adult female upper eyelashes, dark brown nearly black, realistic fine tapered individual hair strands. Roots form a very thin nearly horizontal gently curved line near the bottom; hairs extend upward and curve slightly outward, mixed lengths, longest in the right half, about 35 sparse individual fine strands with visible transparent gaps. The eyelash strip spans about 85 percent of image width and 55 percent of height, centered in the image. Aspect ratio wide 3:1. No eye, no skin, no eyelid, no face, no mannequin, no makeup, no shadow, no white background, no checkerboard baked in, no text, no framing, no full opaque triangular wedge, no solid thick band. This image is an isolated fine eyelash fringe material texture with genuine transparent alpha around and between every hair. Fine modest lashes, not dramatic false lashes.",
+    "generated_source": "/home/jake/.codex/generated_images/01a12a17-74d8-7cf3-8ad3-7be845e2dba5/exec-ce8ea1da-4555-4d97-85bc-3c4e5b3d3e27.png",
+    "project_texture": "assets/modular_human_female_01/eyelashes_v1/eyelash-fringe.png",
+    "size": [
+      2172,
+      724
+    ],
+    "format": "RGBA PNG",
+    "alpha_preserved": true,
+    "license": "OpenAI generated output usage terms; underlying model retains its Tripo and reference image provenance"
+  },
+  "implementation": {
+    "script": "tools/fix-female-eyelashes.py",
+    "selection": "assets/modular_human_female_01/eyelashes_v1/selected-faces.json",
+    "selection_method": "Inspected geometric patches and boundary loops; 32 triangles for each upper/lower lash card on each side. Matched against the pinned source SHA-256.",
+    "geometry": "No vertices or triangles added, removed, moved or decimated. Original mesh index list partitioned into body and lash primitives.",
+    "textures": "Original body texture bytes retained. Generated RGBA eyelash texture embedded unchanged.",
+    "material": "Dedicated double-sided MASK material, cutoff 0.18, metallic 0, roughness 0.85; body remains opaque.",
+    "uv": "Additional TEXCOORD_1 on lashes; root/tip boundary curves align generated texture. Original TEXCOORD_0 unchanged. Lower lashes use shorter coverage."
+  },
+  "validation": {
+    "source_sha256": "24fe1ccd3031f6cd9a87abb32d65785ecfcb84e316d58e88dd68720c7ec416b7",
+    "output_sha256": "6f79dd71a30033ec42a23bcdcc251830887ca0e414cfe5a251c4fdcb3ff37bac",
+    "triangles_before": 20927,
+    "triangles_after": 20927,
+    "body_triangles": 20799,
+    "eyelash_triangles": 128,
+    "original_binary_preserved": true,
+    "body_material_preserved": true,
+    "original_accessors_preserved": true,
+    "original_images_preserved": true,
+    "alpha_cutoff": 0.18,
+    "mapping": {
+      "right_upper": {
+        "triangles": 32,
+        "root_curve": [
+          [
+            0.010761000216007233,
+            -0.039990998804569244,
+            0.935027003288269
+          ],
+          [
+            0.011219000443816185,
+            -0.03899899870157242,
+            0.9345380067825317
+          ],
+          [
+            0.011676999740302563,
+            -0.03800800070166588,
+            0.935027003288269
+          ],
+          [
+            0.012668999843299389,
+            -0.03846599906682968,
+            0.9360039830207825
+          ],
+          [
+            0.014651999808847904,
+            -0.039381999522447586,
+            0.9369810223579407
+          ],
+          [
+            0.016620000824332237,
+            -0.03981100022792816,
+            0.9379580020904541
+          ],
+          [
+            0.018573999404907227,
+            -0.039751000702381134,
+            0.9384459853172302
+          ],
+          [
+            0.021014999598264694,
+            -0.03967500105500221,
+            0.9389349818229675
+          ],
+          [
+            0.023426000028848648,
+            -0.03862399980425835,
+            0.9379580020904541
+          ],
+          [
+            0.024846000596880913,
+            -0.03711400181055069,
+            0.937470018863678
+          ],
+          [
+            0.02672399953007698,
+            -0.03461199998855591,
+            0.9364920258522034
+          ],
+          [
+            0.02971399948000908,
+            -0.03647499904036522,
+            0.937470018863678
+          ],
+          [
+            0.03270399942994118,
+            -0.03833800181746483,
+            0.9389349818229675
+          ]
+        ],
+        "tip_curve": [
+          [
+            0.010761000216007233,
+            -0.039990998804569244,
+            0.935027003288269
+          ],
+          [
+            0.012256000190973282,
+            -0.040922001004219055,
+            0.9360039830207825
+          ],
+          [
+            0.013766000047326088,
+            -0.04234199970960617,
+            0.937470018863678
+          ],
+          [
+            0.015749000012874603,
+            -0.04325899854302406,
+            0.9389349818229675
+          ],
+          [
+            0.018709000200033188,
+            -0.044144999235868454,
+            0.940401017665863
+          ],
+          [
+            0.022600000724196434,
+            -0.04353699833154678,
+            0.9408890008926392
+          ],
+          [
+            0.026475999504327774,
+            -0.04244000092148781,
+            0.940401017665863
+          ],
+          [
+            0.02984900027513504,
+            -0.040869999676942825,
+            0.9399120211601257
+          ],
+          [
+            0.03270399942994118,
+            -0.03833800181746483,
+            0.9389349818229675
+          ]
+        ]
+      },
+      "left_upper": {
+        "triangles": 32,
+        "root_curve": [
+          [
+            -0.008282000198960304,
+            -0.0405769981443882,
+            0.935027003288269
+          ],
+          [
+            -0.008801000192761421,
+            -0.039615001529455185,
+            0.9345380067825317
+          ],
+          [
+            -0.009318999946117401,
+            -0.03865399956703186,
+            0.935027003288269
+          ],
+          [
+            -0.010280000045895576,
+            -0.03917200118303299,
+            0.9360039830207825
+          ],
+          [
+            -0.012203999795019627,
+            -0.04020899906754494,
+            0.9369810223579407
+          ],
+          [
+            -0.014142000116407871,
+            -0.04075700044631958,
+            0.9379580020904541
+          ],
+          [
+            -0.016094999387860298,
+            -0.04081699997186661,
+            0.9384459853172302
+          ],
+          [
+            -0.018535999581217766,
+            -0.04089200124144554,
+            0.9384459853172302
+          ],
+          [
+            -0.021007999777793884,
+            -0.039990998804569244,
+            0.9379580020904541
+          ],
+          [
+            -0.023005999624729156,
+            -0.038586001843214035,
+            0.937470018863678
+          ],
+          [
+            -0.024545999243855476,
+            -0.03618999943137169,
+            0.9364920258522034
+          ],
+          [
+            -0.026926999911665916,
+            -0.038217999041080475,
+            0.937470018863678
+          ],
+          [
+            -0.030285000801086426,
+            -0.040275998413562775,
+            0.9389349818229675
+          ]
+        ],
+        "tip_curve": [
+          [
+            -0.008282000198960304,
+            -0.0405769981443882,
+            0.935027003288269
+          ],
+          [
+            -0.009228999726474285,
+            -0.04158300161361694,
+            0.9360039830207825
+          ],
+          [
+            -0.011137000285089016,
+            -0.043108001351356506,
+            0.937470018863678
+          ],
+          [
+            -0.013059999793767929,
+            -0.044144999235868454,
+            0.9389349818229675
+          ],
+          [
+            -0.015960000455379486,
+            -0.045212000608444214,
+            0.940401017665863
+          ],
+          [
+            -0.01939300075173378,
+            -0.044828999787569046,
+            0.9408890008926392
+          ],
+          [
+            -0.023817000910639763,
+            -0.04398699849843979,
+            0.940401017665863
+          ],
+          [
+            -0.026791999116539955,
+            -0.04261299967765808,
+            0.9399120211601257
+          ],
+          [
+            -0.030285000801086426,
+            -0.040275998413562775,
+            0.9389349818229675
+          ]
+        ]
+      },
+      "right_lower": {
+        "triangles": 32,
+        "root_curve": [
+          [
+            0.013171999715268612,
+            -0.03893899917602539,
+            0.9330729842185974
+          ],
+          [
+            0.013631000183522701,
+            -0.03794800117611885,
+            0.9335610270500183
+          ],
+          [
+            0.015111000277101994,
+            -0.038391001522541046,
+            0.9335610270500183
+          ],
+          [
+            0.016589999198913574,
+            -0.03883399814367294,
+            0.9330729842185974
+          ],
+          [
+            0.01903199963271618,
+            -0.03875900059938431,
+            0.9330729842185974
+          ],
+          [
+            0.020969999954104424,
+            -0.038210999220609665,
+            0.9330729842185974
+          ],
+          [
+            0.023396000266075134,
+            -0.037647001445293427,
+            0.9335610270500183
+          ],
+          [
+            0.024831000715494156,
+            -0.03662500157952309,
+            0.9345380067825317
+          ],
+          [
+            0.025777999311685562,
+            -0.03561900183558464,
+            0.9355149865150452
+          ],
+          [
+            0.02672399953007698,
+            -0.03461199998855591,
+            0.9364920258522034
+          ],
+          [
+            0.027715999633073807,
+            -0.03506999835371971,
+            0.9360039830207825
+          ],
+          [
+            0.029180999845266342,
+            -0.03502500057220459,
+            0.935027003288269
+          ]
+        ],
+        "tip_curve": [
+          [
+            0.013171999715268612,
+            -0.03893899917602539,
+            0.9330729842185974
+          ],
+          [
+            0.013186999596655369,
+            -0.039427001029253006,
+            0.9325839877128601
+          ],
+          [
+            0.014178999699652195,
+            -0.039886001497507095,
+            0.932096004486084
+          ],
+          [
+            0.016635999083518982,
+            -0.04029899835586548,
+            0.9316070079803467
+          ],
+          [
+            0.019091999158263206,
+            -0.04071199893951416,
+            0.9311190247535706
+          ],
+          [
+            0.02200699970126152,
+            -0.0401340015232563,
+            0.9311190247535706
+          ],
+          [
+            0.024418000131845474,
+            -0.03908199816942215,
+            0.9316070079803467
+          ],
+          [
+            0.026341000571846962,
+            -0.0380450002849102,
+            0.9325839877128601
+          ],
+          [
+            0.028248999267816544,
+            -0.03652000054717064,
+            0.9335610270500183
+          ],
+          [
+            0.029180999845266342,
+            -0.03502500057220459,
+            0.935027003288269
+          ]
+        ]
+      },
+      "left_lower": {
+        "triangles": 32,
+        "root_curve": [
+          [
+            -0.010738999582827091,
+            -0.040164001286029816,
+            0.9325839877128601
+          ],
+          [
+            -0.010754000395536423,
+            -0.03967500105500221,
+            0.9330729842185974
+          ],
+          [
+            -0.011272000148892403,
+            -0.03871399909257889,
+            0.9335610270500183
+          ],
+          [
+            -0.01223399955779314,
+            -0.03923200070858002,
+            0.9335610270500183
+          ],
+          [
+            -0.014171999879181385,
+            -0.03977999836206436,
+            0.9330729842185974
+          ],
+          [
+            -0.016612999141216278,
+            -0.03985600173473358,
+            0.9330729842185974
+          ],
+          [
+            -0.018580999225378036,
+            -0.039427001029253006,
+            0.9330729842185974
+          ],
+          [
+            -0.021037999540567398,
+            -0.039014000445604324,
+            0.9335610270500183
+          ],
+          [
+            -0.022532999515533447,
+            -0.038082998245954514,
+            0.9345380067825317
+          ],
+          [
+            -0.023538999259471893,
+            -0.03713599964976311,
+            0.9355149865150452
+          ],
+          [
+            -0.024545999243855476,
+            -0.03618999943137169,
+            0.9364920258522034
+          ],
+          [
+            -0.02550799958407879,
+            -0.03670800104737282,
+            0.9360039830207825
+          ],
+          [
+            -0.02648399956524372,
+            -0.03673800081014633,
+            0.935027003288269
+          ]
+        ],
+        "tip_curve": [
+          [
+            -0.010738999582827091,
+            -0.040164001286029816,
+            0.9325839877128601
+          ],
+          [
+            -0.011699999682605267,
+            -0.040681999176740646,
+            0.932096004486084
+          ],
+          [
+            -0.014127000235021114,
+            -0.0412449985742569,
+            0.9316070079803467
+          ],
+          [
+            -0.016064999625086784,
+            -0.04179399833083153,
+            0.9311190247535706
+          ],
+          [
+            -0.019009999930858612,
+            -0.04139599949121475,
+            0.9311190247535706
+          ],
+          [
+            -0.02196899987757206,
+            -0.040509000420570374,
+            0.9316070079803467
+          ],
+          [
+            -0.023953000083565712,
+            -0.03959299996495247,
+            0.9325839877128601
+          ],
+          [
+            -0.02546199969947338,
+            -0.03817300125956535,
+            0.9335610270500183
+          ],
+          [
+            -0.02648399956524372,
+            -0.03673800081014633,
+            0.935027003288269
+          ]
+        ]
+      }
+    },
+    "independent_validation": {
+      "triangle_index_multiset_unchanged": true,
+      "source_accessors_unchanged": true,
+      "original_embedded_image_bytes_unchanged": true,
+      "body_material_unchanged": true,
+      "original_vertex_count": 21826,
+      "eyelash_uv_channel": 1,
+      "alpha_mode": "MASK",
+      "browser_errors": [],
+      "browser_stats": "20,927삼각형 · 속눈썹 보정 v1",
+      "browser_checks": [
+        "face render",
+        "full render",
+        "side camera",
+        "wireframe",
+        "camera reset"
+      ]
+    }
+  },
+  "visual_review": {
+    "views": [
+      "head-front",
+      "head-left",
+      "head-right",
+      "eye-detail",
+      "full",
+      "browser-face",
+      "browser-full"
+    ],
+    "result": "Opaque protruding eyelash planes are cut out, leaving visible fine lashes. No body or eyelid texture replacement.",
+    "remaining": "Existing eye-area color/normal texture artifacts and heel contact remain outside this edit; no rigging or outfit compatibility claim."
+  },
+  "tripo_credits_used": 0,
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/base-eyelashes-v1.blend",
+      "bytes": 8532162,
+      "sha256": "64424eb1cd6f816ad5183f465a727899cf655fe1c9d7a4a7bfc0986a3a612b84"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/base-eyelashes-v1.glb",
+      "bytes": 8675188,
+      "sha256": "6f79dd71a30033ec42a23bcdcc251830887ca0e414cfe5a251c4fdcb3ff37bac"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/browser-face.png",
+      "bytes": 250702,
+      "sha256": "c879b0fc199455b6581d0980ccd54f6f5cfb189c425ac090b1af0e20349302ea"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/browser-full.png",
+      "bytes": 144413,
+      "sha256": "688779006c3fd4db203835cc2a3b5a59dc7e975bcba092ca5412498a634fc9da"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/components.json",
+      "bytes": 263472,
+      "sha256": "a22b3ddc4e0a38f42f601e050a27079bdae1074ba42320b2d73ee6cd84827700"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eye-above.png",
+      "bytes": 837823,
+      "sha256": "e9fa1ea55ba410b666609ad2ae792e7ac1fe34834408b046c1092526fe6e12d9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eye-angle.png",
+      "bytes": 857734,
+      "sha256": "f091d6cd60cc2b60046a2ac2daf070b8c95e000eadba14b9789385d7483f7138"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eye-detail.png",
+      "bytes": 544039,
+      "sha256": "d3c40333308089f98fa48118322a538b1dde0370b5295e65f73774ce347411d5"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eye-faces.json",
+      "bytes": 340643,
+      "sha256": "b144193aa5b06bfd5957b9a9bd24ab8cca37732765984bc8b5a3c7d4c908910d"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eye-front.png",
+      "bytes": 854334,
+      "sha256": "a686245fa0bb3c87cfcbd47c486bce7dde3f59cefd8452857d39d826d44284f2"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eye-patches.json",
+      "bytes": 5866,
+      "sha256": "facec3816ca3d802a622c7c1e0462dcf5096fab246a121e0a1c8eda6e051505d"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eyelash-fringe.png",
+      "bytes": 1170347,
+      "sha256": "52397be9730278243e9d5316bfeef8b949ffb0442075073357637b864e0f5d74"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/full.png",
+      "bytes": 469895,
+      "sha256": "2c43b06cff12d69411e7b9f7680723cb099ce2d5472991b148aace88b933b97f"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/head-front.png",
+      "bytes": 505373,
+      "sha256": "b689ba696cddbf5577c8461fcf73a9a9168c4cefbee616179d86c933b2c7a8af"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/head-left.png",
+      "bytes": 505440,
+      "sha256": "b945e3aa8e1b3595a1250dcb75393c96761d29e34b594fc1b86922b0bb73062e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/head-right.png",
+      "bytes": 509755,
+      "sha256": "be828bc28617d5acaaa90b465016077d09a631ed141e0510f215fb9950fefe3b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/patch-2-boundary.json",
+      "bytes": 6742,
+      "sha256": "e44d6e54ccf2da5859baa545f236e63e2a78a242d691521890d5b9f03a75b3ad"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/patch-3-boundary.json",
+      "bytes": 4202,
+      "sha256": "8d7f47db027d6d4d257315d351e6e7bdd6b41ec8f89697f59fac7087a9621473"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/patch-4-boundary.json",
+      "bytes": 3732,
+      "sha256": "516ad1a17a834070537cd042d509f969c66849d30bcb355d14ed75a52bd3b419"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/patch-groups.json",
+      "bytes": 11584,
+      "sha256": "e16d43cf44d10152ec4a1292bb4deb206ce95fb371f8fafeb8e93d61e27b3e17"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/review.py",
+      "bytes": 1950,
+      "sha256": "1b6db5bc50eb2ae507ae2987e4603c9766f7d9cffce82225c7087947ee962b87"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/selected-faces.json",
+      "bytes": 1437,
+      "sha256": "e6bd0f6075f3840d997e7f885604f669f5f560e013dc62d83a5f30612f9d5377"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/validation.json",
+      "bytes": 11531,
+      "sha256": "e6f524f89a45bc7600c253216c60fe54cf7c3be108213c1c307e0f72804e5c62"
+    }
+  ]
+}

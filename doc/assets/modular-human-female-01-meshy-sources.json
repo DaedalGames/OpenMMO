@@ -1,0 +1,102 @@
+{
+  "asset": "modular_human_female_01",
+  "status": "raw_candidate_reviewed_not_ready_for_rigging",
+  "supplied_date": "2026-10-11",
+  "generation_date": null,
+  "tool": "Meshy AI (user-reported)",
+  "tier": "Not supplied",
+  "license": "Meshy account/model output terms not supplied or verified",
+  "source": {
+    "path": "assets/modular_human_female_01/meshy_base_v1/source.glb",
+    "original_path": "/mnt/y/web_downloads/Meshy_AI_Bald_Female_Figure_1011075003_texture.glb",
+    "sha256": "e103c574e478c87a888e3b4d556e1f6065e324a789e02ddc03ba3f7a1435e476",
+    "bytes": 5609928
+  },
+  "concept": "doc/images/characters/modular_human_female_01/base-front-v3.png",
+  "generation_settings": null,
+  "geometry": {
+    "triangles": 12282,
+    "mesh_count": 1,
+    "meshes": [
+      {
+        "name": "Mesh_0",
+        "components_vertex_counts": [
+          6145
+        ],
+        "boundary_edges": 38,
+        "nonmanifold_edges": 38,
+        "degenerate_faces": 0,
+        "collapsed_uv_triangles": 0
+      }
+    ],
+    "source_extent_blender": [
+      0.6533199548721313,
+      0.1528320014476776,
+      0.9497079849243164
+    ],
+    "rigged": false
+  },
+  "textures": [
+    {
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "format": "JPEG",
+      "bytes": 2523684
+    },
+    {
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "format": "JPEG",
+      "bytes": 931043
+    },
+    {
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "format": "JPEG",
+      "bytes": 1728167
+    }
+  ],
+  "comparison": {
+    "other_source": "assets/modular_human_female_01/tripo_base_v1/source.glb",
+    "other_triangles": 11493,
+    "other_textures": [
+      {
+        "dimensions": [
+          2048,
+          2048
+        ],
+        "format": "JPEG",
+        "bytes": 800205
+      }
+    ],
+    "method": "Identical orthographic cameras, lighting, Cycles 16 samples and AgX; both displayed at unit bounding-box height without modifying source files; hair included in Tripo height; additional neutral material renders remove textures and normal maps.",
+    "limitations": [
+      "Different input references: Tripo v2 with hair and pointed feet versus Meshy v3 bald and revised feet.",
+      "Unknown generation versions, settings and original face targets.",
+      "No rigging or animation tests. Boundary diagnostics after 1e-5 source-unit welding are not proof of deformation quality."
+    ],
+    "findings": [
+      "Tripo has clearer modeled eyelid and lip definition in neutral-material head view.",
+      "Meshy head and shoulder silhouettes look more faceted, with less defined eye/lip geometry.",
+      "Meshy visible thumb and fingertips are sharply distorted; Tripo hand is smoother but finger separation still needs inspection.",
+      "Meshy heels are much closer to forefoot height than Tripo; toe deformation remains.",
+      "Meshy has 12282 triangles versus Tripo 11493, approximately 6.9 percent more, and three 2K material maps versus one 2K base-color map.",
+      "Meshy has one welded diagnostic component and 38 boundary edges versus Tripo sixteen components and 575 boundary edges; counts alone do not establish overall quality."
+    ],
+    "recommendation": "For this pair, Tripo has better face/hand finish. Keep Meshy as a bald, near-flat-footed candidate requiring face/hand/toe and clothing separation work; do not generalize to service-wide ranking."
+  },
+  "images": [
+    "assets/modular_human_female_01/meshy_base_v1/comparison/front.png",
+    "assets/modular_human_female_01/meshy_base_v1/comparison/side.png",
+    "assets/modular_human_female_01/meshy_base_v1/comparison/head.png",
+    "assets/modular_human_female_01/meshy_base_v1/comparison/head-clay.png",
+    "assets/modular_human_female_01/meshy_base_v1/comparison/hand.png",
+    "assets/modular_human_female_01/meshy_base_v1/comparison/feet-side.png"
+  ]
+}

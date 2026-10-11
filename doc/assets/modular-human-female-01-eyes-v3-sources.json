@@ -1,0 +1,202 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "eyelid_color_boundary_reviewed_not_rigged",
+  "request": "Sclera texture appears to extend over eyelid geometry in close-up.",
+  "diagnosis": "Unlit albedo and texture-free clay views confirm that the eye color footprint extended onto the raised upper eyelid rim and inner corner. Existing specular/normal and faceted geometry artifacts are separate.",
+  "source_model": "assets/modular_human_female_01/eyelashes_v6/base-eyelashes-v6.glb",
+  "source_record": "doc/assets/modular-human-female-01-eyelashes-v6-sources.json",
+  "tool": "OpenAI Codex built-in ImageGen and Blender projection baking",
+  "tier": "ChatGPT Pro 20x",
+  "license": "OpenAI generated output terms; existing Tripo and user image provenance retained.",
+  "prompt": "Use case: precise-object-edit. Technical 3D character eye albedo repair.\nImage 1 is the COLOR EDIT TARGET, a registered front orthographic albedo projection. Image 2 is ONLY the EXACT GEOMETRY BOUNDARY GUIDE, same camera and framing, showing the real sculpted eyelid rims in gray. Output an edited version of IMAGE 1, not image 2.\nProblem: sclera and iris color in image 1 spills over the actual upper eyelid and inner corner geometry. Repaint BOTH eye regions so the eyeball colors fit strictly WITHIN the recessed eye openings visible in image 2. Especially restore natural warm skin color on the thick upper eyelid rim, the inner tear-duct wedge, and lower eyelid rim. The upper eye color boundary needs to move DOWN to the bottom edge of the raised upper eyelid band in image 2; do not confuse that lower edge with the upper eyelid crease! Cover the top of each iris with the eyelid color as needed. Preserve the iris center, round iris size, dark brown color, pupil position and straight gaze; occlude the top with the corrected eyelid instead of shrinking or moving the iris. Keep a tiny natural warm pink tear duct, not a white wedge. Whites may appear ONLY on the recessed eyeball surface in the guide. Use soft natural skin-colored eyelid margins, not a thick black liner.\nKeep all pixels outside the eye regions, facial identity, brows, nose, lips, skin, outline, camera, framing and dimensions unchanged. Keep the flat unlit COLOR style of image 1. Do not copy the gray material or lighting/shadows of image 2. No eyelashes (separate mesh strands already exist). No added makeup, no large glare, no text. Output one square 2048x2048 image exactly registered to image 1.\n",
+  "input_projection": "assets/modular_human_female_01/eyes_v3/face-albedo-front.png",
+  "geometry_reference": "assets/modular_human_female_01/eyes_v3/face-clay-front.png",
+  "generated_edit": "assets/modular_human_female_01/eyes_v3/face-albedo-edited.png",
+  "generated_dimensions": [
+    1254,
+    1254
+  ],
+  "method": "ImageGen color-only eye boundary repair using identically framed clay geometry as a guide; bake into the existing 4K atlas with the eye support mask. Replace only the base-color buffer. Preserve normal maps and all geometry, including eyelash v6.",
+  "outputs": {
+    "glb": "assets/modular_human_female_01/eyes_v3/base-eyes-v3.glb",
+    "blend": "assets/modular_human_female_01/eyes_v3/base-eyes-v3.blend",
+    "color": "assets/modular_human_female_01/eyes_v3/base-color-eyes-v3.png"
+  },
+  "script": "tools/blender-scripts/correct_female_eye_texture.py",
+  "command": "blender -b -t 6 --python tools/blender-scripts/correct_female_eye_texture.py -- --version v3",
+  "review": [
+    "Both eyes inspected frontally and obliquely after baking.",
+    "Inner corner restored to warm tissue color and upper eyelid color band restored.",
+    "Browser close-up reviewed under actual preview lighting."
+  ],
+  "limitations": "Original faceted eyelid mesh, specular highlights and eye atlas texel density remain; this corrects color registration only.",
+  "validation": {
+    "triangles": 22175,
+    "geometry_uv_indices_normals_and_lashes_byte_identical": true,
+    "normal_and_pbr_textures_byte_identical": true,
+    "materials_unchanged": true,
+    "changed_buffer_views": [
+      5
+    ],
+    "changed_color_pixels": 65503,
+    "outside_mask_max_difference": 0,
+    "mask_pixels": 71018,
+    "total_pixels": 16777216,
+    "browser": {
+      "errors": [],
+      "stats": "22,175삼각형 · 눈 경계 보정 v3",
+      "checks": [
+        "face",
+        "full",
+        "side",
+        "wireframe",
+        "reset",
+        "oblique eye close-up"
+      ]
+    }
+  },
+  "additional_tripo_credits": 0,
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/base-color-eyes-v3.png",
+      "bytes": 14133580,
+      "sha256": "967a8b816f3ed5517cb38c3a5400bbb61120e6c4d7406b8bb4d7d9a24f737e7e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/base-eyes-v3.blend",
+      "bytes": 20184669,
+      "sha256": "358e5e2c9b8e76f4892929808f80df4091ab10395732cffce4d827d1ee5fd7b9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/base-eyes-v3.glb",
+      "bytes": 21601092,
+      "sha256": "cf38046593b05f77d8aaf78935d2f45909636e1944d602aa94dc374f26739134"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/before-albedo-right.png",
+      "bytes": 773408,
+      "sha256": "eccae046282bc579dd8a46e70901236db1a233ef7ac4e1aa32d9efdfae4473cc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/before-clay-right-angle.png",
+      "bytes": 674593,
+      "sha256": "56d6bcab255c3fac92949f9d840573c34ce096fd17bdc4dee8a8f872674d294c"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/before-clay-right.png",
+      "bytes": 698143,
+      "sha256": "c2559fd47f9c1d640f3e88cd20541416ced1e74be7f0d15b0d00bf66ecb2eec2"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/browser-eye-close.png",
+      "bytes": 374720,
+      "sha256": "53549a2229a3ce51555b9b8c16e308b48d89362f508e066ae50beeb4a8251c74"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/browser-face.png",
+      "bytes": 251658,
+      "sha256": "f646a3e4ecb6ccf327cc6bc49d20a9c2a31100ad467432ca429adc181fb3d935"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/browser-full.png",
+      "bytes": 145313,
+      "sha256": "567482d8106b36bdb26ee3b607efdee969277ef06c2371db859277ae79bcadf6"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/eye-angle.png",
+      "bytes": 523056,
+      "sha256": "649a9ec9253465c05adbe761e5d7dbd2c7fa9f98f77185dd503cfa1140b3ef8e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/eye-detail.png",
+      "bytes": 540706,
+      "sha256": "a9d9f34b0ecba7fe508cc17b879776ca049a6008069207a17488565c69ba0a65"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/eye-left-angle.png",
+      "bytes": 516331,
+      "sha256": "f49e111a991d95dbbf3d3884a72504929b489e3c839d6351fee17fa652be96a9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/eye-left.png",
+      "bytes": 536206,
+      "sha256": "96f163559549c5e9e6ee1dc6629a70ad9c20b2fe9fe6a09175014a28a8524adf"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/eye-support-mask.png",
+      "bytes": 322530,
+      "sha256": "8f5f20c1653cdc806ece0e2fb5aa3eb7fa4a11155fc7247bd192d1ca6cad8d7b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/face-albedo-edited.png",
+      "bytes": 1193299,
+      "sha256": "2cf24cb9ba4616da17843485830e05cfc081de00fc65b208dfcdcc3318c92991"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/face-albedo-front.png",
+      "bytes": 3115373,
+      "sha256": "3cd6c432226f20ea55b58a071a944731a0474a32288690cd995b14a297b604e9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/face-clay-front.png",
+      "bytes": 3322322,
+      "sha256": "eb3d42d6a0abf5c96b55e41ab707a4d796de0d84f8c8ae79498d6e5369bb85fd"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/full.png",
+      "bytes": 470302,
+      "sha256": "edf538dc059a90fee11f2135d0c3da8fbab9126d3769fdb10d8ac3bcc032f9c1"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/head-front.png",
+      "bytes": 504640,
+      "sha256": "39554875328656c6163c7b29c8c29de1ec004587b0ae5d0545b465741c19e9d7"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/head-left.png",
+      "bytes": 504443,
+      "sha256": "077681a954d829aae5ff29ac7836eb74741f85f858a7df70858aa374786889c7"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/head-other.png",
+      "bytes": 512643,
+      "sha256": "285144e68e2a001b34c2b6cce92213d667f29602a577f66fb9050691fcfb2ec6"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/head-right.png",
+      "bytes": 508882,
+      "sha256": "07cafd4df4fea211c1cd9d2ce796774bf6ee2f0014a7e8999c7d7bf45dbfbd85"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/head.png",
+      "bytes": 519193,
+      "sha256": "e8644a84cacec3635950ecbe45d2e6cd2d1677227b83a216b482a76e74f60214"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/normal-eyes-v3.png",
+      "bytes": 3753826,
+      "sha256": "1b67cf2d4878b533c3c62ae8054b9e90d13bb13fc72b326a40ad04882ea6dee0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/prompt.txt",
+      "bytes": 1681,
+      "sha256": "c797c4067531f42076bebc2678c2a115346ebf8004c03656cc5d3d67ea4985a1"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/render-reference.py",
+      "bytes": 2666,
+      "sha256": "320923eeb8e349fe947d3ee4ab5f98a63e1027261ee97f3431daa6f191fe79de"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/review.py",
+      "bytes": 2146,
+      "sha256": "b2cb4929fb5ddfd414c609584d8f999f60373250f994b800ca37b8a180eb6adf"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/validation.json",
+      "bytes": 580,
+      "sha256": "0d42f4ceb84ea7c4ef5b137c2b9938e7de42c445b5462595746942bd608a3744"
+    }
+  ]
+}

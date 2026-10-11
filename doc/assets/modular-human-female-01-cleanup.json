@@ -1,0 +1,1345 @@
+{
+  "date": "2026-10-11",
+  "reason": "User requested deletion of intermediate generated assets before committing the accepted v10 model.",
+  "current_model": "assets/modular_human_female_01/eyelashes_v10/base-eyelashes-v10.glb",
+  "policy": "Keep the accepted GLB and current Blender file, original supplied/generated source models, generation input images, clean eye edit inputs, final review images, and small process records. Historical paths in process records describe now-deleted intermediates, not required runtime assets.",
+  "removed_count": 267,
+  "removed_bytes": 790573384,
+  "removed_files": [
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/full.png",
+      "bytes": 470140,
+      "sha256": "9e5e588c5b48ee773fb55ef36b2441fcb674a673b8f8f52b8a6a073981dd4070"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/browser-face.png",
+      "bytes": 253814,
+      "sha256": "c5dd41469108df4465d8e81d781a20e73351c152bbf8c70c84478e1d41f708fc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/base-eyelashes-v9.blend",
+      "bytes": 20201937,
+      "sha256": "5bb2907b672fddfe16cdc331d86f384cb72a3a9e0de039b43a228e7127c0aaca"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/eye-side.png",
+      "bytes": 533300,
+      "sha256": "af235bd664c45e4726ce91ffc861ee4a796780887269a5b8454d9fe9cae48322"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/eye-left-side.png",
+      "bytes": 517375,
+      "sha256": "9097a49c72d78b6f12382c70e1a808bba2ed38fe9ac28671aa210fa39ad32183"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/eye-angle.png",
+      "bytes": 522130,
+      "sha256": "787e24670b96264ff84110056749c8e60d54bdda8428c1738a6111ea8297bdc7"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/browser-full.png",
+      "bytes": 147266,
+      "sha256": "45c67dbdf1b44560fa876bf9b3c9ab9ee3903095952302760a47872bbd3f2351"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/head-right.png",
+      "bytes": 508824,
+      "sha256": "0dab5a4ad78e1ce8078252605b50e396a75f3acf8a222354b8ff0f19c52782d8"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/browser-eye-close.png",
+      "bytes": 402673,
+      "sha256": "66e5b1463ac24ec9fe25a2cd1bf0c87d1c1896d816ae26d26114b9e636974585"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/eye-left-angle.png",
+      "bytes": 514200,
+      "sha256": "b94129668e54fe386e936e74351a30af753afcf301fda9b86d8901f57e382266"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/browser-eye-side.png",
+      "bytes": 377277,
+      "sha256": "e7e0078ce32c4426f657c6ee125dd84567c8f12e104860efce07279d8a2b0475"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/head-left.png",
+      "bytes": 504499,
+      "sha256": "d0ee38012ddfcf422e0286c7838d6a2b56ef79b47dbeaddd348063b126dda7a4"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/eye-detail.png",
+      "bytes": 540531,
+      "sha256": "b9f5fb1827fe8fbe3db7efdb9bbcbea5bdfc6eeaa89d3d1eed80dea2c31de7bc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/base-eyelashes-v9.glb",
+      "bytes": 21617408,
+      "sha256": "06fe8b317ae6970924f5d761b9ac04e9bb9816e799a80576dc4a409121282f95"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/eye-low-side.png",
+      "bytes": 539030,
+      "sha256": "e9e9d75cb668eacf596e1e81b5d5639ace635f2ff4cf5090cd879df0f175a681"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/eye-left.png",
+      "bytes": 534758,
+      "sha256": "f5b8528cbef993e797901f7831f346bde586ad636220591015026cc4aa4d1627"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v9/head-front.png",
+      "bytes": 504734,
+      "sha256": "06b7564ca873d2463c3ee1f6460b1130adfabac55a2e260b03cbd0bf2692f5da"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v4/eye-support-mask.png",
+      "bytes": 322530,
+      "sha256": "8f5f20c1653cdc806ece0e2fb5aa3eb7fa4a11155fc7247bd192d1ca6cad8d7b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v4/base-color-eyes-v4.png",
+      "bytes": 14128945,
+      "sha256": "6b56d1e73da7f55542bf21bf3d147f3eefff418a27230b8e109799b6a27de322"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v4/normal-eyes-v4.png",
+      "bytes": 3753826,
+      "sha256": "1b67cf2d4878b533c3c62ae8054b9e90d13bb13fc72b326a40ad04882ea6dee0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v4/head-other.png",
+      "bytes": 512741,
+      "sha256": "a33f7fbabc29b212aca2f1a8c447d34992aeb8ec33e0de8a05047a7b92a6ae7c"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v4/base-eyes-v4.glb",
+      "bytes": 21596460,
+      "sha256": "c35124ce668eb7a400da37073bf81c596595cce6c93e756a74ac38099850c11f"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v4/base-eyes-v4.blend",
+      "bytes": 43021692,
+      "sha256": "02261c31ec0a39b3a88cb2848a7ba9a290233368cae7d1f397f81b1e18947ded"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v4/face-albedo-front.png",
+      "bytes": 3110594,
+      "sha256": "d4fc3a94e8d84e114a2a90c6424e2756ca747b2a27d1b3b7bfedb43f0b553631"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v4/head.png",
+      "bytes": 519236,
+      "sha256": "2e96fe2bfcd460f3613a7b660876899a83625ecf2121a74bf636310b41501614"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v4/head-front.png",
+      "bytes": 514011,
+      "sha256": "c9ea9a5b6f418ac2bb1ab54414718567d89f94bae6fa422d017d150f529d9405"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/base-eyelashes-v8.glb",
+      "bytes": 21617408,
+      "sha256": "bec2579907b5c9fb034878d90fe758791bc866578121b0a72770f17143eae2f9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/full.png",
+      "bytes": 470363,
+      "sha256": "e2b1a9e87966e6aa8f5fc0db96dc2d5ac6d3215c50602d657e16ebcb0ffca043"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/browser-face.png",
+      "bytes": 253373,
+      "sha256": "29e1eddabd541852184c379abfb2b07ba2bf305ef3c705e7f85a36c7c5fab328"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/before-eye-low-side.png",
+      "bytes": 538477,
+      "sha256": "9aa92c036424f5145a3b139adafbccbbaa1962aa53985c0bfd2f82e45e36b918"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/eye-side.png",
+      "bytes": 533307,
+      "sha256": "f60c07ce1b610a54d22cc2e275726cace9c9860004b061f3dfc45171108e8b7c"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/before-eye-side.png",
+      "bytes": 532901,
+      "sha256": "d51a3178332443c815c14a14c1233f1a0b3dec1e8d6ab3f5e2041b0955fe8dd4"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/eye-left-side.png",
+      "bytes": 519476,
+      "sha256": "7695ab40b458f17366cdabf4a181c4603078d4ad704391b17f43aef69a8dc947"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/eye-angle.png",
+      "bytes": 522995,
+      "sha256": "32ca2a62007d02d6e46081abbe37956dfe850adf090c6e4ef62c4e37176509cc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/browser-full.png",
+      "bytes": 146512,
+      "sha256": "9ff987a8138917269c16e8b883a2d002fbecdbf22b21c040318406a7188ace78"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/head-right.png",
+      "bytes": 509062,
+      "sha256": "b6bd046c031e34795711e63e9840f3f2053e3f20400e615a13a46d27109ab0b3"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/eye-left-angle.png",
+      "bytes": 515567,
+      "sha256": "2b4d17f325abc7df1a433a06a61afa9ece3a112f97e79e62e899208e6cabea8e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/browser-eye-side.png",
+      "bytes": 376696,
+      "sha256": "25c9d3397eecdb33a1303c6a89a12a2cd28d6de0381123261c83e16ac0850205"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/head-left.png",
+      "bytes": 504573,
+      "sha256": "6c58136bb3ffc0d86373131796a7967b98dccacff3fd6714cbcb253d9d85aabc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/eye-detail.png",
+      "bytes": 541723,
+      "sha256": "3a5dc7ccdcb6661438f76e4470b8f0868cbf519f042f0dae216f47657c17ead3"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/eye-low-side.png",
+      "bytes": 539408,
+      "sha256": "26230bb084ae28b7969b884fc2837b909ad0c82777b1eb38b61036b63025929f"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/eye-left.png",
+      "bytes": 536245,
+      "sha256": "df4a18de122475f03b108421aabe801cfcbef1c023d70c7f2bd2dd1eee367002"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/base-eyelashes-v8.blend",
+      "bytes": 20202340,
+      "sha256": "2de6c143ebfc50de6edd7fd1d4ba09a358057645c1a40c61c252b17881d56f6d"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v8/head-front.png",
+      "bytes": 505086,
+      "sha256": "4d327f4e9a682e2d441ade67b0cdaec66846a2f4b66d90ae8ed700aa44a45514"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/eye-support-mask.png",
+      "bytes": 322530,
+      "sha256": "8f5f20c1653cdc806ece0e2fb5aa3eb7fa4a11155fc7247bd192d1ca6cad8d7b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/full.png",
+      "bytes": 470030,
+      "sha256": "875bdf769788f896426ab5f881f1fafd6b8d4f8ef85d67cb1b207dc042533e76"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/browser-face.png",
+      "bytes": 252805,
+      "sha256": "1803070bfb83aa1cf1f297e5de744df3a6137c81c0e1405b5eee74a87cf1b760"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/eye-angle.png",
+      "bytes": 523188,
+      "sha256": "ccd407cf79581a4d0fca6bf44fa779f64d00457cf8841fdd706e8aa1f9efce97"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/browser-full.png",
+      "bytes": 146423,
+      "sha256": "e50ef4e0130b08118ef87297a4f3debc6acff56033752495fede681249d3dd23"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/head-right.png",
+      "bytes": 508989,
+      "sha256": "08469b1e9f4283e90add59a5b476bc1332853ac5c8c62c81ed8708b363952ebb"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/base-eyes-v2.glb",
+      "bytes": 21603660,
+      "sha256": "df16f3f8775f1a91e87dd2d90980415572ca6913f57b5b4b1cf324a9b0cf4e6e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/head-left.png",
+      "bytes": 504647,
+      "sha256": "f91b9c8608219bb16a19718012ba51cab11e36f0fd25d4939b78c87de75f77c5"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/normal-eyes-v2.png",
+      "bytes": 3753880,
+      "sha256": "5639a7be2c93fed6a7b5377112e208ee277195c032082534a5734a211413e8fe"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/head-other.png",
+      "bytes": 512618,
+      "sha256": "9da6a9ae9a6e305ee4a4841b6ab759516092e3d7b9d466c55053063d332d7479"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/eye-detail.png",
+      "bytes": 540484,
+      "sha256": "1e994226f4380e9d6ed405966a859c6f3f68e6fc1120693bc9eef81bcf0d8ffc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/face-albedo-front.png",
+      "bytes": 3111633,
+      "sha256": "863fcd64cfb9d301e70c3eb8a81fcfc6e6cc9d0b069e627a637e8259ec02a969"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/head.png",
+      "bytes": 519211,
+      "sha256": "349151a8eb4d1c793a45fb0ff0195151de0d8a9d46f6885cc34daa90ade1b516"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/base-eyes-v2.blend",
+      "bytes": 20187484,
+      "sha256": "81653bbf331cdd0a65dd2f046788cee67aca3b6ddc5f1cc62a0f0600412fc3bc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/base-color-eyes-v2.png",
+      "bytes": 14136148,
+      "sha256": "6f18fb369861097442974ff28cdd3b66c5a649c6a94c52a8050bdcb539a963a4"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v2/head-front.png",
+      "bytes": 504877,
+      "sha256": "b0c91aa0e800e56b0ed3635b804c8e8fabe54e4f7e556e35cb95c4259bc390c3"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/eye-support-mask.png",
+      "bytes": 255246,
+      "sha256": "12fb6d7be980c7ea6ea0e556edd0e12267a5c8ab4ee473438137ba5fb9ae8539"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/base-eyes-v1.glb",
+      "bytes": 17648652,
+      "sha256": "70856fbc36f84b1920b40f1b2461462ab8a3bcba6b9e5caa17e6f048d1b75a80"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/face-albedo-edited.png",
+      "bytes": 1378221,
+      "sha256": "da296dc81c956b18c6d2131ad4371d94d47725000e7877025f1475f13ba3f6c6"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/base-color-original.jpg",
+      "bytes": 826791,
+      "sha256": "c6a6f685e1cbe08c643fd9e3ebf591d72af56d325416e60cb17b11efa1d92c71"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/base-color-eyes-v1.png",
+      "bytes": 9855800,
+      "sha256": "9620c812490db67784a30e647aef89cde8e802033c907de7305a94c8c5e08211"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/head-other.png",
+      "bytes": 510346,
+      "sha256": "88d950a16b9000a9fe0f349d3088ec8b3b945fcc1f2eefb7b1f88486640d570e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/face-albedo-front.png",
+      "bytes": 944105,
+      "sha256": "088ca291bd97b39f40248fcbc8c060e58334574d62afd051164ec48a7b5cc9d1"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/base-eyes-v1.blend",
+      "bytes": 37538724,
+      "sha256": "d5507bbb7a178afc28fc025fa32487596d42df1955211bab3c347e66108b8265"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/normal-eyes-v1.png",
+      "bytes": 3585832,
+      "sha256": "f9de603f5b7dc09bd40bb4aee0c6c609bb7143a978f569200a6f3da5525f6cee"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/head.png",
+      "bytes": 513996,
+      "sha256": "3c14ae5ab9e8492cc9d39c36c646700d1d2e73f7b4d74798a257d502f4add729"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v1/head-front.png",
+      "bytes": 507375,
+      "sha256": "fbb1ae6b3f01fbe05b3fd24d074bee66ced08c6688333e2f34ae254cf2af363e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/full.png",
+      "bytes": 470014,
+      "sha256": "e026fb1b830823b1495a4020fdc525733297e07e97e3e46e8f56443bf834d29e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/browser-face.png",
+      "bytes": 253399,
+      "sha256": "ca665ed6ef2d9c0fa0a44c5e13dcaed0349e21965076c53765210e1a8f1eed1a"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/eye-angle.png",
+      "bytes": 523723,
+      "sha256": "d910f449545304407e1bd2a3ce0472ccfb4349efc7a1b297911d1c5655d6bdda"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/browser-full.png",
+      "bytes": 146787,
+      "sha256": "fd816bfac9a3fdba329d262e9b0556197327fbbee511da8f721f90d1fd03061f"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/head-right.png",
+      "bytes": 509367,
+      "sha256": "56f2dd3823793dbf2613955c3b7bfe1909479633097cb3f8ca77ac1d09baeb6e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/base-eyelashes-v6.blend",
+      "bytes": 20187224,
+      "sha256": "eb58be676283746a4fb4e76e47b86aa4570a098818a4b95b8ee0b9829c147915"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/eye-left-angle.png",
+      "bytes": 517221,
+      "sha256": "68cc0bdf6f99d32881ea48fb260bb78535c9ea533f82f3a828b3676eaa136cbb"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/head-left.png",
+      "bytes": 504560,
+      "sha256": "e76d71cf768737ab33856ada6a4c153b0dafabf5762ec83f43ee8dff2641a9a9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/eye-detail.png",
+      "bytes": 541123,
+      "sha256": "b258b7514d09fb72f6fdc3933089d2d0bd2df0147cc054aaba1f92e53ad38aaf"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/base-eyelashes-v6.glb",
+      "bytes": 21603660,
+      "sha256": "b21b8be2640f6b63103b2ebd3b1cf08b753d136f13746c042179674004ccc14d"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/eye-left.png",
+      "bytes": 537089,
+      "sha256": "b8ecd0ed916f54ae428f20c82b3f942972806f58a9a25e017a963c7cdf7248fb"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v6/head-front.png",
+      "bytes": 504877,
+      "sha256": "8abe6481476e015f020307bf93dc5eb2f232aaa9ce54b652dc13f53ff405bf4f"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v4/full.png",
+      "bytes": 470228,
+      "sha256": "d9b276d943db2b3007ccb37d95cf587dda411a27d6612a6f29b6d7e76da2e320"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v4/browser-face.png",
+      "bytes": 252022,
+      "sha256": "2b96ef0d02701465b72ed00c103180e5f509f614ad4777ce7edf6117be307fb8"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v4/eye-angle.png",
+      "bytes": 525918,
+      "sha256": "c11b963d630dc083bdd725d2058c6fbedebe42c7e45d1b7a5d05229a779aa798"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v4/base-eyelashes-v4.blend",
+      "bytes": 7491359,
+      "sha256": "bd9dcea9d6845431669f85f6e3ba898b209485e3e60f5c6af52c1b60cfd05279"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v4/browser-full.png",
+      "bytes": 145221,
+      "sha256": "3be4564a95d52530c61ae0db06c11643a24f8a08ad1ce8c40d1fe5c3d0f41450"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v4/head-right.png",
+      "bytes": 509298,
+      "sha256": "1df9515306f785cad40888589049cd2d2e3a9c38a1ab78763839875997954f0b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v4/base-eyelashes-v4.glb",
+      "bytes": 8902596,
+      "sha256": "e62c9209487778130c0b5d742695ebb686d9bc1ace5ba4b1b4707534091c35d3"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v4/head-left.png",
+      "bytes": 504718,
+      "sha256": "e0d7e36861e127ee8560c60e50ddcc9b0e049c0fd2eb1f2d8d51a3bb45bd24fa"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v4/eye-detail.png",
+      "bytes": 543663,
+      "sha256": "87293d4d90ccaefc6d0821d3e2d04a502a6934bcdb7b1bbca4fc6b68c88ce0b9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v4/head-front.png",
+      "bytes": 505300,
+      "sha256": "ec5e490ab8ee883182add6ccf27b30be6b0e98530dd0aca0adbebd3858d2308e"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/source.glb",
+      "bytes": 7530368,
+      "sha256": "e64dc633b24f7ca4bb510ebbbfef74e5b7c3bc28e9f909a220084b58976e7789"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/base-review.glb",
+      "bytes": 7530272,
+      "sha256": "aab783a038aa1da55e86ebcaacc2258a20878ab5f70cfd3fe6817587239cc5b1"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/source.blend",
+      "bytes": 4274675,
+      "sha256": "9a3d40b6b2e42fdd59fe194a6963f1353bf080bce1536c189710bb523cc98b32"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/rendered_image_url.png",
+      "bytes": 86791,
+      "sha256": "11213827be754409d3d5331fd0f7ececc6ce65a742a75bd4742832e2da6925e0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v5/full.png",
+      "bytes": 470190,
+      "sha256": "15eb4aa0c79ab908d7e28b2a6a660334963caa85422d824e519343d0c4b21fe8"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v5/browser-face.png",
+      "bytes": 251979,
+      "sha256": "6d5f8959880aa4bda2823decd0724531fa70fb39a0edabd5bf69fa346f6efdbf"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v5/base-eyelashes-v5.glb",
+      "bytes": 8902596,
+      "sha256": "430589c474d4c26b73bae534d5cd6f9865aaa0e6de1050f3783418569f96b94b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v5/eye-angle.png",
+      "bytes": 526237,
+      "sha256": "3f83ba47c282113ee27933622711b3d79dc2aeea9459127975cd9b8072d26181"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v5/browser-full.png",
+      "bytes": 145149,
+      "sha256": "efbfcf15fc632c9e2d8095f7f9be7c8327814cdd80ca43959b8d18b01ad50979"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v5/head-right.png",
+      "bytes": 509421,
+      "sha256": "3c3b968e79957024cde9323e820fd268464c2d8368d2aa81beb68363d8382a85"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v5/head-left.png",
+      "bytes": 504946,
+      "sha256": "f6b72d1cd72ba0ffd3396d0b4fea6f29dedee503dfa9ce9d3fba192399431c24"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v5/eye-detail.png",
+      "bytes": 543852,
+      "sha256": "c1c40f0b2bec2fcb2ba2d43f121ebcc19420b698c3ee0d25361fb043dced7378"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v5/base-eyelashes-v5.blend",
+      "bytes": 7491474,
+      "sha256": "55b920980624675194034933a80e1dc1705d87168f2b2adeebc4a1c7d67f6e54"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v5/head-front.png",
+      "bytes": 505255,
+      "sha256": "cf63b44d2363cb4dc1a4da2413b40fbc9300fca0a32cb2856ed5cff7863a7e4e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/eye-support-mask.png",
+      "bytes": 322530,
+      "sha256": "8f5f20c1653cdc806ece0e2fb5aa3eb7fa4a11155fc7247bd192d1ca6cad8d7b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/normal-eyes-v3.png",
+      "bytes": 3753826,
+      "sha256": "1b67cf2d4878b533c3c62ae8054b9e90d13bb13fc72b326a40ad04882ea6dee0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/base-eyes-v3.blend",
+      "bytes": 20184669,
+      "sha256": "358e5e2c9b8e76f4892929808f80df4091ab10395732cffce4d827d1ee5fd7b9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/full.png",
+      "bytes": 470302,
+      "sha256": "edf538dc059a90fee11f2135d0c3da8fbab9126d3769fdb10d8ac3bcc032f9c1"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/browser-face.png",
+      "bytes": 251658,
+      "sha256": "f646a3e4ecb6ccf327cc6bc49d20a9c2a31100ad467432ca429adc181fb3d935"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/before-clay-right.png",
+      "bytes": 698143,
+      "sha256": "c2559fd47f9c1d640f3e88cd20541416ced1e74be7f0d15b0d00bf66ecb2eec2"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/base-color-eyes-v3.png",
+      "bytes": 14133580,
+      "sha256": "967a8b816f3ed5517cb38c3a5400bbb61120e6c4d7406b8bb4d7d9a24f737e7e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/face-clay-front.png",
+      "bytes": 3322322,
+      "sha256": "eb3d42d6a0abf5c96b55e41ab707a4d796de0d84f8c8ae79498d6e5369bb85fd"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/eye-angle.png",
+      "bytes": 523056,
+      "sha256": "649a9ec9253465c05adbe761e5d7dbd2c7fa9f98f77185dd503cfa1140b3ef8e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/browser-full.png",
+      "bytes": 145313,
+      "sha256": "567482d8106b36bdb26ee3b607efdee969277ef06c2371db859277ae79bcadf6"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/head-right.png",
+      "bytes": 508882,
+      "sha256": "07cafd4df4fea211c1cd9d2ce796774bf6ee2f0014a7e8999c7d7bf45dbfbd85"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/browser-eye-close.png",
+      "bytes": 374720,
+      "sha256": "53549a2229a3ce51555b9b8c16e308b48d89362f508e066ae50beeb4a8251c74"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/eye-left-angle.png",
+      "bytes": 516331,
+      "sha256": "f49e111a991d95dbbf3d3884a72504929b489e3c839d6351fee17fa652be96a9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/head-left.png",
+      "bytes": 504443,
+      "sha256": "077681a954d829aae5ff29ac7836eb74741f85f858a7df70858aa374786889c7"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/head-other.png",
+      "bytes": 512643,
+      "sha256": "285144e68e2a001b34c2b6cce92213d667f29602a577f66fb9050691fcfb2ec6"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/eye-detail.png",
+      "bytes": 540706,
+      "sha256": "a9d9f34b0ecba7fe508cc17b879776ca049a6008069207a17488565c69ba0a65"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/face-albedo-front.png",
+      "bytes": 3115373,
+      "sha256": "3cd6c432226f20ea55b58a071a944731a0474a32288690cd995b14a297b604e9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/base-eyes-v3.glb",
+      "bytes": 21601092,
+      "sha256": "cf38046593b05f77d8aaf78935d2f45909636e1944d602aa94dc374f26739134"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/head.png",
+      "bytes": 519193,
+      "sha256": "e8644a84cacec3635950ecbe45d2e6cd2d1677227b83a216b482a76e74f60214"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/eye-left.png",
+      "bytes": 536206,
+      "sha256": "96f163559549c5e9e6ee1dc6629a70ad9c20b2fe9fe6a09175014a28a8524adf"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/before-clay-right-angle.png",
+      "bytes": 674593,
+      "sha256": "56d6bcab255c3fac92949f9d840573c34ce096fd17bdc4dee8a8f872674d294c"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/before-albedo-right.png",
+      "bytes": 773408,
+      "sha256": "eccae046282bc579dd8a46e70901236db1a233ef7ac4e1aa32d9efdfae4473cc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v3/head-front.png",
+      "bytes": 504640,
+      "sha256": "39554875328656c6163c7b29c8c29de1ec004587b0ae5d0545b465741c19e9d7"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/full.png",
+      "bytes": 470184,
+      "sha256": "3fc3704da361385ed0105ec5431af38da2bf19e5112075e5dc2816b3a2f38c42"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/eye-side.png",
+      "bytes": 535795,
+      "sha256": "af0ae38bca84c4700e7b59a0c69345c7baf2a6df42512274f7d60b7044f3c00b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/eye-left-side.png",
+      "bytes": 517763,
+      "sha256": "0b5c7e9927d01042764c413fd74f39a04affaf467590b9deacbdf4a7202f7f65"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/eye-angle.png",
+      "bytes": 522374,
+      "sha256": "29df871f16e6b97a334ab8aef5ec56557ce7dbd29e8447146d1a13a7539ffb31"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/before-eye-top.png",
+      "bytes": 513713,
+      "sha256": "15059499eb991ad34da7fda66d4d4f0f6a513797ea545e272fd8c3d6d30afe4b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/head-right.png",
+      "bytes": 508749,
+      "sha256": "247037bf7bd99a7dc3f0dcad96e6404a349205acfbe383e81683d23f8b95fc80"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/eye-left-angle.png",
+      "bytes": 514423,
+      "sha256": "c1985b47856d44be0bc9fe5aacd6116bc67784f5d70da460e7fde5b98415e4e1"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/head-left.png",
+      "bytes": 504466,
+      "sha256": "6cd22a9fe7d9dc1874cd30eb760f9ddab7f9585368d548aab2156aa00e5a6b76"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/eye-detail.png",
+      "bytes": 540450,
+      "sha256": "87102f3654e9333763f70317abc4d5199aab682645c62296b1455347415bf7c7"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/before-eye-left-top.png",
+      "bytes": 514609,
+      "sha256": "cacab826fc9686b13f024337fce91f45d242a915a4d7c8a990103e1ee6f892e5"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/eye-low-side.png",
+      "bytes": 540626,
+      "sha256": "eec84cd6f3eede61ad80121e4d51f68bbf73e08986828b639ed4612a0f95c0e9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/eye-left.png",
+      "bytes": 535015,
+      "sha256": "02639f381ef871ac00cc71199f66521f64558c0384f69905f75544d8f0cd0e65"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v10/head-front.png",
+      "bytes": 504668,
+      "sha256": "a142c0dc4a2f01543c24b9c3f430483b7dfe2837e5c8fd138b91e9957d2391f3"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/full.png",
+      "bytes": 470160,
+      "sha256": "39904f02194dce345a5ef76a89c1e4b35928602a5837d19a144e4abf7dc192ac"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/browser-face.png",
+      "bytes": 252370,
+      "sha256": "d1b1e3a65ad32ae21c886b8181b63f414e16064ea5bdba37ca03fcc8a527d4c5"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/reference-markup.png",
+      "bytes": 239048,
+      "sha256": "9fb5e45f2fcfdd95a4774e950d9b9df69f4d5f101497d3a77ae1d6b1267951d3"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/eye-angle.png",
+      "bytes": 526985,
+      "sha256": "2cd86dd4e42a0bcb1b971ee89cc6686e7f9a0de9cb8c8451f606f50875afef78"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/browser-full.png",
+      "bytes": 145655,
+      "sha256": "5282c03d5ebae83077fa3eb3d6cd6533c3f34244caa0b78cad8cb4315f56c322"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/head-right.png",
+      "bytes": 509559,
+      "sha256": "78576fdca3d4f6bfad6b0c28ec6a8256a28dad14618c542b52e6712ffdd01897"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/base-eyelashes-v2.glb",
+      "bytes": 8859136,
+      "sha256": "ffcddcd0546a763a7ab0f655cdcbb29ebf9eed047ecce966877edd1a27c0ffcf"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/head-left.png",
+      "bytes": 505158,
+      "sha256": "65b1f20f293040a1420d6f4591a9350210fac7f3ff206a408fd16327c5be0e8b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/eye-detail.png",
+      "bytes": 545346,
+      "sha256": "87ee16aa0a2bf35fc5685c181bf6b51c4b999ef64e76847c52cae35ff0227680"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/base-eyelashes-v2.blend",
+      "bytes": 8543096,
+      "sha256": "d4236abf9e75ffc5bb17af8dea94932db29ff67a9e47b04234181ca73f769b39"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/reference-before.png",
+      "bytes": 168013,
+      "sha256": "a61166542aa6f80da147fb26365cceeb932d0cea389ee28676a79c91730e4191"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v2/head-front.png",
+      "bytes": 505544,
+      "sha256": "2d236514b3fce602c3d71bdd99079f9d43bca9f4f9c8f73e2c1140b156cf3d6c"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/base-eyelashes-v1.glb",
+      "bytes": 8675188,
+      "sha256": "6f79dd71a30033ec42a23bcdcc251830887ca0e414cfe5a251c4fdcb3ff37bac"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/full.png",
+      "bytes": 469895,
+      "sha256": "2c43b06cff12d69411e7b9f7680723cb099ce2d5472991b148aace88b933b97f"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/browser-face.png",
+      "bytes": 250702,
+      "sha256": "c879b0fc199455b6581d0980ccd54f6f5cfb189c425ac090b1af0e20349302ea"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eye-front.png",
+      "bytes": 854334,
+      "sha256": "a686245fa0bb3c87cfcbd47c486bce7dde3f59cefd8452857d39d826d44284f2"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eye-angle.png",
+      "bytes": 857734,
+      "sha256": "f091d6cd60cc2b60046a2ac2daf070b8c95e000eadba14b9789385d7483f7138"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/browser-full.png",
+      "bytes": 144413,
+      "sha256": "688779006c3fd4db203835cc2a3b5a59dc7e975bcba092ca5412498a634fc9da"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/head-right.png",
+      "bytes": 509755,
+      "sha256": "be828bc28617d5acaaa90b465016077d09a631ed141e0510f215fb9950fefe3b"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/base-eyelashes-v1.blend",
+      "bytes": 8532162,
+      "sha256": "64424eb1cd6f816ad5183f465a727899cf655fe1c9d7a4a7bfc0986a3a612b84"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eyelash-fringe.png",
+      "bytes": 1170347,
+      "sha256": "52397be9730278243e9d5316bfeef8b949ffb0442075073357637b864e0f5d74"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eye-above.png",
+      "bytes": 837823,
+      "sha256": "e9fa1ea55ba410b666609ad2ae792e7ac1fe34834408b046c1092526fe6e12d9"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/head-left.png",
+      "bytes": 505440,
+      "sha256": "b945e3aa8e1b3595a1250dcb75393c96761d29e34b594fc1b86922b0bb73062e"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/eye-detail.png",
+      "bytes": 544039,
+      "sha256": "d3c40333308089f98fa48118322a538b1dde0370b5295e65f73774ce347411d5"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v1/head-front.png",
+      "bytes": 505373,
+      "sha256": "b689ba696cddbf5577c8461fcf73a9a9168c4cefbee616179d86c933b2c7a8af"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v3/full.png",
+      "bytes": 470071,
+      "sha256": "a1fd618439a26ff90bef072cd3a7fd030b8e727784866d414070e68ae0526793"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v3/browser-face.png",
+      "bytes": 252246,
+      "sha256": "2ad81d629e0a6bda3c447194639ddff640f0fc3e298ce7d97766efa7e2c36702"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v3/base-eyelashes-v3.blend",
+      "bytes": 7491120,
+      "sha256": "bdd89a30bd6d0c4270ed8b02bbd40ed6d389f9edcf562c9c3b145f3a5f0d96df"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v3/eye-angle.png",
+      "bytes": 525532,
+      "sha256": "03140e6b9bad7375c08da03ea869c16cc3c3bc94afbfbf5efebd35d9645aec7f"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v3/browser-full.png",
+      "bytes": 145438,
+      "sha256": "f4dea10ebd42cdea16a16fab2ac4e9ef5aef062b5e424de6a479eb4d5db85ad1"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v3/head-right.png",
+      "bytes": 509678,
+      "sha256": "f6701326cca78224984b683b61d1a5195a23a500131ad089d66a870db6e17e37"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v3/head-left.png",
+      "bytes": 505107,
+      "sha256": "ead77b069a70358211c382abac6d4488283efca5843d3ef4e499a31f322aa566"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v3/eye-detail.png",
+      "bytes": 543315,
+      "sha256": "59aa0025da4e0e17f053cb12a96258ce5c2e6bafdb8a3de6248ead5162b8c147"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v3/base-eyelashes-v3.glb",
+      "bytes": 8902596,
+      "sha256": "d579a613dc5ff7a41128abda662b050630293bb5e6d4b41c36b4711f6e48da68"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v3/head-front.png",
+      "bytes": 504975,
+      "sha256": "6a98f257608092851de4b405984527ea7073195dad529e39b06dede08378a1ad"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/full.png",
+      "bytes": 470212,
+      "sha256": "c8bcc96a0cac5c2c412d678ec708ad125b9ef4524580cdfdae7e7b76f7d1f3e2"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/browser-face.png",
+      "bytes": 251793,
+      "sha256": "32bbd40dece4516950e2c6f351cb20c386183963f3312943e3022784174763ec"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/eye-angle.png",
+      "bytes": 520184,
+      "sha256": "9d39935d2b61b9afe0833fc8b90f4d8bd64763222a6d5e76e67a46b823a2e3f6"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/browser-full.png",
+      "bytes": 146007,
+      "sha256": "c276bb35320e126c25a4d70e646bb348185ce9d669aebe095da3413e9fa10f48"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/head-right.png",
+      "bytes": 508804,
+      "sha256": "f3a1d60f8769474382defff4a11806ce62435af7bd30cf96d5d9595d47e9c092"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/base-eyelashes-v7.blend",
+      "bytes": 20181518,
+      "sha256": "ad53f289e9eb00586da45b7484f53ab8b7cd3b83fd78972f549acfc9092436bf"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/browser-eye-close.png",
+      "bytes": 372664,
+      "sha256": "705298e890c81f05bd9dec47a482c17ecbe23fb3040790c6031f8d29ac9fdf1c"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/eye-left-angle.png",
+      "bytes": 512438,
+      "sha256": "1d761d8ab5417f20fa97586c00a075ee744d71ffd697027128245868fa92b10d"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/head-left.png",
+      "bytes": 504030,
+      "sha256": "0dcfd8d7e3b699bddc7b21f5974212e609720be2c89b5614b122d7dcde927e48"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/eye-detail.png",
+      "bytes": 538577,
+      "sha256": "cba940fb7924ea9903cea58cbd86fc578aed3e503226c409c30f8602d2e60b61"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/eye-left.png",
+      "bytes": 533134,
+      "sha256": "dc06450e52384b8a6ac04a1d49b79af642f2f416783c6a4ec2e79c200b406027"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/base-eyelashes-v7.glb",
+      "bytes": 21596464,
+      "sha256": "4ddf5eafae97fa4709353fe4212ed301a0ef7c2a8f589d1ad6fb56205e46c9d6"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyelashes_v7/head-front.png",
+      "bytes": 504719,
+      "sha256": "fe5e98b05037c492a0e4d7196eaed72f11f54b48208765d388354a2d40d7c4e0"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/source.glb",
+      "bytes": 7203388,
+      "sha256": "d2370244d573ca577a538232ddfd91724bb665100f242bc190a211abbed80499"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/browser-face.png",
+      "bytes": 250472,
+      "sha256": "1dde98b4a33f7deb2fbd71e228bdef11f74f98eca0616e8da161b200ecedb865"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/browser-full.png",
+      "bytes": 144934,
+      "sha256": "c38ab59c24afc74051eef2e466a5585a95929ceac841eb3b267974e909f5f6f5"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/source.blend",
+      "bytes": 7412789,
+      "sha256": "87268274aa82b0adf0258495e8113c7040f85c2647aef85b4d2359aeaa461cf5"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/rendered_image_url.png",
+      "bytes": 80419,
+      "sha256": "ac5f2fb3a75963157c0b23e3f3e9048dcd7b4fe2fc85517547d517edee5f29ec"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/normal-eyes-v6.png",
+      "bytes": 3757453,
+      "sha256": "5fab50049db22d8c0afa022078ddcc8de0871f1730b2452c91556aa12b74b120"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/eye-support-mask.png",
+      "bytes": 303622,
+      "sha256": "b0ec6f6bb023c2f82a6f65e4912da7a6ca1d86d6859705f6321a3810a8c49a5a"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/full.png",
+      "bytes": 470197,
+      "sha256": "c3ef2be30d4627e00a4f22d1719dde6010a64fc6b6ccfcb1585163529224a465"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/browser-face.png",
+      "bytes": 252340,
+      "sha256": "c7aa47e9653b5c51b0b0c3bbdc9d89453bc9c90a16f76d7b4a1d036ba990bdda"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/base-color-eyes-v6.png",
+      "bytes": 14149894,
+      "sha256": "c2810bef27d22e1be0bea19b2eaa60ea28ca440ea660fae4bc2b813e49375987"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/base-eyes-v6.blend",
+      "bytes": 20202471,
+      "sha256": "3abfe3fb5a61bf2df4893bba4b1fe8b1c13f8ec3f612f6d98771c057a1747fdc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/eye-angle.png",
+      "bytes": 522065,
+      "sha256": "639cbac3ff65d5d57e0a3acb825ea3a626ca991be7768ba8ab29b65ccdfa9195"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/browser-full.png",
+      "bytes": 145915,
+      "sha256": "5c1d46bfa0c9e07048123e1e5d215381657e4c22596f8cbb86d6b3ff78cb5e21"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/head-right.png",
+      "bytes": 508971,
+      "sha256": "b2bbbeae5f8dba66d9589310f0aa19d365a50e99d6b163dbbdcc9d33e290c633"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/base-eyes-v6.glb",
+      "bytes": 21617412,
+      "sha256": "09258e5091ded0dab32afb9235ba7e39d1876dfbf17a6c7bd9cf7d2253e542b0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/browser-eye-close.png",
+      "bytes": 401257,
+      "sha256": "0b89e437bbaa90132ee3afb988247c405e9de86ed6e0500de04a05cca205bafa"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/eye-left-angle.png",
+      "bytes": 514261,
+      "sha256": "eff0b04d374d0e16333c8a81a492ce02fe07b41d1f3bb7cc1461eb32ed0ec2ec"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/head-left.png",
+      "bytes": 504512,
+      "sha256": "27a61d3fc485b4aede305f028ce3d107ad5de3b907029f4cd3e7195ad1555a44"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/head-other.png",
+      "bytes": 512743,
+      "sha256": "2c4bdda7cecfebcd76eb82ae92656a4feb8a8523a4f29eaa92f7c82f4fc85eae"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/eye-detail.png",
+      "bytes": 540652,
+      "sha256": "40bb0016cd4bc2367315dabc7a6e120097eb8648b23a70cd2331a134385a93b0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/head.png",
+      "bytes": 519250,
+      "sha256": "82497e564cf6657a6f041be99857de9f554645bf33756007c2f5fe058dba16b4"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/eye-left.png",
+      "bytes": 534980,
+      "sha256": "ff0ccb96d3015b973b656ed774a04215aae2ec91e6b4774e85889f83755b9110"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/head-front.png",
+      "bytes": 504496,
+      "sha256": "5a9acec72a223d8c9d4116baacd2cdb2dfa0dbf4f539bf118c305ff59d6d54f0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/base-color-eyes-v5.png",
+      "bytes": 14128971,
+      "sha256": "ea1929118b2dd3805e27c99e25eec2c6ad69fd03718362de792d2908383ffebc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/eye-support-mask.png",
+      "bytes": 286681,
+      "sha256": "bd7bae16f22d2b0d2395b716d79307d3cbee736fe3f6fc502b1492a480d306ca"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/full.png",
+      "bytes": 470297,
+      "sha256": "224200a410c68acd3b8a96ded9e6097bd33b2a0168ab214bf0dded62fab18d44"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/browser-face.png",
+      "bytes": 252161,
+      "sha256": "7868306a3e95b2996c12207e63631b887d09452a6f33ff97b4a50952c4e34a42"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/eye-angle.png",
+      "bytes": 520198,
+      "sha256": "f1fb6385f792d17f4b33b91c079fcdac226754f9b2f563e04193956fa8a1117f"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/browser-full.png",
+      "bytes": 146276,
+      "sha256": "611080dc773ef022aa17efedf0268439c9332a5d518b30b6d78b0c5410e6b866"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/head-right.png",
+      "bytes": 508828,
+      "sha256": "9e1de836fd4136beab8f04f295bc875c0d33958ad5660b857de4321e2f951400"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/browser-eye-close.png",
+      "bytes": 373237,
+      "sha256": "cf15a5daf67d25bcf0f1ae553d64b819616d6a83ed03f86f39e95654fc75337c"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/eye-left-angle.png",
+      "bytes": 512210,
+      "sha256": "9cc4ea3710dc2290c4e5aeb9e5cd14a5a216cf891b825a657ce34e4991a1477c"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/head-left.png",
+      "bytes": 504241,
+      "sha256": "9649c1c288e7a14ecf0fbd4d277e7231df47b28926ad162d9146e667534c1cce"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/head-other.png",
+      "bytes": 512899,
+      "sha256": "7afc9de64b840924d257748bfd1857685baf154c84f9bf193eac541bef273292"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/eye-detail.png",
+      "bytes": 538806,
+      "sha256": "f98e7f8c6191bfd8c2156f6743ba10f8d83e07da45750fcc67aa642db94d42d0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/normal-eyes-v5.png",
+      "bytes": 3753798,
+      "sha256": "e744b27571db151dd9e724b7ed81996c4603057e7d2fe746f5994cea0bce7723"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/face-albedo-front.png",
+      "bytes": 3105892,
+      "sha256": "4bf4b91b546d3322ded60ac99ca9827e3b5a27ed9c43f52744e2bddbe1c0b4a6"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/head.png",
+      "bytes": 518913,
+      "sha256": "966c4da991d6da6cf70761322d6cc80c78a2dedccdfe2aa7d7968aab622d8222"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/base-eyes-v5.blend",
+      "bytes": 20181550,
+      "sha256": "734b994e5eb8f5a813f3e2e2bc666e3d5a4334940251cc2e6292aab22f32f3b1"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/eye-left.png",
+      "bytes": 533134,
+      "sha256": "65ce9689a8f7205cd3fc47ae92dc18c5e01ee615875479c16a252a6e6ccc8b02"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/base-eyes-v5.glb",
+      "bytes": 21596488,
+      "sha256": "ced60ec8cffb95dc5a0340b96fe0763c2b38bac64a9dde013dfa6f33b07e905a"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v5/head-front.png",
+      "bytes": 504408,
+      "sha256": "d15e926405fc224aeac8cd4182b4a492214440f07247ba5c96385751687640ac"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_base_v1/comparison/side.png",
+      "bytes": 433556,
+      "sha256": "dce6f3da4abd297d953a0f590df7ce2d5f69f4762e0c5e5bd357f17eaaadb214"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_base_v1/comparison/hand.png",
+      "bytes": 428826,
+      "sha256": "168cc0fcad364a7201c535f13e57897bbda01388385d1fa6ff1b3a097e0dee47"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_base_v1/comparison/head.png",
+      "bytes": 526451,
+      "sha256": "4845abd1ec6307908906ccb04f22b1dacfb5a0168c0133939b7e6f84c8e18c48"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_base_v1/comparison/front.png",
+      "bytes": 462157,
+      "sha256": "400c94fd788492884aa7678e31f64a69db4bcc7fdb77a2a02ae4bdac167dfd1a"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_base_v1/comparison/feet-side.png",
+      "bytes": 445724,
+      "sha256": "e7a35070ee46eba227e1df372447b715281cef055eda08b847797e1c7c6c4a3f"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_base_v1/comparison/head-clay.png",
+      "bytes": 441932,
+      "sha256": "d6ea861ac1994850287d10ce3de2cab6d21f326302518ea5430b4340aae69d8f"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_base_v1/review/side.png",
+      "bytes": 432299,
+      "sha256": "baff518f7e930939b6beb4e578bbc5e90c9492cab1a08279de23efdcc474f902"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_base_v1/review/head.png",
+      "bytes": 528885,
+      "sha256": "f5f5d34aad33d4e9960bcc06e8116f9cd0b76b0aa7e5a22a27b616dbf1860af6"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_base_v1/review/front.png",
+      "bytes": 460447,
+      "sha256": "c8d371d6fdc3bebcd16b465707bf8c8bdc854f366e1b065c64541e223c3886dd"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_base_v1/review/feet-side.png",
+      "bytes": 445410,
+      "sha256": "be9695740c5d25c7fe23714c0a8c015cb6337fa8a2e9ce62fc5679d722c0b47c"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/hand-top.png",
+      "bytes": 439889,
+      "sha256": "0cb95e04eb1b71956204f4a6e67cfb013431bf634098db13eb3765c3903ade6a"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/side.png",
+      "bytes": 437260,
+      "sha256": "21aae9390e710a44a3b5c72dece82cc90b7da321f7c3892fc17d01f78e52125e"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/hand.png",
+      "bytes": 436963,
+      "sha256": "70fe2fb1d5b00ae56d5be20b89927485e68a2049969ec14c2dd7e2136e7efa19"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/head.png",
+      "bytes": 513907,
+      "sha256": "a58d4c574b8c2027f92f0992b17e22340d78798c5b4aff8f319634db41f9706e"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/back.png",
+      "bytes": 468610,
+      "sha256": "91fb2534989eef3f0095b8760ad0ee84040ce6f5d14e9678d6ed9eae2de3716e"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/front.png",
+      "bytes": 470560,
+      "sha256": "fdac7c5c9fb0e155a6ecf87366756760cfbffaf944f9bdd84cb7e49e56fb1863"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/feet-side.png",
+      "bytes": 475905,
+      "sha256": "078b9fea3e4f4df2bc07b28e9a03fcf94adfb75a03c030373a689714517a1d16"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v1/comparison/head-clay.png",
+      "bytes": 434482,
+      "sha256": "14f004ea8b87934b16da259e92252547437e5f1314c5495b20968a3f8ee3466c"
+    },
+    {
+      "path": "assets/modular_human_female_01/meshy_base_v1/comparison/side.png",
+      "bytes": 424169,
+      "sha256": "877626a412e0c281ab356d0650f1b66b640095895221976979d8be4ffa97c521"
+    },
+    {
+      "path": "assets/modular_human_female_01/meshy_base_v1/comparison/hand.png",
+      "bytes": 436722,
+      "sha256": "b9cb17cb216d01a186b8ebcfdb041b4ea69968e2de4ee4434ebb51e486388f26"
+    },
+    {
+      "path": "assets/modular_human_female_01/meshy_base_v1/comparison/head.png",
+      "bytes": 512900,
+      "sha256": "ade3253751cb3c4e3aa6ea3699305704d2ba86695678898cd82f77c92aa41657"
+    },
+    {
+      "path": "assets/modular_human_female_01/meshy_base_v1/comparison/front.png",
+      "bytes": 454196,
+      "sha256": "6180e3c8059400d034e9137e0d48b8f83e10ffc3d662b60d8eff45915518da2f"
+    },
+    {
+      "path": "assets/modular_human_female_01/meshy_base_v1/comparison/feet-side.png",
+      "bytes": 455237,
+      "sha256": "da804a8048f0d9e5b50c9d764a9f10fa2ab7be294dda0542d1d11e5639c35af2"
+    },
+    {
+      "path": "assets/modular_human_female_01/meshy_base_v1/comparison/head-clay.png",
+      "bytes": 433759,
+      "sha256": "bcc21ee5d4ffdd1900824d035984c69de96f1ed6188a2389cf8f9a976cb43ba7"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/hand-top.png",
+      "bytes": 438863,
+      "sha256": "11774f7c905be908910d6db0de1cbca2380a4e7feefeab00c48540008aac24f3"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/side.png",
+      "bytes": 437051,
+      "sha256": "551b10de6a66b3d161345b1093d63d8363479daa133aa796a22be1a707c002f0"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/hand.png",
+      "bytes": 439354,
+      "sha256": "fb4c30a702772797134a948547f47b7e7051bea12cca56b1ea2371a1623f6cce"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/head.png",
+      "bytes": 519806,
+      "sha256": "eb0bb7aa67e1b8423c239375c54b02e872ef22f87dba41f3eeaee24d4d843ac8"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/back.png",
+      "bytes": 467563,
+      "sha256": "fbbad2700990da5f79a1269c891a72256a2da5639a00c9da283f8d886ab9ffbd"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/front.png",
+      "bytes": 470429,
+      "sha256": "2b258bcd199465bd9e555d62dfa784751578bc69aec5687067bf27f8288b3865"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/head-front-clay.png",
+      "bytes": 430444,
+      "sha256": "6ebe26c8c54a8da48788ccaec66f762970b6012aaccbd6bf7497c63582ad6bf6"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/feet-side.png",
+      "bytes": 468417,
+      "sha256": "fed84bd132a50c9910665b96308773509683eefddd4ee7183172182d89422386"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/head-clay.png",
+      "bytes": 442299,
+      "sha256": "be4cdfca4d504d3e0670ae1b3fbe1b9a3b0e0b63a296dbcc24c43f92f646d4c5"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/head-front.png",
+      "bytes": 505360,
+      "sha256": "88e15bb159362c0ea48d42b5d47ba906be552d61d3a6ca9f42d61051441ae7e9"
+    }
+  ]
+}

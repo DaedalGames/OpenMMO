@@ -1,0 +1,35 @@
+{
+  "asset": "modular_human_female_01",
+  "generation_date": "2026-10-11",
+  "tool": "Tripo API",
+  "tier": "Paid API credits; user purchased 1000 credits",
+  "license": "Tripo Terms of User Agreement; source image provenance retained separately",
+  "license_url": "https://developers.tripo3d.ai/en/terms",
+  "image": {
+    "path": "doc/images/characters/modular_human_female_01/base-front-v3.png",
+    "sha256": "e01d0d99b448c366faaaf0eb1c6df3e2bb59308aeff63e48b7cf3e8b41dc5ae0"
+  },
+  "parameters": {
+    "model": "P2-20260801",
+    "quad": true,
+    "face_limit": 6000,
+    "texture": true,
+    "pbr": true,
+    "texture_quality": "detailed",
+    "texture_version": "v3.5-20260815",
+    "delight": true,
+    "enable_image_autofix": false,
+    "texture_alignment": "original_image",
+    "orientation": "align_image",
+    "auto_size": false,
+    "export_uv": true,
+    "model_seed": 101101,
+    "texture_seed": 101101
+  },
+  "estimated_credits": 120,
+  "pricing_url": "https://developers.tripo3d.ai/en/pricing",
+  "api_docs": "https://developers.tripo3d.ai/en/docs/generation-image-to-model/p",
+  "record": "doc/assets/modular-human-female-01-tripo-api-v1-sources.json",
+  "output_dir": "assets/modular_human_female_01/tripo_api_v1",
+  "scope": "One generation task; preserve raw outputs and review before fitting or rigging"
+}

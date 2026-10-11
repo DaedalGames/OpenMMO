@@ -1,0 +1,259 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "generated_candidate_reviewed_not_fitted_or_rigged",
+  "task_id": "073e85e0-595b-4a12-9030-2dc3e30566e9",
+  "generation_record": "doc/assets/modular-human-female-01-tripo-api-v3-sources.json",
+  "geometry": {
+    "triangles": 20927,
+    "mesh_count": 1,
+    "meshes": [
+      {
+        "name": "tripo_node_073e85e0-595b-4a12-9030-2dc3e30566e9",
+        "components_vertex_counts": [
+          8704,
+          1088,
+          619,
+          98,
+          98,
+          94
+        ],
+        "boundary_edges": 489,
+        "nonmanifold_edges": 491,
+        "degenerate_faces": 2,
+        "collapsed_uv_triangles": 2
+      }
+    ],
+    "source_extent_blender": [
+      0.1900300830602646,
+      0.6772557497024536,
+      0.99951171875
+    ],
+    "rigged": false,
+    "polygon_sizes": {
+      "3": 20927
+    },
+    "textures": [
+      {
+        "name": "Color_073e85e0-595b-4a12-9030-2dc3e30566e9",
+        "size": [
+          4096,
+          4096
+        ],
+        "packed": true
+      },
+      {
+        "name": "NormalGL_073e85e0-595b-4a12-9030-2dc3e30566e9",
+        "size": [
+          4096,
+          4096
+        ],
+        "packed": true
+      },
+      {
+        "name": "ORM_073e85e0-595b-4a12-9030-2dc3e30566e9",
+        "size": [
+          4096,
+          4096
+        ],
+        "packed": true
+      }
+    ],
+    "bounds": {
+      "min": [
+        -0.0950150415301323,
+        -0.3386278748512268,
+        -0.499755859375
+      ],
+      "max": [
+        0.0950150415301323,
+        0.3386278748512268,
+        0.499755859375
+      ]
+    }
+  },
+  "target_triangles": 20000,
+  "actual_triangles": 20927,
+  "target_difference_percent": 4.635,
+  "face_allocation": "No explicit face quota available in this request; anatomical face region has not been segmented. Total refers to the generated base, not an equipped character.",
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/base-review.glb",
+      "bytes": 7203704,
+      "sha256": "24fe1ccd3031f6cd9a87abb32d65785ecfcb84e316d58e88dd68720c7ec416b7"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/browser-face.png",
+      "bytes": 250472,
+      "sha256": "1dde98b4a33f7deb2fbd71e228bdef11f74f98eca0616e8da161b200ecedb865"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/browser-full.png",
+      "bytes": 144934,
+      "sha256": "c38ab59c24afc74051eef2e466a5585a95929ceac841eb3b267974e909f5f6f5"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/back.png",
+      "bytes": 467563,
+      "sha256": "fbbad2700990da5f79a1269c891a72256a2da5639a00c9da283f8d886ab9ffbd"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/feet-side.png",
+      "bytes": 468417,
+      "sha256": "fed84bd132a50c9910665b96308773509683eefddd4ee7183172182d89422386"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/front.png",
+      "bytes": 470429,
+      "sha256": "2b258bcd199465bd9e555d62dfa784751578bc69aec5687067bf27f8288b3865"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/geometry.json",
+      "bytes": 1211,
+      "sha256": "f3fc140fa4007e4637e03964394fefbebb4ea655e6c3223112e937ff4a909e00"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/hand-top.png",
+      "bytes": 438863,
+      "sha256": "11774f7c905be908910d6db0de1cbca2380a4e7feefeab00c48540008aac24f3"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/hand.png",
+      "bytes": 439354,
+      "sha256": "fb4c30a702772797134a948547f47b7e7051bea12cca56b1ea2371a1623f6cce"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/head-clay.png",
+      "bytes": 442299,
+      "sha256": "be4cdfca4d504d3e0670ae1b3fbe1b9a3b0e0b63a296dbcc24c43f92f646d4c5"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/head-front-clay.png",
+      "bytes": 430444,
+      "sha256": "6ebe26c8c54a8da48788ccaec66f762970b6012aaccbd6bf7497c63582ad6bf6"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/head-front.png",
+      "bytes": 505360,
+      "sha256": "88e15bb159362c0ea48d42b5d47ba906be552d61d3a6ca9f42d61051441ae7e9"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/head.png",
+      "bytes": 519806,
+      "sha256": "eb0bb7aa67e1b8423c239375c54b02e872ef22f87dba41f3eeaee24d4d843ac8"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/side.png",
+      "bytes": 437051,
+      "sha256": "551b10de6a66b3d161345b1093d63d8363479daa133aa796a22be1a707c002f0"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/model_url.glb",
+      "bytes": 7202688,
+      "sha256": "cf11bba1febbb5cb13976237748ae22d477971087473b8a3cccc131fae357b00"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/rendered_image_url.png",
+      "bytes": 80419,
+      "sha256": "ac5f2fb3a75963157c0b23e3f3e9048dcd7b4fe2fc85517547d517edee5f29ec"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/review_source.py",
+      "bytes": 4745,
+      "sha256": "3b4cfca268b0954f0215e6f1cccd15cf53fdad018cd290de557423ccafb5d70c"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/source.blend",
+      "bytes": 7412789,
+      "sha256": "87268274aa82b0adf0258495e8113c7040f85c2647aef85b4d2359aeaa461cf5"
+    },
+    {
+      "path": "assets/modular_human_female_01/tripo_api_v3/source.glb",
+      "bytes": 7203388,
+      "sha256": "d2370244d573ca577a538232ddfd91724bb665100f242bc190a211abbed80499"
+    }
+  ],
+  "validation": {
+    "glb": [
+      {
+        "path": "assets/modular_human_female_01/tripo_api_v3/model_url.glb",
+        "triangles": 20927,
+        "images": 3,
+        "embedded_images": true
+      },
+      {
+        "path": "assets/modular_human_female_01/tripo_api_v3/source.glb",
+        "triangles": 20927,
+        "images": 3,
+        "embedded_images": true
+      },
+      {
+        "path": "assets/modular_human_female_01/tripo_api_v3/base-review.glb",
+        "triangles": 20927,
+        "images": 3,
+        "embedded_images": true
+      }
+    ],
+    "browser": {
+      "url": "https://localhost:10004/modular-character-preview.html?character=female&camera=face",
+      "errors": [],
+      "stats": "20,927삼각형 · 정면 원화 v3",
+      "checked": [
+        "face render",
+        "full render",
+        "side camera",
+        "wireframe",
+        "camera reset"
+      ]
+    }
+  },
+  "normalization": {
+    "display_height": 1,
+    "blender_z_rotation_degrees": -90,
+    "origin": "centered horizontally, lowest vertex at ground",
+    "source_geometry_preserved": true,
+    "purpose": "review only; not final character scale"
+  },
+  "review": {
+    "positive": [
+      "Bald scalp, front A pose and white clothing retained.",
+      "Actual triangle count increased from 12208 to 20927.",
+      "Three 4096x4096 PBR maps embedded and model loads in browser."
+    ],
+    "remaining": [
+      "User identified the projecting eye planes as eyelashes. Base-color texture is RGB JPEG without alpha; material has no alphaMode (OPAQUE default) and is double-sided. Eyelash opacity masking is needed before judging these planes as malformed geometry. Mouth shading still needs review.",
+      "Heels are elevated relative to forefoot; neutral ground contact needs correction.",
+      "Fingertips are uneven; both hands need anatomical review before rigging.",
+      "Geometry diagnostic reports 2 degenerate faces, 2 collapsed UV triangles, and boundary/nonmanifold edges requiring local inspection."
+    ],
+    "selected_for_production": false
+  },
+  "cost": {
+    "tasks_submitted": 1,
+    "credits_consumed": 120,
+    "balance_remaining": 760,
+    "frozen": 0
+  },
+  "prior_rejection": "Front-only request succeeded; this does not establish which image or multiview condition caused the prior content-policy rejection.",
+  "eyelash_material_inspection": {
+    "date": "2026-10-11",
+    "identification": "User identified projecting eye planes as eyelashes",
+    "source": "assets/modular_human_female_01/tripo_api_v3/model_url.glb",
+    "base_color": {
+      "format": "JPEG",
+      "mode": "RGB",
+      "size": [
+        4096,
+        4096
+      ],
+      "alpha_channel": false
+    },
+    "material": {
+      "alphaMode": "omitted (OPAQUE default)",
+      "baseColorFactor_alpha": 1,
+      "doubleSided": true
+    },
+    "conclusion": "No eyelash transparency data is present; enabling transparency alone cannot restore the missing mask. Preserve eyelash geometry and create a local opacity mask before material correction.",
+    "modified_model": false
+  }
+}

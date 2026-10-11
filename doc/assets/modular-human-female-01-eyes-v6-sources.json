@@ -1,0 +1,162 @@
+{
+  "asset": "modular_human_female_01",
+  "date": "2026-10-11",
+  "status": "whole_eye_mapping_reviewed_not_rigged",
+  "request": "Uniformly spread the complete eye texture; remove duplicated lower iris pattern and flesh remaining at the outer eye corner.",
+  "diagnosis": "The previous lower-band warp and partial blending introduced a discontinuous distorted pattern.",
+  "source_model": "assets/modular_human_female_01/eyelashes_v7/base-eyelashes-v7.glb",
+  "source_image": "assets/modular_human_female_01/eyes_v3/face-albedo-edited.png",
+  "source_image_record": "doc/assets/modular-human-female-01-eyes-v3-sources.json",
+  "tools": "Local Blender projection UV mapping and baking",
+  "tier": "No new generation; reused ImageGen source was created with ChatGPT Pro 20x",
+  "license": "Existing ImageGen, Tripo and user image provenance retained.",
+  "method": "Return to the clean generated eye image before partial UV warps. Apply one affine projection per eye: width scale 1.08, height scale 1.05, translation down 0.00085 from height anchor 0.939 on a unit-height model. Replace the complete eye footprint at full weight; feather only the enlarged surrounding skin mask from radius fraction 0.85 to 1. No internal lower-band blend. Bake to the existing atlas; mesh UVs unchanged.",
+  "script": "tools/blender-scripts/correct_female_eye_texture.py",
+  "command": "blender -b -t 6 --python tools/blender-scripts/correct_female_eye_texture.py -- --version v6",
+  "output": "assets/modular_human_female_01/eyes_v6/base-eyes-v6.glb",
+  "blend": "assets/modular_human_female_01/eyes_v6/base-eyes-v6.blend",
+  "validation": {
+    "triangles": 22175,
+    "geometry_uv_normals_lashes_and_materials_unchanged": true,
+    "normal_and_pbr_textures_byte_identical": true,
+    "changed_buffer_views": [
+      5
+    ],
+    "clean_source_image_byte_identical": true,
+    "previous_lower_band_edit_reused": false,
+    "horizontal_scale": 1.08,
+    "vertical_scale": 1.05,
+    "downward_offset": 0.00085,
+    "vertical_anchor": 0.939,
+    "interior_mapping": "Single affine transform per eye, full replacement within mask plateau; no lower-band displacement or internal blending.",
+    "mask_plateau_radius_fraction": 0.85,
+    "changed_color_pixels": 99750,
+    "outside_eye_mask_max_difference": 0,
+    "browser": {
+      "errors": [],
+      "stats": "22,175삼각형 · 눈 전체 UV 정렬 v6",
+      "checks": [
+        "face",
+        "full",
+        "side",
+        "wireframe",
+        "reset",
+        "extreme oblique eye close-up"
+      ]
+    }
+  },
+  "visual_review": [
+    "Both eyes inspected frontally and obliquely. Iris is continuous without the duplicated horizontal lower band.",
+    "Enlarged eye footprint covers the outer corner; extreme close-up in actual browser reviewed.",
+    "Lash v7 placement and all body geometry preserved."
+  ],
+  "limitations": "Original atlas texel resolution, faceted eyelid geometry and surrounding highlights remain.",
+  "additional_tripo_credits": 0,
+  "files": [
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/base-color-eyes-v6.png",
+      "bytes": 14149894,
+      "sha256": "c2810bef27d22e1be0bea19b2eaa60ea28ca440ea660fae4bc2b813e49375987"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/base-eyes-v6.blend",
+      "bytes": 20202471,
+      "sha256": "3abfe3fb5a61bf2df4893bba4b1fe8b1c13f8ec3f612f6d98771c057a1747fdc"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/base-eyes-v6.glb",
+      "bytes": 21617412,
+      "sha256": "09258e5091ded0dab32afb9235ba7e39d1876dfbf17a6c7bd9cf7d2253e542b0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/browser-eye-close.png",
+      "bytes": 401257,
+      "sha256": "0b89e437bbaa90132ee3afb988247c405e9de86ed6e0500de04a05cca205bafa"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/browser-face.png",
+      "bytes": 252340,
+      "sha256": "c7aa47e9653b5c51b0b0c3bbdc9d89453bc9c90a16f76d7b4a1d036ba990bdda"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/browser-full.png",
+      "bytes": 145915,
+      "sha256": "5c1d46bfa0c9e07048123e1e5d215381657e4c22596f8cbb86d6b3ff78cb5e21"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/eye-angle.png",
+      "bytes": 522065,
+      "sha256": "639cbac3ff65d5d57e0a3acb825ea3a626ca991be7768ba8ab29b65ccdfa9195"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/eye-detail.png",
+      "bytes": 540652,
+      "sha256": "40bb0016cd4bc2367315dabc7a6e120097eb8648b23a70cd2331a134385a93b0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/eye-left-angle.png",
+      "bytes": 514261,
+      "sha256": "eff0b04d374d0e16333c8a81a492ce02fe07b41d1f3bb7cc1461eb32ed0ec2ec"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/eye-left.png",
+      "bytes": 534980,
+      "sha256": "ff0ccb96d3015b973b656ed774a04215aae2ec91e6b4774e85889f83755b9110"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/eye-support-mask.png",
+      "bytes": 303622,
+      "sha256": "b0ec6f6bb023c2f82a6f65e4912da7a6ca1d86d6859705f6321a3810a8c49a5a"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/face-albedo-edited.png",
+      "bytes": 1193299,
+      "sha256": "2cf24cb9ba4616da17843485830e05cfc081de00fc65b208dfcdcc3318c92991"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/full.png",
+      "bytes": 470197,
+      "sha256": "c3ef2be30d4627e00a4f22d1719dde6010a64fc6b6ccfcb1585163529224a465"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/head-front.png",
+      "bytes": 504496,
+      "sha256": "5a9acec72a223d8c9d4116baacd2cdb2dfa0dbf4f539bf118c305ff59d6d54f0"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/head-left.png",
+      "bytes": 504512,
+      "sha256": "27a61d3fc485b4aede305f028ce3d107ad5de3b907029f4cd3e7195ad1555a44"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/head-other.png",
+      "bytes": 512743,
+      "sha256": "2c4bdda7cecfebcd76eb82ae92656a4feb8a8523a4f29eaa92f7c82f4fc85eae"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/head-right.png",
+      "bytes": 508971,
+      "sha256": "b2bbbeae5f8dba66d9589310f0aa19d365a50e99d6b163dbbdcc9d33e290c633"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/head.png",
+      "bytes": 519250,
+      "sha256": "82497e564cf6657a6f041be99857de9f554645bf33756007c2f5fe058dba16b4"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/normal-eyes-v6.png",
+      "bytes": 3757453,
+      "sha256": "5fab50049db22d8c0afa022078ddcc8de0871f1730b2452c91556aa12b74b120"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/review.py",
+      "bytes": 2146,
+      "sha256": "0aa52c8146d3335019d9562229fd762e8839e78988bcdbc14e0a0171c571f5c7"
+    },
+    {
+      "path": "assets/modular_human_female_01/eyes_v6/validation.json",
+      "bytes": 895,
+      "sha256": "8615039ba0ca24bebc74d82b3ecab5563996fc133945b343d7c453b3b0a39bf3"
+    }
+  ]
+}

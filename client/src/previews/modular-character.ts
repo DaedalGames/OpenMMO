@@ -120,6 +120,11 @@ export let preview:
 async function main() {
   if (!import.meta.env.DEV)
     throw new Error('개발 서버에서 여는 제작용 미리보기입니다.')
+  if (new URLSearchParams(location.search).get('character') === 'female') {
+    const { showFemaleBase } = await import('./female-base')
+    await showFemaleBase(scene, resources, cleanup, () => disposed)
+    return
+  }
   const loader = new GLTFLoader()
   const params = new URLSearchParams(location.search)
   const requestedFace = params.get('face')
