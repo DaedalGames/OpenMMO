@@ -125,11 +125,13 @@ interface PickupGrabActions {
   setInHand: (instanceId: number) => void
   remove: (instanceId: number) => void
   sendPickupItem: (instanceId: number) => void
+  sendPickupNearbyItems: () => void
 }
 
 export function handlePickupGrab(
   pendingPickupInstanceId: number | null,
-  actions: PickupGrabActions
+  actions: PickupGrabActions,
+  pickupNearby = false
 ): void {
   if (pendingPickupInstanceId === null) return
   actions.setInHand(pendingPickupInstanceId)
@@ -137,7 +139,8 @@ export function handlePickupGrab(
     actions.remove(pendingPickupInstanceId)
     return
   }
-  actions.sendPickupItem(pendingPickupInstanceId)
+  if (pickupNearby) actions.sendPickupNearbyItems()
+  else actions.sendPickupItem(pendingPickupInstanceId)
 }
 
 export type ExitPickupInteractionOutcome =

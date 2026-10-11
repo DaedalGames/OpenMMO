@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { groundItemManager } from '../../../managers/groundItemManager'
 import type { ClickIntent } from '../../../managers/inputHandler'
 import type { PlayerState } from '../../../utils/movementUtils'
 import {
@@ -198,25 +199,89 @@ describe('finishPendingPickup', () => {
 })
 
 describe('handlePickupGrab', () => {
+  afterEach(() => groundItemManager.reset())
+
   it('sends normal pickup items to the server', () => {
     const actions = {
       setInHand: vi.fn(),
       remove: vi.fn(),
       sendPickupItem: vi.fn(),
+      sendPickupNearbyItems: vi.fn(),
     }
 
     handlePickupGrab(42, actions)
 
     expect(actions.setInHand).toHaveBeenCalledWith(42)
     expect(actions.sendPickupItem).toHaveBeenCalledWith(42)
+    expect(actions.sendPickupNearbyItems).not.toHaveBeenCalled()
     expect(actions.remove).not.toHaveBeenCalled()
   })
+
+  it('holds the nearest item while requesting a nearby pickup', () => {
+    const actions = {
+      setInHand: vi.fn(),
+      remove: vi.fn(),
+      sendPickupItem: vi.fn(),
+      sendPickupNearbyItems: vi.fn(),
+    }
+
+    handlePickupGrab(42, actions, true)
+
+    expect(actions.setInHand).toHaveBeenCalledWith(42)
+    expect(actions.sendPickupNearbyItems).toHaveBeenCalledOnce()
+    expect(actions.sendPickupItem).not.toHaveBeenCalled()
+    expect(actions.remove).not.toHaveBeenCalled()
+    expect(actions.setInHand.mock.invocationCallOrder[0]).toBeLessThan(
+      actions.sendPickupNearbyItems.mock.invocationCallOrder[0]!
+    )
+  })
+
+  it.each([true, false])(
+    'settles the held nearby item after the animation (server accepted: %s)',
+    (accepted) => {
+      groundItemManager.spawn({
+        instance_id: 42,
+        item_def_id: 'worn_bard_helmet',
+        quantity: 1,
+        enchant: 0,
+        position: { x: 0, y: 0, z: 0 },
+        floor_level: 0,
+        dropped_by: null,
+      })
+      beginPickupInteraction({
+        instanceId: 42,
+        previousPlayerState: pickupIdleState,
+        hasGroundItem: (id) => groundItemManager.items.has(id),
+        beginPickup: (id) => groundItemManager.beginPickup(id),
+        cancelCombat: vi.fn(),
+      })
+
+      handlePickupGrab(
+        42,
+        {
+          setInHand: (id) => groundItemManager.setInHand(id),
+          remove: (id) => groundItemManager.remove(id),
+          sendPickupItem: vi.fn(),
+          sendPickupNearbyItems: () => {
+            if (accepted) groundItemManager.remove(42)
+          },
+        },
+        true
+      )
+      expect(groundItemManager.items.get(42)?.inHand).toBe(true)
+
+      finishPendingPickup(42, (id) => groundItemManager.finishPickup(id))
+      if (accepted) expect(groundItemManager.items.has(42)).toBe(false)
+      else expect(groundItemManager.items.get(42)?.inHand).toBe(false)
+    }
+  )
 
   it('removes local temporary pickup items without sending', () => {
     const actions = {
       setInHand: vi.fn(),
       remove: vi.fn(),
       sendPickupItem: vi.fn(),
+      sendPickupNearbyItems: vi.fn(),
     }
 
     handlePickupGrab(-1, actions)
@@ -224,6 +289,7 @@ describe('handlePickupGrab', () => {
     expect(actions.setInHand).toHaveBeenCalledWith(-1)
     expect(actions.remove).toHaveBeenCalledWith(-1)
     expect(actions.sendPickupItem).not.toHaveBeenCalled()
+    expect(actions.sendPickupNearbyItems).not.toHaveBeenCalled()
   })
 })
 

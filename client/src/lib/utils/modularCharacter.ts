@@ -139,14 +139,18 @@ export const BARBARIAN_MODULAR_OUTFIT: ModularOutfit = {
   helmet: 'barbarian',
 }
 
+const HAT_HAIR_CUTS: Partial<
+  Record<ModularOutfit['helmet'], 'priest_hat_hair' | 'bard_hat_hair'>
+> = { priest: 'priest_hat_hair', bard: 'bard_hat_hair' }
+
+const hatHairCut = (helmet: ModularOutfit['helmet']) => HAT_HAIR_CUTS[helmet]
+
 export function modularOutfitParts(outfit: ModularOutfit): Set<string> {
   const selected = new Set<string>()
   if (outfit.pants !== 'none') selected.add(`pants_${outfit.pants}`)
   if (
     outfit.hair !== 'none' &&
-    (outfit.helmet === 'none' ||
-      outfit.helmet === 'priest' ||
-      outfit.helmet === 'bard')
+    (outfit.helmet === 'none' || hatHairCut(outfit.helmet))
   )
     selected.add(outfit.hair)
   if (outfit.top === 'linen' || outfit.top === 'leather')
@@ -269,13 +273,12 @@ function showBaseModularOutfit(
   for (const [id, meshes] of parts)
     for (const mesh of meshes) {
       const partRegion = region(mesh)
+      const hatHair = hatHairCut(outfit.helmet)
       const cut =
         id.startsWith('hair_') &&
-        (outfit.helmet === 'priest' || outfit.helmet === 'bard') &&
+        hatHair &&
         !!parts.get(`helmet_${outfit.helmet}`)?.length
-          ? outfit.helmet === 'bard'
-            ? 'bard_hat_hair'
-            : 'priest_hat_hair'
+          ? hatHair
           : id === 'helmet_priest' &&
               (outfit.hair === 'hair_ranger' ||
                 outfit.hair === 'hair_wavy_bone') &&
@@ -386,7 +389,12 @@ export const PRIEST_MODULAR_OUTFIT: ModularOutfit = {
   helmet: 'priest',
 }
 
-const BARD_MODULAR_PARTS = ['top_bard', 'pants_bard', 'boots_bard'] as const
+const BARD_MODULAR_PARTS = [
+  'helmet_bard',
+  'top_bard',
+  'pants_bard',
+  'boots_bard',
+] as const
 
 const BARD_HEMS = {
   none: 'bard_underwear_hem',
@@ -406,8 +414,20 @@ export const BARD_MODULAR_OUTFIT: ModularOutfit = {
   pants: 'bard',
   gloves: 'none',
   boots: 'bard',
-  helmet: 'none',
+  helmet: 'bard',
 }
+
+const PRIEST_BOOT_HEMS = {
+  none: undefined,
+  rogue: undefined,
+  leather: 'leather_boots',
+  plate: 'plate_boots',
+  barbarian: 'barbarian_pants_boots',
+  caveman: 'caveman_pants_boots',
+  ranger: 'ranger_pants_boots',
+  priest: 'priest_pants_boots',
+  bard: 'bard_pants_boots',
+} as const satisfies Record<ModularOutfit['boots'], string | undefined>
 
 const PROXIED_STYLES = new Set(['rogue', 'caveman', 'ranger', 'bard', 'priest'])
 const proxied = (style: string) => PROXIED_STYLES.has(style)
@@ -489,14 +509,11 @@ export function showModularOutfit(
       : [])
     for (const mesh of parts.get(id) ?? [])
       if (mesh.visible) trimModularClothing(mesh, 'tall_boots')
-  if (boots === 'priest')
+  if (boots === 'priest' || boots === 'bard')
     for (const id of ['pants_plate', 'pants_cloth'])
       for (const mesh of parts.get(id) ?? [])
-        if (mesh.visible) trimModularClothing(mesh, 'priest_pants_boots')
-  if (boots === 'bard')
-    for (const id of ['pants_plate', 'pants_cloth'])
-      for (const mesh of parts.get(id) ?? [])
-        if (mesh.visible) trimModularClothing(mesh, 'bard_pants_boots')
+        if (mesh.visible)
+          trimModularClothing(mesh, `${boots}_pants_boots` as const)
   if (priest) {
     const bootCut = tallBoots
       ? 'tall_boots'
@@ -549,19 +566,7 @@ export function showModularOutfit(
         priest && 'priest_plate_waist',
       ]
     )
-  const priestBootHem = (
-    {
-      none: undefined,
-      rogue: undefined,
-      leather: 'leather_boots',
-      plate: 'plate_boots',
-      barbarian: 'barbarian_pants_boots',
-      caveman: 'caveman_pants_boots',
-      ranger: 'ranger_pants_boots',
-      priest: 'priest_pants_boots',
-      bard: 'bard_pants_boots',
-    } as const
-  )[boots]
+  const priestBootHem = PRIEST_BOOT_HEMS[boots]
   const plateWaist = top === 'plate' && worn('top_plate')
   for (const mesh of parts.get('pants_bard') ?? [])
     trimModularClothing(

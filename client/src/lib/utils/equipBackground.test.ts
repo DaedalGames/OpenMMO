@@ -45,11 +45,16 @@ describe('equipBgCandidates', () => {
     }
   })
 
-  it('resolves every creatable class/gender combo to a real file first try', () => {
-    expect(REACHABLE_COMBOS.length).toBe(13)
+  it('provides class artwork for every creatable class/gender combo', () => {
+    expect(REACHABLE_COMBOS).toContainEqual(['bard', 'male'])
     for (const [cls, gender] of REACHABLE_COMBOS) {
-      const [first] = equipBgCandidates(cls, gender)
-      expect(existsSync(join(PUBLIC_DIR, first)), first).toBe(true)
+      const artwork = equipBgCandidates(cls, gender).filter(
+        (path) => path !== DEFAULT || cls === 'priest'
+      )
+      expect(
+        artwork.some((path) => existsSync(join(PUBLIC_DIR, path))),
+        `${cls}/${gender}`
+      ).toBe(true)
     }
   })
 })

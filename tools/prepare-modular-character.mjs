@@ -46,47 +46,49 @@ const rogue = JSON.parse(
 ).fitting_candidate;
 const rogueParts = ["top_rogue", "pants_rogue", "gloves_rogue", "boots_rogue"];
 parts.push(...rogueParts);
-const cavemanSources = {
-  top_caveman:
-    "assets/modular_human_male_01/caveman/tripo_top_v1/top_caveman.glb",
-  pants_caveman:
-    "assets/modular_human_male_01/caveman/tripo_pants_v1/pants_caveman.glb",
-  boots_caveman:
-    "assets/modular_human_male_01/caveman/tripo_boots_v1/boots_caveman.glb",
-  gloves_caveman:
-    "assets/modular_human_male_01/caveman/tripo_bracer_v1/gloves_caveman.glb",
+const outfitSources = {
+  caveman: {
+    top_caveman:
+      "assets/modular_human_male_01/caveman/tripo_top_v1/top_caveman.glb",
+    pants_caveman:
+      "assets/modular_human_male_01/caveman/tripo_pants_v1/pants_caveman.glb",
+    boots_caveman:
+      "assets/modular_human_male_01/caveman/tripo_boots_v1/boots_caveman.glb",
+    gloves_caveman:
+      "assets/modular_human_male_01/caveman/tripo_bracer_v1/gloves_caveman.glb",
+  },
+  ranger: {
+    top_ranger:
+      "assets/modular_human_male_01/ranger/tripo_top_v4/top_ranger.glb",
+    pants_ranger:
+      "assets/modular_human_male_01/ranger/tripo_pants_v1/pants_ranger.glb",
+    gloves_ranger:
+      "assets/modular_human_male_01/ranger/tripo_gloves_v1/gloves_ranger.glb",
+    boots_ranger:
+      "assets/modular_human_male_01/ranger/tripo_boots_v1/boots_ranger.glb",
+  },
+  priest: {
+    helmet_priest:
+      "assets/modular_human_male_01/priest/tripo_helmet_v1/helmet_priest.glb",
+    top_priest:
+      "assets/modular_human_male_01/priest/tripo_top_v1/top_priest.glb",
+    pants_priest:
+      "assets/modular_human_male_01/priest/tripo_pants_v1/pants_priest.glb",
+    boots_priest:
+      "assets/modular_human_male_01/priest/tripo_boots_v1/boots_priest.glb",
+  },
+  bard: {
+    helmet_bard:
+      "assets/modular_human_male_01/bard/tripo_hat_v1/helmet_bard.glb",
+    top_bard: "assets/modular_human_male_01/bard/tripo_top_v1/top_bard.glb",
+    pants_bard:
+      "assets/modular_human_male_01/bard/tripo_pants_v1/pants_bard.glb",
+    boots_bard:
+      "assets/modular_human_male_01/bard/tripo_boots_v1/boots_bard.glb",
+  },
 };
-const cavemanParts = Object.keys(cavemanSources);
-parts.push(...cavemanParts);
-const rangerSources = {
-  top_ranger: "assets/modular_human_male_01/ranger/tripo_top_v4/top_ranger.glb",
-  pants_ranger:
-    "assets/modular_human_male_01/ranger/tripo_pants_v1/pants_ranger.glb",
-  gloves_ranger:
-    "assets/modular_human_male_01/ranger/tripo_gloves_v1/gloves_ranger.glb",
-  boots_ranger:
-    "assets/modular_human_male_01/ranger/tripo_boots_v1/boots_ranger.glb",
-};
-const rangerParts = Object.keys(rangerSources);
-parts.push(...rangerParts);
-const priestSources = {
-  helmet_priest:
-    "assets/modular_human_male_01/priest/tripo_helmet_v1/helmet_priest.glb",
-  top_priest: "assets/modular_human_male_01/priest/tripo_top_v1/top_priest.glb",
-  pants_priest:
-    "assets/modular_human_male_01/priest/tripo_pants_v1/pants_priest.glb",
-  boots_priest:
-    "assets/modular_human_male_01/priest/tripo_boots_v1/boots_priest.glb",
-};
-const priestParts = Object.keys(priestSources);
-parts.push(...priestParts);
-const bardSources = {
-  top_bard: "assets/modular_human_male_01/bard/tripo_top_v1/top_bard.glb",
-  pants_bard: "assets/modular_human_male_01/bard/tripo_pants_v1/pants_bard.glb",
-  boots_bard: "assets/modular_human_male_01/bard/tripo_boots_v1/boots_bard.glb",
-};
-const bardParts = Object.keys(bardSources);
-parts.push(...bardParts);
+const outfitPartSources = Object.assign({}, ...Object.values(outfitSources));
+parts.push(...Object.keys(outfitPartSources));
 const appearanceSources = {
   face_default: `${fitted}/base.glb`,
   face_ranger:
@@ -153,10 +155,12 @@ const partSets = {
   "--sole-offsets": [],
   "--body-only": bodyParts,
   "--appearance-only": appearanceParts,
-  "--priest-only": priestParts,
-  "--bard-only": bardParts,
-  "--ranger-only": rangerParts,
-  "--caveman-only": cavemanParts,
+  ...Object.fromEntries(
+    Object.entries(outfitSources).map(([style, sources]) => [
+      `--${style}-only`,
+      Object.keys(sources),
+    ]),
+  ),
   "--outfits-only": outfitParts,
   "--rogue-only": rogueParts,
 };
@@ -169,10 +173,7 @@ if (selectedPack) selectedParts = [];
 for (const name of selectedParts) {
   const source =
     appearanceSources[name] ??
-    cavemanSources[name] ??
-    rangerSources[name] ??
-    priestSources[name] ??
-    bardSources[name] ??
+    outfitPartSources[name] ??
     (rogueParts.includes(name)
       ? (rogue.part_overrides[name] ?? `${rogue.directory}/${name}.glb`)
       : `${fitted}/${name}.glb`);

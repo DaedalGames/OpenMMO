@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { describe, expect, it, vi } from 'vitest'
 import { clipSkinnedGeometry, trimModularClothing } from './modularClothing'
 import { DEFAULT_MODULAR_OUTFIT, showModularOutfit } from './modularCharacter'
-import { cavemanBootRim, cavemanPantsBootDistance } from './cavemanBootCuff'
+import { cavemanBootCuff, cavemanBootRim } from './cavemanBootCuff'
 
 it('disposes unchanged underwear geometry once', () => {
   const geometry = new THREE.PlaneGeometry(0.2, 0.2)
@@ -188,9 +188,9 @@ describe('modular clothing cuts', () => {
       let boundary = 0
       for (let i = 0; i < position.count; i++) {
         point.fromBufferAttribute(position, i)
-        expect(cavemanPantsBootDistance(point)).toBeGreaterThanOrEqual(-1e-6)
+        expect(cavemanBootCuff.distance(point)).toBeGreaterThanOrEqual(-1e-6)
         const rim = cavemanBootRim(point)
-        if (Math.abs(cavemanPantsBootDistance(point)) < 1e-5) {
+        if (Math.abs(cavemanBootCuff.distance(point)) < 1e-5) {
           boundary++
           expect(rim.radius).toBeLessThanOrEqual(rim.innerRadius + 1e-6)
           expect(skinIndex.getX(i)).toBe(side === 1 ? 2 : 7)

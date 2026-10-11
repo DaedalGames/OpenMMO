@@ -82,6 +82,7 @@ fn class_starter_items(
             ("worn_priest_boots", 1, Some("boots")),
         ],
         CharacterClass::Bard if gender == Gender::Male => &[
+            ("worn_bard_helmet", 1, Some("head")),
             ("worn_bard_top", 1, Some("chest")),
             ("worn_bard_pants", 1, Some("pants")),
             ("worn_bard_boots", 1, Some("boots")),
@@ -2927,6 +2928,7 @@ mod tests {
                 continue;
             }
             for (id, slot) in [
+                ("worn_bard_helmet", "head"),
                 ("worn_bard_top", "chest"),
                 ("worn_bard_pants", "pants"),
                 ("worn_bard_boots", "boots"),
@@ -2940,11 +2942,11 @@ mod tests {
                 assert!(def.untradeable);
                 assert_eq!(def.guard, Some(1));
             }
-            assert_eq!(items.len(), STARTER_ITEMS.len() + 4);
+            assert_eq!(items.len(), STARTER_ITEMS.len() + 5);
+            assert_eq!(worn.armor.head.as_deref(), Some("worn_bard_helmet"));
             assert_eq!(worn.armor.chest.as_deref(), Some("worn_bard_top"));
             assert_eq!(worn.armor.pants.as_deref(), Some("worn_bard_pants"));
             assert_eq!(worn.armor.boots.as_deref(), Some("worn_bard_boots"));
-            assert!(worn.armor.head.is_none());
             assert!(worn.armor.hands.is_none());
         }
 

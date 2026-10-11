@@ -119,15 +119,16 @@ describe.skipIf(
     )
     const { modelRoot } = createCharacterModelRoot(source.scene)
     await applyCharacterArmor(modelRoot, {
+      head: 'worn_bard_helmet',
       chest: 'worn_bard_top',
       pants: 'worn_bard_pants',
       boots: 'worn_bard_boots',
     })
-    for (const part of ['top_bard', 'pants_bard', 'boots_bard'])
+    for (const part of ['helmet_bard', 'top_bard', 'pants_bard', 'boots_bard'])
       expect(visible(modelRoot, part), part).toBe(true)
     expect(computeSoleGroundOffset(modelRoot)).toBeCloseTo(0, 6)
     await applyCharacterArmor(modelRoot, {})
-    for (const part of ['top_bard', 'pants_bard', 'boots_bard'])
+    for (const part of ['helmet_bard', 'top_bard', 'pants_bard', 'boots_bard'])
       expect(visible(modelRoot, part), part).toBe(false)
     expect(
       bodyRegion(skinnedParts(modelRoot), 'legs').every((mesh) => mesh.visible)

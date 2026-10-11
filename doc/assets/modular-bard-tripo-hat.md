@@ -2,7 +2,25 @@
 
 2026-10-11. 사용자가 제공한 `Y:\public\web_downloads\green+felt+hat+3d+model.glb`를
 `/mnt/y/web_downloads/green+felt+hat+3d+model.glb`에서 읽어 원본 그대로 보관했다.
-공통 남성 머리에 피팅하고 기존 65본 리그에 연결했다. 게임 아이템·시작 장비 등록은 별도 단계다.
+공통 남성 머리에 피팅하고 기존 65본 리그에 연결했다.
+
+## 게임 시작 장비 적용 — 2026-10-11
+
+남성 바드 생성 시 `worn_bard_helmet`(낡은 음유시인 깃털 모자)을 머리 슬롯에 착용 지급한다.
+캐릭터 생성 미리보기에도 표시하며 기존 바드 복장처럼 방어 1, 거래 불가, 판매 가격 없음으로 등록했다.
+
+- 착용 모델: `client/public/models/characters/modular_male/helmet_bard.glb`.
+- 바닥 모델·아이콘: `client/public/models/armor/bard_helmet.glb`, `client/public/items/armor/bard_helmet.png`.
+- 아이템 편집본: `assets/items/bard_helmet/bard_helmet.blend`.
+- 재생성: `node tools/prepare-modular-character.mjs --part helmet_bard --parts-only`와
+  `blender -b --python tools/blender-scripts/export_priest_items.py -- --outfit bard --parts helmet`.
+
+새 AI 생성 없이 아래 피팅 원본에서 파생했다. 원본 Tripo 출처·이용 조건과 미확인 생성일·구독 등급은 그대로 따른다.
+착용 모델은 Meshopt·512px KTX2로 압축하며 입력·출력 해시는 런타임 `manifest.json`에 기록한다.
+바닥 모델은 착용 원본의 세로 방향을 유지하고 최저점을 바닥 원점에 맞춘다.
+첫 내보내기에서 의복용 X축 -90° 회전을 적용해 모자가 옆으로 섰던 문제를 수정했다.
+
+## 피팅 미리보기
 
 캐릭터 미리보기의 `?outfit=bard`와 `바드 복장 입기`에서 모자를 함께 착용한다.
 `모자·투구 → 바드 깃털 모자`로 따로 착탈할 수 있으며 선택한 헤어를 유지한다.

@@ -11,20 +11,19 @@ import bpy
 SCRIPTS = Path(__file__).resolve().parent
 REPO = SCRIPTS.parents[1]
 PARTS = ("helmet", "top", "pants", "boots")
+UPRIGHT_ITEMS = {"priest_boots", "bard_boots", "bard_helmet"}
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--outfit", choices=("priest", "bard"), default="priest")
 parser.add_argument("--parts", nargs="+", choices=PARTS)
 args = parser.parse_args(sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else [])
-parts = args.parts or (PARTS if args.outfit == "priest" else PARTS[1:])
-if args.outfit == "bard" and "helmet" in parts:
-    parser.error("The bard outfit has no helmet")
+parts = args.parts or PARTS
 
 with tempfile.TemporaryDirectory(prefix=f"{args.outfit}-items-") as temporary:
     for name in parts:
         bpy.ops.wm.read_factory_settings(use_empty=True)
         part_id = f"{name}_{args.outfit}"
         item_name = f"{args.outfit}_{name}"
-        source = REPO / f"assets/modular_human_male_01/{args.outfit}/tripo_{name}_v1/{part_id}.glb"
+        [source] = (REPO / f"assets/modular_human_male_01/{args.outfit}").glob(f"tripo_*/{part_id}.glb")
         bpy.ops.import_scene.gltf(filepath=str(source))
         meshes = [obj for obj in bpy.context.scene.objects
                   if obj.type == "MESH" and obj.get("part_id") == part_id]
@@ -53,12 +52,12 @@ with tempfile.TemporaryDirectory(prefix=f"{args.outfit}-items-") as temporary:
             filepath=str(static), export_format="GLB", use_selection=True,
             export_animations=False, export_skins=False, export_extras=False,
         )
-        upright = name != "boots"
-        icon_rotation = (25 if upright else -65, -8, -12)
+        lay_flat = item_name not in UPRIGHT_ITEMS
+        icon_rotation = (25 if lay_flat else -65, -8, -12)
         sys.argv = [str(SCRIPTS / "export_item_asset.py"), "--",
                     "--source", str(static), "--name", item_name,
                     "--category", "armor", "--size", str(size),
-                    "--rotation", "-90" if upright else "0", "0", "0",
+                    "--rotation", "-90" if lay_flat else "0", "0", "0",
                     "--icon-rotation", *(str(angle) for angle in icon_rotation),
                     "--exposure", "-1.2"]
         bpy.context.preferences.filepaths.save_version = 0

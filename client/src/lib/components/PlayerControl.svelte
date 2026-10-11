@@ -378,12 +378,7 @@
     playerControlMachine.enqueueEvent(event)
   }
 
-  // Finish the in-flight pickup (settle the ground item) using the id owned by
-  // the picking_up state. Callers always transition away from picking_up right
-  // after, which drops the id — so this finishes exactly once per pickup. This
-  // replaces the old reactive $effect backstop (L5): every path that leaves the
-  // pickup state (stand-up via click/keyboard, anim finish, dead, respawn)
-  // calls finishPendingPickup() explicitly.
+  // Settle the held item before leaving picking_up.
   function finishPendingPickup() {
     const p = pickingUpState()
     if (p) groundItemManager.finishPickup(p.pendingPickupInstanceId)
@@ -419,15 +414,16 @@
   function onPickupGrab() {
     const p = pickingUpState()
     if (!p) return
-    if (p.pickupNearby) {
-      networkManager.sendPickupNearbyItems()
-      return
-    }
-    handlePickupGrab(p.pendingPickupInstanceId, {
-      setInHand: (id) => groundItemManager.setInHand(id),
-      remove: (id) => groundItemManager.remove(id),
-      sendPickupItem: (id) => networkManager.sendPickupItem(id),
-    })
+    handlePickupGrab(
+      p.pendingPickupInstanceId,
+      {
+        setInHand: (id) => groundItemManager.setInHand(id),
+        remove: (id) => groundItemManager.remove(id),
+        sendPickupItem: (id) => networkManager.sendPickupItem(id),
+        sendPickupNearbyItems: () => networkManager.sendPickupNearbyItems(),
+      },
+      p.pickupNearby
+    )
   }
 
   function exitObjectInteraction(notify = true, then?: () => void) {
@@ -1288,9 +1284,7 @@
       instanceId,
       previousPlayerState: { ...playerState, rotation: playerRotation },
       hasGroundItem: () => item !== undefined,
-      beginPickup: (id) => {
-        if (!pickupNearby) groundItemManager.beginPickup(id)
-      },
+      beginPickup: (id) => groundItemManager.beginPickup(id),
       cancelCombat: clearCombat,
     })
 

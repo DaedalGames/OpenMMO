@@ -84,7 +84,9 @@ describe('lightweight robe motion', () => {
     const originalBytes = f.mesh.skeleton.boneMatrices!.byteLength
 
     const rig = createRobeRig(f.mesh, config)
-    expect(f.mesh.skeleton.boneMatrices!.byteLength).toBe(originalBytes + 8 * 64)
+    expect(f.mesh.skeleton.boneMatrices!.byteLength).toBe(
+      originalBytes + 8 * 64
+    )
     expect(releaseBindings).toHaveBeenCalledTimes(1)
 
     rig.update(1 / 30)

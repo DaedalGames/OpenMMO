@@ -1,8 +1,5 @@
 import { createBootCuff } from './bootCuff'
 import cuff from '../data/bardBootCuff.json'
 
-export const {
-  rim: bardBootRim,
-  distance: bardPantsBootDistance,
-  tuck: tuckPantsIntoBardBoots,
-} = createBootCuff(cuff)
+export const bardBootCuff = createBootCuff(cuff)
+export const bardBootRim = bardBootCuff.rim
