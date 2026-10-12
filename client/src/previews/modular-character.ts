@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { disposeObjects } from './dispose-objects'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
@@ -63,38 +64,6 @@ const resources: THREE.Object3D[] = [scene]
 const cleanup: (() => void)[] = []
 let disposed = false
 
-function disposeObjects(roots: THREE.Object3D[]) {
-  const geometries = new Set<THREE.BufferGeometry>()
-  const materials = new Set<THREE.Material>()
-  const textures = new Set<THREE.Texture>()
-  const skeletons = new Set<THREE.Skeleton>()
-  for (const root of roots)
-    root.traverse((node) => {
-      if (!(node instanceof THREE.Mesh)) return
-      geometries.add(node.geometry)
-      for (const material of Array.isArray(node.material)
-        ? node.material
-        : [node.material]) {
-        materials.add(material)
-        for (const value of Object.values(material)) {
-          if (value instanceof THREE.Texture) textures.add(value)
-        }
-      }
-      if (node instanceof THREE.SkinnedMesh) skeletons.add(node.skeleton)
-    })
-  for (const geometry of geometries) geometry.dispose()
-  for (const material of materials) material.dispose()
-  for (const texture of textures) {
-    if (
-      typeof ImageBitmap !== 'undefined' &&
-      texture.image instanceof ImageBitmap
-    )
-      texture.image.close()
-    texture.dispose()
-  }
-  for (const skeleton of skeletons) skeleton.dispose()
-}
-
 function dispose() {
   if (disposed) return
   disposed = true
@@ -120,6 +89,13 @@ export let preview:
 async function main() {
   if (!import.meta.env.DEV)
     throw new Error('개발 서버에서 여는 제작용 미리보기입니다.')
+  if (
+    new URLSearchParams(location.search).get('asset') === 'female-knight-bob'
+  ) {
+    const { showFemaleBob } = await import('./female-bob')
+    await showFemaleBob(scene, resources, cleanup, () => disposed)
+    return
+  }
   if (new URLSearchParams(location.search).get('character') === 'female') {
     const { showFemaleBase } = await import('./female-base')
     await showFemaleBase(scene, resources, cleanup, () => disposed)

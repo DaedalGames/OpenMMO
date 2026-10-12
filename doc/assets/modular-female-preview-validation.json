@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-12",
+  "exact_hair_bind_compatibility": true,
+  "compared_clips": [
+    "walk",
+    "combat_idle",
+    "torch_idle1",
+    "torch_run",
+    "torch_walk",
+    "torch_combat_idle",
+    "torch_sword_idle1"
+  ],
+  "maximum_track_error": 0,
+  "sources": [
+    {
+      "name": "base",
+      "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+      "sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732"
+    },
+    {
+      "name": "bob",
+      "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb",
+      "sha256": "1b34cbb5bd75b60bccf33efc8de2b7a156099b45ee94755fd32920ba3c2a155d"
+    },
+    {
+      "name": "knight",
+      "path": "assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/hair_female_knight.glb",
+      "sha256": "2f8d3f21d7218039c24ae06b69a16c325260ebe3dc7b917a6eec245f3173653b"
+    },
+    {
+      "name": "animations",
+      "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+      "sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732"
+    }
+  ]
+}

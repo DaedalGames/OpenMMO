@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-12",
+  "tool": "OpenAI Codex built-in ImageGen",
+  "tier": "ChatGPT Pro 20x",
+  "reference": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-bob-front-v1.png",
+  "output": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-bob-front-v2.png",
+  "prompt": "Use case: precise-object-edit.\nEdit target: the supplied blonde bob HAIR-ONLY front concept. Make exactly one correction: FILL THE ENTIRE LARGE CENTRAL TRANSPARENT HOLE with a continuous fully opaque sheet of shaded blonde HAIR. This includes the whole tall oval/teardrop-shaped gap from immediately underneath the part/crown to the inner bottom edge between the tips. There must be ZERO transparent hole inside the hairstyle silhouette.\nThe fill is the inward-facing rear curtain of the same bob seen behind the front locks, a recessed continuous hair surface, a little darker and less bright than the outer champagne blonde. Use muted warm dark-beige / honey-blonde midtones, NOT black, with clear fine vertical hair strands and broad gentle strand flow from top to bottom. Soft occlusion shading at the edges where the existing bright front locks overlap it conveys depth; the center remains visibly textured hair. It must not resemble a face, mannequin, skin, blank flat oval, bangs covering a face, or an opaque solid head. This is a Tripo 3D hair reference; a dark blonde continuous rear hair sheet must be clearly legible through the front opening so the generator does not create a hole in the rear scalp.\nPRESERVE the existing outer silhouette, chin-length layered bob, centered part, crown shape, pale champagne blonde outside, front lock positions and curls, light, scale, composition, and every outer tip. The added rear sheet stays strictly behind the existing locks and within their existing silhouette, with its lower edge joining the bob's existing short lower silhouette naturally. Do not lengthen the hair or add any anatomy, body, stand, accessories or text.\nOne straight-on front view only. Exterior background remains genuinely transparent RGBA; ONLY the central interior hole becomes opaque hair. No checkerboard, no glow, no black backdrop. Clean edge alpha. Hair fill must have full opacity, not a translucent veil.",
+  "license": "OpenAI generated output terms; female knight reference provenance in doc/assets/characters.md.",
+  "purpose": "Fill the transparent central opening with slightly darker blonde rear hair while retaining the transparent exterior background, at user request.",
+  "status": "Used for successful Tripo task fb994e78-cb1a-4fab-aa0f-2bea9e599fc5; raw mesh collected, fitting and rigging pending.",
+  "sha256": "69b1958013861ce6304336805f49be4ca705a7bade4a3d9cfdd5377cda14e144",
+  "size": [
+    1254,
+    1254
+  ],
+  "mode": "RGBA",
+  "alpha_range": [
+    0,
+    254
+  ],
+  "center_validation": {
+    "normalized_roi": [
+      0.4,
+      0.35,
+      0.6,
+      0.75
+    ],
+    "alpha_min": 251,
+    "alpha_max": 254,
+    "transparent_pixels": 0
+  },
+  "tripo_record": "doc/assets/modular-female-knight-bob-tripo-v1-sources.json"
+}

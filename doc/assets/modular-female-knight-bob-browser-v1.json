@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-12",
+  "url": "https://localhost:10004/modular-character-preview.html?character=female&camera=full&motion=rest",
+  "views": [
+    "full",
+    "side",
+    "back",
+    "face"
+  ],
+  "motions": [
+    "idle1",
+    "walk",
+    "run",
+    "jump",
+    "combat_idle",
+    "slash1",
+    "dying",
+    "sit_idle",
+    "idle_armed"
+  ],
+  "stats": "24,611\uc0bc\uac01\ud615 \u00b7 65\uac1c \ubcf8 \u00b7 14\uac00\uc9c0 \ub3d9\uc791",
+  "hiddenStats": "22,175\uc0bc\uac01\ud615 \u00b7 65\uac1c \ubcf8 \u00b7 14\uac00\uc9c0 \ub3d9\uc791",
+  "errors": [],
+  "hair_sha256": "1b34cbb5bd75b60bccf33efc8de2b7a156099b45ee94755fd32920ba3c2a155d",
+  "rear_review": {
+    "motion": "idle1",
+    "phases": [
+      0,
+      0.25,
+      0.5,
+      0.75,
+      1
+    ],
+    "views": [
+      "back",
+      "back-right",
+      "back-left"
+    ],
+    "camera": "Head close-up via test-only camera position overrides",
+    "visible_scalp_breakthrough": false,
+    "scope": "Rear scalp static surface samples and three-view idle close-ups; not an exhaustive animation collision test."
+  },
+  "parting_review": {
+    "motion": "idle1",
+    "phases": [
+      0,
+      0.25,
+      0.5,
+      0.75,
+      1
+    ],
+    "adjustment": "Whole-hair offset retained; rear clearance edit leaves front vertices unchanged."
+  }
+}

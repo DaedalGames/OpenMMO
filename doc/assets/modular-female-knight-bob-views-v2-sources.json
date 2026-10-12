@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-12",
+  "tool": "OpenAI Codex built-in ImageGen",
+  "tier": "ChatGPT Pro 20x",
+  "purpose": "Matching side and rear views for the corrected short bob front concept; preserve filled rear hair coverage.",
+  "license": "OpenAI generated output terms; female knight reference provenance in doc/assets/characters.md.",
+  "status": "Used for successful Tripo task fb994e78-cb1a-4fab-aa0f-2bea9e599fc5; raw mesh collected, fitting and rigging pending.",
+  "views": [
+    {
+      "view": "side",
+      "orientation": "Faces screen left; right-side reference",
+      "references": [
+        "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-bob-front-v2.png"
+      ],
+      "output": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-bob-side-v2.png",
+      "prompt": "Use case: stylized-concept.\nCreate a strict 90-degree SIDE PROFILE companion view of the EXACT SAME chin-length blonde bob HAIR OBJECT in the supplied reference. The reference is the authoritative corrected FRONT view for Tripo image-to-3D. Rotate the hair around its vertical axis until the absent face would point SCREEN LEFT, showing its anatomical right side. Not a three-quarter view. Exactly one hair object, one view.\nPreserve the same pale warm champagne-blonde color, near-center part, softly rounded crown with modest volume, substantial broad softly swept locks, subtle wave and inward-curved layered ends, bob length just under an imagined jaw and clearly above imagined shoulders. Match crown-to-tip height and proportions; do not lengthen the nape or front locks. Screen left is the frontal rim and swept front lock; screen right is the rounded occipital mass flowing down to short nape. A believable compact bob, not long hair.\nCritical topology cue: hair must continuously cover the entire rear cranium from crown over the occiput down to the nape. NO transparent hole through the main hair mass, NO bald cutout, NO horseshoe shell. Where the inner rear hair is visible near the frontal rim, show a slightly darker blonde hair-textured opaque surface as in the corrected reference, never a black or transparent cavern. Only exterior background is transparent.\nHAIR ONLY, no head, face, ears, skin, neck, shoulders, body, mannequin or stand, no decorations, clips, braids or ribbons. Fine strands are surface texture on connected substantial locks; no detached wisps. Realistic fantasy game hair asset, same diffuse neutral lighting, no glow. Center entire object with clean margins, square composition at matching vertical scale. Truly transparent RGBA outside the hair silhouette, no checkerboard, floor, cast shadow, labels or watermark.",
+      "sha256": "c98b275733ad3d8ba404104bbc6a5e6a0dee1c9ec0f17f3456fd12a5cdaae2c2",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "center_coverage": {
+        "normalized_roi": [
+          0.4,
+          0.25,
+          0.65,
+          0.75
+        ],
+        "alpha_min": 250,
+        "transparent_pixels": 0
+      }
+    },
+    {
+      "view": "back",
+      "orientation": "Straight rear view",
+      "references": [
+        "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-bob-front-v2.png",
+        "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-bob-side-v2.png"
+      ],
+      "output": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-bob-back-v2.png",
+      "prompt": "Use case: stylized-concept.\nCreate the strict straight-on BACK VIEW of the EXACT SAME short blonde bob HAIR OBJECT in the references. Reference 1 is the authoritative corrected FRONT, reference 2 is its SIDE companion. Rotate the same hairstyle 180 degrees around the vertical axis, no tilt or three-quarter turn. One object, one view only.\nPreserve warm pale champagne blonde, softly rounded crown with modest root volume, near-center part transitioning naturally into the rear crown, broad smooth layered locks with fine strand texture, subtle broad bends and inward-tucked ends. The rear bob ends at the same short nape / jaw-equivalent height as the reference, clearly above shoulders: no shoulder-length or chest-length curtain. Maintain the same height, width, round fullness and polished realistic fantasy game finish. At the back show a continuous convex rounded outer surface flowing from crown over occiput into the short softly layered ends. No dramatic deep V, no split down the middle, no added braids, clips or ponytail.\nCRITICAL: solid continuous visible hair coverage across the ENTIRE rear surface, zero central transparency, holes, face-shaped openings, bald spots or gaps between two halves. This is the exterior back hair surface, NOT the front with a dark-filled opening. Fine strands descend naturally over interconnected substantial locks. Avoid sparse flyaways and isolated thin strands. Tiny edge notches at the tips are acceptable; the main hair mass is continuous and opaque.\nHAIR ONLY: no head, face, eyes, ears, neck, skin, shoulders, body, mannequin, pedestal or clothing. No symbols or text.\nCentered square composition, whole object in frame with clear margins and matching vertical scale. Soft even diffuse studio light, consistent material and hue, no glow or cast shadow. Genuinely transparent RGBA exterior background only; no checkerboard or colored backdrop.",
+      "sha256": "70deaba969479df230c3a661e484cd31cfe86d34a166953ba2ef8b3e3ad7810f",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "center_coverage": {
+        "normalized_roi": [
+          0.4,
+          0.25,
+          0.65,
+          0.75
+        ],
+        "alpha_min": 251,
+        "transparent_pixels": 0
+      }
+    }
+  ],
+  "tripo_record": "doc/assets/modular-female-knight-bob-tripo-v1-sources.json"
+}

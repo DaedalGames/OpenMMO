@@ -7,6 +7,8 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 import wasm from 'vite-plugin-wasm'
 // @ts-expect-error no type declarations for .mjs
 import { monsterCsvPlugin } from '../tools/vitePlugin.mjs'
+// @ts-expect-error no type declarations for .mjs
+import { femalePreviewPlugin } from '../tools/femalePreviewPlugin.mjs'
 
 // https://vite.dev/config/
 function gitShortHash(): string {
@@ -116,6 +118,14 @@ function modularCharacterPreview(): Plugin {
     ),
     female_knight_hair: new URL(
       '../assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/hair_female_knight.glb',
+      import.meta.url
+    ),
+    female_knight_bob_source: new URL(
+      '../assets/modular_human_female_01/hair/tripo_knight_bob_v1/model_url.glb',
+      import.meta.url
+    ),
+    female_knight_bob: new URL(
+      '../assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb',
       import.meta.url
     ),
     helmet_bard: part('bard/tripo_hat_v1/helmet_bard.glb'),
@@ -239,6 +249,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       landOwnershipPreview(),
       modularCharacterPreview(),
+      femalePreviewPlugin(),
       monsterCsvPlugin(),
       wasm(),
       svelte(),

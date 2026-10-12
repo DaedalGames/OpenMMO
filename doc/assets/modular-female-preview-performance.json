@@ -1,0 +1,434 @@
+{
+  "date": "2026-10-12",
+  "environment": "Local headless Chromium with SwiftShader against localhost:10005; desktop forwarded connection may differ.",
+  "before": {
+    "ready_ms": 4920.899999976158,
+    "grounding_ms": 4374.400000000001,
+    "asset_bytes": 58702692
+  },
+  "after": {
+    "loads": [
+      {
+        "mode": "cold",
+        "ready_ms": 565.5,
+        "first_frame_ms": 728.0999999642372,
+        "stats": "24,611삼각형 · 65개 본 · 14가지 동작",
+        "requests": [
+          {
+            "name": "base.glb",
+            "bytes": 6197052,
+            "transfer": 6197352,
+            "ms": 22.599999964237213
+          },
+          {
+            "name": "steel_longsword.glb",
+            "bytes": 617680,
+            "transfer": 617980,
+            "ms": 9.400000035762787
+          },
+          {
+            "name": "chair.glb",
+            "bytes": 1000584,
+            "transfer": 1000884,
+            "ms": 11.399999976158142
+          },
+          {
+            "name": "torch.glb",
+            "bytes": 1516944,
+            "transfer": 1517244,
+            "ms": 15.899999976158142
+          },
+          {
+            "name": "shield_wooden.glb",
+            "bytes": 949596,
+            "transfer": 949896,
+            "ms": 11.100000023841858
+          },
+          {
+            "name": "animations.json",
+            "bytes": 747981,
+            "transfer": 748281,
+            "ms": 17.80000001192093
+          },
+          {
+            "name": "bob.glb",
+            "bytes": 2700768,
+            "transfer": 2701068,
+            "ms": 364.5
+          }
+        ]
+      },
+      {
+        "mode": "reload",
+        "ready_ms": 1417.0999999642372,
+        "first_frame_ms": 1566.3999999761581,
+        "stats": "24,611삼각형 · 65개 본 · 14가지 동작",
+        "requests": [
+          {
+            "name": "steel_longsword.glb",
+            "bytes": 617680,
+            "transfer": 300,
+            "ms": 2.799999952316284
+          },
+          {
+            "name": "base.glb",
+            "bytes": 6197052,
+            "transfer": 300,
+            "ms": 9.599999964237213
+          },
+          {
+            "name": "chair.glb",
+            "bytes": 1000584,
+            "transfer": 300,
+            "ms": 3.399999976158142
+          },
+          {
+            "name": "torch.glb",
+            "bytes": 1516944,
+            "transfer": 300,
+            "ms": 4.099999964237213
+          },
+          {
+            "name": "shield_wooden.glb",
+            "bytes": 949596,
+            "transfer": 300,
+            "ms": 3.300000011920929
+          },
+          {
+            "name": "animations.json",
+            "bytes": 747981,
+            "transfer": 300,
+            "ms": 11
+          },
+          {
+            "name": "bob.glb",
+            "bytes": 2700768,
+            "transfer": 300,
+            "ms": 12.800000011920929
+          }
+        ]
+      }
+    ],
+    "errors": [],
+    "lazy_hair_switch": {
+      "requests": [
+        "bob.glb",
+        "knight.glb"
+      ],
+      "passed": true
+    },
+    "torch_motions": [
+      "idle1",
+      "walk",
+      "run",
+      "combat_idle"
+    ],
+    "bald_load_without_hair": true,
+    "stale_hair_load_keeps_selection": true,
+    "failed_hair_retry": true
+  },
+  "asset_reduction_percent": 76.60992276129348,
+  "cache": {
+    "conditional_get_304": true,
+    "stale_derivative_rebuilt": true,
+    "concurrent_requests_same_output": true,
+    "source_and_result_unchanged": true
+  },
+  "previews": {
+    "base": {
+      "signature": "[[\"assets/modular_human_female_01/rig_v1/female-base.glb\",26623976,1791738542791.5466],[\"tools/build-female-preview.mjs\",5208,1791786618188.3179],[\"tools/lib/female-preview.mjs\",1361,1791786245266.4321]]",
+      "source_bytes": 26623976,
+      "output_bytes": 6197052,
+      "sha256": "10913959c0b7e106a88e4335361ca08a942de3e1a22ee673a651047f43f9cf3c",
+      "sources": [
+        {
+          "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+          "sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732"
+        },
+        {
+          "path": "tools/build-female-preview.mjs",
+          "sha256": "7ae5fda4267308649e8489e84247db1b64eb7895725ddda7b8b4b3697fc97be4"
+        },
+        {
+          "path": "tools/lib/female-preview.mjs",
+          "sha256": "d44f0a93eb29f4ad2b3e2ef770ce7ee5947ab2bbf3d1d7e0e3c3ee0841e166cb"
+        }
+      ],
+      "textures": [
+        {
+          "name": "NormalGL_073e85e0-595b-4a12-9030-2dc3e30566e9",
+          "before": [
+            4096,
+            4096
+          ],
+          "after": [
+            1024,
+            1024
+          ],
+          "bytes": 319040
+        },
+        {
+          "name": "Color_073e85e0-595b-4a12-9030-2dc3e30566e9",
+          "before": [
+            4096,
+            4096
+          ],
+          "after": [
+            2048,
+            2048
+          ],
+          "bytes": 474604
+        },
+        {
+          "name": "ORM_073e85e0-595b-4a12-9030-2dc3e30566e9",
+          "before": [
+            4096,
+            4096
+          ],
+          "after": [
+            1024,
+            1024
+          ],
+          "bytes": 520190
+        },
+        {
+          "name": "Natural eyelash fringe alpha",
+          "preserved": true,
+          "size": [
+            2172,
+            724
+          ]
+        }
+      ],
+      "exact_geometry_skin_animation_accessors": true
+    },
+    "bob": {
+      "signature": "[[\"assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb\",13515188,1791785499685.2185],[\"tools/build-female-preview.mjs\",5208,1791786618188.3179],[\"tools/lib/female-preview.mjs\",1361,1791786245266.4321]]",
+      "source_bytes": 13515188,
+      "output_bytes": 2700768,
+      "sha256": "30ab87a6db5d2f93ed2766cc927e378d1c42e276e52a0696552d1adbeba6ced1",
+      "sources": [
+        {
+          "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb",
+          "sha256": "1b34cbb5bd75b60bccf33efc8de2b7a156099b45ee94755fd32920ba3c2a155d"
+        },
+        {
+          "path": "tools/build-female-preview.mjs",
+          "sha256": "7ae5fda4267308649e8489e84247db1b64eb7895725ddda7b8b4b3697fc97be4"
+        },
+        {
+          "path": "tools/lib/female-preview.mjs",
+          "sha256": "d44f0a93eb29f4ad2b3e2ef770ce7ee5947ab2bbf3d1d7e0e3c3ee0841e166cb"
+        }
+      ],
+      "textures": [
+        {
+          "name": "NormalGL_fb994e78-cb1a-4fab-aa0f-2bea9e599fc5",
+          "before": [
+            4096,
+            4096
+          ],
+          "after": [
+            1024,
+            1024
+          ],
+          "bytes": 433200
+        },
+        {
+          "name": "Color_fb994e78-cb1a-4fab-aa0f-2bea9e599fc5",
+          "before": [
+            4096,
+            4096
+          ],
+          "after": [
+            2048,
+            2048
+          ],
+          "bytes": 1029924
+        },
+        {
+          "name": "ORM_fb994e78-cb1a-4fab-aa0f-2bea9e599fc5",
+          "before": [
+            4096,
+            4096
+          ],
+          "after": [
+            1024,
+            1024
+          ],
+          "bytes": 944542
+        }
+      ],
+      "exact_geometry_skin_animation_accessors": true
+    },
+    "knight": {
+      "signature": "[[\"assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/hair_female_knight.glb\",14015232,1791743615054.979],[\"tools/build-female-preview.mjs\",5208,1791786618188.3179],[\"tools/lib/female-preview.mjs\",1361,1791786245266.4321]]",
+      "source_bytes": 14015232,
+      "output_bytes": 3013616,
+      "sha256": "2590ea32c124dc3a400b4004f931fa0d7b95c99542081722a9096f17583e556a",
+      "sources": [
+        {
+          "path": "assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/hair_female_knight.glb",
+          "sha256": "2f8d3f21d7218039c24ae06b69a16c325260ebe3dc7b917a6eec245f3173653b"
+        },
+        {
+          "path": "tools/build-female-preview.mjs",
+          "sha256": "7ae5fda4267308649e8489e84247db1b64eb7895725ddda7b8b4b3697fc97be4"
+        },
+        {
+          "path": "tools/lib/female-preview.mjs",
+          "sha256": "d44f0a93eb29f4ad2b3e2ef770ce7ee5947ab2bbf3d1d7e0e3c3ee0841e166cb"
+        }
+      ],
+      "textures": [
+        {
+          "name": "NormalGL_c10df22d-f0a9-461d-b87e-a8b42409eae2",
+          "before": [
+            4096,
+            4096
+          ],
+          "after": [
+            1024,
+            1024
+          ],
+          "bytes": 394518
+        },
+        {
+          "name": "Color_c10df22d-f0a9-461d-b87e-a8b42409eae2",
+          "before": [
+            4096,
+            4096
+          ],
+          "after": [
+            2048,
+            2048
+          ],
+          "bytes": 1039486
+        },
+        {
+          "name": "ORM_c10df22d-f0a9-461d-b87e-a8b42409eae2",
+          "before": [
+            4096,
+            4096
+          ],
+          "after": [
+            1024,
+            1024
+          ],
+          "bytes": 822402
+        },
+        {
+          "name": "rear-strand-normal",
+          "before": [
+            2048,
+            2048
+          ],
+          "after": [
+            1024,
+            1024
+          ],
+          "bytes": 204834
+        },
+        {
+          "name": "hair_female_knight-back-v1",
+          "before": [
+            1024,
+            1536
+          ],
+          "after": [
+            1024,
+            1536
+          ],
+          "bytes": 296698
+        }
+      ],
+      "exact_geometry_skin_animation_accessors": true
+    },
+    "animations": {
+      "signature": "[[\"assets/modular_human_female_01/rig_v1/female-base.glb\",26623976,1791738542791.5466],[\"tools/build-female-preview.mjs\",5208,1791786618188.3179],[\"tools/lib/female-preview.mjs\",1361,1791786245266.4321],[\"client/public/models/characters/modular_male/animations/offhand.glb\",463492,1791011498223.9517],[\"client/src/previews/female-torch.ts\",8402,1791740468672.977],[\"client/src/lib/utils/characterAnimationUtils.ts\",27393,1791011440257.6768],[\"client/src/lib/utils/modularCharacter.ts\",33021,1791700863023.7969],[\"client/src/lib/utils/frameYield.ts\",985,1790475322734.7998],[\"tools/lib/headless-three.mjs\",3416,1791560323362.7266]]",
+      "source_bytes": 26623976,
+      "output_bytes": 2275780,
+      "sha256": "7c1578ef3511b0080bce02ff65c03f2726d6f5c2558c90352579140f17f2718e",
+      "sources": [
+        {
+          "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+          "sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732"
+        },
+        {
+          "path": "tools/build-female-preview.mjs",
+          "sha256": "7ae5fda4267308649e8489e84247db1b64eb7895725ddda7b8b4b3697fc97be4"
+        },
+        {
+          "path": "tools/lib/female-preview.mjs",
+          "sha256": "d44f0a93eb29f4ad2b3e2ef770ce7ee5947ab2bbf3d1d7e0e3c3ee0841e166cb"
+        },
+        {
+          "path": "client/public/models/characters/modular_male/animations/offhand.glb",
+          "sha256": "10800c4e7cc0cd984bfe504c750f335b7ac0a788579255cac4306f3ac551b8dd"
+        },
+        {
+          "path": "client/src/previews/female-torch.ts",
+          "sha256": "7521742df790841dc8f1e3ca61f42f112b0716f30ae952e8aae728dce8c20173"
+        },
+        {
+          "path": "client/src/lib/utils/characterAnimationUtils.ts",
+          "sha256": "b63398fd7d1c81d21135308c0495ecf346319a7cd074677cf7a5337dbe83e176"
+        },
+        {
+          "path": "client/src/lib/utils/modularCharacter.ts",
+          "sha256": "3b10f222f2b8fdef3e02de2d48d72bf416cd060993fa38be7f36d103d1847123"
+        },
+        {
+          "path": "client/src/lib/utils/frameYield.ts",
+          "sha256": "309c0686990d6c93d214ef108b746a77e92f5f374ae0272967be440aec5835e4"
+        },
+        {
+          "path": "tools/lib/headless-three.mjs",
+          "sha256": "55e55c5214b55cd2c232b796d747eafd76ac78146413235ab8c5201235707eb2"
+        }
+      ],
+      "clips": [
+        "walk",
+        "combat_idle",
+        "torch_idle1",
+        "torch_run",
+        "torch_walk",
+        "torch_combat_idle",
+        "torch_sword_idle1"
+      ],
+      "exact_track_roundtrip": true
+    }
+  },
+  "simplify_validation": {
+    "loads": [
+      {
+        "mode": "cold",
+        "ready_ms": 884,
+        "first_frame_ms": 1033.199999988079
+      },
+      {
+        "mode": "reload",
+        "ready_ms": 1024.1000000238419,
+        "first_frame_ms": 1502.4000000357628
+      }
+    ],
+    "note": "Cold load includes bob cache regeneration after byte-identical rig rebuild.",
+    "errors": [],
+    "lazy_hair_switch": {
+      "requests": [
+        "bob.glb",
+        "knight.glb"
+      ],
+      "passed": true
+    },
+    "torch_motions": [
+      "idle1",
+      "walk",
+      "run",
+      "combat_idle"
+    ],
+    "bald_load_without_hair": true,
+    "stale_hair_load_keeps_selection": true,
+    "failed_hair_retry": true
+  }
+}

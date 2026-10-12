@@ -1,14 +1,10 @@
 import * as THREE from 'three'
+import { disposeObjects } from './dispose-objects'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { femaleSeat, femaleSeatOffset } from './female-seat'
-import {
-  femaleTorchClips,
-  femaleTorchMotions,
-  levelGaze,
-  mirroredSwordGrip,
-} from './female-torch'
+import { femaleTorchMotions, mirroredSwordGrip } from './female-torch'
 import { poseOffHandProp } from '../lib/utils/handProps'
 import { bindModularPart } from '../lib/utils/modularCharacter'
 
@@ -32,9 +28,11 @@ export async function showFemaleBase(
       <legend>모델 살펴보기</legend>
       <label for="female-hair">헤어</label>
       <select id="female-hair">
+        <option value="bob">금발 단발</option>
         <option value="none">없음</option>
         <option value="knight">긴 금발 (보관본)</option>
       </select>
+      <a href="?asset=female-knight-bob">단발 원본 단독 보기</a>
       <label for="female-motion">동작</label>
       <select id="female-motion">
         <option value="rest">기본 A 포즈</option>
@@ -78,48 +76,84 @@ export async function showFemaleBase(
     <p id="female-stats" class="details"></p>
     <p class="details">여성 체형에 맞춘 뼈대와 동작을 확인할 수 있습니다. 복장 교체는 준비 중입니다.</p>`
   )
-  status.textContent = '여성 베이스를 불러오는 중…'
-  const loader = new GLTFLoader()
+  status.textContent = '미리보기 에셋을 준비하는 중…'
+  const loader = new GLTFLoader(new THREE.LoadingManager())
+  const hairSelect = document.getElementById('female-hair') as HTMLSelectElement
+  const requestedHair = new URLSearchParams(location.search).get('hair')
+  hairSelect.value =
+    requestedHair && ['bob', 'knight', 'none'].includes(requestedHair)
+      ? requestedHair
+      : 'bob'
+  const initialHair = hairSelect.value
+  loader.manager.onProgress = (_url, loaded, total) => {
+    if (!disposed())
+      status.textContent = `미리보기 에셋을 불러오는 중… (${loaded}/${total})`
+  }
   const [
     { scene: model, animations },
     { scene: weapon },
     { scene: chair },
     { scene: torch },
-    torchPack,
     { scene: shield },
-    { scene: hairSource },
+    prepared,
+    initialHairAsset,
   ] = await Promise.all([
-    loader.loadAsync('/__modular-character/parts/female_base.glb'),
+    loader.loadAsync('/__female-preview/base.glb'),
     loader.loadAsync('/models/weapons/steel_longsword.glb'),
     loader.loadAsync(`/models/${femaleSeat.chair.model}`),
     loader.loadAsync('/models/weapons/torch.glb'),
-    loader.loadAsync('/models/characters/modular_male/animations/offhand.glb'),
     loader.loadAsync('/models/armor/shield_wooden.glb'),
-    loader.loadAsync('/__modular-character/parts/female_knight_hair.glb'),
+    fetch('/__female-preview/animations.json').then(async (response) => {
+      if (!response.ok) throw new Error('여성 동작을 불러오지 못했습니다.')
+      return (await response.json()) as {
+        clips: ReturnType<typeof THREE.AnimationClip.toJSON>[]
+      }
+    }),
+    initialHair === 'none'
+      ? null
+      : loader.loadAsync(`/__female-preview/${initialHair}.glb`),
   ])
-  const hairMeshes = bindModularPart(model, hairSource)
-  const hairSelect = document.getElementById('female-hair') as HTMLSelectElement
-  hairSelect.value =
-    new URLSearchParams(location.search).get('hair') === 'knight'
-      ? 'knight'
-      : 'none'
-  for (const mesh of hairMeshes) mesh.visible = hairSelect.value !== 'none'
+  loader.manager.onProgress = () => {}
+  for (const data of prepared.clips) {
+    const clip = THREE.AnimationClip.parse(data)
+    const index = animations.findIndex((entry) => entry.name === clip.name)
+    if (index === -1) animations.push(clip)
+    else animations[index] = clip
+  }
+  const hairOptions: Record<string, THREE.SkinnedMesh[]> = { none: [] }
+  if (initialHairAsset)
+    hairOptions[initialHair] = bindModularPart(model, initialHairAsset.scene)
+  const pendingHair = new Map<string, Promise<THREE.SkinnedMesh[]>>()
+  const loadHair = (name: string): Promise<THREE.SkinnedMesh[]> => {
+    if (hairOptions[name]) return Promise.resolve(hairOptions[name])
+    const pending = pendingHair.get(name)
+    if (pending) return pending
+    const promise = loader
+      .loadAsync(`/__female-preview/${name}.glb`)
+      .then(({ scene: source }) => {
+        if (disposed()) {
+          disposeObjects([source])
+          return []
+        }
+        const meshes = bindModularPart(model, source)
+        for (const mesh of meshes) mesh.visible = false
+        hairOptions[name] = meshes
+        return meshes
+      })
+      .finally(() => pendingHair.delete(name))
+    pendingHair.set(name, promise)
+    return promise
+  }
+  const updateHair = () => {
+    for (const [name, meshes] of Object.entries(hairOptions))
+      for (const mesh of meshes) mesh.visible = hairSelect.value === name
+  }
+  updateHair()
   const swordGrip = animations.find((clip) => clip.name === 'idle_armed')
   const catwalk = animations.find((clip) => clip.name === 'walk')
   const combatIdle = animations.find((clip) => clip.name === 'combat_idle')
   if (!swordGrip || !catwalk || !combatIdle)
     throw new Error('검을 쥐는 손 자세 또는 걷기 동작을 찾지 못했습니다.')
-  levelGaze(model, combatIdle)
-  levelGaze(model, catwalk)
-  animations.push(
-    ...(await femaleTorchClips(
-      model,
-      torchPack,
-      swordGrip,
-      catwalk,
-      combatIdle
-    ))
-  )
   chair.scale.setScalar(1 / femaleSeat.characterHeight)
   chair.visible = false
   resources.push(chair)
@@ -150,22 +184,7 @@ export async function showFemaleBase(
   }))
   resources.push(model)
   if (disposed()) {
-    for (const resource of [model, chair]) {
-      resource.traverse((node) => {
-        if (!(node instanceof THREE.Mesh)) return
-        node.geometry.dispose()
-        for (const material of Array.isArray(node.material)
-          ? node.material
-          : [node.material]) {
-          for (const value of Object.values(material))
-            if (value instanceof THREE.Texture) {
-              if (value.image instanceof ImageBitmap) value.image.close()
-              value.dispose()
-            }
-          material.dispose()
-        }
-      })
-    }
+    disposeObjects([model, chair])
     return
   }
   scene.add(model)
@@ -236,6 +255,13 @@ export async function showFemaleBase(
     paused = value
     pause.textContent = paused ? '재생' : '일시정지'
   }
+  const updateStatus = () => {
+    status.textContent = ['idle1', 'walk', 'run', 'combat_idle'].includes(
+      motion.value
+    )
+      ? `${motion.selectedOptions[0].textContent} · ${equipment.selectedOptions[0].textContent}`
+      : motion.selectedOptions[0].textContent
+  }
   const play = () => {
     mixer.stopAllAction()
     chair.visible = motion.value === 'sit_idle'
@@ -274,11 +300,7 @@ export async function showFemaleBase(
     setPaused(false)
     updateAnimation(0)
     if (select.value === 'full' || select.value.endsWith('-hand')) reset()
-    status.textContent = ['idle1', 'walk', 'run', 'combat_idle'].includes(
-      motion.value
-    )
-      ? `${motion.selectedOptions[0].textContent} · ${equipment.selectedOptions[0].textContent}`
-      : motion.selectedOptions[0].textContent
+    updateStatus()
     updateStats()
   }
   motion.onchange = play
@@ -337,60 +359,47 @@ export async function showFemaleBase(
     scene.remove(skeleton)
     skeleton.dispose()
   })
-  let triangles = 0
-  let weaponTriangles = 0
-  let torchTriangles = 0
-  let shieldTriangles = 0
-  const hairTriangles = hairMeshes.reduce(
-    (sum, mesh) =>
-      sum +
-      (mesh.geometry.index?.count ?? mesh.geometry.attributes.position.count) /
-        3,
-    0
-  )
   const materials = new Set<THREE.MeshStandardMaterial>()
-  model.traverse((node) => {
-    if (!(node instanceof THREE.Mesh)) return
-    triangles +=
-      (node.geometry.index?.count ?? node.geometry.attributes.position.count) /
-      3
-    for (const material of Array.isArray(node.material)
-      ? node.material
-      : [node.material])
-      if (material instanceof THREE.MeshStandardMaterial)
-        materials.add(material)
-  })
-  weapon.traverse((node) => {
-    if (node instanceof THREE.Mesh)
-      weaponTriangles +=
-        (node.geometry.index?.count ??
-          node.geometry.attributes.position.count) / 3
-  })
-  torch.traverse((node) => {
-    if (node instanceof THREE.Mesh)
-      torchTriangles +=
-        (node.geometry.index?.count ??
-          node.geometry.attributes.position.count) / 3
-  })
-  shield.traverse((node) => {
-    if (node instanceof THREE.Mesh)
-      shieldTriangles +=
-        (node.geometry.index?.count ??
-          node.geometry.attributes.position.count) / 3
-  })
-  const updateStats = () => {
-    const visibleTriangles =
-      triangles -
-      (weapon.visible ? 0 : weaponTriangles) -
-      (torch.visible ? 0 : torchTriangles) -
-      (shield.visible ? 0 : shieldTriangles) -
-      (hairSelect.value === 'none' ? hairTriangles : 0)
-    document.getElementById('female-stats')!.textContent =
-      `${visibleTriangles.toLocaleString()}삼각형 · ${bones.length}개 본 · ${animations.length}가지 동작`
+  const collectMaterials = (root: THREE.Object3D) => {
+    root.traverse((node) => {
+      if (!(node instanceof THREE.Mesh)) return
+      for (const material of Array.isArray(node.material)
+        ? node.material
+        : [node.material])
+        if (material instanceof THREE.MeshStandardMaterial)
+          materials.add(material)
+    })
   }
-  hairSelect.onchange = () => {
-    for (const mesh of hairMeshes) mesh.visible = hairSelect.value !== 'none'
-    updateStats()
+  collectMaterials(model)
+  const updateStats = () => {
+    let triangles = 0
+    model.traverseVisible((node) => {
+      if (node instanceof THREE.Mesh)
+        triangles +=
+          (node.geometry.index?.count ??
+            node.geometry.attributes.position.count) / 3
+    })
+    document.getElementById('female-stats')!.textContent =
+      `${triangles.toLocaleString()}삼각형 · ${bones.length}개 본 · ${animations.length}가지 동작`
+  }
+  let appliedHair = hairSelect.value
+  hairSelect.onchange = async () => {
+    const requested = hairSelect.value
+    try {
+      const meshes = await loadHair(requested)
+      if (disposed()) return
+      for (const mesh of meshes) collectMaterials(mesh)
+      for (const material of materials) material.wireframe = wireframe.checked
+      if (hairSelect.value !== requested) return
+      appliedHair = requested
+      updateHair()
+      updateStats()
+      updateStatus()
+    } catch {
+      if (disposed() || hairSelect.value !== requested) return
+      hairSelect.value = appliedHair
+      status.textContent = '헤어를 불러오지 못했습니다. 다시 선택해 주세요.'
+    }
   }
   const host = document.getElementById('viewport')!
   const renderer = new THREE.WebGLRenderer({ antialias: true })

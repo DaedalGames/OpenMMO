@@ -1,0 +1,59 @@
+{
+  "asset": "modular_human_female_01/hair/female_knight_bob",
+  "generation_date": "2026-10-12",
+  "tool": "Tripo API",
+  "tier": "Paid API credits",
+  "license": "Tripo Terms of User Agreement; source image provenance retained separately",
+  "license_url": "https://developers.tripo3d.ai/en/terms",
+  "parameters": {
+    "model": "P2-20260801",
+    "quad": false,
+    "face_limit": 2500,
+    "texture": true,
+    "pbr": true,
+    "texture_quality": "detailed",
+    "texture_version": "v3.5-20260815",
+    "delight": true,
+    "texture_alignment": "original_image",
+    "orientation": "align_image",
+    "auto_size": false,
+    "export_uv": true,
+    "model_seed": 101202,
+    "texture_seed": 101202
+  },
+  "estimated_credits": 120,
+  "estimated_credits_basis": "Conservative balance check based on previous P2 detailed-texture API tasks; record actual API charge.",
+  "pricing_url": "https://developers.tripo3d.ai/en/pricing",
+  "api_docs": "https://developers.tripo3d.ai/en/docs/generation-multiview-to-model/p",
+  "record": "doc/assets/modular-female-knight-bob-tripo-v1-sources.json",
+  "output_dir": "assets/modular_human_female_01/hair/tripo_knight_bob_v1",
+  "scope": "One multiview short-bob hair-only generation using filled-front v2 concepts; retain source and review rear coverage. Fitting and rigging are separate.",
+  "images": [
+    {
+      "view": "front",
+      "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-bob-front-v2.png",
+      "sha256": "69b1958013861ce6304336805f49be4ca705a7bade4a3d9cfdd5377cda14e144"
+    },
+    {
+      "view": "right",
+      "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-bob-side-v2.png",
+      "sha256": "c98b275733ad3d8ba404104bbc6a5e6a0dee1c9ec0f17f3456fd12a5cdaae2c2"
+    },
+    {
+      "view": "back",
+      "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-bob-back-v2.png",
+      "sha256": "70deaba969479df230c3a661e484cd31cfe86d34a166953ba2ef8b3e3ad7810f"
+    }
+  ],
+  "reference_provenance": {
+    "record": "doc/assets/modular-female-knight-bob-front-v2-sources.json",
+    "tool": "OpenAI Codex built-in ImageGen",
+    "tier": "ChatGPT Pro 20x",
+    "date": "2026-10-12",
+    "additional_views_record": "doc/assets/modular-female-knight-bob-views-v2-sources.json"
+  },
+  "polygon_target": {
+    "triangles": 2500,
+    "reason": "Short bob part budget within a modular character; preserve facial detail and avoid post-generation decimation."
+  }
+}

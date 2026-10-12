@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-12",
+  "tool": "Blender 5.2.0 LTS",
+  "source": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/model_url.glb",
+  "source_sha256": "25bb5732e41073f00958728172ab381181a3f173727a75b771e1fe1e9638c31d",
+  "body": "assets/modular_human_female_01/rig_v1/female-base.glb",
+  "body_sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732",
+  "transform_blender": {
+    "scale": [
+      0.145,
+      0.145,
+      0.17
+    ],
+    "rotation_z_degrees": -90,
+    "translation": [
+      0,
+      0.004,
+      0.925
+    ]
+  },
+  "tip_shortening": {
+    "offset": 0.02,
+    "smooth_falloff_height_range": [
+      0.84,
+      0.945
+    ]
+  },
+  "whole_hair_offset_blender": [
+    0.0,
+    -0.0020000000949949026,
+    0.0035000001080334187
+  ],
+  "rear_clearance": {
+    "backward_offset": 0.0035,
+    "depth_falloff": [
+      0.005,
+      0.04
+    ],
+    "height_falloff": [
+      0.9,
+      0.93
+    ],
+    "rest_surface_samples": 3390,
+    "minimum_sampled_rest_clearance": 0.0013490675305547484
+  },
+  "removed_internal_triangles": 55,
+  "triangles": 2436,
+  "bounds_blender": [
+    [
+      -0.06869851797819138,
+      -0.06173797324299812,
+      0.8635414838790894
+    ],
+    [
+      0.06954734772443771,
+      0.0687607005238533,
+      1.013458490371704
+    ]
+  ],
+  "method": "Fit original bob to female head; shorten tips; remove embedded central faces; translate the whole hair; offset the rear smoothly for scalp clearance. Preserve retained UVs and original textures; no decimation.",
+  "source_file_preserved": true,
+  "retained_uvs_unchanged": true,
+  "rigging": {
+    "rig_id": "human_female_01_local_v1",
+    "bones": 65,
+    "vertices": 2929,
+    "zero_tangent_orthogonal_fallbacks": 1,
+    "method": "Rigid Head weight 1 for the short bob; exact female bone hierarchy, order and inverse bind matrices.",
+    "physics": false,
+    "output": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb",
+    "sha256": "1b34cbb5bd75b60bccf33efc8de2b7a156099b45ee94755fd32920ba3c2a155d"
+  },
+  "blender": {
+    "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/female-knight-bob-fitted.blend",
+    "sha256": "5636f7abbb232cbfe6d4976a8d042e42acadd23d63511d73bd2696ba1447ed1c",
+    "actions": [
+      "combat_idle",
+      "dying",
+      "idle1",
+      "idle_armed",
+      "jump",
+      "run",
+      "sit_idle",
+      "slash1",
+      "walk"
+    ],
+    "bones": 65
+  }
+}
