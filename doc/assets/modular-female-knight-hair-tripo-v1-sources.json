@@ -1,0 +1,172 @@
+{
+  "config": {
+    "asset": "modular_human_female_01/hair/female_knight",
+    "generation_date": "2026-10-12",
+    "tool": "Tripo API",
+    "tier": "Paid API credits",
+    "license": "Tripo Terms of User Agreement; source image provenance retained separately",
+    "license_url": "https://developers.tripo3d.ai/en/terms",
+    "parameters": {
+      "model": "P2-20260801",
+      "quad": false,
+      "face_limit": 3000,
+      "texture": true,
+      "pbr": true,
+      "texture_quality": "detailed",
+      "texture_version": "v3.5-20260815",
+      "delight": true,
+      "texture_alignment": "original_image",
+      "orientation": "align_image",
+      "auto_size": false,
+      "export_uv": true,
+      "model_seed": 101201,
+      "texture_seed": 101201
+    },
+    "estimated_credits": 120,
+    "estimated_credits_basis": "Conservative balance check based on previous P2 detailed-texture API tasks; record actual API charge.",
+    "pricing_url": "https://developers.tripo3d.ai/en/pricing",
+    "api_docs": "https://developers.tripo3d.ai/en/docs/generation-multiview-to-model/p",
+    "record": "doc/assets/modular-female-knight-hair-tripo-v1-sources.json",
+    "output_dir": "assets/modular_human_female_01/hair/tripo_knight_v1",
+    "scope": "One multiview hair-only generation; preserve raw mesh and inspect. Existing head reused; fitting and runtime integration are separate.",
+    "images": [
+      {
+        "view": "front",
+        "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-front-v1.png",
+        "sha256": "9cb67221675954941d92c10fc0eac1e362201d9e0ca03f5c449bb6071069e094"
+      },
+      {
+        "view": "right",
+        "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-side-v1.png",
+        "sha256": "e7cabcc6b03ef41dc6cf505a126d6a2adeb5f596f72b2a3b7db65705a1bfea96",
+        "orientation_note": "Profile faces screen left, showing the character's anatomical right side."
+      },
+      {
+        "view": "back",
+        "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-back-v1.png",
+        "sha256": "eab66942b949171daf73cc710a6162b30d051899042cc4d8de3c6f262e1ae471"
+      }
+    ],
+    "reference_provenance": {
+      "record": "doc/assets/modular-female-knight-hair-sources.json",
+      "tool": "OpenAI Codex built-in ImageGen",
+      "tier": "ChatGPT Pro 20x",
+      "date": "2026-10-12"
+    },
+    "polygon_target": {
+      "triangles": 3000,
+      "reason": "Allocate only a portion of the assembled modular character budget to the long hair; preserve face budget. No automatic decimation."
+    }
+  },
+  "status": "success",
+  "balance_before": {
+    "balance": 760.0,
+    "frozen": 0.0
+  },
+  "file_tokens": [
+    {
+      "front": "file_c29a4a19-2abc-43ee-8b16-2fd566417f93"
+    },
+    {
+      "right": "file_285a4988-77a1-4d6e-a78c-45f4bdda493a"
+    },
+    {
+      "back": "file_2e633ba9-3009-406a-9bbf-dc3dbf4befcb"
+    }
+  ],
+  "endpoint": "/generation/multiview-to-model",
+  "request": {
+    "model": "P2-20260801",
+    "quad": false,
+    "face_limit": 3000,
+    "texture": true,
+    "pbr": true,
+    "texture_quality": "detailed",
+    "texture_version": "v3.5-20260815",
+    "delight": true,
+    "texture_alignment": "original_image",
+    "orientation": "align_image",
+    "auto_size": false,
+    "export_uv": true,
+    "model_seed": 101201,
+    "texture_seed": 101201,
+    "inputs": [
+      {
+        "front": "file_c29a4a19-2abc-43ee-8b16-2fd566417f93"
+      },
+      {
+        "right": "file_285a4988-77a1-4d6e-a78c-45f4bdda493a"
+      },
+      {
+        "back": "file_2e633ba9-3009-406a-9bbf-dc3dbf4befcb"
+      }
+    ]
+  },
+  "task_id": "c10df22d-f0a9-461d-b87e-a8b42409eae2",
+  "task": {
+    "type": "multiview_to_model",
+    "status": "success",
+    "progress": 100,
+    "input": {
+      "pbr": true,
+      "quad": false,
+      "files": [
+        {
+          "object": {
+            "key": "tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/c29a4a19-2abc-43ee-8b16-2fd566417f93/file.png",
+            "bucket": "tripo-data"
+          }
+        },
+        null,
+        {
+          "object": {
+            "key": "tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/2e633ba9-3009-406a-9bbf-dc3dbf4befcb/file.png",
+            "bucket": "tripo-data"
+          }
+        },
+        {
+          "object": {
+            "key": "tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/285a4988-77a1-4d6e-a78c-45f4bdda493a/file.png",
+            "bucket": "tripo-data"
+          }
+        }
+      ],
+      "delight": true,
+      "texture": true,
+      "auto_size": false,
+      "export_uv": true,
+      "face_limit": 3000,
+      "model_seed": 101201,
+      "orientation": "align_image",
+      "texture_seed": 101201,
+      "model_version": "P2-20260801",
+      "texture_quality": "detailed",
+      "texture_version": "v3.5-20260815",
+      "texture_alignment": "original_image"
+    },
+    "output": {
+      "model_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/c10df22d-f0a9-461d-b87e-a8b42409eae2/tripo_pbr_model_c10df22d-f0a9-461d-b87e-a8b42409eae2.glb?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfZDQ0N2Y5NzczZGQzNDA5M2JiZDY2MWEyMWNkM2I5ZDIvMjAyNjEwMTEvYzEwZGYyMmQtZjBhOS00NjFkLWI4N2UtYThiNDI0MDllYWUyL3RyaXBvX3Bicl9tb2RlbF9jMTBkZjIyZC1mMGE5LTQ2MWQtYjg3ZS1hOGI0MjQwOWVhZTIuZ2xiIiwiQ29uZGl0aW9uIjp7IkRhdGVMZXNzVGhhbiI6eyJBV1M6RXBvY2hUaW1lIjoxNzkxODI4MzExfX19XX0_&Signature=YcJeJdFrz6STJ1xZuyG9SXPqo0mJz3TwNJz~run4zF-nVGwTyDWKxzXBlUFPlOjlSYpW3vEvcI8LU6x0Oz7LiMXrk38PmNz9IGb7~wcpQELs74NzLFTrNuLvTnreVglEVOpbRtw41gIVwOQWqPx~avXfvs6V00mQKnLAgZZcOTKwQ68XS16kXWndJXUNz-J18AxLZEVbd0EssMCFQBnYpEwPg9St9o5W8tlUwCdHc0ByQHQK8TM309xdf8zomTX6rd6iIhVq3f0sFZHQP4D90vV1PE-6k7aKvXgwE1Z6OJSF~TJNXuSRfa1oqOD-YCN8n2Kkt8RWLJcdicXC-L8kzQ__&Key-Pair-Id=K1676C64NMVM2J",
+      "rendered_image_url": "https://tripo-data.rg1.data.tripo3d.com/tcli_d447f9773dd34093bbd661a21cd3b9d2/20261011/c10df22d-f0a9-461d-b87e-a8b42409eae2/legacy_mesh.webp?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cHM6Ly90cmlwby1kYXRhLnJnMS5kYXRhLnRyaXBvM2QuY29tL3RjbGlfZDQ0N2Y5NzczZGQzNDA5M2JiZDY2MWEyMWNkM2I5ZDIvMjAyNjEwMTEvYzEwZGYyMmQtZjBhOS00NjFkLWI4N2UtYThiNDI0MDllYWUyL2xlZ2FjeV9tZXNoLndlYnAiLCJDb25kaXRpb24iOnsiRGF0ZUxlc3NUaGFuIjp7IkFXUzpFcG9jaFRpbWUiOjE3OTE4MjgzMTF9fX1dfQ__&Signature=Tu4Q~AoIarq4sVKazlqFGj4Rvwa6iGz3LCfApqX31jJ7IlqmUqVnm7d7GDvsRt7Zvlmpjg-aDzCIjJfN6XsGHWEZ5RZebqB4VVgPZJf6SnIChYNVCs-Ob~bHaLuxU3iCTSA6tMv0qk87Uo8irw~w-B2FaLjxM1QA6O1HVUbygZ1LAtSyr6qmIa9fInpoH0EagxcKbRB0XwdjLRqYAURLFbtgDjGsCX5WufFyhqvCzt4zsBCnAw1jh0tN1qJvZKEGC~Bo2v2l55Xq1ddq6cewAFYskqoi4-9HP7-PJJiAcasWpi~Ih-othL~dCvypskkW9BdjcxZFPLiznVZZjQAk9A__&Key-Pair-Id=K1676C64NMVM2J"
+    },
+    "task_id": "c10df22d-f0a9-461d-b87e-a8b42409eae2",
+    "created_at": "2026-10-11T18:03:35.286896Z",
+    "completed_at": "2026-10-11T18:04:34.737763Z",
+    "credits_consumed": 120.0
+  },
+  "balance_latest": {
+    "balance": 640.0,
+    "frozen": 0.0
+  },
+  "files": {
+    "model_url": {
+      "path": "assets/modular_human_female_01/hair/tripo_knight_v1/model_url.glb",
+      "bytes": 10795496,
+      "sha256": "70fa1340f73c89b2f880e3758fa5c28a1a8c6b8aa8af5a22896d9e1fe1f6b20d"
+    },
+    "rendered_image_url": {
+      "path": "assets/modular_human_female_01/hair/tripo_knight_v1/rendered_image_url.png",
+      "bytes": 155458,
+      "sha256": "df9d85c70605e9bad7689fe973049e25c2571fbd66093676d3b181ad4bb2a3ec"
+    }
+  }
+}

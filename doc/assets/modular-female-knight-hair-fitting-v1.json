@@ -1,0 +1,99 @@
+{
+  "date": "2026-10-12",
+  "source": "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/hair_female_knight-rear-filled-v1.glb",
+  "source_sha256": "c2c06c089720f24b0eb420797eb1db9ca204a79b33ab5b11c9804ef39a72031f",
+  "body": "assets/modular_human_female_01/rig_v1/female-base.glb",
+  "body_sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732",
+  "transform_blender": {
+    "scale": [
+      0.32,
+      0.38,
+      0.4
+    ],
+    "rotation_z_degrees": -90,
+    "translation": [
+      0,
+      0.003,
+      0.806
+    ]
+  },
+  "clearance_target_source_units": 0.0035,
+  "fitting": [
+    {
+      "mesh": "hair_female_knight_rear",
+      "vertices": 1073,
+      "maximum_clearance_displacement": 0.01998151990508007,
+      "changed_vertices": 756
+    },
+    {
+      "mesh": "hair_female_knight_front",
+      "vertices": 1342,
+      "maximum_clearance_displacement": 0.06988289017610429,
+      "changed_vertices": 1036
+    }
+  ],
+  "method": "Remove redundant isolated central curtain replaced by the rear fill; fit crown to female scalp; nearest-surface scalp clearance and continuous front/back drape offsets around the torso.",
+  "rigging": {
+    "rig_id": "human_female_01_local_v1",
+    "bones": 65,
+    "method": "Transfer smoothly averaged female torso surface weights, exclude arms, and blend to rigid Head above the neck; exact female bind matrices and bone order.",
+    "parts": {
+      "hair_female_knight_front": {
+        "vertices": 2628,
+        "rigid_head_vertices": 784,
+        "max_weight_sum_error": 2.220446049250313e-16
+      },
+      "hair_female_knight_rear": {
+        "vertices": 1073,
+        "rigid_head_vertices": 319,
+        "max_weight_sum_error": 3.3306690738754696e-16
+      }
+    },
+    "physics": false,
+    "output": "assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/hair_female_knight.glb",
+    "sha256": "2f8d3f21d7218039c24ae06b69a16c325260ebe3dc7b917a6eec245f3173653b"
+  },
+  "blender": {
+    "path": "assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/female-knight-hair-fitted.blend",
+    "sha256": "24a315c22b9f6c6076c2ca08c47a900d8dfe9a606c1df5986be40e49e748371f",
+    "actions": [
+      "combat_idle",
+      "dying",
+      "idle1",
+      "idle_armed",
+      "jump",
+      "run",
+      "sit_idle",
+      "slash1",
+      "walk"
+    ],
+    "bones": 65
+  },
+  "triangles": {
+    "hair": 4386,
+    "removed_redundant_curtain": 449,
+    "body": 22175,
+    "assembled_including_hidden": 26561,
+    "visible_meshes": 26561,
+    "face_region": 4604
+  },
+  "tools": {
+    "fitting": "Blender 5.2.0 LTS",
+    "rigging": "local Python, canonical female rig",
+    "additional_api_credits": 0
+  },
+  "review": {
+    "animation_report": "doc/assets/modular-female-knight-hair-animation-v1.json",
+    "browser_report": "doc/assets/modular-female-knight-hair-browser-v1.json",
+    "poses": 549,
+    "crown_attachment": "passed",
+    "bind_compatibility": "passed",
+    "stretch_warning": "dying maximum edge stretch about 2.28x; extreme deformation is not fully accepted",
+    "physics": false,
+    "armor_helmet_compatibility": "unverified",
+    "application": "local female preview only"
+  },
+  "status": "unused_archived_at_user_request",
+  "archive_date": "2026-10-12",
+  "archive_reason": "Long hair fitting complexity; continue with chin-length hair in a new version."
+}

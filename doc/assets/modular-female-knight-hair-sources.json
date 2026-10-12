@@ -1,0 +1,76 @@
+{
+  "date": "2026-10-12",
+  "tool": "OpenAI Codex built-in ImageGen",
+  "tier": "ChatGPT Pro 20x",
+  "purpose": "Female knight hair-only front, side and back concepts for Tripo; reuse existing head.",
+  "reference": {
+    "path": "client/public/character_concepts/female_knight.webp",
+    "sha256": "0e15464d6b7f0a447644437e5cbdbc3252bc43dc1928609020052adadf6f717a"
+  },
+  "output": {
+    "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-front-v1.png",
+    "sha256": "9cb67221675954941d92c10fc0eac1e362201d9e0ca03f5c449bb6071069e094",
+    "width": 1024,
+    "height": 1536,
+    "mode": "RGBA",
+    "alpha_range": [
+      0,
+      254
+    ],
+    "fully_transparent_pixels": 882067
+  },
+  "prompt": "Use case: stylized-concept\nAsset type: isolated modular female-knight HAIR ONLY concept art for subsequent Tripo image-to-3D generation.\nInput image: reference image, the project's existing female knight character. Preserve the reference hairstyle, not the character body.\nPrimary request: produce one high-resolution front-view isolated hair asset, with NO head, NO face, NO skin, NO ears, NO neck, NO shoulders, NO body, NO armor and NO mannequin anywhere. The existing 3D head will be reused separately.\nDesign: warm pale champagne-blonde long hair from the reference, a near-center slightly offset part, smooth rounded crown with modest root volume, two long face-framing front sections falling down both sides and curving gently outward and then inward toward tapered ends below the chest, and a coherent rear curtain. Mostly straight with broad soft bends, not tight curls. Preserve reference length and silhouette. Hair should look like a removable realistic game-character wig with the empty face opening clearly readable; rear hair may be visible behind that opening, but there must be no face-shaped solid insert.\nComposition: exactly ONE complete hair object in a straight-on front view, centered and upright, full crown and all long tips in frame with generous clear margins. Long portrait composition. No multiple views, no inset, no diagram.\nStyle: polished realistic fantasy game asset concept, soft even neutral studio light, clear three-dimensional locks and natural golden-blonde tonal variation. Build hair from continuous substantial clumps suitable for reconstruction, with finer strands expressed as surface detail; avoid fuzzy flyaways and thin detached strands. Keep the hairstyle natural, not a helmet.\nBackground: genuinely transparent RGBA background including all empty spaces around the object; no checkerboard painted in, no floor, no cast shadow, no text or watermark.\nConstraints: HAIR ONLY. Do not draw the referenced woman, any anatomy, clothing, accessories, hair ties, braids or jewelry.",
+  "license": "OpenAI generated output terms; reference provenance and usage conditions recorded in doc/assets/characters.md (Female Knight).",
+  "status": "Concept candidate; no Tripo generation, fitting, or runtime replacement performed.",
+  "additional_views": [
+    {
+      "view": "side",
+      "orientation": "Strict side profile, absent face points screen left",
+      "prompt": "Use case: stylized-concept.\nCreate the EXACT SAME isolated modular hair asset from the supplied front-view reference, now in a strict 90-degree SIDE PROFILE, facing screen LEFT (where the absent face would point). One hair object, one view only.\nInput is a design reference: preserve pale warm champagne-blonde color, near-center part, softly rounded crown, modest root volume, long face-framing S-bent front locks and coherent long rear curtain, same length and volume and fine strand texture. This is a companion view for Tripo reconstruction, not a new hairstyle. Visualize rotation around the vertical axis with no tilt, no three-quarter view. From the side, crown cap flows backward to the long rear sheet; the long front lock hangs on the screen-left side, the rear sheet on screen-right, with natural depth separation. Rear length consistent with reference. Do not add curls, braids, bangs, ties or ornaments.\nHAIR ONLY, removable wig-shaped hair shell. No head, face, skin, ears, neck, bust, shoulders, clothes, stand or mannequin. Leave the empty head/face space genuinely transparent; do not draw a skin-colored or gray fill. Render substantial connected locks with fine surface strand detail suitable for a realistic fantasy game.\nPortrait 1024x1536 composition, entire crown and every tip visible, same vertical scale as reference, centered with clear margins. Soft even neutral studio illumination, same materials and brightness. Truly transparent RGBA background, no painted checkerboard, no floor, no shadow, no text. Do not reproduce the reference image's dark backdrop or glow; all empty space must be alpha zero.",
+      "references": [
+        "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-front-v1.png"
+      ],
+      "generated_path": "/home/jake/.codex/generated_images/01a12c1c-95b8-7d72-a50a-ac5abbea676b/exec-7754e41b-902a-4397-8deb-e9bccfa15956.png",
+      "output": {
+        "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-side-v1.png",
+        "sha256": "e7cabcc6b03ef41dc6cf505a126d6a2adeb5f596f72b2a3b7db65705a1bfea96",
+        "width": 1024,
+        "height": 1536,
+        "mode": "RGBA",
+        "alpha_range": [
+          0,
+          253
+        ],
+        "fully_transparent_pixels": 955073
+      },
+      "date": "2026-10-12",
+      "tool": "OpenAI Codex built-in ImageGen",
+      "tier": "ChatGPT Pro 20x"
+    },
+    {
+      "view": "back",
+      "orientation": "Straight rear view",
+      "prompt": "Use case: stylized-concept.\nCreate a strict straight-on BACK VIEW of the EXACT SAME isolated female knight HAIR asset shown in the two references. Reference 1 is the authoritative front design; reference 2 is the companion side view. This is the matching rear view for Tripo reconstruction, not a new hairstyle.\nRotate the same hair 180 degrees around the vertical axis with no camera tilt: show only the outside rear surface of the hair, no face opening in the back, no front view, no three-quarter view. Exactly one hair object and one view.\nPreserve warm pale champagne-blonde, softly rounded crown and modest root volume, same hair length and overall fullness, gently bending S-shaped long locks with tapered ends and finely detailed strand surface. The crown part blends naturally into a continuous coherent rear curtain; no seam splitting the back into two halves. The back is mostly smooth long hair with broad gentle bends, not ringlets, no added braids, ties, clips, ornaments or bangs. Full hair extends from crown down below the chest-equivalent level, matching the reference proportions and long rounded/tapered lower silhouette. Use substantial connected hair locks, fine strands as surface detail, no noisy detached flyaways.\nHAIR ONLY: no head, face, skin, ears, neck, body, shoulders, clothes, armor, mannequin, pedestal or stand. A removable realistic game-character hair shell.\nPortrait 1024x1536 composition, entire crown and every tip in frame, same vertical scale as reference and clear margins. Soft even neutral studio lighting, same realistic fantasy game asset finish, same blonde color and brightness.\nGenuinely transparent RGBA background around the hair and any gaps. No painted checkerboard, no dark background, no glow, no cast shadow, no text or watermark.",
+      "references": [
+        "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-front-v1.png",
+        "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-side-v1.png"
+      ],
+      "generated_path": "/home/jake/.codex/generated_images/01a12c1c-95b8-7d72-a50a-ac5abbea676b/exec-df6bb1aa-1aed-459a-ae9b-e3b68597852c.png",
+      "output": {
+        "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-back-v1.png",
+        "sha256": "eab66942b949171daf73cc710a6162b30d051899042cc4d8de3c6f262e1ae471",
+        "width": 1024,
+        "height": 1536,
+        "mode": "RGBA",
+        "alpha_range": [
+          0,
+          254
+        ],
+        "fully_transparent_pixels": 822756
+      },
+      "date": "2026-10-12",
+      "tool": "OpenAI Codex built-in ImageGen",
+      "tier": "ChatGPT Pro 20x"
+    }
+  ]
+}

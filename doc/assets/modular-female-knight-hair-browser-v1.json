@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-12",
+  "url": "https://localhost:10004/modular-character-preview.html?character=female&camera=full&motion=rest",
+  "views": [
+    "full",
+    "side",
+    "back",
+    "face"
+  ],
+  "motions": [
+    "idle1",
+    "walk",
+    "run",
+    "jump",
+    "combat_idle",
+    "slash1",
+    "dying",
+    "sit_idle",
+    "idle_armed"
+  ],
+  "stats": "26,561삼각형 · 65개 본 · 14가지 동작",
+  "hiddenStats": "22,175삼각형 · 65개 본 · 14가지 동작",
+  "errors": [],
+  "hair_sha256": "2f8d3f21d7218039c24ae06b69a16c325260ebe3dc7b917a6eec245f3173653b",
+  "base_sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732",
+  "frontend_checks": {
+    "npm run check": "passed: 0 errors, 0 warnings",
+    "npm run lint": "passed"
+  },
+  "archive_check": {
+    "date": "2026-10-12",
+    "default_hair": "none",
+    "hidden": "22,175삼각형 · 65개 본 · 14가지 동작",
+    "selected_archive": "26,561삼각형 · 65개 본 · 14가지 동작",
+    "errors": []
+  }
+}

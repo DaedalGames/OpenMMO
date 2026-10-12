@@ -10,6 +10,7 @@ import {
   mirroredSwordGrip,
 } from './female-torch'
 import { poseOffHandProp } from '../lib/utils/handProps'
+import { bindModularPart } from '../lib/utils/modularCharacter'
 
 export async function showFemaleBase(
   scene: THREE.Scene,
@@ -29,6 +30,11 @@ export async function showFemaleBase(
     `
     <fieldset id="female-controls" disabled>
       <legend>모델 살펴보기</legend>
+      <label for="female-hair">헤어</label>
+      <select id="female-hair">
+        <option value="none">없음</option>
+        <option value="knight">긴 금발 (보관본)</option>
+      </select>
       <label for="female-motion">동작</label>
       <select id="female-motion">
         <option value="rest">기본 A 포즈</option>
@@ -81,6 +87,7 @@ export async function showFemaleBase(
     { scene: torch },
     torchPack,
     { scene: shield },
+    { scene: hairSource },
   ] = await Promise.all([
     loader.loadAsync('/__modular-character/parts/female_base.glb'),
     loader.loadAsync('/models/weapons/steel_longsword.glb'),
@@ -88,7 +95,15 @@ export async function showFemaleBase(
     loader.loadAsync('/models/weapons/torch.glb'),
     loader.loadAsync('/models/characters/modular_male/animations/offhand.glb'),
     loader.loadAsync('/models/armor/shield_wooden.glb'),
+    loader.loadAsync('/__modular-character/parts/female_knight_hair.glb'),
   ])
+  const hairMeshes = bindModularPart(model, hairSource)
+  const hairSelect = document.getElementById('female-hair') as HTMLSelectElement
+  hairSelect.value =
+    new URLSearchParams(location.search).get('hair') === 'knight'
+      ? 'knight'
+      : 'none'
+  for (const mesh of hairMeshes) mesh.visible = hairSelect.value !== 'none'
   const swordGrip = animations.find((clip) => clip.name === 'idle_armed')
   const catwalk = animations.find((clip) => clip.name === 'walk')
   const combatIdle = animations.find((clip) => clip.name === 'combat_idle')
@@ -326,6 +341,13 @@ export async function showFemaleBase(
   let weaponTriangles = 0
   let torchTriangles = 0
   let shieldTriangles = 0
+  const hairTriangles = hairMeshes.reduce(
+    (sum, mesh) =>
+      sum +
+      (mesh.geometry.index?.count ?? mesh.geometry.attributes.position.count) /
+        3,
+    0
+  )
   const materials = new Set<THREE.MeshStandardMaterial>()
   model.traverse((node) => {
     if (!(node instanceof THREE.Mesh)) return
@@ -361,9 +383,14 @@ export async function showFemaleBase(
       triangles -
       (weapon.visible ? 0 : weaponTriangles) -
       (torch.visible ? 0 : torchTriangles) -
-      (shield.visible ? 0 : shieldTriangles)
+      (shield.visible ? 0 : shieldTriangles) -
+      (hairSelect.value === 'none' ? hairTriangles : 0)
     document.getElementById('female-stats')!.textContent =
       `${visibleTriangles.toLocaleString()}삼각형 · ${bones.length}개 본 · ${animations.length}가지 동작`
+  }
+  hairSelect.onchange = () => {
+    for (const mesh of hairMeshes) mesh.visible = hairSelect.value !== 'none'
+    updateStats()
   }
   const host = document.getElementById('viewport')!
   const renderer = new THREE.WebGLRenderer({ antialias: true })

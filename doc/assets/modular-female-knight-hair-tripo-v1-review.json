@@ -1,0 +1,96 @@
+{
+  "triangles": 2819,
+  "mesh_count": 1,
+  "meshes": [
+    {
+      "name": "tripo_node_c10df22d-f0a9-461d-b87e-a8b42409eae2",
+      "components_vertex_counts": [
+        1342,
+        259
+      ],
+      "boundary_edges": 388,
+      "nonmanifold_edges": 393,
+      "degenerate_faces": 0,
+      "collapsed_uv_triangles": 0
+    }
+  ],
+  "source_extent_blender": [
+    0.3775547444820404,
+    0.5021911859512329,
+    0.99951171875
+  ],
+  "rigged": false,
+  "source": "assets/modular_human_female_01/hair/tripo_knight_v1/model_url.glb",
+  "sha256": "70fa1340f73c89b2f880e3758fa5c28a1a8c6b8aa8af5a22896d9e1fe1f6b20d",
+  "status": "Raw generated hair; not fitted or rigged",
+  "bounds": {
+    "min": [
+      -0.1887773722410202,
+      -0.25109559297561646,
+      -0.499755859375
+    ],
+    "max": [
+      0.1887773722410202,
+      0.25109562277793884,
+      0.499755859375
+    ]
+  },
+  "textures": [
+    {
+      "name": "Color_c10df22d-f0a9-461d-b87e-a8b42409eae2",
+      "size": [
+        4096,
+        4096
+      ]
+    },
+    {
+      "name": "NormalGL_c10df22d-f0a9-461d-b87e-a8b42409eae2",
+      "size": [
+        4096,
+        4096
+      ]
+    },
+    {
+      "name": "ORM_c10df22d-f0a9-461d-b87e-a8b42409eae2",
+      "size": [
+        4096,
+        4096
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "tripo_material_c10df22d-f0a9-461d-b87e-a8b42409eae2",
+      "nodes": true
+    }
+  ],
+  "visual_review": {
+    "front": "Blonde part and long wavy locks broadly match the front concept. No head or body generated.",
+    "side": "Hair shell and long locks visible; upper rear silhouette is truncated.",
+    "back": "Upper rear curtain is missing/open; inner surfaces and angular patches are exposed. Does not match the complete rear concept.",
+    "disposition": "Generated source candidate requiring rear geometry correction and fitting before game use. No regeneration or runtime replacement performed."
+  },
+  "inspection_method": "Blender glTF import; four Cycles renders. Topology counts are computed on a temporary welded BMesh; source mesh is unchanged.",
+  "artifacts": {
+    "assets/modular_human_female_01/hair/tripo_knight_v1/source.blend": {
+      "bytes": 10891747,
+      "sha256": "835a3368b18a8c2dc0784667a9dd27198c99ef1af175fc80942c89d9016f059b"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/review/angle.png": {
+      "bytes": 551348,
+      "sha256": "57dfcfcfa7225dfa02aac7ea2071a03a024eeb45387284e1f79d58ca0d550547"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/review/back.png": {
+      "bytes": 526063,
+      "sha256": "9d912d342391d24835736024a15c0d710aa4a6488e8a85611192d0aa620d4edb"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/review/front.png": {
+      "bytes": 532480,
+      "sha256": "6b1921629b6864f51fc2b869f344cc45da883ad7019d7752cbb7919acfeaec4c"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/review/side.png": {
+      "bytes": 516089,
+      "sha256": "0e7c3912f3b62c81e5c6be6c96eee3199afdd195a4c73a6f02fb443ad044abeb"
+    }
+  }
+}

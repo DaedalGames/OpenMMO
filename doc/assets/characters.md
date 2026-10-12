@@ -155,6 +155,7 @@ NPC 제작 원본과 작업본은 `assets/npcs/<name>/`에 보관한다. 게임�
 
 ## Female Knight
 
+- [Tripo 제작용 헤어 단독 정면·측면·후면 원화](modular-female-knight-hair.md) — 2026-10-12, Codex ImageGen / ChatGPT Pro 20x. 기존 머리 재사용.
 - (초기) ComfyUI에서 jibMixZIT_v10.safetensors로 원화 생성 ![원화](../images/characters/female-knight-concept.png)
 - 현재 원화 ![원화](../../client/public/character_concepts/female_knight.webp) (그리기: ComfyUI jibMixZIT_v10, A포즈 변경만 Qwen Image Edit; ChatGPT Pro 20x로 배경 투명화·키 약간 축소, 2026-08-28; WebP q85)
 - Tripo(유료 등급)에서 3d 모델로 변환 -> 10k 모델로 리매쉬

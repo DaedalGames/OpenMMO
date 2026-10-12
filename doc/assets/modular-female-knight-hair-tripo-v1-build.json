@@ -1,0 +1,59 @@
+{
+  "asset": "modular_human_female_01/hair/female_knight",
+  "generation_date": "2026-10-12",
+  "tool": "Tripo API",
+  "tier": "Paid API credits",
+  "license": "Tripo Terms of User Agreement; source image provenance retained separately",
+  "license_url": "https://developers.tripo3d.ai/en/terms",
+  "parameters": {
+    "model": "P2-20260801",
+    "quad": false,
+    "face_limit": 3000,
+    "texture": true,
+    "pbr": true,
+    "texture_quality": "detailed",
+    "texture_version": "v3.5-20260815",
+    "delight": true,
+    "texture_alignment": "original_image",
+    "orientation": "align_image",
+    "auto_size": false,
+    "export_uv": true,
+    "model_seed": 101201,
+    "texture_seed": 101201
+  },
+  "estimated_credits": 120,
+  "estimated_credits_basis": "Conservative balance check based on previous P2 detailed-texture API tasks; record actual API charge.",
+  "pricing_url": "https://developers.tripo3d.ai/en/pricing",
+  "api_docs": "https://developers.tripo3d.ai/en/docs/generation-multiview-to-model/p",
+  "record": "doc/assets/modular-female-knight-hair-tripo-v1-sources.json",
+  "output_dir": "assets/modular_human_female_01/hair/tripo_knight_v1",
+  "scope": "One multiview hair-only generation; preserve raw mesh and inspect. Existing head reused; fitting and runtime integration are separate.",
+  "images": [
+    {
+      "view": "front",
+      "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-front-v1.png",
+      "sha256": "9cb67221675954941d92c10fc0eac1e362201d9e0ca03f5c449bb6071069e094"
+    },
+    {
+      "view": "right",
+      "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-side-v1.png",
+      "sha256": "e7cabcc6b03ef41dc6cf505a126d6a2adeb5f596f72b2a3b7db65705a1bfea96",
+      "orientation_note": "Profile faces screen left, showing the character's anatomical right side."
+    },
+    {
+      "view": "back",
+      "path": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-back-v1.png",
+      "sha256": "eab66942b949171daf73cc710a6162b30d051899042cc4d8de3c6f262e1ae471"
+    }
+  ],
+  "reference_provenance": {
+    "record": "doc/assets/modular-female-knight-hair-sources.json",
+    "tool": "OpenAI Codex built-in ImageGen",
+    "tier": "ChatGPT Pro 20x",
+    "date": "2026-10-12"
+  },
+  "polygon_target": {
+    "triangles": 3000,
+    "reason": "Allocate only a portion of the assembled modular character budget to the long hair; preserve face budget. No automatic decimation."
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "triangles": 4835,
+  "mesh_count": 2,
+  "meshes": [
+    {
+      "name": "tripo_node_c10df22d-f0a9-461d-b87e-a8b42409eae2",
+      "components_vertex_counts": [
+        1342,
+        259
+      ],
+      "boundary_edges": 388,
+      "nonmanifold_edges": 393,
+      "degenerate_faces": 0,
+      "collapsed_uv_triangles": 0
+    },
+    {
+      "name": "hair_knight_rear_fill",
+      "components_vertex_counts": [
+        1073
+      ],
+      "boundary_edges": 128,
+      "nonmanifold_edges": 128,
+      "degenerate_faces": 0,
+      "collapsed_uv_triangles": 0
+    }
+  ],
+  "source_extent_blender": [
+    0.40456119179725647,
+    0.5021911859512329,
+    0.99951171875
+  ],
+  "rigged": false,
+  "date": "2026-10-12",
+  "source": "assets/modular_human_female_01/hair/tripo_knight_v1/model_url.glb",
+  "source_sha256": "70fa1340f73c89b2f880e3758fa5c28a1a8c6b8aa8af5a22896d9e1fe1f6b20d",
+  "output": "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/hair_female_knight-rear-filled-v1.glb",
+  "output_sha256": "c2c06c089720f24b0eb420797eb1db9ca204a79b33ab5b11c9804ef39a72031f",
+  "reference": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-back-v1.png",
+  "reference_sha256": "eab66942b949171daf73cc710a6162b30d051899042cc4d8de3c6f262e1ae471",
+  "method": "Add curved rear crown and continuous hair curtain with shallow lock relief, projected rear concept UVs, with a double-sided hair surface and baked fine-strand tangent normals. Original meshes unchanged.",
+  "status": "Local repair candidate; not fitted or rigged",
+  "extra_api_credits": 0,
+  "validation": {
+    "export_reimport_passed": true,
+    "rear_coverage_ray_samples": 105,
+    "rear_coverage_hits": 105,
+    "sampled_fill_behind_face_space": true,
+    "added_triangles": 2016,
+    "finite_positions": true,
+    "visual_views": [
+      "front",
+      "side",
+      "back",
+      "angle",
+      "top"
+    ],
+    "scope": "Rear surface coverage and exported geometry; no head fit or animation validation.",
+    "original_triangles_and_uv_preserved_at_1e_minus_5_precision": true
+  },
+  "license": "Tripo source terms and existing ImageGen rear concept terms; local Blender geometry repair.",
+  "tier": "Local Blender processing; source Tripo paid API, rear reference ChatGPT Pro 20x.",
+  "iterations": [
+    "Rejected full silhouette UV mapping with gaps and excessive shell geometry.",
+    "Rejected partial upper fill with visible crown gap.",
+    "Rejected unsmoothed edge ray placement with side spikes.",
+    "Accepted smooth rear profile, continuous interior UV region and baked strand normals."
+  ],
+  "artifacts": {
+    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/angle.png": {
+      "bytes": 523161,
+      "sha256": "f9843e72d2cfc7686df8ee510ce37c5c7fa63f6b2900c12a5535db124f6c0227"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/back.png": {
+      "bytes": 498202,
+      "sha256": "8d06ada940af615171556e1b5adb4d4954db38ac66c32122923aa4465e1bcf86"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/front.png": {
+      "bytes": 540323,
+      "sha256": "7606eb8f99013d1575f631cfe61562b498183b0f4a9a1fd07f0d3d95054968c7"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/hair_female_knight-rear-filled-v1.blend": {
+      "bytes": 13979055,
+      "sha256": "aabbc0d38b13d2e75f4b061b8a8a07e39dde9fab9a2f3817c2e4f4d57881160a"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/hair_female_knight-rear-filled-v1.glb": {
+      "bytes": 13926252,
+      "sha256": "c2c06c089720f24b0eb420797eb1db9ca204a79b33ab5b11c9804ef39a72031f"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/rear-strand-normal.png": {
+      "bytes": 1101265,
+      "sha256": "d88530900c499054c6c2daff04e5661ef6fb3caf4c4d08eaab9cb77d8b1180af"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/side.png": {
+      "bytes": 533887,
+      "sha256": "4455555bfa8c460811723b8ffa3b3cf1d277c74bad057d018919b05c378bed43"
+    },
+    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/top.png": {
+      "bytes": 471281,
+      "sha256": "cebd5552d4742dafb016f81f41731d9a2a41df7c6c81dd8f6191b297f2f09c9e"
+    }
+  }
+}

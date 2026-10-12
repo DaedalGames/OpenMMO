@@ -114,6 +114,10 @@ function modularCharacterPreview(): Plugin {
       '../assets/modular_human_female_01/rig_v1/female-base.glb',
       import.meta.url
     ),
+    female_knight_hair: new URL(
+      '../assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/hair_female_knight.glb',
+      import.meta.url
+    ),
     helmet_bard: part('bard/tripo_hat_v1/helmet_bard.glb'),
     top_bard: part('bard/tripo_top_v1/top_bard.glb'),
     pants_bard: part('bard/tripo_pants_v1/pants_bard.glb'),
