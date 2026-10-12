@@ -100,6 +100,29 @@ ChatGPT Pro 20x 원화 기록을 따르며, 이번 피팅은 로컬 Blender 작�
 (최소 약 0.00135, 모델 좌표 단위). 대기 5시점의 후면·좌우 사선 근접 화면도 확인했다.
 [후면 보정 화면](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/rear-back-idle-0.5.png).
 
+### 오른쪽 앞머리 회전 시안
+
+2026-10-12. 사용자가 위에서 표시한 화살표 방향으로 오른쪽 앞머리를 최대 12도 회전했다.
+Blender 수직축 기준 피벗은 `(0, -0.015, 0)`이며, 가르마·정수리·옆머리 경계에서는
+회전을 부드럽게 줄인다. 반대쪽과 후면의 위치, 전체 높이는 유지한다. 로컬 Blender 수정으로
+추가 API 비용은 없으며, 출처·라이선스는 위 원본 기록을 따른다.
+
+텍스처 이미지 바이트, UV, 삼각형 인덱스, 본·가중치·바인드 행렬은 수정 전과 동일하다.
+변형에 맞춰 법선과 탄젠트를 갱신했다. 처음의 좁은 전환 범위는 일부 면을 과도하게 압축해
+채택하지 않았으며, 최종 시안에서는 범위를 넓혔다. 면 뒤집힘은 0개이고 9개 동작의
+549시점 리깅 검사 및 glTF 오류·경고 0개를 확인했다. 텍스처 좌표를 유지해도 형태 변화에
+따른 국소적인 늘어남은 있으므로, 외형은 사용자 확인을 거친다.
+
+- [수정 전 상단](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/right_trim_v1/before-top.png) · [수정 후 상단](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/right_trim_v1/after-top.png)
+- [수정 전 사선](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/right_trim_v1/before-left-angle.png) · [수정 후 사선](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/right_trim_v1/after-left-angle.png)
+- [변경 범위·보존 검증·해시](modular-female-knight-bob-right-turn-v1.json)
+
+원복용 GLB 2개, Blender 편집본, 피팅 스크립트·기록은
+`assets/modular_human_female_01/hair/tripo_knight_bob_v1/right_trim_v1/before/`에 보관했다.
+이 보관본은 커밋 `5f208bda`의 상태다. 원복 시 각 파일을 원래 경로에 복사하고
+`node tools/validate-female-knight-bob.mjs`, `node tools/build-female-preview.mjs bob`으로
+검증 기록과 미리보기 파생본을 갱신한다.
+
 현재 여성 착용 미리보기는 [로딩 최적화 파생본](modular-female-preview.md)을 사용한다.
 피팅 원본의 메시·리깅을 유지한 2K 컬러/1K 노멀·ORM 버전이며, 원본이 바뀌면 자동 재생성된다.
 

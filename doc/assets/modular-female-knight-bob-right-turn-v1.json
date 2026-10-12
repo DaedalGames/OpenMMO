@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-12",
+  "operation": "Smooth clockwise right-front turn around Blender Z, maximum 12 degrees",
+  "before_sha256": "1b34cbb5bd75b60bccf33efc8de2b7a156099b45ee94755fd32920ba3c2a155d",
+  "after_sha256": "2ecb64f5217e559bf8ca8d440d02226892c087b5acacc32f6f69a3d22fa02f75",
+  "image_sha256": [
+    "ed48b2463c16e11c3d39f3d450c5f3f9d75920f78607d78b52532ab7c47a2ef6",
+    "47e89a358cd8deeb125a8bf206f13698d5bc4abdf85aa63e97715be8e4c50318",
+    "4f527299361364acd14478f37f7027e3592e7a8cebed817928d59bbf44315f0c"
+  ],
+  "uv_indices_joints_weights_bind_matrices_unchanged": true,
+  "left_and_rear_positions_unchanged": true,
+  "height_unchanged": true,
+  "triangles": 2436,
+  "vertices_moved": 811,
+  "triangle_area_ratio_min_max": [
+    0.6558502912521362,
+    1.3887038230895996
+  ],
+  "edge_length_ratio_min_max": [
+    0.7037511467933655,
+    1.3335545063018799
+  ],
+  "flipped_triangles": 0,
+  "front_extent_before_after": [
+    0.06173797324299812,
+    0.05807961896061897
+  ],
+  "rejected_trial": "Narrow front falloff compressed some transition triangles to 26% area. Widened the falloff before acceptance."
+}

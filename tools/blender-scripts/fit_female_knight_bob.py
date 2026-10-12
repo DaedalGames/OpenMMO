@@ -72,6 +72,39 @@ for vertex in hair.data.vertices:
     p = vertex.co
     p.y += .0035 * smoothstep(.005, .04, p.y) * smoothstep(.90, .93, p.z)
 hair.data.update()
+
+right_front_pivot = Vector((0, -.015, 0))
+right_front_angle = -12
+
+def turn_right_front(point):
+    weight = smoothstep(.003, .035, -point.x) * smoothstep(-.020, .040, -point.y)
+    weight *= 1 - smoothstep(.960, .995, point.z)
+    rotation = Matrix.Rotation(math.radians(right_front_angle) * weight, 3, 'Z')
+    return right_front_pivot + rotation @ (point - right_front_pivot)
+
+corner_normals = [normal.vector.copy() for normal in hair.data.corner_normals]
+normal_transforms = {}
+right_front_displacements = []
+for vertex in hair.data.vertices:
+    before = vertex.co.copy()
+    after = turn_right_front(before)
+    displacement = (after - before).length
+    if displacement < 1e-8:
+        continue
+    columns = []
+    for axis in range(3):
+        delta = Vector((0, 0, 0))
+        delta[axis] = 1e-5
+        columns.append((turn_right_front(before + delta) - turn_right_front(before - delta)) / 2e-5)
+    normal_transforms[vertex.index] = Matrix(columns).inverted()
+    vertex.co = after
+    right_front_displacements.append(displacement)
+for loop in hair.data.loops:
+    transform = normal_transforms.get(loop.vertex_index)
+    if transform is not None:
+        corner_normals[loop.index] = (transform @ corner_normals[loop.index]).normalized()
+hair.data.normals_split_custom_set(corner_normals)
+hair.data.update()
 rear_clearances = []
 for polygon in hair.data.polygons:
     if polygon.center.y <= .025 or polygon.center.z <= .925:
@@ -97,13 +130,18 @@ report = {
     'transform_blender': {'scale': [.145, .145, .17], 'rotation_z_degrees': -90, 'translation': [0, .004, .925]},
     'tip_shortening': {'offset': .02, 'smooth_falloff_height_range': [.84, .945]},
     'whole_hair_offset_blender': list(hair_offset),
+    'right_front_turn': {'angle_degrees': right_front_angle, 'pivot_blender': list(right_front_pivot),
+                         'side_falloff': [.003, .035], 'front_falloff': [-.020, .040],
+                         'crown_falloff': [.960, .995], 'vertices_moved': len(right_front_displacements),
+                         'maximum_displacement': max(right_front_displacements, default=0),
+                         'normals': 'Inverse-transpose deformation Jacobian; UVs and image bytes preserved.'},
     'rear_clearance': {'backward_offset': .0035, 'depth_falloff': [.005, .04],
                        'height_falloff': [.90, .93], 'rest_surface_samples': len(rear_clearances),
                        'minimum_sampled_rest_clearance': min(rear_clearances)},
     'removed_internal_triangles': removed, 'triangles': len(hair.data.polygons),
     'bounds_blender': [[min(v.co[i] for v in hair.data.vertices) for i in range(3)],
                        [max(v.co[i] for v in hair.data.vertices) for i in range(3)]],
-    'method': 'Fit original bob to female head; shorten tips; remove embedded central faces; translate the whole hair; offset the rear smoothly for scalp clearance. Preserve retained UVs and original textures; no decimation.',
+    'method': 'Fit original bob; shorten tips; remove embedded central faces; translate the whole hair; offset the rear for scalp clearance; smoothly turn the right front around the vertical axis. Preserve retained UVs and original textures; no decimation.',
     'source_file_preserved': True,
     'retained_uvs_unchanged': True,
 }

@@ -30,6 +30,29 @@
     -0.0020000000949949026,
     0.0035000001080334187
   ],
+  "right_front_turn": {
+    "angle_degrees": -12,
+    "pivot_blender": [
+      0.0,
+      -0.014999999664723873,
+      0.0
+    ],
+    "side_falloff": [
+      0.003,
+      0.035
+    ],
+    "front_falloff": [
+      -0.02,
+      0.04
+    ],
+    "crown_falloff": [
+      0.96,
+      0.995
+    ],
+    "vertices_moved": 809,
+    "maximum_displacement": 0.012886941084351428,
+    "normals": "Inverse-transpose deformation Jacobian; UVs and image bytes preserved."
+  },
   "rear_clearance": {
     "backward_offset": 0.0035,
     "depth_falloff": [
@@ -47,8 +70,8 @@
   "triangles": 2436,
   "bounds_blender": [
     [
-      -0.06869851797819138,
-      -0.06173797324299812,
+      -0.0685308650135994,
+      -0.05807961896061897,
       0.8635414838790894
     ],
     [
@@ -57,7 +80,7 @@
       1.013458490371704
     ]
   ],
-  "method": "Fit original bob to female head; shorten tips; remove embedded central faces; translate the whole hair; offset the rear smoothly for scalp clearance. Preserve retained UVs and original textures; no decimation.",
+  "method": "Fit original bob; shorten tips; remove embedded central faces; translate the whole hair; offset the rear for scalp clearance; smoothly turn the right front around the vertical axis. Preserve retained UVs and original textures; no decimation.",
   "source_file_preserved": true,
   "retained_uvs_unchanged": true,
   "rigging": {
@@ -68,11 +91,11 @@
     "method": "Rigid Head weight 1 for the short bob; exact female bone hierarchy, order and inverse bind matrices.",
     "physics": false,
     "output": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb",
-    "sha256": "1b34cbb5bd75b60bccf33efc8de2b7a156099b45ee94755fd32920ba3c2a155d"
+    "sha256": "2ecb64f5217e559bf8ca8d440d02226892c087b5acacc32f6f69a3d22fa02f75"
   },
   "blender": {
     "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/female-knight-bob-fitted.blend",
-    "sha256": "5636f7abbb232cbfe6d4976a8d042e42acadd23d63511d73bd2696ba1447ed1c",
+    "sha256": "c0cd2d5914706a2f67b939cc60805c1121c7881e2d806719a316c866a49796d3",
     "actions": [
       "combat_idle",
       "dying",

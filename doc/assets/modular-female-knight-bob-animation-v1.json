@@ -6,7 +6,7 @@
   },
   "hair": {
     "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb",
-    "sha256": "1b34cbb5bd75b60bccf33efc8de2b7a156099b45ee94755fd32920ba3c2a155d"
+    "sha256": "2ecb64f5217e559bf8ca8d440d02226892c087b5acacc32f6f69a3d22fa02f75"
   },
   "triangles": 2436,
   "bones": 65,
@@ -20,14 +20,14 @@
       "name": "idle1",
       "samples": 61,
       "maximum_root_error": 6.709052855117493e-16,
-      "maximum_edge_stretch": 1.0000000004424978,
+      "maximum_edge_stretch": 1.0000000004429253,
       "maximum_motion": 0.026294557496161147
     },
     {
       "name": "idle_armed",
       "samples": 61,
       "maximum_root_error": 6.709052855117493e-16,
-      "maximum_edge_stretch": 1.0000000004424978,
+      "maximum_edge_stretch": 1.0000000004429253,
       "maximum_motion": 0.026294557496161147
     },
     {
@@ -40,7 +40,7 @@
     {
       "name": "run",
       "samples": 61,
-      "maximum_root_error": 5.578801654593729e-16,
+      "maximum_root_error": 5.572324966150414e-16,
       "maximum_edge_stretch": 1.0000000011136314,
       "maximum_motion": 0.12477171610732159
     },
@@ -48,7 +48,7 @@
       "name": "jump",
       "samples": 61,
       "maximum_root_error": 5.085906296751428e-16,
-      "maximum_edge_stretch": 1.0000000069520392,
+      "maximum_edge_stretch": 1.0000000069533646,
       "maximum_motion": 0.5149461774383043
     },
     {
@@ -56,13 +56,13 @@
       "samples": 61,
       "maximum_root_error": 4.927225452038536e-16,
       "maximum_edge_stretch": 1.0000000128020365,
-      "maximum_motion": 0.15238550977629423
+      "maximum_motion": 0.15178542470792758
     },
     {
       "name": "slash1",
       "samples": 61,
       "maximum_root_error": 4.660953740672398e-16,
-      "maximum_edge_stretch": 1.0000000184162539,
+      "maximum_edge_stretch": 1.000000018416025,
       "maximum_motion": 0.5869848363090432
     },
     {
@@ -77,7 +77,7 @@
       "samples": 61,
       "maximum_root_error": 5.604016067269809e-16,
       "maximum_edge_stretch": 1.0000000001345706,
-      "maximum_motion": 0.25648679843068006
+      "maximum_motion": 0.25646934830751694
     }
   ],
   "scope": "Rest binding, finite deformation, root attachment and stretching. Body collision and appearance reviewed separately; no secondary hair physics."
