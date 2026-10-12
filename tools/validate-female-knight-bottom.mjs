@@ -1,0 +1,126 @@
+import assert from 'node:assert/strict'
+import { readFileSync, writeFileSync } from 'node:fs'
+import * as THREE from '../client/node_modules/three/build/three.module.js'
+import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
+
+const version = process.argv[2] ?? 'v11'
+assert.ok(['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11'].includes(version))
+const directory = `assets/items/female_knight_bottom/tripo_v1/fitted_${version}`
+const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
+const partPath = `${directory}/bottom_female_knight.glb`
+const { server, load } = await headlessThree()
+try {
+  const { bindModularPart } = await server.ssrLoadModule('/src/lib/utils/modularCharacter.ts')
+  const { femaleOutfitMask } = await server.ssrLoadModule('/src/previews/female-outfit-mask.ts')
+  const base = await load(basePath)
+  const previewAnimations = 'assets/modular_human_female_01/preview/animations.json'
+  const prepared = JSON.parse(readFileSync(previewAnimations))
+  for (const data of prepared.clips) {
+    const clip = THREE.AnimationClip.parse(data)
+    const index = base.animations.findIndex(entry => entry.name === clip.name)
+    if (index < 0) base.animations.push(clip)
+    else base.animations[index] = clip
+  }
+  const body = base.scene
+  const bottoms = bindModularPart(body, (await load(partPath)).scene)
+  assert.ok(bottoms.length > 0)
+  body.updateMatrixWorld(true)
+  const skeleton = bottoms[0].skeleton
+  let bodyMesh
+  body.traverse(object => { if (object.isSkinnedMesh && !bodyMesh) bodyMesh = object })
+  assert.equal(skeleton.bones.length, 65)
+  for (let i = 0; i < 65; i++) {
+    assert.equal(skeleton.bones[i], bodyMesh.skeleton.bones[i])
+    assert.deepEqual(skeleton.boneInverses[i].elements, bodyMesh.skeleton.boneInverses[i].elements)
+  }
+  const regions = bottoms.map(bottom => {
+    assert.equal(bottom.skeleton, skeleton)
+    const position = bottom.geometry.attributes.position
+    const joints = bottom.geometry.attributes.skinIndex
+    const weights = bottom.geometry.attributes.skinWeight
+    const rest = []
+    for (let i = 0; i < position.count; i++) {
+      const point = bottom.getVertexPosition(i, new THREE.Vector3())
+      assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1e-6)
+      rest.push(point)
+      let sum = 0
+      for (let k = 0; k < 4; k++) {
+        const weight = weights.getComponent(i, k)
+        sum += weight
+        if (!weight) continue
+        const name = skeleton.bones[joints.getComponent(i, k)].name
+        assert.ok(['Hips', 'LeftUpLeg', 'RightUpLeg'].includes(name))
+        assert.ok(name !== (point.x > 0 ? 'RightUpLeg' : 'LeftUpLeg'))
+      }
+      assert.ok(Math.abs(sum - 1) < 1e-6)
+    }
+    const index = bottom.geometry.index
+    const rigidEdges = []
+    for (let i = 0; i < index.count; i += 3) {
+      for (let k = 0; k < 3; k++) {
+        const a = index.getX(i + k), b = index.getX(i + (k + 1) % 3)
+        const rigid = vertex => weights.getX(vertex) > .99999
+        if (rigid(a) && rigid(b) && joints.getX(a) === joints.getX(b)) {
+          const length = rest[a].distanceTo(rest[b])
+          if (length > .001) rigidEdges.push([a, b, length])
+        }
+      }
+    }
+    return { bottom, rest, rigidEdges, triangles: index.count / 3 }
+  })
+  const rigidEdgeCount = regions.reduce((sum, region) => sum + region.rigidEdges.length, 0)
+  assert.ok(rigidEdgeCount > 3000)
+  const clips = []
+  const sample = clipSampler(body, { samples: 61, restore: skeleton.bones })
+  for (const clip of base.animations) {
+    let maximumMotion = 0, maximumRigidStretch = 0
+    for (const _ of sample(clip)) {
+      for (const { bottom, rest, rigidEdges } of regions) {
+        const posed = rest.map((_, i) => bottom.getVertexPosition(i, new THREE.Vector3()))
+        for (let i = 0; i < posed.length; i++) {
+          assert.ok(posed[i].toArray().every(Number.isFinite))
+          maximumMotion = Math.max(maximumMotion, posed[i].distanceTo(rest[i]))
+        }
+        for (const [a, b, length] of rigidEdges)
+          maximumRigidStretch = Math.max(maximumRigidStretch, Math.abs(posed[a].distanceTo(posed[b]) / length - 1))
+      }
+    }
+    assert.ok(maximumRigidStretch < .001, `${clip.name}: plate stretch ${maximumRigidStretch}`)
+    clips.push({ name: clip.name, samples: 61, maximum_motion: maximumMotion, maximum_rigid_edge_stretch: maximumRigidStretch })
+  }
+  const original = bodyMesh.geometry
+  const originalIndices = Array.from(original.index.array)
+  const topMask = JSON.parse(readFileSync('assets/items/female_knight_top/tripo_v1/fitted_v3/body-occlusion.json'))
+  const bottomMask = JSON.parse(readFileSync(`${directory}/body-occlusion.json`))
+  const mask = femaleOutfitMask(base)
+  assert.throws(() => mask.register('invalid', { ...bottomMask, primitive_triangles: 1 }))
+  assert.equal(bodyMesh.geometry, original)
+  mask.register('top', topMask)
+  mask.setEquipped('top', true)
+  mask.register('bottom', bottomMask)
+  const cases = []
+  for (const [top, lower] of [[true, true], [false, true], [false, false], [true, false], [true, true]]) {
+    mask.setEquipped('top', top)
+    mask.setEquipped('bottom', lower)
+    const hidden = new Set([...(top ? topMask.hide_triangle_indices : []), ...(lower ? bottomMask.hide_triangle_indices : [])])
+    const expected = originalIndices.filter((_, offset) => !hidden.has(Math.floor(offset / 3)))
+    assert.deepEqual(Array.from(bodyMesh.geometry.index.array), expected)
+    cases.push({ top, bottom: lower, hidden_triangles: hidden.size })
+  }
+  mask.unregister('bottom')
+  assert.equal(bodyMesh.geometry.index.count, original.index.count - topMask.hide_triangle_indices.length * 3)
+  mask.dispose()
+  assert.equal(bodyMesh.geometry, original)
+  const report = {
+    date: ['v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11'].includes(version) ? '2026-10-13' : '2026-10-12', base: { path: basePath, sha256: hash(basePath) },
+    bottom: { path: partPath, sha256: hash(partPath) }, triangles: regions.reduce((sum, region) => sum + region.triangles, 0), meshes: bottoms.length, bones: 65,
+    preview_animations: { path: previewAnimations, sha256: hash(previewAnimations) },
+    exact_runtime_bind: true, unchanged_rest_shape: true, normalized_weights: true, no_opposite_leg_influence: true,
+    rigid_edges_checked: rigidEdgeCount, clips, reversible_mask_union: cases,
+    scope: 'Runtime binding and deformation validity; rigid regions retain edge lengths. This does not prove collision-free motion or watertight geometry.'
+  }
+  writeFileSync(`${directory}/runtime-validation.json`, JSON.stringify(report, null, 2) + '\n')
+  console.log(JSON.stringify({ ...report, clips: clips.map(clip => clip.name) }))
+} finally {
+  await server.close()
+}

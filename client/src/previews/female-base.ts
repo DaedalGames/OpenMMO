@@ -7,7 +7,7 @@ import { femaleSeat, femaleSeatOffset } from './female-seat'
 import { femaleTorchMotions, mirroredSwordGrip } from './female-torch'
 import { poseOffHandProp } from '../lib/utils/handProps'
 import { bindModularPart } from '../lib/utils/modularCharacter'
-import { femaleTopMask } from './female-top-mask'
+import { femaleOutfitMask } from './female-outfit-mask'
 
 export async function showFemaleBase(
   scene: THREE.Scene,
@@ -18,7 +18,7 @@ export async function showFemaleBase(
   document.title = '여성 베이스 · 캐릭터 미리보기'
   document.querySelector('h1')!.textContent = '여성 베이스 미리보기'
   document.querySelector('header p:last-child')!.textContent =
-    '여성 체형에 맞춘 상의와 헤어, 동작을 살펴보세요.'
+    '여성 체형에 맞춘 의상과 헤어, 동작을 살펴보세요.'
   const status = document.getElementById('status')!
   const aside = document.querySelector('aside')!
   aside.replaceChildren(status)
@@ -38,6 +38,11 @@ export async function showFemaleBase(
       <select id="female-top">
         <option value="none">없음</option>
         <option value="knight">은빛 기사 갑옷</option>
+      </select>
+      <label for="female-bottom">하의</label>
+      <select id="female-bottom">
+        <option value="none">없음</option>
+        <option value="knight">은빛 기사 골반 갑옷</option>
       </select>
       <label for="female-motion">동작</label>
       <select id="female-motion">
@@ -69,6 +74,7 @@ export async function showFemaleBase(
       <select id="female-camera">
         <option value="face">얼굴 확대</option>
         <option value="upper">상의 확대</option>
+        <option value="lower">하의 확대</option>
         <option value="full">전신 정면</option>
         <option value="side">전신 측면</option>
         <option value="back">전신 후면</option>
@@ -81,7 +87,7 @@ export async function showFemaleBase(
       <button id="female-reset" type="button">시점 초기화</button>
     </fieldset>
     <p id="female-stats" class="details"></p>
-    <p class="details">상의와 헤어를 바꿔 착용 상태와 동작을 확인할 수 있습니다.</p>`
+    <p class="details">상의·하의·헤어를 바꿔 착용 상태와 동작을 확인할 수 있습니다.</p>`
   )
   status.textContent = '미리보기 에셋을 준비하는 중…'
   const loader = new GLTFLoader(new THREE.LoadingManager())
@@ -379,74 +385,81 @@ export async function showFemaleBase(
     })
   }
   collectMaterials(model)
-  const topSelect = document.getElementById('female-top') as HTMLSelectElement
-  topSelect.value =
-    new URLSearchParams(location.search).get('top') === 'knight'
-      ? 'knight'
-      : 'none'
-  let top: THREE.SkinnedMesh[] | undefined
-  let topMask: ReturnType<typeof femaleTopMask> | undefined
-  let pendingTop: Promise<void> | undefined
-  const loadTop = () => {
-    if (!pendingTop)
-      pendingTop = (async () => {
-        const response = await fetch(
-          '/__modular-character/female-knight-top-occlusion.json'
-        )
-        if (!response.ok)
-          throw new Error('상의 가림 정보를 불러오지 못했습니다.')
-        const mask = await response.json()
-        const source = await loader.loadAsync(
-          '/__modular-character/parts/female_knight_top.glb'
-        )
-        if (disposed()) {
-          disposeObjects([source.scene])
-          return
-        }
-        resources.push(source.scene)
-        const visibility = femaleTopMask(base, mask)
-        try {
-          top = bindModularPart(model, source.scene)
-        } catch (error) {
-          visibility.dispose()
+  const outfitMask = femaleOutfitMask(base)
+  cleanup.push(() => outfitMask.dispose())
+  const outfitUpdates = ['top', 'bottom'].map((slot) => {
+    const select = document.getElementById(
+      `female-${slot}`
+    ) as HTMLSelectElement
+    select.value =
+      new URLSearchParams(location.search).get(slot) === 'knight'
+        ? 'knight'
+        : 'none'
+    let meshes: THREE.SkinnedMesh[] | undefined
+    let pending: Promise<void> | undefined
+    const load = () => {
+      if (!pending) {
+        let source: THREE.Object3D | undefined
+        pending = (async () => {
+          const response = await fetch(
+            `/__modular-character/female-knight-${slot}-occlusion.json`
+          )
+          if (!response.ok)
+            throw new Error('의상 가림 정보를 불러오지 못했습니다.')
+          const mask: unknown = await response.json()
+          const asset = await loader.loadAsync(
+            `/__modular-character/parts/female_knight_${slot}.glb`
+          )
+          source = asset.scene
+          if (disposed()) {
+            disposeObjects([source])
+            return
+          }
+          outfitMask.register(slot, mask)
+          meshes = bindModularPart(model, source)
+          for (const mesh of meshes) {
+            mesh.visible = false
+            collectMaterials(mesh)
+          }
+          resources.push(source)
+          for (const material of materials)
+            material.wireframe = wireframe.checked
+        })().catch((error: unknown) => {
+          outfitMask.unregister(slot)
+          for (const mesh of meshes ?? []) mesh.removeFromParent()
+          if (source) disposeObjects([source])
+          meshes = undefined
+          pending = undefined
           throw error
-        }
-        topMask = visibility
-        cleanup.push(() => visibility.dispose())
-        for (const mesh of top) {
-          mesh.visible = false
-          collectMaterials(mesh)
-        }
-        for (const material of materials) material.wireframe = wireframe.checked
-      })().catch((error: unknown) => {
-        pendingTop = undefined
-        throw error
-      })
-    return pendingTop
-  }
-  const updateTop = async () => {
-    const requested = topSelect.value
-    try {
-      if (requested === 'knight' && !top) {
-        status.textContent = '기사 갑옷을 불러오는 중…'
-        await loadTop()
+        })
       }
-      if (disposed() || topSelect.value !== requested) return
-      const equipped = requested === 'knight'
-      topMask?.setEquipped(equipped)
-      for (const mesh of top ?? []) mesh.visible = equipped
-      updateStats()
-      updateStatus()
-    } catch {
-      if (disposed() || topSelect.value !== requested) return
-      topSelect.value = 'none'
-      topMask?.setEquipped(false)
-      for (const mesh of top ?? []) mesh.visible = false
-      updateStats()
-      status.textContent = '갑옷을 불러오지 못했습니다. 다시 선택해 주세요.'
+      return pending
     }
-  }
-  topSelect.onchange = updateTop
+    const update = async () => {
+      const requested = select.value
+      try {
+        if (requested === 'knight' && !meshes) {
+          status.textContent = '기사 갑옷을 불러오는 중…'
+          await load()
+        }
+        if (disposed() || select.value !== requested) return
+        const equipped = requested === 'knight'
+        outfitMask.setEquipped(slot, equipped)
+        for (const mesh of meshes ?? []) mesh.visible = equipped
+        updateStats()
+        updateStatus()
+      } catch {
+        if (disposed() || select.value !== requested) return
+        select.value = 'none'
+        outfitMask.setEquipped(slot, false)
+        for (const mesh of meshes ?? []) mesh.visible = false
+        updateStats()
+        status.textContent = '갑옷을 불러오지 못했습니다. 다시 선택해 주세요.'
+      }
+    }
+    select.onchange = update
+    return update
+  })
   const updateStats = () => {
     let triangles = 0
     model.traverseVisible((node) => {
@@ -518,6 +531,7 @@ export async function showFemaleBase(
   const views: Record<string, { target: number[]; position: number[] }> = {
     face: { target: [0, 0.916, 0], position: [0, 0.926, 0.36] },
     upper: { target: [0, 0.76, 0], position: [0, 0.78, 0.8] },
+    lower: { target: [0, 0.52, 0], position: [0, 0.55, 0.8] },
     full: { target: [0, 0.5, 0], position: [0, 0.55, 1.9] },
     side: { target: [0, 0.5, 0], position: [1.9, 0.55, 0] },
     back: { target: [0, 0.5, 0], position: [0, 0.55, -1.9] },
@@ -624,7 +638,7 @@ export async function showFemaleBase(
     'female-controls'
   ) as HTMLFieldSetElement
   fieldset.disabled = false
-  await updateTop()
+  await Promise.all(outfitUpdates.map((update) => update()))
   if (disposed()) return
   document.body.dataset.ready = 'true'
 }
