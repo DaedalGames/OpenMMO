@@ -112,6 +112,14 @@ function modularCharacterPreview(): Plugin {
     'helmet_barbarian',
   ])
   const fixed: Record<string, URL> = {
+    female_knight_top: new URL(
+      '../assets/items/female_knight_top/tripo_v1/fitted_v3/top_female_knight.glb',
+      import.meta.url
+    ),
+    'female-knight-top-occlusion.json': new URL(
+      '../assets/items/female_knight_top/tripo_v1/fitted_v3/body-occlusion.json',
+      import.meta.url
+    ),
     female_base: new URL(
       '../assets/modular_human_female_01/rig_v1/female-base.glb',
       import.meta.url
@@ -166,15 +174,17 @@ function modularCharacterPreview(): Plugin {
             ? faces[face]
             : id && Object.hasOwn(fixed, id)
               ? fixed[id]
-              : id && rogueParts.has(id)
-                ? override
-                  ? new URL(`../${override}`, import.meta.url)
-                  : new URL(`${id}.glb`, rogue)
-                : id && parts.has(id)
-                  ? new URL(`${id}.glb`, fitted)
-                  : files.has(name)
-                    ? new URL(name, directory)
-                    : null
+              : Object.hasOwn(fixed, name)
+                ? fixed[name]
+                : id && rogueParts.has(id)
+                  ? override
+                    ? new URL(`../${override}`, import.meta.url)
+                    : new URL(`${id}.glb`, rogue)
+                  : id && parts.has(id)
+                    ? new URL(`${id}.glb`, fitted)
+                    : files.has(name)
+                      ? new URL(name, directory)
+                      : null
         if (req.method !== 'GET' || !url) {
           res.statusCode = 404
           res.end('Unknown preview asset')
