@@ -163,8 +163,8 @@ rounded_depth = PchipInterpolator(heel_y, np.array([
 ]), axis=0)
 smooth_heel_rear = CubicSpline(
     [.010, .022, .033, .044, .052],
-    [rounded_depth(.010)[0], -.038, -.0401, -.0457, rounded_depth(.052)[0]],
-    bc_type=((1, -.15), (1, 0)),
+    [rounded_depth(.010)[0], -.03775, -.0404, -.0457, rounded_depth(.052)[0]],
+    bc_type=((1, -.10), (1, 0)),
 )
 
 
@@ -175,6 +175,9 @@ def smooth_heel(points):
     weight = smooth((front - result[:, 2]) / (front - rear))
     weight *= smooth((y - .010) / .004) * (1 - smooth((y - .044) / .008))
     result[:, 2] += (smooth_heel_rear(np.clip(y, .010, .052)) - rear) * weight
+    trim = smooth((y - .002) / .007) * (1 - smooth((y - .015) / .008))
+    trim *= smooth(((front - result[:, 2]) / (front - rear) - .5) * 2)
+    result[:, 2] += .00018 * trim
     return result
 
 
@@ -330,6 +333,12 @@ report = {
         'height_range': [.016, .070], 'lower_heel_axis_unchanged': True,
         'smoothing_reference': 'assets/items/female_knight_boots/references/user-smooth-heel-curve.png',
         'rear_curve_smoothing': 'Cubic spline target blended into the cup and lower shaft',
+        'fine_curve_reference': 'assets/items/female_knight_boots/references/user-fine-heel-curve.png',
+        'fine_curve_adjustment': {'lower_control_inward': .00025, 'upper_control_outward': .0003},
+        'lower_rear_trim': {
+            'reference': 'assets/items/female_knight_boots/references/user-blue-heel-trim.png',
+            'height_range': [.002, .023], 'maximum_inward_displacement': .00018,
+        },
     },
     'front_alignment': {'method': 'Extend the shin centerline through the ankle and foot using lateral displacement only',
                         'shin_sample_height_range': [.13, .24], 'centerline_slope': float(shin_axis[0]),
