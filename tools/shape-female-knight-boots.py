@@ -57,6 +57,11 @@ foot_z = np.linspace(.025, tip - 1e-7, 800)
 foot_bounds = np.array([section_bounds(foot_triangles, z, 2, 1) for z in foot_z])
 shaft_y = np.linspace(.055, .32, 500)
 shaft_bounds = np.array([section_bounds(triangles, y, 1, 2) for y in shaft_y])
+lateral_y = np.linspace(-.0302, .18, 300)
+lateral_centers = np.array([np.mean(section_bounds(triangles, y, 1, 0)) for y in lateral_y])
+shin_y = np.linspace(.13, .24, 40)
+shin_centers = np.array([np.mean(section_bounds(triangles, y, 1, 0)) for y in shin_y])
+shin_axis = np.polyfit(shin_y, shin_centers, 1)
 front_delta = PchipInterpolator(
     [.04, .055, .075, .10, .13, .17, .23, .29, .33],
     [0, 0, .001, .012, .019, .018, .015, .001, 0],
@@ -85,6 +90,15 @@ def toe_and_sole(points):
     return result
 
 
+def align_front_ankle(points):
+    result = points.copy()
+    y = points[:, 1]
+    center = np.interp(y, lateral_y, lateral_centers)
+    target = np.polyval(shin_axis, y)
+    result[:, 0] += (target - center) * (1 - smooth((y - .10) / .065))
+    return result
+
+
 def reshape(points):
     result = points.copy()
     y, z = points[:, 1], points[:, 2]
@@ -107,7 +121,7 @@ def reshape(points):
     target = new_bottom + fraction * (new_top - new_bottom)
     amount = smooth((fz - .025) / .022)
     result[foot, 1] += (target - fy) * amount
-    return toe_and_sole(result)
+    return align_front_ankle(toe_and_sole(result))
 
 
 def subdivide(values, faces):
@@ -245,6 +259,10 @@ report = {
     'reference': 'User supplied target and annotated yellow instep, red rear ankle, blue shin curves',
     'revision': 'Shorter blunt toe, slightly fuller sole and arch, and heel-cup boundary rising diagonally toward the rear',
     'toe_sole_reference': 'assets/items/female_knight_boots/references/user-toe-sole-outline.png',
+    'front_alignment_reference': 'assets/items/female_knight_boots/references/user-front-ankle-alignment.png',
+    'front_alignment': {'method': 'Extend the shin centerline through the ankle and foot using lateral displacement only',
+                        'shin_sample_height_range': [.13, .24], 'centerline_slope': float(shin_axis[0]),
+                        'centerline_intercept': float(shin_axis[1]), 'blend_height_range': [.10, .165]},
     'profile_axes': {'front': '+Z, toward toe', 'rear': '-Z, toward heel', 'height': '+Y'},
     'textures_unchanged': True, 'uv_interpolated_only_for_subdivision': True,
     'rig_and_heel_pose_unchanged': True, 'maximum_vertex_displacement': maximum_change,
