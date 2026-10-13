@@ -13,8 +13,8 @@ from lib.glb_accessors import accessor, add_accessor
 
 DIRECTORY = ROOT / 'assets/items/female_knight_bottom/tripo_v1'
 SOURCE = DIRECTORY / 'fitted_v11'
-VERSION = sys.argv[sys.argv.index('--version') + 1] if '--version' in sys.argv else 'v17'
-assert VERSION in ['v13', 'v14', 'v15', 'v16', 'v17']
+VERSION = sys.argv[sys.argv.index('--version') + 1] if '--version' in sys.argv else 'v18'
+assert VERSION in ['v13', 'v14', 'v15', 'v16', 'v17', 'v18']
 OUTPUT = DIRECTORY / f'fitted_{VERSION}'
 OUTPUT.mkdir(exist_ok=True)
 source = SOURCE / 'bottom_female_knight.glb'
@@ -44,11 +44,11 @@ selected = []
 for label in np.unique(labels[faces]):
     vertices = np.unique(faces[labels[faces[:, 0]] == label])
     bounds = points[vertices]
-    front_side = bounds[:, 0].min() > .04 or (VERSION in ['v15', 'v16', 'v17'] and bounds[:, 0].max() < -.04)
+    front_side = bounds[:, 0].min() > .04 or (VERSION in ['v15', 'v16', 'v17', 'v18'] and bounds[:, 0].max() < -.04)
     if front_side and bounds[:, 2].min() > .065 and bounds[:, 1].max() < .58:
         selected.extend(vertices.tolist())
 selected = np.array(sorted(selected))
-assert len(selected) == (584 if VERSION in ['v15', 'v16', 'v17'] else 292)
+assert len(selected) == (584 if VERSION in ['v15', 'v16', 'v17', 'v18'] else 292)
 side = np.sign(points[selected, 0]).astype(float)
 if VERSION == 'v13':
     t = np.clip((points[selected, 1] - .52) / .05, 0, 1)
@@ -67,8 +67,8 @@ tangents = accessor(doc, binary, attrs['TANGENT'])
 tangents[selected, 2] += slope * tangents[selected, 1]
 tangents[selected, :3] /= np.linalg.norm(tangents[selected, :3], axis=1, keepdims=True)
 thickened = np.array([], dtype=int)
-if VERSION in ['v16', 'v17']:
-    thickened = selected[((side < 0) | (VERSION == 'v17')) & (points[selected, 1] > .425) & (points[selected, 1] < .569)]
+if VERSION in ['v16', 'v17', 'v18']:
+    thickened = selected[((side < 0) | (VERSION in ['v17', 'v18'])) & (points[selected, 1] > .425) & (points[selected, 1] < .569)]
     _, groups = np.unique(np.round(points[thickened], 6), axis=0, return_inverse=True)
     normal_z = np.bincount(groups, weights=normals[thickened, 2])
     direction = np.sign(normal_z[groups])
@@ -87,7 +87,8 @@ if VERSION in ['v16', 'v17']:
 names = [doc['nodes'][index]['name'] for index in doc['skins'][0]['joints']]
 joints = accessor(doc, binary, attrs['JOINTS_0'])
 weights = accessor(doc, binary, attrs['WEIGHTS_0'])
-leg = np.clip((attachment_height - points[selected, 1]) / .045, 0, 1)
+blend_length = .145 if VERSION == 'v18' else .045
+leg = np.clip((attachment_height - points[selected, 1]) / blend_length, 0, 1)
 leg = leg * leg * (3 - 2 * leg)
 joints[selected] = 0
 joints[selected, 0] = names.index('Hips')
@@ -113,12 +114,13 @@ report = {
     'date': '2026-10-13', 'source': str(source.relative_to(ROOT)),
     'source_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
     'output': str(target.relative_to(ROOT)), 'sha256': hashlib.sha256(target.read_bytes()).hexdigest(),
-    'method': f'Move {"both front straps and tips" if VERSION in ["v15", "v16", "v17"] else "the wearer-left front strap and tip"} inward 0.013. Blend each attachment from the pelvis to its own thigh.',
+    'method': f'Move {"both front straps and tips" if VERSION in ["v15", "v16", "v17", "v18"] else "the wearer-left front strap and tip"} inward 0.013. Blend each attachment from the pelvis to its own thigh.',
     'thickened_vertices': thickened.tolist(),
-    'maximum_surface_offset': .00045 if VERSION in ['v16', 'v17'] else 0,
+    'maximum_surface_offset': .00045 if VERSION in ['v16', 'v17', 'v18'] else 0,
     'vertical_offset_from_v11': vertical_offset,
     'depth_profile': 'Smoothstep recession of the upper end.' if VERSION == 'v13' else 'Full-length affine shear to remove the upper bend and expose the buckle opening.',
     'attachment_min_y': attachment_height + .003,
+    'leg_weight_blend_length': blend_length,
     'primitive': 0, 'vertices': selected.tolist(),
     'preserved': ['other components', 'UVs', 'indices', 'materials', 'embedded textures', 'bones', 'inverse binds', 'occlusion mask'],
     'new_meshes': 0, 'additional_api_credits': 0,
