@@ -1,17 +1,26 @@
 # 여성 기사 하의
 
 2026-10-13. [여성 기사 상의](modular-female-knight-top.md)에 맞춘 골반·허벅지 판금 하의다.
-현재 **fitted_v21**을 여성 캐릭터 미리보기에 연결했다. 네 측면 버클을 허리 가죽 고리에 맞추고,
+현재 **fitted_v24**를 여성 캐릭터 미리보기에 연결했다. 뒤쪽 중앙 가리개를 앞쪽 가리개의
+복사본으로 교체했다. 뒤쪽 윗판을 허리 쪽으로 완만하게
+구부려 가죽끈의 가림을 줄였다. 뒤쪽 긴 끈의 폭 방향 가중치를 맞춰
+동작 중 꼬임을 수정했다. 네 측면 버클을 허리 가죽 고리에 맞추고,
 판금에 묻힌 허리띠와 짧은 끈을 표면 위로 꺼냈다. 앞의 긴 끈은 대기·걷기의 급격한 꺾임을
 줄였으며 기존 두께 보정을 유지했다. 본 게임 장비 등록과 모든 동작의 무관통 승인은 포함하지 않는다.
 
 ## 최종 에셋
 
-- [착용 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v21/bottom_female_knight.glb):
+- [착용 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v24/bottom_female_knight.glb):
+  SHA-256 `255e155340af4de1165357e91b3af6dd80baf45b5e9f785e2a2cc1480a863821`.
+- [Blender 제작본](../../assets/items/female_knight_bottom/tripo_v1/fitted_v24/female-knight-bottom-fitted.blend),
+  [몸체 가림](../../assets/items/female_knight_bottom/tripo_v1/fitted_v24/body-occlusion.json),
+  [피팅 명세](../../assets/items/female_knight_bottom/tripo_v1/fitted_v24/fitting.json).
+- v24 제작·회귀 검사 입력: [v23 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v23/bottom_female_knight.glb)를 보존한다.
+  SHA-256 `54c92f01878c62bed4636d87192a4daec47ccbaa356e6afe15302c73e48df474`.
+- v23 제작·회귀 검사 입력: [v22 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v22/bottom_female_knight.glb)를 보존한다.
+  SHA-256 `453e60295a9508e110292c07c5b344d6bfded25fe86a3a33fe480a04b34327ff`.
+- v22 제작·회귀 검사 입력: [v21 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v21/bottom_female_knight.glb)와 Blender를 보존한다.
   SHA-256 `0266fb47f8af186de9a64a5035b57fa77539f2d3d73c1767e5394815974853f2`.
-- [Blender 제작본](../../assets/items/female_knight_bottom/tripo_v1/fitted_v21/female-knight-bottom-fitted.blend),
-  [몸체 가림](../../assets/items/female_knight_bottom/tripo_v1/fitted_v21/body-occlusion.json),
-  [피팅 명세](../../assets/items/female_knight_bottom/tripo_v1/fitted_v21/fitting.json).
 - v21 제작·회귀 검사 입력: [v20 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v20/bottom_female_knight.glb).
   SHA-256 `c38053cc954bfd08b1a2352c41c471afa19220be5adef6b9ec9ca9359416e699`.
 - 앞 끈 회귀 검사 입력: [v17 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v17/bottom_female_knight.glb).
@@ -19,11 +28,11 @@
 - 앞 가죽끈 제작 입력: [v11 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v11/bottom_female_knight.glb),
   [v11 Blender](../../assets/items/female_knight_bottom/tripo_v1/fitted_v11/female-knight-bottom-fitted.blend).
   GLB SHA-256 `53f853b29a4a91752bb1b3d20c5633b7ff97feea310be3f6a3545bcf1e3148e2`.
-- 5,758삼각형·4 primitives·65본. 리그는 `human_female_01_local_v1`이다.
+- 5,792삼각형·4 primitives·65본. 리그는 `human_female_01_local_v1`이다.
   몸체는 `assets/modular_human_female_01/rig_v1/female-base.glb`이며
   SHA-256은 `cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732`다.
-- 기사 상·하의와 몸체 합계는 가림 전 32,212·가림 후 26,230삼각형이다.
-  금발 단발 포함 34,648·28,666삼각형, 얼굴 4,604삼각형을 유지했다.
+- 기사 상·하의와 몸체 합계는 가림 전 32,246·가림 후 26,264삼각형이다.
+  금발 단발 포함 34,682·28,700삼각형, 얼굴 4,604삼각형을 유지했다.
   권장 예산보다 높지만 예산만을 위한 감면은 하지 않았다.
 
 ## 형상·연결·가림
@@ -104,6 +113,90 @@ v12의 추가 보강 메쉬는 사용하지 않는다. 로컬 편집이며 신�
 v15의 GLB·가림·피팅 명세(회귀 검사 입력), 각 단계의 작은 피팅 기록과 사용자 참고 이미지는 남겼다.
 [이번 정리 목록](../../assets/items/female_knight_bottom/tripo_v1/strap-cleanup.json)을 참조한다.
 중간 버전의 과거 피팅 기록에 있는 출력·검증 경로는 제작 이력이며 파일 보존 목록이 아니다.
+
+## v24 뒤쪽 가리개를 앞쪽 복사본으로 교체
+
+2026-10-13. 기존 뒤쪽 중앙 가리개의 72삼각형을 제거하고, 앞쪽 가리개의
+138정점·106삼각형을 복사했다. 앞뒤 방향을 180° 돌리고 25° 기울여 허리띠 아래에
+배치했다. 확대·축소나 비틀림 없이 위치와 방향만 바꿨으며, 원래 UV·노멀·탄젠트·
+Hips 가중치와 재질·텍스처를 복사했다. 앞쪽 원본, 끈·버클·옆 판금·리벳은 그대로다.
+전체 하의는 34삼각형 증가했다. 초기 배치의 허리띠 아래 틈을 줄이기 위해 0.009 높였다.
+수치는 몸체 높이 1인 제작 좌표다.
+
+로컬 Python/NumPy와 Blender로 편집했으며 기존 출처·라이선스를 따른다.
+신규 생성·유료 API 비용은 없다. v23 GLB와 v21 Blender를 제작 입력으로 보존한다.
+
+- [복사·보존 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v24/guard-validation.json):
+  모든 정점 쌍의 거리 오차 최대 5.96e-8. 기존 뒤 가리개 전체 제거와 나머지 부품 보존을 검사했다.
+- [런타임 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v24/runtime-validation.json):
+  14동작×61시점, 바인딩·가중치·끈과 버클 연결·강체 엣지·가림 전환 검사.
+- [glTF 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v24/gltf-validation.json),
+  [브라우저 기록](../../assets/items/female_knight_bottom/tripo_v1/fitted_v24/browser-review.json),
+  [뒤쪽 확대](../../assets/items/female_knight_bottom/tripo_v1/fitted_v24/browser/rear-waist-close.png).
+
+```sh
+.venv/bin/python tools/replace-female-knight-rear-guard.py
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v21 v24
+.venv/bin/python tools/validate-female-knight-rear-guard.py
+node tools/validate-female-knight-bottom.mjs v24
+```
+
+## v23 뒤쪽 윗판의 완만한 굽힘
+
+2026-10-13. 사용자 표시의 뒤쪽 판금 어깨를 허리 방향으로 구부렸다. 높이 .54–.62와
+뒤쪽 각도 구간에 smoothstep을 적용해 아래·옆 판금과 부드럽게 이어지게 했다.
+원래 허리 표면을 방사 샘플링하여 굽힘량을 제한하고, 노멀은 변형 Jacobian의 역전치,
+탄젠트는 Jacobian으로 갱신했다. 판금 앞뒷면·테두리·리벳에 같은 변형장을 적용했다.
+최대 이동은 0.023623이며 몸체 높이 1인 제작 좌표다. 삼각형 수와 조립 예산은 같다.
+
+첫 후보의 일률적인 최대 0.027 굽힘은 허리 피부를 침범하여 폐기했다.
+몸체 표면과 원래 판금 반경을 함께 고려하는 최종본으로 수정했으며, v22 GLB를 보존한다.
+로컬 Python/NumPy/SciPy와 Blender 편집으로 기존 출처·라이선스를 따른다.
+신규 생성·유료 API 비용은 없다.
+
+- [보존·접촉 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v23/plate-validation.json):
+  가죽·버클·중앙 가리개·모든 가중치·UV·인덱스·텍스처·골격·가림 보존.
+  후면 허리 가죽의 1,313표본에서 판금 교차는 248→6, 최대 침범은 0.019417→0.000673으로 줄었다.
+  피부에 붙은 가죽의 가장 안쪽 경계에는 미세 교차가 남으며, 완전한 무관통 승인은 아니다.
+- [런타임 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v23/runtime-validation.json):
+  14동작×61시점의 바인딩·가중치·끈과 버클 연결·강체 엣지·가림 전환 통과.
+- [glTF 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v23/gltf-validation.json): 오류·경고 0.
+- [기본 자세·대기·걷기·달리기·앉기 브라우저 기록](../../assets/items/female_knight_bottom/tripo_v1/fitted_v23/browser-review.json).
+  중간 검수 이미지는 커밋 전 정리했다.
+
+```sh
+.venv/bin/python tools/bend-female-knight-rear-plates.py
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v21 v23
+.venv/bin/python tools/validate-female-knight-rear-plates.py
+node tools/validate-female-knight-bottom.mjs v23
+```
+
+## v22 뒤쪽 긴 끈 꼬임 수정
+
+2026-10-13. 뒤쪽 끈의 같은 단면에서 한쪽 가장자리는 Hips, 반대쪽은 UpLeg에 100% 연결되어
+대기·걷기 중 면이 비틀렸다. 양쪽 끈의 중간 두 단면, 총 32정점의 가중치만 수정했다.
+각 단면은 폭 전체에 같은 가중치를 사용하며, 위쪽 버클의 Hips에서 끝 장식의 같은 쪽
+UpLeg까지 smoothstep으로 전환한다. 기본 자세의 형상·두께·UV·노멀·탄젠트·재질·텍스처·
+삼각형·골격·가림·버클과 끝 장식의 가중치 및 다른 모든 정점을 유지했다.
+로컬 Python/NumPy와 Blender 편집이며 기존 출처·라이선스를 따른다. 신규 생성·유료 API 비용은 없다.
+
+- [뒤 끈 회귀 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v22/rear-strap-validation.json):
+  14동작×61시점. 인접 단면의 최대 방향 차이는 대기 153.7°→11.3°, 걷기 166.6°→13.9°,
+  달리기 138.8°→16.6°다. 변경은 지정한 32정점의 가중치·본 인덱스뿐임을 검사했다.
+- [런타임 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v22/runtime-validation.json):
+  65본 바인딩·가중치·앞 끈 연결·측면 버클 연결·강체 엣지·가림 전환 통과.
+- [glTF 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v22/gltf-validation.json): 오류·경고 0.
+- [브라우저 기록](../../assets/items/female_knight_bottom/tripo_v1/fitted_v22/browser-review.json):
+  후면 기본 자세·대기·걷기·달리기·앉기를 캡처했다. 전체 장비의 무관통 검사는 아니다.
+
+재제작·검증:
+
+```sh
+.venv/bin/python tools/rig-female-knight-rear-straps.py
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v21 v22
+node tools/validate-female-knight-rear-straps.mjs
+node tools/validate-female-knight-bottom.mjs v22
+```
 
 ## v21 나머지 측면 버클 정렬
 
@@ -212,6 +305,14 @@ v19 제작 입력의 해시와 재생성 스크립트를 보존하고 기존 출
   중간 피팅 단계에서는 대기·걷기·달리기·앉기도 검수했다.
 - 기존 동작 중 판금 틈과 끈 변형은 남아 있다. 두께 수치 검사는 기본 자세의 넓은 앞뒷면에
   한정하며 모든 동작·측벽의 삼각형 단위 무관통 승인은 아니다.
+
+## v24 커밋 전 정리
+
+v22·v23 Blender 중간본과 v22–v24 동작 검수 이미지 16개, 총 18개(약 133.4MiB)를 정리했다.
+v24 GLB·최종 Blender·문서용 후면 확대 이미지, v21 제작 원본과 v22·v23 GLB 회귀 입력,
+피팅·검증 기록은 보존했다. 중간 Blender는 v21 제작본과 각 버전 GLB로 다시 만들 수 있다.
+[삭제 경로·해시 기록](../../assets/items/female_knight_bottom/tripo_v1/rear-armor-cleanup.json).
+브라우저 검수 기록에 있는 과거 화면 이름은 제작 이력이며 현존 이미지 목록이 아니다.
 
 ## v21 커밋 전 정리
 
