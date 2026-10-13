@@ -35,6 +35,12 @@ export async function showFemaleBase(
         <option value="knight">긴 금발 (보관본)</option>
       </select>
       <a href="?asset=female-knight-bob">단발 원본 단독 보기</a>
+      <label for="female-helmet">투구</label>
+      <select id="female-helmet">
+        <option value="none">없음</option>
+        <option value="knight">은빛 기사 투구</option>
+      </select>
+      <p class="details">투구를 쓰면 헤어를 숨기고, 벗으면 선택한 헤어를 복원합니다.</p>
       <label for="female-top">상의</label>
       <select id="female-top">
         <option value="none">없음</option>
@@ -98,7 +104,7 @@ export async function showFemaleBase(
       <button id="female-reset" type="button">시점 초기화</button>
     </fieldset>
     <p id="female-stats" class="details"></p>
-    <p class="details">상의·하의·장갑·신발·헤어를 바꿔 착용 상태와 동작을 확인할 수 있습니다.</p>`
+    <p class="details">투구·상의·하의·장갑·신발·헤어를 바꿔 착용 상태와 동작을 확인할 수 있습니다.</p>`
   )
   status.textContent = '미리보기 에셋을 준비하는 중…'
   const loader = new GLTFLoader(new THREE.LoadingManager())
@@ -169,9 +175,11 @@ export async function showFemaleBase(
     pendingHair.set(name, promise)
     return promise
   }
+  let helmetEquipped = false
   const updateHair = () => {
     for (const [name, meshes] of Object.entries(hairOptions))
-      for (const mesh of meshes) mesh.visible = hairSelect.value === name
+      for (const mesh of meshes)
+        mesh.visible = !helmetEquipped && hairSelect.value === name
   }
   updateHair()
   const swordGrip = animations.find((clip) => clip.name === 'idle_armed')
@@ -415,7 +423,8 @@ export async function showFemaleBase(
     }
   }
   cleanup.push(() => outfitMask.dispose())
-  const outfitUpdates = ['top', 'bottom', 'boots', 'gloves'].map((slot) => {
+  const outfitSlots = ['top', 'bottom', 'boots', 'gloves', 'helmet']
+  const outfitUpdates = outfitSlots.map((slot) => {
     const select = document.getElementById(
       `female-${slot}`
     ) as HTMLSelectElement
@@ -480,7 +489,8 @@ export async function showFemaleBase(
           }
           for (const mesh of meshes) {
             mesh.visible = false
-            if (slot === 'gloves') mesh.frustumCulled = false
+            if (slot === 'gloves' || slot === 'helmet')
+              mesh.frustumCulled = false
             collectMaterials(mesh)
           }
           resources.push(source)
@@ -511,6 +521,15 @@ export async function showFemaleBase(
         if (disposed() || select.value !== requested) return
         const equipped = requested === 'knight'
         if (slot === 'boots') bootsEquipped = equipped
+        if (slot === 'helmet') {
+          helmetEquipped = equipped
+          updateHair()
+          if (
+            (document.getElementById('female-camera') as HTMLSelectElement)
+              .value === 'face'
+          )
+            reset()
+        }
         if (slot === 'gloves') {
           glovesEquipped = equipped
           if (sleeveMaskRegistered)
@@ -525,6 +544,15 @@ export async function showFemaleBase(
         if (disposed() || select.value !== requested) return
         select.value = 'none'
         if (slot === 'boots') bootsEquipped = false
+        if (slot === 'helmet') {
+          helmetEquipped = false
+          updateHair()
+          if (
+            (document.getElementById('female-camera') as HTMLSelectElement)
+              .value === 'face'
+          )
+            reset()
+        }
         if (slot === 'gloves') {
           glovesEquipped = false
           if (sleeveMaskRegistered)
@@ -634,6 +662,10 @@ export async function showFemaleBase(
     const aspect = host.clientWidth / host.clientHeight
     controls.target.fromArray(view.target)
     camera.position.fromArray(view.position)
+    if (select.value === 'face' && helmetEquipped) {
+      controls.target.set(0, 0.971, 0)
+      camera.position.set(0, 0.981, 0.48)
+    }
     if (select.value === 'full' && torch.visible) {
       controls.target.y = 0.6
       camera.position.set(0, 0.65, 2.3)
