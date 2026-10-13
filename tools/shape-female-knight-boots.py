@@ -124,6 +124,51 @@ def reshape(points):
     return align_front_ankle(toe_and_sole(result))
 
 
+sole_points = reshape(posed(doc['meshes'][0]['primitives'][0]))
+sole_faces = accessor(doc, raw, doc['meshes'][0]['primitives'][0]['indices']).reshape(-1, 3)
+sole_y = np.linspace(-.0302, .040, 500)
+sole_depth = PchipInterpolator(sole_y, np.array([
+    section_bounds(sole_points[sole_faces], y, 1, 2) for y in sole_y
+]), axis=0)
+arch_extension = CubicSpline(
+    [-.0302, -.026, -.020, -.010, 0, .010, .020, .030, .040],
+    [0, .0012, .0035, .0065, .007, .006, .0035, .001, 0],
+    bc_type=((1, 0), (1, 0)),
+)
+
+
+def fill_sole_arch(points):
+    result = points.copy()
+    y = points[:, 1]
+    height = np.clip(y, sole_y[0], sole_y[-1])
+    rear, front = sole_depth(height).T
+    weight = smooth((front - points[:, 2]) / (front - rear) / .65)
+    result[:, 2] -= arch_extension(height) * weight
+    return result
+
+
+plate_y = np.linspace(0, .058, 500)
+plate_triangles = fill_sole_arch(sole_points)[sole_faces]
+plate_depth = PchipInterpolator(plate_y, np.array([
+    section_bounds(plate_triangles, y, 1, 2)[0]
+    for y in plate_y
+]))
+plate_extension = PchipInterpolator(
+    [0, .008, .014, .026, .035, .047, .058],
+    [0, .0025, .004, .0048, .0045, .002, 0],
+)
+
+
+def extend_plate_edge(points):
+    result = points.copy()
+    height = np.clip(points[:, 1], plate_y[0], plate_y[-1])
+    distance = points[:, 2] - plate_depth(height)
+    weight = smooth((distance - .0005) / .006)
+    weight *= 1 - smooth((distance - .012) / .016)
+    result[:, 2] -= plate_extension(height) * weight
+    return result
+
+
 heel_primitive = next(
     p for p in doc['meshes'][0]['primitives']
     if len(posed(p)) > 500 and posed(p)[:, 1].min() < 0 and posed(p)[:, 2].max() < 0
@@ -222,7 +267,7 @@ for mesh in doc['meshes'][:1]:
 
         def deform_points(values):
             shaped = reshape(values)
-            return smooth_heel(shaped) if is_heel else shaped
+            return smooth_heel(shaped) if is_heel else extend_plate_edge(fill_sole_arch(shaped))
 
         normals = accessor(doc, raw, attrs['NORMAL']).astype(float)
         uv = accessor(doc, raw, attrs['TEXCOORD_0'])
@@ -325,6 +370,19 @@ report = {
     'front_alignment_reference': 'assets/items/female_knight_boots/references/user-front-ankle-alignment.png',
     'vertical_heel_reference': 'assets/items/female_knight_boots/references/user-upright-standing-heel.png',
     'vertical_heel': {'lower_shaft_axis_xz': heel_axis.tolist(), 'blend_height_range': [.01, .065]},
+    'sole_arch': {
+        'reference': 'assets/items/female_knight_boots/references/user-red-sole-arch.png',
+        'method': 'Extend the underside toward the heel with a smooth height profile, fading toward the instep',
+        'height_range': [float(sole_y[0]), float(sole_y[-1])],
+        'maximum_extension': float(arch_extension(sole_y).max()),
+        'heel_and_ground_contact_unchanged': True,
+    },
+    'plate_edge': {
+        'reference': 'assets/items/female_knight_boots/references/user-blue-plate-extension.png',
+        'method': 'Extend the textured plate border toward the sole, retaining the outer contour and shared UVs',
+        'height_range': [0, .058], 'maximum_extension': .0048,
+        'outer_contour_fixed_margin': .0005,
+    },
     'heel_cup_contour': {
         'reference': 'assets/items/female_knight_boots/references/user-rounded-cup-reference.png',
         'before': 'assets/items/female_knight_boots/references/user-rounded-cup-before.png',
