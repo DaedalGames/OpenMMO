@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
 
-const directory = 'assets/items/female_knight_boots/fitted_v4'
+const directory = process.argv[2] ?? 'assets/items/female_knight_boots/fitted_v5'
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
 const partPath = `${directory}/boots_female_knight.glb`
 const { server, load } = await headlessThree()

@@ -1,16 +1,49 @@
 # 여성 기사 판금 부츠
 
-2026-10-13. 현재 착용 검토본은 `fitted_v4`다. 한쪽 판금 부츠를 좌우 대칭 제작하고
+2026-10-13. 현재 착용 검토본은 `fitted_v5`다. 한쪽 판금 부츠를 좌우 대칭 제작하고
 여성 기준 몸체의 65본 리그에 연결했다. 허벅지·종아리는 1mm 여유를 기준으로 피팅하며,
 허벅지 입구는 피부 돌출을 막도록 추가 여유를 둔다. 착용 중에는 발목·발가락과 접지를
 높은 굽 자세에 맞춰 보정한다.
 
-## 현재 파일과 출처
+## 현재 옆 실루엣 보정본
+
+사용자가 제공한 [목표](../../assets/items/female_knight_boots/references/user-side-target.png),
+[곡선 표시](../../assets/items/female_knight_boots/references/user-side-curves.png),
+[수정 전 화면](../../assets/items/female_knight_boots/references/user-side-before.png)을 기준으로
+기존 `fitted_v4`의 착용 자세에서 메시를 수정했다. 참고 이미지의 원저작자·라이선스는
+미확인이며 형상 참고로만 사용했다. 새 이미지·텍스처 생성이나 유료 API 호출은 없다.
+
+- 노란 선: 발등에서 발끝으로 이어지는 윗면을 완만하게 연결하고, 납작한 쐐기형 발끝에 둥근 높이를 준다.
+- 빨간 선: 뒤쪽 종아리 부피를 정리하고, 굽 위 발목 구간에 오목한 곡선을 만든다.
+- 파란 선: 정강이 앞면을 거의 곧게 유지하면서 아래쪽 굴곡을 약하게 만든다.
+
+첫 v5에서는 앞 정강이의 오목한 부분을 충분히 펴지 않고 뒤 종아리를 과하게 줄여,
+사용자가 앞뒤 곡선이 바뀐 것처럼 보인다고 지적했다. [추가 윤곽 지시](../../assets/items/female_knight_boots/references/user-side-correction.png)에
+맞춰 앞 정강이를 발끝 방향(+Z)으로 채우고, 뒤 종아리(-Z)의 부피를 복원했다.
+뒤쪽 오목한 구간은 발목 높이에 두며, 둥근 발끝과 발등 보정은 유지한다.
+
+텍스처 이미지·재질·65본 리그·높은 굽 자세·허벅지 입구·피부 가림은 유지했다.
+발끝 곡면을 위한 국소 분할에서 UV와 가중치만 보간했다. `fitted_v4`에서는 재현 입력인 GLB·피팅·가림·자세 JSON만 보존했다.
+
+- [현재 GLB](../../assets/items/female_knight_boots/fitted_v5/boots_female_knight.glb),
+  [Blender 편집본](../../assets/items/female_knight_boots/fitted_v5/female-knight-boots-fitted.blend).
+- [측면](../../assets/items/female_knight_boots/fitted_v5/review/rest-side.png),
+  [사선](../../assets/items/female_knight_boots/fitted_v5/review/rest-angle.png),
+  [미리보기 발 확대](../../assets/items/female_knight_boots/fitted_v5/browser/feet.png).
+- [변형·해시 기록](../../assets/items/female_knight_boots/fitted_v5/side-profile.json),
+  [동작 검사](../../assets/items/female_knight_boots/fitted_v5/runtime-validation.json),
+  [브라우저 검사](../../assets/items/female_knight_boots/fitted_v5/browser-review.json).
+
+14개 동작을 각각 61시점에서 검사했다. 발끝 이음새, 판금의 강체 모서리 길이,
+가중치·본 호환, 착탈 복원 검사를 통과했다. 정면·측면·후면과 걷기·달리기·앉기 렌더를 검토했다.
+부츠 양쪽은 **20,586삼각형**이며 기사 세트·단발 조립 시 숨김 포함 **55,268**, 표시 **45,884**이다.
+머리·얼굴 배분은 **6,527**로 유지된다. 제작 검토본으로서 기존 조립 예산 초과 상태는 남는다.
+옆 실루엣을 수정했으므로 아래 `fitted_v4`의 단면 피부 간격 수치는 현재 형상에 적용하지 않는다.
+걷기에서 발목 판금 사이가 벌어지는 기존 현상은 v4와 같은 시점에서 비교 확인했으며 남아 있다.
+
+## v4 피팅 원본과 출처
 
 - [양쪽 리깅 GLB](../../assets/items/female_knight_boots/fitted_v4/boots_female_knight.glb).
-- [여성 몸체·부츠·보정된 9개 액션을 포함한 Blender 편집본](../../assets/items/female_knight_boots/fitted_v4/female-knight-boots-fitted.blend).
-- [정면 착용](../../assets/items/female_knight_boots/fitted_v4/browser/idle1.png),
-  [측면](../../assets/items/female_knight_boots/fitted_v4/review/rest-side.png).
 - [승인된 한쪽 피팅 원본](../../assets/items/female_knight_boots/sole_v3/boot_right.glb),
   [한쪽 편집본](../../assets/items/female_knight_boots/sole_v3/boot_right.blend).
 - [Tripo 원본](../../assets/items/female_knight_boots/tripo_v1/source/model_url.glb),
@@ -50,19 +83,16 @@ Left/Right UpLeg·Leg·Foot·ToeBase 대응을 적용했다. 본 순서·계층�
 2026-10-13 발끝 보정: 발끝 판금만 ToeBase에 연결되어 대기 동작에서 발등과 경계가
 벌어지는 문제를 수정했다. 발끝도 발등과 같은 Foot 본을 따르며, 높은 굽 착용 자세에서
 역스키닝해 승인된 정지 형상·UV·텍스처를 유지한다. GLB와 Blender 편집본을 함께 갱신했다.
-[최종 발 확대](../../assets/items/female_knight_boots/fitted_v4/browser/feet.png)를 남겼다.
 
 2026-10-13 입구 여유 보정: 허벅지 뒤쪽 사선 판금을 피부가 뚫는 현상을 수정했다.
 제작 높이 0.34–0.40 구간에서 확장을 부드럽게 늘려, 위쪽 입구는 앞·옆 7mm에서
 뒤쪽 최대 14mm까지 바깥으로 이동했다. 이는 추가 이동량이며 최종 피부 간격은 아니다.
 8mm와 10mm 균일 확장에서는 걷는 자세의 반대쪽 입구에 작은 교차가 남아,
 뒤쪽 여유를 더 주고 앞·옆의 확장을 줄였다. 피부 가림 목록·발끝·종아리 형상은 유지했다.
-[입구 단면 검사](../../assets/items/female_knight_boots/fitted_v4/cuff-validation.json)를 남겼다.
 
 후속 확대에서 반대쪽 안쪽 사선 판금에 작은 피부 돌출이 남아 있음을 확인했다.
 제작 높이 0.40–0.49의 안쪽 후면만 부드럽게 최대 약 2.5mm 더 벌렸다.
 가림·가중치·UV·면 구성은 유지했으며 양쪽 후면 사선에서 대기·걷기·달리기를 확인했다.
-[최종 입구 확대](../../assets/items/female_knight_boots/fitted_v4/browser/cuff.png).
 
 **1mm는 입력 여유 기준이며 모든 표면의 일정한 실측 거리는 아니다.** 판금 굴곡과
 입구 추가 여유 때문에 허벅지·종아리의 표본 전후좌우 간격은 약 0.59–17.01mm다.
@@ -79,18 +109,11 @@ Left/Right UpLeg·Leg·Foot·ToeBase 대응을 적용했다. 본 순서·계층�
 
 ## 검증과 예산
 
-- [형상 검사](../../assets/items/female_knight_boots/fitted_v4/geometry-validation.json):
-  좌우 대칭, 면 방향·UV·가중치·본 대응, 65본 bind, 단위 노멀, 원본·텍스처 보존, 퇴화 면 0개.
-- [동작 검사](../../assets/items/female_knight_boots/fitted_v4/runtime-validation.json):
-  실제 `bindModularPart`와 14개 클립을 각각 61시점에서 검사했다.
-  발 자세 보정·착탈 복원·누적 없음·단일 본 판금의 모서리 길이 유지를 확인했다.
-  발끝 경계의 중복 정점 1,242쌍도 검사하며, 14개 클립 × 61시점에서 최대 벌어짐은 0이다.
-  이 검사는 수정 전 GLB에서 대기 동작 경계 벌어짐 0.014443(제작 좌표 단위)을 검출했다.
-- [브라우저 검사](../../assets/items/female_knight_boots/fitted_v4/browser-review.json):
-  정면·측면·후면, 주요 8개 동작과 반복 착탈 확인, 페이지 오류 0개.
-- [예산 집계](../../assets/items/female_knight_boots/fitted_v4/assembled-budget.json):
-  부츠 양쪽 **17,522삼각형**, 기사 세트·단발 조립 시 숨김 포함 **52,204**, 표시 **42,820**,
-  머리·얼굴 배분 **6,527**. 조립 목표 15,000–20,000을 초과한 제작 검토본이며 예산만을 위한 감면은 하지 않았다.
+최종 [형상 검사](../../assets/items/female_knight_boots/fitted_v5/geometry-validation.json)에서
+좌우 대칭 오차는 7.51e-9 이하, 노멀 길이 오차는 5.97e-8 이하다.
+[동작 검사](../../assets/items/female_knight_boots/fitted_v5/runtime-validation.json)와
+[예산 집계](../../assets/items/female_knight_boots/fitted_v5/assembled-budget.json)는 현재 GLB 기준이다.
+이전 v4 검사와 비교 렌더는 정리했으며, 현재 검증 결과와 문서용 측면·사선·발 확대만 보존한다.
 
 깊은 무릎 굽힘의 검은 관절 간격과 선형 스키닝에 의한 보호대 압축은 남는다.
 전용 하이힐 보행, 다른 복장과 혼합 착용, 실제 게임 장착 호환과 출시 예산 정리는 후속 단계다.
@@ -106,12 +129,13 @@ Left/Right UpLeg·Leg·Foot·ToeBase 대응을 적용했다. 본 순서·계층�
 | `fitted_v1` **[미사용]** | 첫 대칭·리깅. 다리가 굵고 발 자세가 평평해 대체. 중간 파일 정리. |
 | `fitted_v2` **[미사용]** | 슬림 피팅·실제 높은 굽 자세 적용. 너무 붙는 부분을 후속 조정. 중간 파일 정리. |
 | `fitted_v3` **[미사용]** | 1cm 여유는 사용자가 취소. 각도별 세밀한 보정의 뾰족한 경계도 기각했다. 중간 파일 정리. |
-| `fitted_v4` | 1mm 여유 기준으로 재피팅한 현재 저장본. |
+| `fitted_v4` | 1mm 여유 기준의 피팅 원본. v5 옆 실루엣 보정의 입력으로 보존. |
+| `fitted_v5` | 둥근 발끝·발등과 앞뒤 발목 곡선을 수정한 현재 저장본. |
 
 [밑창 지시 이미지](../../assets/items/female_knight_boots/sole_v3/user-sole-reference.png),
 [슬림 윤곽 지시 이미지](../../assets/items/female_knight_boots/references/user-slim.png)를 보존한다.
 커밋 요청에 따라 이전 피팅 모델, 중복 Blender·파생 몸체, 로그, 비교 렌더, 임시 보고서,
-스크립트 사본을 정리했다. 문서용 최종 정면·측면·발끝·입구 이미지와 최종 검증 기록은 남겼다.
+스크립트 사본을 정리했다. 문서용 최종 측면·사선·발끝 이미지와 최종 검증 기록은 남겼다.
 
 ## 재현
 
@@ -122,6 +146,7 @@ Left/Right UpLeg·Leg·Foot·ToeBase 대응을 적용했다. 본 순서·계층�
 .venv/bin/python assets/items/female_knight_boots/refined_v2/refine_boot.py
 .venv/bin/python assets/items/female_knight_boots/sole_v3/flatten_forefoot.py
 .venv/bin/python tools/fit-female-knight-boots.py
+.venv/bin/python tools/shape-female-knight-boots.py
 node tools/validate-female-knight-boots.mjs
 blender -b --python-exit-code 1 --python tools/blender-scripts/review_female_knight_boots.py
 ```

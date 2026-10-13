@@ -9,7 +9,7 @@ import numpy as np
 from mathutils import Quaternion, Vector
 
 ROOT = Path(__file__).resolve().parents[2]
-OUTPUT = ROOT / 'assets/items/female_knight_boots/fitted_v4'
+OUTPUT = ROOT / 'assets/items/female_knight_boots/fitted_v5'
 sys.path.insert(0, str(ROOT / 'tools'))
 from lib.glb import read_glb, write_glb
 from lib.glb_accessors import add_accessor

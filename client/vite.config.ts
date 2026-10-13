@@ -113,11 +113,11 @@ function modularCharacterPreview(): Plugin {
   ])
   const fixed: Record<string, URL> = {
     female_knight_boots: new URL(
-      '../assets/items/female_knight_boots/fitted_v4/boots_female_knight.glb',
+      '../assets/items/female_knight_boots/fitted_v5/boots_female_knight.glb',
       import.meta.url
     ),
     'female-knight-boots-occlusion.json': new URL(
-      '../assets/items/female_knight_boots/fitted_v4/body-occlusion.json',
+      '../assets/items/female_knight_boots/fitted_v5/body-occlusion.json',
       import.meta.url
     ),
     female_knight_bottom: new URL(
