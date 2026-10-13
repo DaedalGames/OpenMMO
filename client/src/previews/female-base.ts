@@ -401,7 +401,8 @@ export async function showFemaleBase(
     model.position.y = chair.visible ? femaleSeatOffset : 0
     if (bootsEquipped && bootGround) {
       const lift = bootGround.apply(
-        chair.visible ? femaleSeatOffset : undefined
+        chair.visible ? femaleSeatOffset : undefined,
+        motion.value
       )
       if (!chair.visible) model.position.y = lift
     }

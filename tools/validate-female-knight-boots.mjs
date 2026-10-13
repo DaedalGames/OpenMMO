@@ -100,6 +100,38 @@ try {
   })
   const forefootSeamCount = forefootSeams.reduce((sum, pairs) => sum + pairs.length, 0)
   assert.ok(forefootSeamCount > 0, 'Forefoot seam samples are missing')
+  const transversePairs = parts.map(({ mesh }) => {
+    const rows = new Map()
+    for (let i = 0; i < mesh.geometry.attributes.position.count; i++) {
+      const point = mesh.getVertexPosition(i, new THREE.Vector3())
+      if (point.y > -.015) continue
+      const key = [point.y, point.z].map(value => Math.round(value * 1e6)).join(',')
+      const row = rows.get(key) ?? []
+      row.push({ index: i, point })
+      rows.set(key, row)
+    }
+    return [...rows.values()].flatMap(row => {
+      row.sort((a, b) => a.point.x - b.point.x)
+      const a = row[0], b = row.at(-1)
+      const width = b.point.x - a.point.x
+      return width > .004 ? [[a.index, b.index, width]] : []
+    })
+  })
+  const transversePairCount = transversePairs.reduce((sum, pairs) => sum + pairs.length, 0)
+  assert.ok(transversePairCount >= 4, 'Sole width samples are missing')
+  const solePlanes = [-1, 1].map(side => {
+    const support = parts.flatMap(({ mesh }) => Array.from({ length: mesh.geometry.attributes.position.count }, (_, index) => ({
+      mesh, index, point: mesh.getVertexPosition(index, new THREE.Vector3()),
+    })).filter(({ point }) => Math.sign(point.x) === side && point.y < -.03026))
+    const rear = support.reduce((a, b) => a.point.z < b.point.z ? a : b)
+    const front = support.filter(({ point }) => point.z > .04)
+    const left = front.reduce((a, b) => a.point.x < b.point.x ? a : b)
+    const right = front.reduce((a, b) => a.point.x > b.point.x ? a : b)
+    assert.ok(left.point.distanceTo(right.point) > .02)
+    assert.ok(rear.point.distanceTo(left.point) > .05)
+    return [rear, left, right]
+  })
+  const standing = new Set(['idle1', 'idle_armed', 'combat_idle', 'torch_idle1', 'torch_combat_idle', 'torch_sword_idle1'])
   const heelElevation = meanHeel() + lift - bareHeel
   const rotationAngles = footBones.map((bone, i) => THREE.MathUtils.radToDeg(bone.quaternion.angleTo(bareRotations[i])))
   assert.ok(rotationAngles.every(angle => Math.abs(angle - 30) < .001))
@@ -112,9 +144,9 @@ try {
   const sample = clipSampler(base.scene, { samples: 61, restore: skeleton.bones })
   for (const clip of base.animations) {
     const lifts = []
-    let maxRigidStretch = 0, maxFlexibleStretch = 0, maxMotion = 0, minY = Infinity, maxLift = 0, maxForefootSeamGap = 0
+    let maxRigidStretch = 0, maxFlexibleStretch = 0, maxMotion = 0, minY = Infinity, maxLift = 0, maxForefootSeamGap = 0, maxTransverseSlope = 0, maxSoleTilt = 0
     for (const { time } of sample(clip)) {
-      const heelLift = ground.apply(clip.name === 'sit_idle' ? femaleSeatOffset : undefined)
+      const heelLift = ground.apply(clip.name === 'sit_idle' ? femaleSeatOffset : undefined, clip.name)
       const lift = clip.name === 'sit_idle' ? femaleSeatOffset : heelLift
       lifts.push({ time, lift,
         hips: base.scene.getObjectByName('Hips').position.toArray(),
@@ -123,10 +155,17 @@ try {
           return [name, base.scene.getObjectByName(name).quaternion.toArray()]
         }))) })
       maxLift = Math.max(maxLift, lift)
+      for (const plane of solePlanes) {
+        const [a, b, c] = plane.map(({ mesh, index }) => mesh.getVertexPosition(index, new THREE.Vector3()))
+        const normal = b.sub(a).cross(c.sub(a)).normalize()
+        maxSoleTilt = Math.max(maxSoleTilt, Math.hypot(normal.x, normal.z))
+      }
       for (const [partIndex, { mesh, rest, rigidEdges, flexibleEdges }] of parts.entries()) {
         const posed = rest.map((_, i) => mesh.getVertexPosition(i, new THREE.Vector3()))
         for (const [a, b] of forefootSeams[partIndex])
           maxForefootSeamGap = Math.max(maxForefootSeamGap, posed[a].distanceTo(posed[b]))
+        for (const [a, b, width] of transversePairs[partIndex])
+          maxTransverseSlope = Math.max(maxTransverseSlope, Math.abs(posed[a].y - posed[b].y) / width)
         for (let i = 0; i < posed.length; i++) {
           assert.ok(posed[i].toArray().every(Number.isFinite))
           maxMotion = Math.max(maxMotion, posed[i].distanceTo(rest[i]))
@@ -137,14 +176,27 @@ try {
         for (const [a, b, length] of flexibleEdges)
           maxFlexibleStretch = Math.max(maxFlexibleStretch, posed[a].distanceTo(posed[b]) / length)
       }
+      if (time === 0) {
+        const corrected = footBones.map(bone => bone.quaternion.clone())
+        ground.apply(clip.name === 'sit_idle' ? femaleSeatOffset : undefined, clip.name)
+        for (let i = 0; i < footBones.length; i++)
+          assert.ok(footBones[i].quaternion.toArray().every((value, j) => Math.abs(value - corrected[i].toArray()[j]) < 1e-9), `${clip.name} posture accumulated`)
+      }
       ground.restore()
     }
     assert.ok(maxRigidStretch < .001, `${clip.name} rigid stretch ${maxRigidStretch}`)
     assert.ok(maxMotion < 2)
     assert.ok(maxFlexibleStretch < 3.5, `${clip.name} flexible stretch ${maxFlexibleStretch}`)
     assert.ok(maxForefootSeamGap < 1e-5, `${clip.name} forefoot seam gap ${maxForefootSeamGap}`)
+    if (standing.has(clip.name)) {
+      assert.ok(maxTransverseSlope < .0002, `${clip.name} sole transverse slope ${maxTransverseSlope}`)
+      assert.ok(maxSoleTilt < .001, `${clip.name} sole plane tilt ${maxSoleTilt}`)
+    }
     clips.push({ name: clip.name, samples: 61, maximum_rigid_edge_stretch: maxRigidStretch,
       maximum_forefoot_seam_gap: maxForefootSeamGap,
+      maximum_sole_transverse_slope: maxTransverseSlope,
+      maximum_sole_plane_tilt: maxSoleTilt,
+      sole_leveling_expected: standing.has(clip.name),
       maximum_flexible_edge_ratio: maxFlexibleStretch, maximum_motion: maxMotion,
       minimum_height_after_ground_correction: minY, maximum_ground_lift: maxLift })
     animationOffsets.push({ name: clip.name, lifts })
@@ -154,6 +206,7 @@ try {
     body: { path: basePath, sha256: hash(basePath) }, exact_65_bone_bind_compatibility: true,
     four_normalized_influences: true, no_opposite_leg_weights: true, skin_mask_restores: true,
     forefoot_seam_pairs: forefootSeamCount,
+    sole_transverse_pairs: transversePairCount,
     heel_posture: { rotation_angles_degrees: rotationAngles, root_lift: lift, heel_elevation: heelElevation, no_accumulation_and_bare_pose_restored: true },
     triangles: boots.reduce((sum, mesh) => sum + mesh.geometry.index.count / 3, 0), clips,
     scope: 'Actual bindModularPart and animation evaluation; rendered pose review required for visual intersections.' }

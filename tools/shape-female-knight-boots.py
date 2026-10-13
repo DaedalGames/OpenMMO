@@ -124,6 +124,28 @@ def reshape(points):
     return align_front_ankle(toe_and_sole(result))
 
 
+heel_primitive = next(
+    p for p in doc['meshes'][0]['primitives']
+    if len(posed(p)) > 500 and posed(p)[:, 1].min() < 0 and posed(p)[:, 2].max() < 0
+)
+heel_points = reshape(posed(heel_primitive))
+heel_triangles = heel_points[accessor(doc, raw, heel_primitive['indices']).reshape(-1, 3)]
+heel_y = np.linspace(heel_points[:, 1].min() + 1e-7, .065, 300)
+heel_centers = PchipInterpolator(heel_y, np.array([
+    [np.mean(section_bounds(heel_triangles, y, 1, axis)) for axis in [0, 2]]
+    for y in heel_y
+]), axis=0)
+heel_axis = np.array([heel_centers(.05)[0], heel_centers(-.02)[1]])
+
+
+def straighten_heel(points):
+    result = points.copy()
+    y = points[:, 1]
+    amount = 1 - smooth((y - .01) / .055)
+    result[:, [0, 2]] += (heel_axis - heel_centers(y)) * amount[:, None]
+    return result
+
+
 def subdivide(values, faces):
     points = values[:, :3]
     edges = set()
@@ -161,6 +183,12 @@ for mesh in doc['meshes'][:1]:
     for primitive in mesh['primitives']:
         attrs = primitive['attributes']
         points = posed(primitive)
+        is_heel = points[:, 1].min() < 0 and points[:, 2].max() < 0
+
+        def deform_points(values):
+            shaped = reshape(values)
+            return straighten_heel(shaped) if is_heel else shaped
+
         normals = accessor(doc, raw, attrs['NORMAL']).astype(float)
         uv = accessor(doc, raw, attrs['TEXCOORD_0'])
         joints = accessor(doc, raw, attrs['JOINTS_0'])
@@ -179,10 +207,10 @@ for mesh in doc['meshes'][:1]:
             points, normals, uv = values[:, :3], values[:, 3:6], values[:, 6:8]
             joints, weights = values[:, 8:12].astype(int), values[:, 12:16]
             deform = np.einsum('nk,nkij->nij', weights, matrices[joints])
-        changed = reshape(points)
+        changed = deform_points(points)
         maximum_change = max(maximum_change, float(np.linalg.norm(changed - points, axis=1).max()))
         jacobian = np.stack([
-            (reshape(points + np.eye(3)[axis] * 1e-7) - reshape(points - np.eye(3)[axis] * 1e-7)) / 2e-7
+            (deform_points(points + np.eye(3)[axis] * 1e-7) - deform_points(points - np.eye(3)[axis] * 1e-7)) / 2e-7
             for axis in range(3)
         ], axis=2)
         normals = np.einsum('nij,nj->ni', np.linalg.pinv(jacobian.transpose(0, 2, 1)), normals)
@@ -260,6 +288,8 @@ report = {
     'revision': 'Shorter blunt toe, slightly fuller sole and arch, and heel-cup boundary rising diagonally toward the rear',
     'toe_sole_reference': 'assets/items/female_knight_boots/references/user-toe-sole-outline.png',
     'front_alignment_reference': 'assets/items/female_knight_boots/references/user-front-ankle-alignment.png',
+    'vertical_heel_reference': 'assets/items/female_knight_boots/references/user-upright-standing-heel.png',
+    'vertical_heel': {'lower_shaft_axis_xz': heel_axis.tolist(), 'blend_height_range': [.01, .065]},
     'front_alignment': {'method': 'Extend the shin centerline through the ankle and foot using lateral displacement only',
                         'shin_sample_height_range': [.13, .24], 'centerline_slope': float(shin_axis[0]),
                         'centerline_intercept': float(shin_axis[1]), 'blend_height_range': [.10, .165]},

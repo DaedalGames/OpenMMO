@@ -1,5 +1,15 @@
 import * as THREE from 'three'
 
+const standingMotions = new Set([
+  'rest',
+  'idle1',
+  'idle_armed',
+  'combat_idle',
+  'torch_idle1',
+  'torch_combat_idle',
+  'torch_sword_idle1',
+])
+
 export function femaleBootGround(
   model: THREE.Object3D,
   body: THREE.SkinnedMesh,
@@ -25,6 +35,21 @@ export function femaleBootGround(
     }
   )
   const states = [...offsets, ...legStates]
+  const footAxes = offsets
+    .filter(({ bone }) => bone.name.endsWith('Foot'))
+    .map(({ bone, rotation }) => ({
+      bone,
+      direction: new THREE.Vector3(1, 0, 0)
+        .transformDirection(
+          body.skeleton.boneInverses[body.skeleton.bones.indexOf(bone)]
+        )
+        .applyQuaternion(rotation.clone().invert()),
+      forward: new THREE.Vector3(0, 0, 1)
+        .transformDirection(
+          body.skeleton.boneInverses[body.skeleton.bones.indexOf(bone)]
+        )
+        .applyQuaternion(rotation.clone().invert()),
+    }))
   let applied = false
   const sample = (mesh: THREE.SkinnedMesh, height: number) => {
     const position = mesh.geometry.attributes.position
@@ -101,7 +126,7 @@ export function femaleBootGround(
   }
   return {
     restore,
-    apply(seatOffset?: number) {
+    apply(seatOffset?: number, motion = 'rest') {
       restore()
       model.updateMatrixWorld(true)
       const originalFloor = minimum([feet])
@@ -110,6 +135,34 @@ export function femaleBootGround(
         state.bone.quaternion.multiply(state.rotation)
       applied = true
       model.updateMatrixWorld(true)
+      if (standingMotions.has(motion)) {
+        for (const { bone, direction, forward } of footAxes) {
+          const rotation = bone.getWorldQuaternion(new THREE.Quaternion())
+          const lateral = direction.clone().applyQuaternion(rotation)
+          const horizontal = new THREE.Vector3(0, 1, 0)
+            .cross(forward.clone().applyQuaternion(rotation))
+            .normalize()
+          const correction = new THREE.Quaternion().setFromUnitVectors(
+            lateral,
+            horizontal
+          )
+          rotation.premultiply(correction)
+          const heading = forward.clone().applyQuaternion(rotation)
+          rotation.premultiply(
+            correction.setFromUnitVectors(
+              heading,
+              heading.clone().setY(0).normalize()
+            )
+          )
+          bone.quaternion.copy(
+            bone
+              .parent!.getWorldQuaternion(new THREE.Quaternion())
+              .invert()
+              .multiply(rotation)
+          )
+          bone.updateMatrixWorld(true)
+        }
+      }
       if (seatOffset !== undefined) {
         for (const side of ['Left', 'Right']) {
           const entries = soles.filter(({ mesh }) => {
