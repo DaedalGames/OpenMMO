@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 
 import numpy as np
-from scipy.interpolate import PchipInterpolator
+from scipy.interpolate import CubicSpline, PchipInterpolator
 
 from lib.glb import read_glb, view_bytes, write_glb
 from lib.glb_accessors import accessor, add_accessor
@@ -136,6 +136,13 @@ heel_centers = PchipInterpolator(heel_y, np.array([
     for y in heel_y
 ]), axis=0)
 heel_axis = np.array([heel_centers(.05)[0], heel_centers(-.02)[1]])
+heel_rear_delta = PchipInterpolator(
+    [.010, .016, .025, .032, .038, .045, .052, .060, .070, .080],
+    [0, 0, .004, .006, .002, -.0035, -.004, -.0025, 0, 0],
+)
+heel_depth = PchipInterpolator(heel_y, np.array([
+    section_bounds(heel_triangles, y, 1, 2) for y in heel_y
+]), axis=0)
 
 
 def straighten_heel(points):
@@ -143,6 +150,31 @@ def straighten_heel(points):
     y = points[:, 1]
     amount = 1 - smooth((y - .01) / .055)
     result[:, [0, 2]] += (heel_axis - heel_centers(y)) * amount[:, None]
+    rear, front = heel_depth(y).T
+    rear_weight = smooth((front - points[:, 2]) / (front - rear))
+    result[:, 2] += heel_rear_delta(np.clip(y, .010, .080)) * rear_weight
+    return result
+
+
+rounded_heel = straighten_heel(heel_points)
+rounded_triangles = rounded_heel[accessor(doc, raw, heel_primitive['indices']).reshape(-1, 3)]
+rounded_depth = PchipInterpolator(heel_y, np.array([
+    section_bounds(rounded_triangles, y, 1, 2) for y in heel_y
+]), axis=0)
+smooth_heel_rear = CubicSpline(
+    [.010, .022, .033, .044, .052],
+    [rounded_depth(.010)[0], -.038, -.0401, -.0457, rounded_depth(.052)[0]],
+    bc_type=((1, -.15), (1, 0)),
+)
+
+
+def smooth_heel(points):
+    result = straighten_heel(points)
+    y = result[:, 1]
+    rear, front = rounded_depth(y).T
+    weight = smooth((front - result[:, 2]) / (front - rear))
+    weight *= smooth((y - .010) / .004) * (1 - smooth((y - .044) / .008))
+    result[:, 2] += (smooth_heel_rear(np.clip(y, .010, .052)) - rear) * weight
     return result
 
 
@@ -187,7 +219,7 @@ for mesh in doc['meshes'][:1]:
 
         def deform_points(values):
             shaped = reshape(values)
-            return straighten_heel(shaped) if is_heel else shaped
+            return smooth_heel(shaped) if is_heel else shaped
 
         normals = accessor(doc, raw, attrs['NORMAL']).astype(float)
         uv = accessor(doc, raw, attrs['TEXCOORD_0'])
@@ -290,6 +322,15 @@ report = {
     'front_alignment_reference': 'assets/items/female_knight_boots/references/user-front-ankle-alignment.png',
     'vertical_heel_reference': 'assets/items/female_knight_boots/references/user-upright-standing-heel.png',
     'vertical_heel': {'lower_shaft_axis_xz': heel_axis.tolist(), 'blend_height_range': [.01, .065]},
+    'heel_cup_contour': {
+        'reference': 'assets/items/female_knight_boots/references/user-rounded-cup-reference.png',
+        'before': 'assets/items/female_knight_boots/references/user-rounded-cup-before.png',
+        'method': 'Round the rear cup into the seam and recess the upper heel below it',
+        'maximum_cup_extension': .004, 'maximum_upper_heel_recess': .006,
+        'height_range': [.016, .070], 'lower_heel_axis_unchanged': True,
+        'smoothing_reference': 'assets/items/female_knight_boots/references/user-smooth-heel-curve.png',
+        'rear_curve_smoothing': 'Cubic spline target blended into the cup and lower shaft',
+    },
     'front_alignment': {'method': 'Extend the shin centerline through the ankle and foot using lateral displacement only',
                         'shin_sample_height_range': [.13, .24], 'centerline_slope': float(shin_axis[0]),
                         'centerline_intercept': float(shin_axis[1]), 'blend_height_range': [.10, .165]},
