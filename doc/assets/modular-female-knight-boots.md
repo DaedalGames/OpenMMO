@@ -88,8 +88,17 @@ UV·면 구성·텍스처·가중치를 유지했고, 면 뒤집힘·좌우 대�
 UV와 원본 PBR 텍스처는 그대로 사용해 무늬·금속성·노멀의 대응을 보존했다.
 양쪽 대칭과 면 뒤집힘 검사, 14개 동작 검사 및 측면·사선 브라우저 검토를 통과했다.
 
+이어 [네이비 재질 지시](../../assets/items/female_knight_boots/references/user-navy-cuff-material.png)에
+따라 허벅지 바깥쪽의 검은 표면을 무릎 뒤쪽과 같은 `concept_knee_leather` 재질로 바꿨다.
+한쪽 106면에 기존 가죽 이미지의 진한 네이비 구간을 투영했고, 갈색 끈·버클·은색 테두리는
+원래 재질을 유지한다. 새 이미지 생성이나 텍스처 파일 수정은 없다. 삼각형별 위치·법선·
+가중치와 리그가 수정 전과 동일한지 확인했고, 14개 동작 검사를 통과했다.
+[측면 재질](../../assets/items/female_knight_boots/fitted_v5/browser/cuff-navy-side.png)과
+[재질 검증](../../assets/items/female_knight_boots/fitted_v5/material-validation.json)을 보존한다.
+
 텍스처 이미지·재질·65본 리그·높은 굽 자세·허벅지 입구·피부 가림은 유지했다.
-발끝 곡면을 위한 국소 분할에서 UV와 가중치만 보간했다. `fitted_v4`에서는 재현 입력인 GLB·피팅·가림·자세 JSON만 보존했다.
+발끝 곡면의 국소 분할에서 UV와 가중치를 보간했고, 위쪽 가죽 면은 기존 무릎 재질에
+맞게 UV와 재질 지정을 바꿨다. `fitted_v4`에서는 재현 입력인 GLB·피팅·가림·자세 JSON만 보존했다.
 
 - [현재 GLB](../../assets/items/female_knight_boots/fitted_v5/boots_female_knight.glb),
   [Blender 편집본](../../assets/items/female_knight_boots/fitted_v5/female-knight-boots-fitted.blend).

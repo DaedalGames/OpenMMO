@@ -11,6 +11,7 @@ from scipy.interpolate import CubicSpline, PchipInterpolator
 from lib.glb import read_glb, view_bytes, write_glb
 from lib.glb_accessors import accessor, add_accessor
 from outfits.female_boot_pose import heel_pose
+from outfits.female_boot_material import match_cuff_leather
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / 'assets/items/female_knight_boots/fitted_v4'
@@ -347,6 +348,7 @@ spec = importlib.util.spec_from_file_location('plate', ROOT / 'tools/fit-modular
 plate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(plate)
 original_images = [view_bytes(doc, raw, im['bufferView']) for im in doc['images']]
+leather_report = match_cuff_leather(doc, binary, matrices)
 binary = plate.compact(doc, binary)
 assert original_images == [view_bytes(doc, binary, im['bufferView']) for im in doc['images']]
 destination = OUTPUT / 'boots_female_knight.glb'
@@ -364,6 +366,7 @@ report = {
     'source_sha256': hashlib.sha256((SOURCE / 'boots_female_knight.glb').read_bytes()).hexdigest(),
     'output_sha256': hashlib.sha256(destination.read_bytes()).hexdigest(),
     'method': 'Equipped-pose silhouette deformation, inverse-skinned into the original bind pose',
+    'upper_cuff_material': leather_report,
     'reference': 'User supplied target and annotated yellow instep, red rear ankle, blue shin curves',
     'revision': 'Shorter blunt toe, slightly fuller sole and arch, and heel-cup boundary rising diagonally toward the rear',
     'toe_sole_reference': 'assets/items/female_knight_boots/references/user-toe-sole-outline.png',
@@ -402,7 +405,8 @@ report = {
                         'shin_sample_height_range': [.13, .24], 'centerline_slope': float(shin_axis[0]),
                         'centerline_intercept': float(shin_axis[1]), 'blend_height_range': [.10, .165]},
     'profile_axes': {'front': '+Z, toward toe', 'rear': '-Z, toward heel', 'height': '+Y'},
-    'textures_unchanged': True, 'uv_interpolated_only_for_subdivision': True,
+    'textures_unchanged': True,
+    'uv_changes': 'Forefoot subdivision interpolation and upper cuff leather projection',
     'rig_and_heel_pose_unchanged': True, 'maximum_vertex_displacement': maximum_change,
     'minimum_double_triangle_area': minimum_area,
     'triangles': sum(doc['accessors'][p['indices']]['count'] // 3 for m in doc['meshes'] for p in m['primitives']),
