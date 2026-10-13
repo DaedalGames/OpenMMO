@@ -85,6 +85,21 @@ try {
   const meanHeel = () => heelVertices.reduce((sum, index) => sum + body.getVertexPosition(index, new THREE.Vector3()).y, 0) / heelVertices.length
   const bareHeel = meanHeel()
   const lift = ground.apply()
+  const forefootSeams = parts.map(({ mesh }) => {
+    const vertices = new Map()
+    const pairs = []
+    for (let i = 0; i < mesh.geometry.attributes.position.count; i++) {
+      const point = mesh.getVertexPosition(i, new THREE.Vector3())
+      if (point.y >= .055 || point.z <= .065) continue
+      const key = point.toArray().map(value => Math.round(value * 1e6)).join(',')
+      const other = vertices.get(key)
+      if (other === undefined) vertices.set(key, i)
+      else pairs.push([other, i])
+    }
+    return pairs
+  })
+  const forefootSeamCount = forefootSeams.reduce((sum, pairs) => sum + pairs.length, 0)
+  assert.ok(forefootSeamCount > 0, 'Forefoot seam samples are missing')
   const heelElevation = meanHeel() + lift - bareHeel
   const rotationAngles = footBones.map((bone, i) => THREE.MathUtils.radToDeg(bone.quaternion.angleTo(bareRotations[i])))
   assert.ok(rotationAngles.every(angle => Math.abs(angle - 30) < .001))
@@ -97,7 +112,7 @@ try {
   const sample = clipSampler(base.scene, { samples: 61, restore: skeleton.bones })
   for (const clip of base.animations) {
     const lifts = []
-    let maxRigidStretch = 0, maxFlexibleStretch = 0, maxMotion = 0, minY = Infinity, maxLift = 0
+    let maxRigidStretch = 0, maxFlexibleStretch = 0, maxMotion = 0, minY = Infinity, maxLift = 0, maxForefootSeamGap = 0
     for (const { time } of sample(clip)) {
       const heelLift = ground.apply(clip.name === 'sit_idle' ? femaleSeatOffset : undefined)
       const lift = clip.name === 'sit_idle' ? femaleSeatOffset : heelLift
@@ -108,8 +123,10 @@ try {
           return [name, base.scene.getObjectByName(name).quaternion.toArray()]
         }))) })
       maxLift = Math.max(maxLift, lift)
-      for (const { mesh, rest, rigidEdges, flexibleEdges } of parts) {
+      for (const [partIndex, { mesh, rest, rigidEdges, flexibleEdges }] of parts.entries()) {
         const posed = rest.map((_, i) => mesh.getVertexPosition(i, new THREE.Vector3()))
+        for (const [a, b] of forefootSeams[partIndex])
+          maxForefootSeamGap = Math.max(maxForefootSeamGap, posed[a].distanceTo(posed[b]))
         for (let i = 0; i < posed.length; i++) {
           assert.ok(posed[i].toArray().every(Number.isFinite))
           maxMotion = Math.max(maxMotion, posed[i].distanceTo(rest[i]))
@@ -125,7 +142,9 @@ try {
     assert.ok(maxRigidStretch < .001, `${clip.name} rigid stretch ${maxRigidStretch}`)
     assert.ok(maxMotion < 2)
     assert.ok(maxFlexibleStretch < 3.5, `${clip.name} flexible stretch ${maxFlexibleStretch}`)
+    assert.ok(maxForefootSeamGap < 1e-5, `${clip.name} forefoot seam gap ${maxForefootSeamGap}`)
     clips.push({ name: clip.name, samples: 61, maximum_rigid_edge_stretch: maxRigidStretch,
+      maximum_forefoot_seam_gap: maxForefootSeamGap,
       maximum_flexible_edge_ratio: maxFlexibleStretch, maximum_motion: maxMotion,
       minimum_height_after_ground_correction: minY, maximum_ground_lift: maxLift })
     animationOffsets.push({ name: clip.name, lifts })
@@ -134,6 +153,7 @@ try {
   const report = { date: '2026-10-13', source: { path: partPath, sha256: hash(partPath) },
     body: { path: basePath, sha256: hash(basePath) }, exact_65_bone_bind_compatibility: true,
     four_normalized_influences: true, no_opposite_leg_weights: true, skin_mask_restores: true,
+    forefoot_seam_pairs: forefootSeamCount,
     heel_posture: { rotation_angles_degrees: rotationAngles, root_lift: lift, heel_elevation: heelElevation, no_accumulation_and_bare_pose_restored: true },
     triangles: boots.reduce((sum, mesh) => sum + mesh.geometry.index.count / 3, 0), clips,
     scope: 'Actual bindModularPart and animation evaluation; rendered pose review required for visual intersections.' }

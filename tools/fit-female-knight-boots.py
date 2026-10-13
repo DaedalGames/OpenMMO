@@ -84,7 +84,6 @@ source_faces[0] = np.array(split_faces)
 centroids = source_points[0][source_faces[0]].mean(1)
 face_regions = np.where(centroids[:, 1] > .225, 0, np.where(centroids[:, 1] > -.29, 1, 2))
 face_regions[(centroids[:, 1] > .075) & (centroids[:, 1] <= .225)] = 4
-face_regions[(centroids[:, 0] < -.12) & (centroids[:, 1] < -.46)] = 3
 keys, inverse = np.unique(np.column_stack([source_faces[0].ravel(), np.repeat(face_regions, 3)]), axis=0, return_inverse=True)
 front_regions = keys[:, 1]
 source_points[0] = source_points[0][keys[:, 0]]
@@ -157,6 +156,8 @@ for low, high in [(.06, .30), (-.33, -.23)]:
 
 CHARACTER_HEIGHT_M = 1.8
 CLEARANCE_M = .001
+CUFF_EXTRA_CLEARANCE_M = .014
+CUFF_INNER_CLEARANCE_M = .004
 
 
 def base_fit(points):
@@ -184,7 +185,7 @@ allowance_heights = np.linspace(.12, .48, 121)
 allowance_scales = np.ones((len(allowance_heights), 4))
 
 
-def fit(points):
+def fit(points, cuff_clearance=CUFF_EXTRA_CLEARANCE_M):
     result = base_fit(points)
     height = result[:, 1]
     blend = smooth((height - .09) / .05)
@@ -195,11 +196,21 @@ def fit(points):
         b = np.interp(height, allowance_heights, allowance_scales[:, negative])
         scale = 1 + (np.where(delta >= 0, a, b) - 1) * blend
         result[:, axis] = center + delta * scale
+    center = np.column_stack([np.interp(height, heights, body_centers[:, k]) for k in [0, 2]])
+    radial = result[:, [0, 2]] - center
+    radius = np.linalg.norm(radial, axis=1, keepdims=True)
+    back = smooth(-radial[:, 1] / np.maximum(radius[:, 0], 1e-12))
+    allowance = cuff_clearance / CHARACTER_HEIGHT_M * (.5 + .5 * back) * smooth((height - .34) / .06)
+    inner_back = smooth(radial[:, 0] / np.maximum(radius[:, 0], 1e-12)) * back
+    cuff_band = smooth((height - .40) / .025) * (1 - smooth((height - .46) / .03))
+    if cuff_clearance:
+        allowance += CUFF_INNER_CLEARANCE_M / CHARACTER_HEIGHT_M * inner_back * cuff_band
+    result[:, [0, 2]] += radial / np.maximum(radius, 1e-12) * allowance[:, None]
     return result
 
 
 for _ in range(3):
-    outer = np.concatenate([fit(v)[f] for v, f in zip(source_points[:17], source_faces[:17])])
+    outer = np.concatenate([fit(v, cuff_clearance=0)[f] for v, f in zip(source_points[:17], source_faces[:17])])
     factors = []
     for height in allowance_heights:
         center = np.array([np.interp(height, heights, body_centers[:, k]) for k in range(3)])
@@ -334,6 +345,9 @@ report = {'date': '2026-10-13', 'source': {'path': str(SOURCE.relative_to(ROOT))
           'posed_floor_offset': float(-triangles[:, :, 1].min()), 'section_clearances': measurements,
           'heel_pose': pose_config, 'geometry_space': 'Inverse-skinned from equipped heel pose into the unchanged canonical bind pose',
           'clearance_target_m': CLEARANCE_M, 'character_height_m': CHARACTER_HEIGHT_M,
+          'cuff_extra_clearance_m': CUFF_EXTRA_CLEARANCE_M, 'cuff_clearance_height_ramp': [.34, .40],
+          'cuff_clearance_profile': 'Half allowance at front and sides, smoothly increasing to full allowance at the back',
+          'cuff_inner_back_extra_m': CUFF_INNER_CLEARANCE_M, 'cuff_inner_back_height_band': [.40, .425, .46, .49],
           'clearance_method': 'Smooth anatomical cross-sections with four directional clearance correction; retain plate profiles, target one-millimetre allowance and taper to unchanged ankle and foot',
           'status': 'Fitting candidate; motion review follows; no production registration'}
 (OUTPUT / 'fitting.json').write_text(json.dumps(report, indent=2) + '\n')
