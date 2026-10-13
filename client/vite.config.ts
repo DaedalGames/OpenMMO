@@ -121,11 +121,11 @@ function modularCharacterPreview(): Plugin {
       import.meta.url
     ),
     female_knight_bottom: new URL(
-      '../assets/items/female_knight_bottom/tripo_v1/fitted_v34/bottom_female_knight.glb',
+      '../assets/items/female_knight_bottom/tripo_v1/fitted_v42/bottom_female_knight.glb',
       import.meta.url
     ),
     'female-knight-bottom-occlusion.json': new URL(
-      '../assets/items/female_knight_bottom/tripo_v1/fitted_v34/body-occlusion.json',
+      '../assets/items/female_knight_bottom/tripo_v1/fitted_v42/body-occlusion.json',
       import.meta.url
     ),
     female_knight_top: new URL(

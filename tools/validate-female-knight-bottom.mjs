@@ -4,7 +4,7 @@ import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
 
 const version = process.argv[2] ?? 'v17'
-assert.ok(['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23', 'v24', 'v25', 'v26', 'v27', 'v28', 'v29', 'v30', 'v31', 'v32', 'v33', 'v34'].includes(version))
+assert.ok(['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23', 'v24', 'v25', 'v26', 'v27', 'v28', 'v29', 'v30', 'v31', 'v32', 'v33', 'v34', 'v35', 'v36', 'v37', 'v38', 'v39', 'v40', 'v41', 'v42'].includes(version))
 const directory = `assets/items/female_knight_bottom/tripo_v1/fitted_${version}`
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
 const partPath = `${directory}/bottom_female_knight.glb`
@@ -72,11 +72,11 @@ try {
   assert.ok(rigidEdgeCount > 3000)
   const attachmentPairs = []
   const bucklePairs = []
-  if (['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23', 'v24', 'v25', 'v26', 'v27', 'v28', 'v29', 'v30', 'v31', 'v32', 'v33', 'v34'].includes(version)) {
+  if (['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23', 'v24', 'v25', 'v26', 'v27', 'v28', 'v29', 'v30', 'v31', 'v32', 'v33', 'v34', 'v35', 'v36', 'v37', 'v38', 'v39', 'v40', 'v41', 'v42'].includes(version)) {
     const fitting = JSON.parse(readFileSync(`${directory}/fitting.json`))
     for (const [index, vertices] of (fitting.opening_vertex_groups ?? []).entries())
       bucklePairs.push({ vertices, anchor: fitting.tab_vertices[index] })
-    const selected = new Set(fitting.vertices)
+    const selected = new Set([...fitting.vertices, ...(fitting.rear_clip_alignment ?? []).flatMap(record => record.vertices)])
     const waist = new Set(fitting.waist_vertices ?? [])
     const buckle = new Set(fitting.buckle_vertices ?? [])
     const rear = new Set(fitting.rear_strap_vertices ?? [])
@@ -88,12 +88,19 @@ try {
     assert.equal(bottoms.length, meshes.length)
     for (let mesh = 0; mesh < bottoms.length; mesh++) {
       const actual = bottoms[mesh].geometry, original = meshes[mesh].geometry
+      const straight = new Set(mesh === 0 ? [...(fitting.straight_upper_rear_straps?.vertices ?? []), ...(fitting.smooth_second_buckle?.vertices ?? [])] : [])
       const plate = new Set((fitting.front_plate_changes ?? fitting.rear_plate_changes)?.find(change => change.primitive === mesh)?.vertices ?? [])
-      const replacement = mesh === 0 ? fitting.rear_guard_replacement : undefined
+      const surface = mesh === 0 && !['v41', 'v42'].includes(version) ? fitting.upper_rear_strap_surface ?? fitting.rear_strap_surface : undefined
+      const replacement = mesh === 0 && !['v40', 'v41', 'v42'].includes(version) ? fitting.rear_guard_replacement : undefined
       const replaced = new Set(replacement?.destination_vertices ?? [])
       const tabs = new Set(mesh === 0 ? [...(fitting.rear_tab_vertices ?? []), ...(fitting.guard_bend_vertices ?? [])] : [])
       const translated = new Set(mesh === fitting.rear_guard_translation?.primitive ? fitting.rear_guard_translation.vertices : [])
-      if (replacement) {
+      if (surface) {
+        const removed = new Set(surface.removed_faces)
+        const expected = Array.from(original.index.array).filter((_, i) => !removed.has(Math.floor(i / 3)))
+        expected.push(...surface.new_faces.flat())
+        assert.deepEqual(Array.from(actual.index.array), expected)
+      } else if (replacement) {
         const removed = new Set(replacement.removed_face_indices)
         const mapping = new Map(replacement.source_vertices.map((vertex, i) => [vertex, replacement.destination_vertices[i]]))
         const expected = Array.from(original.index.array).filter((_, i) => !removed.has(Math.floor(i / 3)))
@@ -103,8 +110,10 @@ try {
       } else assert.deepEqual(actual.index.array, original.index.array)
       for (const [name, attribute] of Object.entries(actual.attributes)) {
         const before = original.attributes[name]
-        assert.equal(attribute.count, before.count + (replacement ? replacement.destination_vertices.length - replacement.removed_vertices.length : 0))
+        assert.equal(attribute.count, before.count + (surface ? surface.new_vertex_count - surface.original_vertex_count : replacement ? replacement.destination_vertices.length - replacement.removed_vertices.length : 0))
         for (let vertex = 0; vertex < attribute.count; vertex++) {
+          if (surface && vertex >= surface.original_vertex_count) continue
+          if (straight.has(vertex) && name !== 'uv') continue
           if (translated.has(vertex) && name === 'position') {
             for (let k = 0; k < 3; k++)
               assert.equal(attribute.getComponent(vertex, k), Math.fround(before.getComponent(vertex, k) + fitting.rear_guard_translation.offset[k]))

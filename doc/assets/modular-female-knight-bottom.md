@@ -1,7 +1,14 @@
 # 여성 기사 하의
 
 2026-10-13. [여성 기사 상의](modular-female-knight-top.md)에 맞춘 골반·허벅지 판금 하의다.
-현재 **fitted_v34**를 여성 캐릭터 미리보기에 연결했다. 양옆 판금의 앞 가장자리를 정면·측면에서
+현재 **fitted_v42**를 여성 캐릭터 미리보기에 연결했다. 앞쪽 가죽끈을 줄여 양쪽 끝 클립을
+부츠의 허벅지 판금 상단에 붙이고, 클립을 부츠의 곡면과 평행하게 회전했다.
+대기 자세에서 앞 가죽끈의 중간 꺾임을 펴고 폭·단면 방향을 맞췄다.
+뒤쪽 클립도 부츠 뒤 상단으로 옮기고 판금 면에 맞춰 회전했다.
+뒤 가죽띠의 아래 구간은 판금 곡면에 밀착하고, 위 구간은 허리띠에서 두 번째 버클까지
+직선으로 폈다. 두 번째 버클 아래는 위 띠와 같은 방향으로 시작하는 완만한 곡선으로
+이어지게 했다. 위 구간과 곡선 연결부의 판금 간격은 위치에 따라 달라진다.
+클립의 크기와 장식은 유지했다. 양옆 판금의 앞 가장자리를 정면·측면에서
 완만하게 이어지도록 수정했다. 앞뒤 중앙 가리개를 안쪽으로
 완만하게 굽히고 뒤 가리개의 높이를 낮췄다. 뒤쪽 가죽 연결부의 폭·회전과 끈의
 판금 간격을 조정했다. 이전 뒤 판금 엣지·가죽 UV·두께·가중치 보정을 유지했다.
@@ -9,11 +16,19 @@
 
 ## 최종 에셋
 
-- [착용 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v34/bottom_female_knight.glb):
-  SHA-256 `e85708cd09bfa2f85654b64ede3024711dfd5d40001ea95635297727032c81e6`.
-- [Blender 제작본](../../assets/items/female_knight_bottom/tripo_v1/fitted_v34/female-knight-bottom-fitted.blend),
-  [몸체 가림](../../assets/items/female_knight_bottom/tripo_v1/fitted_v34/body-occlusion.json),
-  [피팅 명세](../../assets/items/female_knight_bottom/tripo_v1/fitted_v34/fitting.json).
+- [착용 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v42/bottom_female_knight.glb):
+  SHA-256 `19bcab0f877c9117ec9558b9fe0a87c3ead55e4452894738f6b43512b10e3fb6`.
+- [Blender 제작본](../../assets/items/female_knight_bottom/tripo_v1/fitted_v42/female-knight-bottom-fitted.blend),
+  [몸체 가림](../../assets/items/female_knight_bottom/tripo_v1/fitted_v42/body-occlusion.json),
+  [피팅 명세](../../assets/items/female_knight_bottom/tripo_v1/fitted_v42/fitting.json).
+- **[미사용]** v41 GLB와 피팅 명세는 v42 제작·회귀 입력으로 보존한다. 중간 Blender는 정리했다.
+- **[미사용]** v40 GLB와 피팅 명세는 v41 제작·회귀 입력으로 보존한다. 중간 Blender는 정리했다.
+- **[미사용]** v39 GLB와 피팅 명세는 v40 제작·회귀 입력으로 보존한다. 중간 Blender는 정리했다.
+- **[미사용]** v38 GLB와 피팅 명세는 v39 제작·회귀 입력으로 보존한다. 중간 Blender는 정리했다.
+- **[미사용]** v37 GLB와 피팅 명세는 v38 제작·회귀 입력으로 보존한다. 중간 Blender는 정리했다.
+- **[미사용]** v36 GLB와 피팅 명세는 v37 제작·회귀 입력으로 보존한다. 중간 Blender는 정리했다.
+- **[미사용]** v35 GLB와 피팅 명세는 v36 제작·회귀 입력으로 보존한다. 중간 Blender는 정리했다.
+- **[미사용]** v34 GLB와 Blender는 v35 제작·회귀 입력으로 보존한다.
 - **[미사용]** v33 GLB는 v34 제작·회귀 입력으로 보존한다. 중간 Blender·검수 이미지는 정리했다.
 - v33 제작·회귀 입력: v32 GLB를 보존한다. 중간 Blender는 정리했다.
 - v32 제작·회귀 입력: v31 GLB를 보존한다. 중간 Blender는 정리했다.
@@ -37,11 +52,11 @@
 - 앞 가죽끈 제작 입력: [v11 GLB](../../assets/items/female_knight_bottom/tripo_v1/fitted_v11/bottom_female_knight.glb),
   [v11 Blender](../../assets/items/female_knight_bottom/tripo_v1/fitted_v11/female-knight-bottom-fitted.blend).
   GLB SHA-256 `53f853b29a4a91752bb1b3d20c5633b7ff97feea310be3f6a3545bcf1e3148e2`.
-- 5,792삼각형·4 primitives·65본. 리그는 `human_female_01_local_v1`이다.
+- 12,118삼각형·4 primitives·65본. 리그는 `human_female_01_local_v1`이다.
   몸체는 `assets/modular_human_female_01/rig_v1/female-base.glb`이며
   SHA-256은 `cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732`다.
-- 기사 상·하의와 몸체 합계는 가림 전 32,246·가림 후 26,264삼각형이다.
-  금발 단발 포함 34,682·28,700삼각형, 얼굴 4,604삼각형을 유지했다.
+- 기사 상·하의와 몸체 합계는 가림 전 38,572·가림 후 32,590삼각형이다.
+  금발 단발 포함 41,008·35,026삼각형, 얼굴 4,604삼각형을 유지했다.
   권장 예산보다 높지만 예산만을 위한 감면은 하지 않았다.
 
 ## 형상·연결·가림
@@ -640,14 +655,6 @@ v28–v32 GLB와 작은 피팅·검증 기록은 보존했다. 중간 Blender는
 로컬 Python/NumPy/SciPy와 Blender 편집이며 기존 출처·라이선스를 따른다.
 새 이미지 생성·유료 API 호출은 없다. GLB와 편집 가능한 Blender 제작본을 저장했다.
 
-- [형상·보존 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v34/edge-validation.json):
-  좌우 세 판의 연속 곡선 일치·폭 단조 증가, 비퇴화 삼각형·정규화된 셰이딩 벡터,
-  변경 범위 밖 속성·텍스처·가중치 보존 확인.
-- [런타임 검사](../../assets/items/female_knight_bottom/tripo_v1/fitted_v34/runtime-validation.json):
-  14동작×61시점 리그·강체 엣지·연결부·가림 전환 통과. 전체 동작 무관통 검사는 아니다.
-- [정면](../../assets/items/female_knight_bottom/tripo_v1/fitted_v34/front.png),
-  [오른쪽 사선](../../assets/items/female_knight_bottom/tripo_v1/fitted_v34/right.png).
-
 ```sh
 .venv/bin/python tools/smooth-female-knight-front-edges.py
 .venv/bin/python tools/validate-female-knight-front-edges.py
@@ -661,3 +668,160 @@ v33 중간 Blender와 검수 이미지 2개, v34 중복 사선 이미지 1개를
 v27 제작 원본·v33 GLB 회귀 입력·v34 최종 GLB와 Blender·정면 및 사선 문서 이미지는 보존했다.
 v34 Blender는 위 명령으로 v27 원본과 최종 GLB에서 재생성할 수 있다.
 [삭제 경로·해시 기록](../../assets/items/female_knight_bottom/tripo_v1/front-edge-cleanup.json).
+
+
+## 앞 가죽끈 단축·클립 연결 v35 — 2026-10-13
+
+사용자가 표시한 양쪽 클립을 허벅지 판금 상단으로 올렸다. 클립은 모델 좌표에서
+Y +0.071, Z -0.0145만큼 평행 이동해 크기와 장식을 보존했다. 허리 연결부는 고정하고
+사이의 가죽끈만 줄였으며, 클립은 해당 허벅지 본에 고정했다. 기존 텍스처·UV·리그·
+가림 마스크·5,792삼각형을 유지했다. 기존 에셋 수정이며 추가 생성 API 사용은 없다.
+원본 출처와 라이선스는 위 기록을 따른다.
+
+```sh
+.venv/bin/python tools/shorten-female-knight-front-straps.py
+node tools/validate-female-knight-front-clips.mjs
+node tools/validate-female-knight-bottom.mjs v35
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v34 v35
+```
+
+
+## 앞 클립의 부츠 표면 정렬 v36 — 2026-10-13
+
+양쪽 클립을 부츠 허벅지 판금의 국소 곡면과 평행하게 회전했다. 각 부츠 표면의
+117개 표본으로 기준 평면을 구하고 클립의 면 방향을 맞췄다. 회전량은 약 29.1°·30.2°이며,
+클립 크기와 장식을 보존했다. 가죽끈 아래쪽에만 회전을 점진적으로 적용하여 연결을 유지했다.
+UV·텍스처·가중치·리그·삼각형 수는 그대로다. 기존 에셋 수정으로 추가 생성 API 사용은 없으며,
+출처와 라이선스는 기존 기록을 따른다.
+
+```sh
+.venv/bin/python tools/align-female-knight-front-clips.py
+node tools/validate-female-knight-front-clips.mjs v36
+node tools/validate-female-knight-bottom.mjs v36
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v34 v36
+```
+
+
+## 앞 가죽끈의 중간 꺾임 보정 v37 — 2026-10-13
+
+짧아진 끈의 중간 단면과 골반·허벅지 가중치 때문에 대기 자세에 생긴 꺾임을 수정했다.
+허리와 클립의 연결 단면은 고정하고, 중간 두 단면의 34개 정점만 조정했다.
+대기 시작 자세의 양쪽 끝 단면 사이를 직선 보간해 띠의 폭과 두께 방향까지 맞추고,
+대기·걷기 표본으로 각 단면에 공통 가중치를 맞췄다. 노멀·탄젠트도 새 단면 방향을 따른다.
+클립의 부츠 정렬·접점·텍스처·UV·삼각형 수와 나머지 부품은 유지했다.
+기존 에셋 수정으로 추가 생성 API 사용은 없으며 출처와 라이선스는 기존 기록을 따른다.
+
+```sh
+node tools/sample-female-knight-strap-poses.mjs
+.venv/bin/python tools/straighten-female-knight-front-straps.py
+node tools/validate-female-knight-front-clips.mjs v37
+node tools/validate-female-knight-bottom.mjs v37
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v34 v37
+```
+
+
+## 뒤 클립의 부츠 상단 연결 v38 — 2026-10-13
+
+사용자가 노란색으로 표시한 부츠 뒤 판금 상단에 양쪽 클립을 옮겼다.
+클립을 모델 좌표 Y +0.018만큼 올리고 부츠 쪽으로 붙였으며, 뒤 판금 표면 방향으로
+각각 약 31.6°·27.3° 회전했다. 연결된 끈의 끝 단면도 함께 이동하여 아래 구간을 줄였다.
+골반 판금 위를 지나는 끈의 기존 곡선과 가중치는 유지했다. 중간 단면까지 직선으로
+보간한 검토안은 골반 판금에 가려져 채택하지 않았다. 앞 끈·클립과 나머지 의상은 그대로다.
+기존 에셋 수정으로 추가 생성 API 사용은 없으며 출처와 라이선스는 기존 기록을 따른다.
+
+```sh
+.venv/bin/python tools/connect-female-knight-rear-clips.py
+node tools/validate-female-knight-front-clips.mjs v38 rear
+node tools/validate-female-knight-front-clips.mjs v38
+node tools/validate-female-knight-bottom.mjs v38
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v34 v38
+```
+
+
+## 뒤 가죽띠의 판금 밀착 v39 — 2026-10-13
+
+뒤 가죽띠가 옆에서 판금과 떨어져 보이는 부분을 곡면에 맞췄다. 두 띠의 48개 삼각형을
+1,762개로 세분화하고 대기 시작 자세의 판금에 투영했다. 안쪽 면의 목표 간격은
+신장 1.8m 기준 1mm이며, 접점의 판금 가중치를 옮겨 움직일 때의 벌어짐을 줄였다.
+판금 가장자리와 고정된 허리·클립 연결부에서는 부드럽게 이어지도록 전이 구간을 두었다.
+앞 끈·클립·판금과 기존 정점 속성은 보존했다. 기존 에셋 수정이며 추가 API 생성은 없다.
+출처와 라이선스는 기존 기록을 따른다. 하의는 7,506삼각형이다.
+
+```sh
+.venv/bin/python tools/fit-female-knight-rear-straps-to-plates.py
+node tools/validate-female-knight-strap-surface.mjs
+node tools/validate-female-knight-bottom.mjs v39
+node tools/validate-female-knight-front-clips.mjs v39
+node tools/validate-female-knight-front-clips.mjs v39 rear
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v34 v39
+```
+
+
+## 위쪽 뒤 가죽 연결부의 판금 밀착 v40 — 2026-10-13
+
+사용자가 표시한 양쪽 뒤 가죽 연결부와 아래 띠 상단의 꺾임도 판금에 맞췄다.
+가죽 안쪽 면을 대기 시작 자세의 판금에서 신장 1.8m 기준 1mm 떨어뜨리고,
+연결부의 두께와 금속 장식을 함께 이동했다. 넓은 면 안으로 판금 곡면이 드러나는 것을
+줄이기 위해 대상 669개 삼각형을 5,281개로 세분화했다.
+허리 연결부와 기존 아래 띠로 이어지는 전이 구간을 두고 판금 가중치를 옮겼다.
+앞 띠·앞뒤 부츠 클립·판금·텍스처·리그는 보존했다. 하의는 12,118삼각형이다.
+기존 에셋 수정으로 추가 생성 API 사용은 없으며 출처와 라이선스는 기존 기록을 따른다.
+
+```sh
+.venv/bin/python tools/fit-female-knight-upper-rear-straps.py
+node tools/validate-female-knight-strap-surface.mjs v40
+node tools/validate-female-knight-bottom.mjs v40
+node tools/validate-female-knight-front-clips.mjs v40
+node tools/validate-female-knight-front-clips.mjs v40 rear
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v34 v40
+```
+
+
+## 허리띠부터 두 번째 뒤 버클까지 직선화 v41 — 2026-10-13
+
+사용자가 표시한 양쪽 뒤 가죽띠를 허리띠에서 첫 번째 버클을 지나 두 번째 버클까지
+대기 시작 자세의 직선 리본으로 폈다. v40의 세분화 전 좌표를 이용해 가죽의 폭과
+두께를 다시 배치하고, 허리와 아래 긴 띠의 연결부에 짧은 전이 구간을 뒀다.
+직선 면이 판금에 묻히지 않도록 두 번째 버클 쪽 끝점을 바깥으로 조정했다.
+위 구간은 직선화를 우선하므로 판금과의 간격은 일정한 1mm가 아니다.
+앞 끈·앞뒤 부츠 클립·판금·UV·텍스처·리그와 삼각형 수 12,118은 유지했다.
+기존 에셋 수정으로 추가 생성 API 사용은 없으며 출처와 라이선스는 기존 기록을 따른다.
+
+```sh
+.venv/bin/python tools/fit-female-knight-upper-rear-straps.py
+.venv/bin/python tools/straighten-female-knight-upper-rear-straps.py
+node tools/validate-female-knight-upper-straightness.mjs
+node tools/validate-female-knight-bottom.mjs v41
+node tools/validate-female-knight-front-clips.mjs v41
+node tools/validate-female-knight-front-clips.mjs v41 rear
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v34 v41
+```
+
+
+## 두 번째 뒤 버클 아래의 꺾임 완화 v42 — 2026-10-13
+
+v41의 짧은 전이 구간에서 가죽띠가 판금 쪽으로 급히 꺾이는 문제를 수정했다.
+양쪽 두 번째 버클 아래의 1,100개 정점을 다시 배치하고, 위 직선의 진행 방향과
+폭 변화율을 이어받는 3차 곡선으로 아래 가죽띠에 연결했다. 가중치 변화도 함께
+이어주고, 기존 아래 구간으로 돌아가는 마지막 부분에는 부드러운 전이를 뒀다.
+허리부터 두 번째 버클까지의 직선·앞 띠·앞뒤 부츠 클립·판금·UV·텍스처·리그와
+삼각형 수 12,118을 보존했다. 연결부의 판금 간격은 일정한 1mm가 아니다.
+기존 에셋 수정으로 추가 생성 API 사용은 없으며 출처와 라이선스는 기존 기록을 따른다.
+
+```sh
+.venv/bin/python tools/smooth-female-knight-second-buckle.py
+node tools/validate-female-knight-upper-straightness.mjs v42
+node tools/validate-female-knight-bottom.mjs v42
+node tools/validate-female-knight-front-clips.mjs v42
+node tools/validate-female-knight-front-clips.mjs v42 rear
+blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_knight_bottom.py -- v34 v42
+```
+
+
+## 커밋 전 산출물 정리 — 2026-10-13
+
+v34–v42 검수 스크린샷과 브라우저 임시 기록, v34–v41 재생성 가능한 검증 보고서,
+v35–v41 중간 Blender 파일을 정리했다. v34 원본 Blender와 v42 최종 Blender를
+보존하고, 단계별 GLB·피팅 명세·몸체 가림 정보는 생성기와 회귀 검사의 입력으로 남겼다.
+v37 자세 표본과 v40 세분화 전 좌표도 다음 단계의 재현 입력으로 보존했다.
+v42의 최종 런타임·클립 연결·직선 연결·glTF 검증 보고서는 유지한다.
