@@ -3,8 +3,8 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
 
-const version = process.argv[2] ?? 'v11'
-assert.ok(['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11'].includes(version))
+const version = process.argv[2] ?? 'v17'
+assert.ok(['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v13', 'v14', 'v15', 'v16', 'v17'].includes(version))
 const directory = `assets/items/female_knight_bottom/tripo_v1/fitted_${version}`
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
 const partPath = `${directory}/bottom_female_knight.glb`
@@ -70,10 +70,45 @@ try {
   })
   const rigidEdgeCount = regions.reduce((sum, region) => sum + region.rigidEdges.length, 0)
   assert.ok(rigidEdgeCount > 3000)
+  const attachmentPairs = []
+  if (['v13', 'v14', 'v15', 'v16', 'v17'].includes(version)) {
+    const fitting = JSON.parse(readFileSync(`${directory}/fitting.json`))
+    const selected = new Set(fitting.vertices)
+    const previous = (await load(fitting.source)).scene
+    const meshes = []
+    previous.traverse(object => { if (object.isSkinnedMesh) meshes.push(object) })
+    assert.equal(bottoms.length, meshes.length)
+    for (let mesh = 0; mesh < bottoms.length; mesh++) {
+      const actual = bottoms[mesh].geometry, original = meshes[mesh].geometry
+      assert.deepEqual(actual.index.array, original.index.array)
+      for (const [name, attribute] of Object.entries(actual.attributes)) {
+        const before = original.attributes[name]
+        assert.equal(attribute.count, before.count)
+        for (let vertex = 0; vertex < attribute.count; vertex++) {
+          if (mesh === 0 && selected.has(vertex) && name !== 'uv') continue
+          for (let k = 0; k < attribute.itemSize; k++)
+            assert.equal(attribute.getComponent(vertex, k), before.getComponent(vertex, k))
+        }
+      }
+    }
+    const { bottom, rest } = regions[0]
+    const { skinIndex, skinWeight } = bottom.geometry.attributes
+    const hips = vertex => skeleton.bones[skinIndex.getX(vertex)].name === 'Hips' && skinWeight.getX(vertex) === 1
+    const belt = rest.flatMap((point, vertex) => !selected.has(vertex) && Math.abs(point.x) > .025 && Math.abs(point.x) < .06 && point.y > .57 && point.y < .61 && point.z > .04 && hips(vertex) ? [vertex] : [])
+    for (const vertex of selected) {
+      if (rest[vertex].y < (fitting.attachment_min_y ?? .575)) continue
+      assert.ok(hips(vertex))
+      const anchor = belt.reduce((best, candidate) => rest[vertex].distanceTo(rest[candidate]) < rest[vertex].distanceTo(rest[best]) ? candidate : best)
+      const distance = rest[vertex].distanceTo(rest[anchor])
+      assert.ok(distance < .006, `strap attachment distance ${distance}`)
+      attachmentPairs.push({ vertex, anchor, distance })
+    }
+    assert.ok(attachmentPairs.length > 10)
+  }
   const clips = []
   const sample = clipSampler(body, { samples: 61, restore: skeleton.bones })
   for (const clip of base.animations) {
-    let maximumMotion = 0, maximumRigidStretch = 0
+    let maximumMotion = 0, maximumRigidStretch = 0, maximumAttachmentDrift = 0
     for (const _ of sample(clip)) {
       for (const { bottom, rest, rigidEdges } of regions) {
         const posed = rest.map((_, i) => bottom.getVertexPosition(i, new THREE.Vector3()))
@@ -84,9 +119,16 @@ try {
         for (const [a, b, length] of rigidEdges)
           maximumRigidStretch = Math.max(maximumRigidStretch, Math.abs(posed[a].distanceTo(posed[b]) / length - 1))
       }
+      for (const { vertex, anchor, distance } of attachmentPairs) {
+        const bottom = bottoms[0]
+        const a = bottom.getVertexPosition(vertex, new THREE.Vector3())
+        const b = bottom.getVertexPosition(anchor, new THREE.Vector3())
+        maximumAttachmentDrift = Math.max(maximumAttachmentDrift, Math.abs(a.distanceTo(b) - distance))
+      }
     }
     assert.ok(maximumRigidStretch < .001, `${clip.name}: plate stretch ${maximumRigidStretch}`)
-    clips.push({ name: clip.name, samples: 61, maximum_motion: maximumMotion, maximum_rigid_edge_stretch: maximumRigidStretch })
+    assert.ok(maximumAttachmentDrift < 1e-6, `${clip.name}: strap attachment drift ${maximumAttachmentDrift}`)
+    clips.push({ name: clip.name, samples: 61, maximum_motion: maximumMotion, maximum_rigid_edge_stretch: maximumRigidStretch, maximum_attachment_drift: maximumAttachmentDrift })
   }
   const original = bodyMesh.geometry
   const originalIndices = Array.from(original.index.array)
@@ -112,11 +154,11 @@ try {
   mask.dispose()
   assert.equal(bodyMesh.geometry, original)
   const report = {
-    date: ['v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11'].includes(version) ? '2026-10-13' : '2026-10-12', base: { path: basePath, sha256: hash(basePath) },
+    date: ['v1', 'v2'].includes(version) ? '2026-10-12' : '2026-10-13', base: { path: basePath, sha256: hash(basePath) },
     bottom: { path: partPath, sha256: hash(partPath) }, triangles: regions.reduce((sum, region) => sum + region.triangles, 0), meshes: bottoms.length, bones: 65,
     preview_animations: { path: previewAnimations, sha256: hash(previewAnimations) },
     exact_runtime_bind: true, unchanged_rest_shape: true, normalized_weights: true, no_opposite_leg_influence: true,
-    rigid_edges_checked: rigidEdgeCount, clips, reversible_mask_union: cases,
+    rigid_edges_checked: rigidEdgeCount, attachment_vertices_checked: attachmentPairs.length, clips, reversible_mask_union: cases,
     scope: 'Runtime binding and deformation validity; rigid regions retain edge lengths. This does not prove collision-free motion or watertight geometry.'
   }
   writeFileSync(`${directory}/runtime-validation.json`, JSON.stringify(report, null, 2) + '\n')
