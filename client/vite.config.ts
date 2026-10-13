@@ -112,6 +112,14 @@ function modularCharacterPreview(): Plugin {
     'helmet_barbarian',
   ])
   const fixed: Record<string, URL> = {
+    female_knight_boots: new URL(
+      '../assets/items/female_knight_boots/fitted_v4/boots_female_knight.glb',
+      import.meta.url
+    ),
+    'female-knight-boots-occlusion.json': new URL(
+      '../assets/items/female_knight_boots/fitted_v4/body-occlusion.json',
+      import.meta.url
+    ),
     female_knight_bottom: new URL(
       '../assets/items/female_knight_bottom/tripo_v1/fitted_v34/bottom_female_knight.glb',
       import.meta.url

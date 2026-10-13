@@ -8,6 +8,7 @@ import { femaleTorchMotions, mirroredSwordGrip } from './female-torch'
 import { poseOffHandProp } from '../lib/utils/handProps'
 import { bindModularPart } from '../lib/utils/modularCharacter'
 import { femaleOutfitMask } from './female-outfit-mask'
+import { femaleBootGround } from './female-boot-ground'
 
 export async function showFemaleBase(
   scene: THREE.Scene,
@@ -43,6 +44,11 @@ export async function showFemaleBase(
       <select id="female-bottom">
         <option value="none">없음</option>
         <option value="knight">은빛 기사 골반 갑옷</option>
+      </select>
+      <label for="female-boots">신발</label>
+      <select id="female-boots">
+        <option value="none">없음</option>
+        <option value="knight">은빛 기사 판금 부츠</option>
       </select>
       <label for="female-motion">동작</label>
       <select id="female-motion">
@@ -87,7 +93,7 @@ export async function showFemaleBase(
       <button id="female-reset" type="button">시점 초기화</button>
     </fieldset>
     <p id="female-stats" class="details"></p>
-    <p class="details">상의·하의·헤어를 바꿔 착용 상태와 동작을 확인할 수 있습니다.</p>`
+    <p class="details">상의·하의·신발·헤어를 바꿔 착용 상태와 동작을 확인할 수 있습니다.</p>`
   )
   status.textContent = '미리보기 에셋을 준비하는 중…'
   const loader = new GLTFLoader(new THREE.LoadingManager())
@@ -214,6 +220,8 @@ export async function showFemaleBase(
     scale: bone.scale.clone(),
   }))
   const mixer = new THREE.AnimationMixer(model)
+  let bootGround: ReturnType<typeof femaleBootGround> | undefined
+  let bootsEquipped = false
   let action: THREE.AnimationAction | undefined
   let paused = false
   const motion = document.getElementById('female-motion') as HTMLSelectElement
@@ -245,6 +253,7 @@ export async function showFemaleBase(
     armed: handPose('idle_armed'),
   }
   const updateAnimation = (delta: number) => {
+    bootGround?.restore()
     mixer.update(delta)
     if (shield.visible && motion.value !== 'rest') {
       for (const { bone, rotation } of shieldGrip)
@@ -277,6 +286,7 @@ export async function showFemaleBase(
       : motion.selectedOptions[0].textContent
   }
   const play = () => {
+    bootGround?.restore()
     mixer.stopAllAction()
     chair.visible = motion.value === 'sit_idle'
     model.position.y = chair.visible ? femaleSeatOffset : 0
@@ -386,8 +396,18 @@ export async function showFemaleBase(
   }
   collectMaterials(model)
   const outfitMask = femaleOutfitMask(base)
+  const updateGround = () => {
+    bootGround?.restore()
+    model.position.y = chair.visible ? femaleSeatOffset : 0
+    if (bootsEquipped && bootGround) {
+      const lift = bootGround.apply(
+        chair.visible ? femaleSeatOffset : undefined
+      )
+      if (!chair.visible) model.position.y = lift
+    }
+  }
   cleanup.push(() => outfitMask.dispose())
-  const outfitUpdates = ['top', 'bottom'].map((slot) => {
+  const outfitUpdates = ['top', 'bottom', 'boots'].map((slot) => {
     const select = document.getElementById(
       `female-${slot}`
     ) as HTMLSelectElement
@@ -417,6 +437,25 @@ export async function showFemaleBase(
           }
           outfitMask.register(slot, mask)
           meshes = bindModularPart(model, source)
+          if (slot === 'boots') {
+            let body: THREE.SkinnedMesh | undefined
+            model.traverse((node) => {
+              const association = base.parser.associations.get(node)
+              if (
+                node instanceof THREE.SkinnedMesh &&
+                association?.meshes === 0 &&
+                association.primitives === 0
+              )
+                body = node
+            })
+            if (!body) throw new Error('부츠의 기준 몸체를 찾지 못했습니다.')
+            bootGround = femaleBootGround(
+              model,
+              body,
+              meshes,
+              source.userData.heel_pose
+            )
+          }
           for (const mesh of meshes) {
             mesh.visible = false
             collectMaterials(mesh)
@@ -444,15 +483,19 @@ export async function showFemaleBase(
         }
         if (disposed() || select.value !== requested) return
         const equipped = requested === 'knight'
+        if (slot === 'boots') bootsEquipped = equipped
         outfitMask.setEquipped(slot, equipped)
         for (const mesh of meshes ?? []) mesh.visible = equipped
+        updateGround()
         updateStats()
         updateStatus()
       } catch {
         if (disposed() || select.value !== requested) return
         select.value = 'none'
+        if (slot === 'boots') bootsEquipped = false
         outfitMask.setEquipped(slot, false)
         for (const mesh of meshes ?? []) mesh.visible = false
+        updateGround()
         updateStats()
         status.textContent = '갑옷을 불러오지 못했습니다. 다시 선택해 주세요.'
       }
@@ -632,6 +675,7 @@ export async function showFemaleBase(
       time.value = String(action.time / action.getClip().duration)
     }
     controls.update()
+    updateGround()
     renderer.render(scene, camera)
   })
   const fieldset = document.getElementById(
