@@ -22,6 +22,14 @@
 맞춰 앞 정강이를 발끝 방향(+Z)으로 채우고, 뒤 종아리(-Z)의 부피를 복원했다.
 뒤쪽 오목한 구간은 발목 높이에 두며, 둥근 발끝과 발등 보정은 유지한다.
 
+이후 [앞코·밑창 윤곽 지시](../../assets/items/female_knight_boots/references/user-toe-sole-outline.png)에
+맞춰 앞코를 제작 좌표 약 0.01593만큼 줄여 짧고 뭉툭하게 만들었다. 앞발 높이를 최대
+0.0015 더하고 아치의 밑면을 최대 0.0035 뒤쪽으로 넓혔다. 굽 위의 뒤꿈치 경계는
+뒤쪽으로 올라가는 사선으로 변형했다. 접지 높이와 가는 힐 끝, 발목 위 0.10 이상의
+형상은 유지했다. 이번 추가 수정은 UV·면·가중치·텍스처를 바꾸지 않는 좌표 변형이다.
+[측면 확대](../../assets/items/female_knight_boots/fitted_v5/browser/foot-side.png)와
+[사선 확대](../../assets/items/female_knight_boots/fitted_v5/browser/foot-angle.png)에서 확인할 수 있다.
+
 텍스처 이미지·재질·65본 리그·높은 굽 자세·허벅지 입구·피부 가림은 유지했다.
 발끝 곡면을 위한 국소 분할에서 UV와 가중치만 보간했다. `fitted_v4`에서는 재현 입력인 GLB·피팅·가림·자세 JSON만 보존했다.
 
@@ -130,7 +138,7 @@ Left/Right UpLeg·Leg·Foot·ToeBase 대응을 적용했다. 본 순서·계층�
 | `fitted_v2` **[미사용]** | 슬림 피팅·실제 높은 굽 자세 적용. 너무 붙는 부분을 후속 조정. 중간 파일 정리. |
 | `fitted_v3` **[미사용]** | 1cm 여유는 사용자가 취소. 각도별 세밀한 보정의 뾰족한 경계도 기각했다. 중간 파일 정리. |
 | `fitted_v4` | 1mm 여유 기준의 피팅 원본. v5 옆 실루엣 보정의 입력으로 보존. |
-| `fitted_v5` | 둥근 발끝·발등과 앞뒤 발목 곡선을 수정한 현재 저장본. |
+| `fitted_v5` | 앞뒤 발목 곡선, 짧고 뭉툭한 앞코, 두꺼운 밑창·아치와 사선 뒤꿈치 경계를 반영한 현재 저장본. |
 
 [밑창 지시 이미지](../../assets/items/female_knight_boots/sole_v3/user-sole-reference.png),
 [슬림 윤곽 지시 이미지](../../assets/items/female_knight_boots/references/user-slim.png)를 보존한다.

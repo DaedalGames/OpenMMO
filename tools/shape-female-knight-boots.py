@@ -66,6 +66,23 @@ rear_delta = PchipInterpolator(
     [0, 0, .006, .013, .010, .004, 0, 0, 0],
 )
 instep = PchipInterpolator([.025, .035, .045, .055, .065, .079], [.025, .015, .0055, -.0005, -.003, -.005])
+toe_profile = PchipInterpolator([.040, .050, .065, .080, .100], [.040, .050, .060, .069, .083])
+
+
+def toe_and_sole(points):
+    result = points.copy()
+    y, z = points[:, 1], points[:, 2]
+    toe = (z > .040) & (y < .045)
+    result[toe, 2] += (toe_profile(z[toe]) - z[toe]) * (1 - smooth((y[toe] - .015) / .030))
+    forefoot = smooth((z - .030) / .015) * (1 - smooth((y + .004) / .016))
+    result[:, 1] += .0015 * forefoot * smooth((y + .03027333) / .012)
+    arch = smooth((.047 - z) / .025) * smooth((z + .012) / .025)
+    arch *= smooth((y + .03027333) / .010) * (1 - smooth((y - .018) / .035))
+    result[:, 2] -= .0035 * arch
+    heel = smooth((y + .010) / .040) * (1 - smooth((y - .050) / .045))
+    heel *= 1 - smooth((z - .004) / .016)
+    result[:, 1] -= .48 * (z + .003) * heel
+    return result
 
 
 def reshape(points):
@@ -90,7 +107,7 @@ def reshape(points):
     target = new_bottom + fraction * (new_top - new_bottom)
     amount = smooth((fz - .025) / .022)
     result[foot, 1] += (target - fy) * amount
-    return result
+    return toe_and_sole(result)
 
 
 def subdivide(values, faces):
@@ -226,7 +243,8 @@ report = {
     'output_sha256': hashlib.sha256(destination.read_bytes()).hexdigest(),
     'method': 'Equipped-pose silhouette deformation, inverse-skinned into the original bind pose',
     'reference': 'User supplied target and annotated yellow instep, red rear ankle, blue shin curves',
-    'revision': 'Front shin filled toward the toe to remove the misplaced hollow; rear calf volume restored above the ankle hollow',
+    'revision': 'Shorter blunt toe, slightly fuller sole and arch, and heel-cup boundary rising diagonally toward the rear',
+    'toe_sole_reference': 'assets/items/female_knight_boots/references/user-toe-sole-outline.png',
     'profile_axes': {'front': '+Z, toward toe', 'rear': '-Z, toward heel', 'height': '+Y'},
     'textures_unchanged': True, 'uv_interpolated_only_for_subdivision': True,
     'rig_and_heel_pose_unchanged': True, 'maximum_vertex_displacement': maximum_change,
