@@ -50,6 +50,11 @@ export async function showFemaleBase(
         <option value="none">없음</option>
         <option value="knight">은빛 기사 판금 부츠</option>
       </select>
+      <label for="female-gloves">장갑</label>
+      <select id="female-gloves">
+        <option value="none">없음</option>
+        <option value="knight">은빛 기사 판금 장갑</option>
+      </select>
       <label for="female-motion">동작</label>
       <select id="female-motion">
         <option value="rest">기본 A 포즈</option>
@@ -93,7 +98,7 @@ export async function showFemaleBase(
       <button id="female-reset" type="button">시점 초기화</button>
     </fieldset>
     <p id="female-stats" class="details"></p>
-    <p class="details">상의·하의·신발·헤어를 바꿔 착용 상태와 동작을 확인할 수 있습니다.</p>`
+    <p class="details">상의·하의·장갑·신발·헤어를 바꿔 착용 상태와 동작을 확인할 수 있습니다.</p>`
   )
   status.textContent = '미리보기 에셋을 준비하는 중…'
   const loader = new GLTFLoader(new THREE.LoadingManager())
@@ -396,6 +401,8 @@ export async function showFemaleBase(
   }
   collectMaterials(model)
   const outfitMask = femaleOutfitMask(base)
+  let glovesEquipped = false
+  let sleeveMaskRegistered = false
   const updateGround = () => {
     bootGround?.restore()
     model.position.y = chair.visible ? femaleSeatOffset : 0
@@ -408,7 +415,7 @@ export async function showFemaleBase(
     }
   }
   cleanup.push(() => outfitMask.dispose())
-  const outfitUpdates = ['top', 'bottom', 'boots'].map((slot) => {
+  const outfitUpdates = ['top', 'bottom', 'boots', 'gloves'].map((slot) => {
     const select = document.getElementById(
       `female-${slot}`
     ) as HTMLSelectElement
@@ -428,6 +435,15 @@ export async function showFemaleBase(
           if (!response.ok)
             throw new Error('의상 가림 정보를 불러오지 못했습니다.')
           const mask: unknown = await response.json()
+          let sleeveMask: unknown
+          if (slot === 'top') {
+            const response = await fetch(
+              '/__modular-character/female-knight-gloves-top-occlusion.json'
+            )
+            if (!response.ok)
+              throw new Error('장갑과 소매의 가림 정보를 불러오지 못했습니다.')
+            sleeveMask = await response.json()
+          }
           const asset = await loader.loadAsync(
             `/__modular-character/parts/female_knight_${slot}.glb`
           )
@@ -438,6 +454,11 @@ export async function showFemaleBase(
           }
           outfitMask.register(slot, mask)
           meshes = bindModularPart(model, source)
+          if (slot === 'top') {
+            outfitMask.register('glove-sleeves', sleeveMask, meshes[0])
+            sleeveMaskRegistered = true
+            outfitMask.setEquipped('glove-sleeves', glovesEquipped)
+          }
           if (slot === 'boots') {
             let body: THREE.SkinnedMesh | undefined
             model.traverse((node) => {
@@ -459,6 +480,7 @@ export async function showFemaleBase(
           }
           for (const mesh of meshes) {
             mesh.visible = false
+            if (slot === 'gloves') mesh.frustumCulled = false
             collectMaterials(mesh)
           }
           resources.push(source)
@@ -466,6 +488,10 @@ export async function showFemaleBase(
             material.wireframe = wireframe.checked
         })().catch((error: unknown) => {
           outfitMask.unregister(slot)
+          if (slot === 'top') {
+            outfitMask.unregister('glove-sleeves')
+            sleeveMaskRegistered = false
+          }
           for (const mesh of meshes ?? []) mesh.removeFromParent()
           if (source) disposeObjects([source])
           meshes = undefined
@@ -485,6 +511,11 @@ export async function showFemaleBase(
         if (disposed() || select.value !== requested) return
         const equipped = requested === 'knight'
         if (slot === 'boots') bootsEquipped = equipped
+        if (slot === 'gloves') {
+          glovesEquipped = equipped
+          if (sleeveMaskRegistered)
+            outfitMask.setEquipped('glove-sleeves', equipped)
+        }
         outfitMask.setEquipped(slot, equipped)
         for (const mesh of meshes ?? []) mesh.visible = equipped
         updateGround()
@@ -494,6 +525,11 @@ export async function showFemaleBase(
         if (disposed() || select.value !== requested) return
         select.value = 'none'
         if (slot === 'boots') bootsEquipped = false
+        if (slot === 'gloves') {
+          glovesEquipped = false
+          if (sleeveMaskRegistered)
+            outfitMask.setEquipped('glove-sleeves', false)
+        }
         outfitMask.setEquipped(slot, false)
         for (const mesh of meshes ?? []) mesh.visible = false
         updateGround()

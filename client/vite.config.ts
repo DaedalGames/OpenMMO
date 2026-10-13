@@ -132,6 +132,18 @@ function modularCharacterPreview(): Plugin {
       '../assets/items/female_knight_top/tripo_v1/fitted_v3/top_female_knight.glb',
       import.meta.url
     ),
+    female_knight_gloves: new URL(
+      '../assets/items/female_knight_gloves/tripo_v1/fitted_v3/gloves_female_knight.glb',
+      import.meta.url
+    ),
+    'female-knight-gloves-occlusion.json': new URL(
+      '../assets/items/female_knight_gloves/tripo_v1/fitted_v3/body-occlusion.json',
+      import.meta.url
+    ),
+    'female-knight-gloves-top-occlusion.json': new URL(
+      '../assets/items/female_knight_gloves/tripo_v1/fitted_v3/top-occlusion.json',
+      import.meta.url
+    ),
     'female-knight-top-occlusion.json': new URL(
       '../assets/items/female_knight_top/tripo_v1/fitted_v3/body-occlusion.json',
       import.meta.url

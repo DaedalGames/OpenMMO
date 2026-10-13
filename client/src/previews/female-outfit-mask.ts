@@ -44,7 +44,7 @@ export function femaleOutfitMask(base: GLTF) {
     }
   }
   return {
-    register(name: string, value: unknown) {
+    register(name: string, value: unknown, target?: THREE.Mesh) {
       const mask = value as OutfitMask | null
       if (
         !mask ||
@@ -60,16 +60,17 @@ export function femaleOutfitMask(base: GLTF) {
         )
       )
         throw new Error('의상 가림 정보가 올바르지 않습니다.')
-      let body: THREE.Mesh | undefined
-      base.scene.traverse((node) => {
-        const association = base.parser.associations.get(node)
-        if (
-          node instanceof THREE.Mesh &&
-          association?.meshes === mask.mesh_index &&
-          association.primitives === mask.primitive_index
-        )
-          body = node
-      })
+      let body: THREE.Mesh | undefined = target
+      if (!target)
+        base.scene.traverse((node) => {
+          const association = base.parser.associations.get(node)
+          if (
+            node instanceof THREE.Mesh &&
+            association?.meshes === mask.mesh_index &&
+            association.primitives === mask.primitive_index
+          )
+            body = node
+        })
       const original = body && (states.get(body)?.original ?? body.geometry)
       const index = original?.index
       if (
