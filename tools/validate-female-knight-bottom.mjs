@@ -4,7 +4,7 @@ import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
 
 const version = process.argv[2] ?? 'v17'
-assert.ok(['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23', 'v24'].includes(version))
+assert.ok(['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23', 'v24', 'v25', 'v26', 'v27'].includes(version))
 const directory = `assets/items/female_knight_bottom/tripo_v1/fitted_${version}`
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
 const partPath = `${directory}/bottom_female_knight.glb`
@@ -72,7 +72,7 @@ try {
   assert.ok(rigidEdgeCount > 3000)
   const attachmentPairs = []
   const bucklePairs = []
-  if (['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23', 'v24'].includes(version)) {
+  if (['v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23', 'v24', 'v25', 'v26', 'v27'].includes(version)) {
     const fitting = JSON.parse(readFileSync(`${directory}/fitting.json`))
     for (const [index, vertices] of (fitting.opening_vertex_groups ?? []).entries())
       bucklePairs.push({ vertices, anchor: fitting.tab_vertices[index] })
@@ -80,6 +80,8 @@ try {
     const waist = new Set(fitting.waist_vertices ?? [])
     const buckle = new Set(fitting.buckle_vertices ?? [])
     const rear = new Set(fitting.rear_strap_vertices ?? [])
+    const leather = new Set(fitting.rear_leather_vertices ?? [])
+    const strapUV = new Set(fitting.strap_uv_vertices ?? [])
     const previous = (await load(fitting.source)).scene
     const meshes = []
     previous.traverse(object => { if (object.isSkinnedMesh) meshes.push(object) })
@@ -103,6 +105,8 @@ try {
         for (let vertex = 0; vertex < attribute.count; vertex++) {
           if (replaced.has(vertex)) continue
           if (plate.has(vertex) && ['position', 'normal', 'tangent'].includes(name)) continue
+          if (mesh === 0 && strapUV.has(vertex) && ['uv', 'tangent'].includes(name)) continue
+          if (mesh === 0 && leather.has(vertex) && name === 'position') continue
           if (mesh === 0 && rear.has(vertex) && ['skinIndex', 'skinWeight'].includes(name)) continue
           if (mesh === 0 && selected.has(vertex) && name !== 'uv') continue
           if (mesh === 0 && buckle.has(vertex) && name !== 'uv') continue
