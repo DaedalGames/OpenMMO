@@ -614,3 +614,33 @@ blender -b --python tools/blender-scripts/fix_female_eye_highlight.py
 .venv/bin/python tools/fix-female-normal-seams.py --region ear
 .venv/bin/python tools/fix-female-normal-seams.py --region opposite-ear
 ```
+
+## 피부 텍스처의 속옷 자국 제거 — 2026-10-14
+
+기본 상의(속옷)가 피부 텍스처에 구워져 있어, 속옷을 숨기는 짧은 상의를 입으면 흰 자국과 허리 뒤 리본 자국이 드러났다.
+속옷 메시에서 4mm 안의 피부 정점은 59%가 흰색 계열이었다(다른 몸통 피부 0.8%).
+위 "기본 속옷 수정 방향"의 굽지 않은 피부를 텍스처에서 구현한 것이다.
+
+- 대상: 기본 상의·뒤 리본이 덮는 피부. 하의 속옷은 범위 밖이다.
+- 방법: 속옷에서 9mm 안의 피부 텍셀, 2.5cm 안의 흰색·국소적으로 어두운 텍셀, 4cm 안의 노멀맵 선을
+  주변 깨끗한 피부로부터 3D 이웃 텍셀 그래프의 조화 보간으로 채운다(색·ORM). 노멀맵은 그 영역을 평평하게 한다.
+  UV 아틀라스가 잘게 나뉘어 있어 UV 평면이 아닌 몸 표면 기준으로 메웠다. 수정한 텍셀 둘레 8px 여백도 같은 색으로 채운다.
+- 채운 텍셀 852,321개, 여백 205,887개. 형상·UV·리그·동작은 변경하지 않았다. 가슴은 세부 없는 매끈한 피부가 된다.
+- 기본 상태(속옷 표시)에서 속옷 가장자리가 그대로인 것을 렌더로 비교했다.
+- 남은 점: 허리 뒤 중앙에 1–2mm 짧은 세로 음영 몇 개가 남는다. 텍스처 세 장과 형상은 주변과 같았고
+  수정 전 렌더에도 있었다. 기존 메시 노멀 이음선으로 보이며 이번 범위에서 고치지 않았다.
+- 기록: [report.json](../../assets/modular_human_female_01/underwear_skin_v1/report.json). 이미지는 원본에서 결정적으로
+  다시 만들 수 있어 따로 보관하지 않는다.
+
+`female-base.glb`의 SHA-256이 `cb6de19c…`에서 `d49dd188…`로 바뀌었다. 형상이 같으므로 현재 쓰는 가림 명세
+(기사 상의 v2·v3, 하의 v42, 부츠 v5, 장갑 v3)의 `body_sha256`과 `fit-female-knight-gloves.py`·`fit-female-knight-helmet.py`의
+해시 검사만 새 값으로 바꿨다. 이전 피팅·검증 기록은 당시 해시를 그대로 둔다.
+
+- `rig-female-base.py`를 다시 실행하면 원본 텍스처로 돌아가므로 그 뒤 이 스크립트를 다시 실행한다.
+- `female-base.blend`에 들어 있는 이미지는 수정 전 것이다.
+- 게임용 `client/public/models/characters/modular_female/base.glb`는 다시 만들지 않았다. 게임에서는 속옷이나 기사 상의가
+  항상 이 영역을 덮어 차이가 없다. 다음 `prepare-female-knight.mjs` 실행 때 반영된다.
+
+```bash
+.venv/bin/python tools/clean-female-underwear-skin.py
+```

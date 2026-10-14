@@ -45,6 +45,7 @@ export async function showFemaleBase(
       <select id="female-top">
         <option value="none">없음</option>
         <option value="knight">은빛 기사 갑옷</option>
+        <option value="barbarian">야만전사 가죽 철갑</option>
       </select>
       <label for="female-bottom">하의</label>
       <select id="female-bottom">
@@ -428,24 +429,35 @@ export async function showFemaleBase(
     const select = document.getElementById(
       `female-${slot}`
     ) as HTMLSelectElement
+    const outfits = [...select.options]
+      .map((option) => option.value)
+      .filter((value) => value !== 'none')
+    const requestedOutfit = new URLSearchParams(location.search).get(slot)
     select.value =
-      new URLSearchParams(location.search).get(slot) === 'knight'
-        ? 'knight'
+      requestedOutfit && outfits.includes(requestedOutfit)
+        ? requestedOutfit
         : 'none'
-    let meshes: THREE.SkinnedMesh[] | undefined
-    let pending: Promise<void> | undefined
-    const load = () => {
-      if (!pending) {
+    const loaded = new Map<
+      string,
+      { meshes?: THREE.SkinnedMesh[]; pending?: Promise<void> }
+    >()
+    const maskName = (outfit: string) => `${slot}-${outfit}`
+    const load = (outfit: string) => {
+      const entry = loaded.get(outfit) ?? {}
+      loaded.set(outfit, entry)
+      if (!entry.pending) {
         let source: THREE.Object3D | undefined
-        pending = (async () => {
+        // Glove sleeve cutouts only exist for the knight top.
+        const sleeves = slot === 'top' && outfit === 'knight'
+        entry.pending = (async () => {
           const response = await fetch(
-            `/__modular-character/female-knight-${slot}-occlusion.json`
+            `/__modular-character/female-${outfit}-${slot}-occlusion.json`
           )
           if (!response.ok)
             throw new Error('의상 가림 정보를 불러오지 못했습니다.')
           const mask: unknown = await response.json()
           let sleeveMask: unknown
-          if (slot === 'top') {
+          if (sleeves) {
             const response = await fetch(
               '/__modular-character/female-knight-gloves-top-occlusion.json'
             )
@@ -454,16 +466,16 @@ export async function showFemaleBase(
             sleeveMask = await response.json()
           }
           const asset = await loader.loadAsync(
-            `/__modular-character/parts/female_knight_${slot}.glb`
+            `/__modular-character/parts/female_${outfit}_${slot}.glb`
           )
           source = asset.scene
           if (disposed()) {
             disposeObjects([source])
             return
           }
-          outfitMask.register(slot, mask)
-          meshes = bindModularPart(model, source)
-          if (slot === 'top') {
+          outfitMask.register(maskName(outfit), mask)
+          const meshes = (entry.meshes = bindModularPart(model, source))
+          if (sleeves) {
             outfitMask.register('glove-sleeves', sleeveMask, meshes[0])
             sleeveMaskRegistered = true
             outfitMask.setEquipped('glove-sleeves', glovesEquipped)
@@ -497,29 +509,35 @@ export async function showFemaleBase(
           for (const material of materials)
             material.wireframe = wireframe.checked
         })().catch((error: unknown) => {
-          outfitMask.unregister(slot)
-          if (slot === 'top') {
+          outfitMask.unregister(maskName(outfit))
+          if (sleeves) {
             outfitMask.unregister('glove-sleeves')
             sleeveMaskRegistered = false
           }
-          for (const mesh of meshes ?? []) mesh.removeFromParent()
+          for (const mesh of entry.meshes ?? []) mesh.removeFromParent()
           if (source) disposeObjects([source])
-          meshes = undefined
-          pending = undefined
+          loaded.delete(outfit)
           throw error
         })
       }
-      return pending
+      return entry.pending
+    }
+    const show = (outfit: string) => {
+      for (const [name, entry] of loaded) {
+        if (!entry.meshes) continue
+        outfitMask.setEquipped(maskName(name), name === outfit)
+        for (const mesh of entry.meshes) mesh.visible = name === outfit
+      }
     }
     const update = async () => {
       const requested = select.value
       try {
-        if (requested === 'knight' && !meshes) {
-          status.textContent = '기사 갑옷을 불러오는 중…'
-          await load()
+        if (requested !== 'none' && !loaded.get(requested)?.meshes) {
+          status.textContent = '갑옷을 불러오는 중…'
+          await load(requested)
         }
         if (disposed() || select.value !== requested) return
-        const equipped = requested === 'knight'
+        const equipped = requested !== 'none'
         if (slot === 'boots') bootsEquipped = equipped
         if (slot === 'helmet') {
           helmetEquipped = equipped
@@ -535,8 +553,7 @@ export async function showFemaleBase(
           if (sleeveMaskRegistered)
             outfitMask.setEquipped('glove-sleeves', equipped)
         }
-        outfitMask.setEquipped(slot, equipped)
-        for (const mesh of meshes ?? []) mesh.visible = equipped
+        show(requested)
         updateGround()
         updateStats()
         updateStatus()
@@ -558,8 +575,7 @@ export async function showFemaleBase(
           if (sleeveMaskRegistered)
             outfitMask.setEquipped('glove-sleeves', false)
         }
-        outfitMask.setEquipped(slot, false)
-        for (const mesh of meshes ?? []) mesh.visible = false
+        show('none')
         updateGround()
         updateStats()
         status.textContent = '갑옷을 불러오지 못했습니다. 다시 선택해 주세요.'

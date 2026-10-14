@@ -1,6 +1,7 @@
 import copy
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +10,10 @@ from lib.glb import read_glb, write_glb
 from lib.glb_accessors import accessor, add_accessor
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'assets/items/female_knight_top/tripo_v1/fitted_v2'
+# Optional args reuse this for other female tops: <fitted dir> <part id> <fitting report> <version>.
+OUT, PART, REPORT, VERSION = (sys.argv[1:] + ['assets/items/female_knight_top/tripo_v1/fitted_v2', 'top_female_knight',
+                                              'doc/assets/modular-female-knight-top-fitting-v2.json', '2'][len(sys.argv) - 1:])
+OUT, REPORT, VERSION = ROOT / OUT, ROOT / REPORT, int(VERSION)
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
 doc, binary = read_glb(OUT / 'top-fitted-unskinned.glb')
 binary = bytearray(binary)
@@ -33,7 +37,7 @@ doc['skins'] = [{'joints': [mapping[i] for i in ids], 'skeleton': mapping[skin['
                  'inverseBindMatrices': add_accessor(doc, binary, accessor(base, base_binary, skin['inverseBindMatrices']), 'MAT4')}]
 node, = [doc['nodes'][i] for i in part_nodes]
 assert not any(key in node for key in ['matrix', 'translation', 'rotation', 'scale'])
-node.update(skin=0, extras={'rig_id': rig_id, 'part_id': 'top_female_knight', 'fitting_version': 2})
+node.update(skin=0, extras={'rig_id': rig_id, 'part_id': PART, 'fitting_version': VERSION})
 primitive, = doc['meshes'][node['mesh']]['primitives']
 attrs = primitive['attributes']
 points = accessor(doc, binary, attrs['POSITION'])
@@ -59,14 +63,14 @@ if 'TANGENT' in attrs:
         tangent[invalid, :3] = fallback / np.linalg.norm(fallback, axis=1, keepdims=True)
         attrs['TANGENT'] = add_accessor(doc, binary, tangent, 'VEC4')
         doc['bufferViews'][doc['accessors'][attrs['TANGENT']]['bufferView']]['target'] = 34962
-path = OUT / 'top_female_knight.glb'
+path = OUT / f'{PART}.glb'
 doc['buffers'][0]['byteLength'] = len(binary)
 write_glb(path, doc, binary)
-report_path = ROOT / 'doc/assets/modular-female-knight-top-fitting-v2.json'
+report_path = REPORT
 report = json.loads(report_path.read_text())
 report['rigging'] = {'rig_id': rig_id, 'bones': len(names), 'output': str(path.relative_to(ROOT)),
                      'sha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'vertices': len(points),
                      'exact_female_hierarchy_and_inverse_bind': True,
-                     'method': 'Regional garment weights authored from original surface. Thorax excludes shoulders and arms; elbow weights limited to cloth; plate and rivet weights follow their own region.'}
+                     'method': report.get('weights', {}).get('method', 'Regional garment weights authored from original surface. Thorax excludes shoulders and arms; elbow weights limited to cloth; plate and rivet weights follow their own region.')}
 report_path.write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps(report['rigging']))

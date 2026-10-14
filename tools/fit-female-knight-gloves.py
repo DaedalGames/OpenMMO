@@ -239,7 +239,7 @@ def main():
     args = parser.parse_args()
     OUT.mkdir(exist_ok=True)
     assert digest(SOURCE) == '8679c17277ec4fc73d683ffbbf07a00c970e550d537ed0514db80e5492815b57'
-    assert digest(BODY) == 'cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732'
+    assert digest(BODY) == 'd49dd18893b6de9289f6d35eb8946781d5db793e0bcba031e5672a4ce6e247c6'
     base, base_raw, names, bones, body = setup_body()
     doc, source_raw = read_glb(SOURCE)
     source_images = [view_bytes(doc, source_raw, im['bufferView']) for im in doc['images']]

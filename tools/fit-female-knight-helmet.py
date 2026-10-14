@@ -26,7 +26,7 @@ def main():
     OUT.mkdir(exist_ok=True)
     source = DIRECTORY / 'source/model_url.glb'
     assert digest(source) == '7de873e925d7b1eda0c2aa0c50cab6c8a0b7ff57d44408c4824bfbdbb5e6d73a'
-    assert digest(BODY) == 'cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732'
+    assert digest(BODY) == 'd49dd18893b6de9289f6d35eb8946781d5db793e0bcba031e5672a4ce6e247c6'
     base, base_raw = read_glb(BODY)
     doc, source_raw = read_glb(source)
     source_images = [view_bytes(doc, source_raw, im['bufferView']) for im in doc['images']]
