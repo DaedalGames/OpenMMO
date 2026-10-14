@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { NodeIO } from '@gltf-transform/core'
 import { ALL_EXTENSIONS, EXTTextureWebP } from '@gltf-transform/extensions'
 import sharp from 'sharp'
@@ -47,7 +47,13 @@ const sources = {
   gloves: 'assets/items/female_knight_gloves/tripo_v1/fitted_v3/gloves_female_knight.glb',
   helmet: 'assets/items/female_knight_helmet/tripo_v1/fitted_v1/helmet_female_knight.glb',
 }
+const packs = ['locomotion', 'combat_melee', 'social', 'fishing', 'combat_ranged', 'offhand', 'enchant_armor', 'great_sword', 'riding', 'dagger_preview']
+const packFlag = process.argv.indexOf('--pack')
+const selectedPack = packFlag === -1 ? undefined : process.argv[packFlag + 1]
+if (selectedPack !== undefined && !packs.includes(selectedPack)) throw new Error(`--pack requires one of: ${packs.join(', ')}`)
+const builtPacks = selectedPack ? [selectedPack] : packs
 mkdirSync(`${output}/animations`, { recursive: true })
+const reportPath = 'doc/assets/female-knight-runtime-sources.json'
 const report = { date: '2026-10-14', inputs: {}, outputs: {} }
 const record = (path) => { report.inputs[path] = hash(path) }
 for (const path of ['tools/prepare-female-knight.mjs', 'client/src/lib/utils/female-clip-bake.ts', 'client/src/lib/utils/female-boot-ground.ts']) record(path)
@@ -56,6 +62,7 @@ sharp.cache(false)
 sharp.concurrency(2)
 for (const [name, source] of Object.entries(sources)) {
   record(source)
+  if (selectedPack) continue
   const doc = await io.read(source)
   const scene = doc.getRoot().listScenes()[0]
   const metadata = { ...scene.getExtras(), female_part: name }
@@ -100,15 +107,13 @@ for (const [name, source] of Object.entries(sources)) {
   await io.write(path, doc)
   console.log(path)
 }
-const packs = ['locomotion', 'combat_melee', 'social', 'fishing', 'combat_ranged', 'offhand', 'enchant_armor', 'great_sword', 'riding']
-
 // Bakes from the written GLBs so the values match what the client loads; companion animations carry the boots variants.
 async function bakeBootsAndGrip(module, load) {
   const female = await module('/src/lib/utils/femaleCharacter.ts')
   const { bakeFemaleClips } = await module('/src/lib/utils/female-clip-bake.ts')
   const [base, ...parts] = await Promise.all(Object.keys(sources).map(name => load(`${output}/${name}.glb`)))
   const scene = female.assembleFemaleCharacter(base, parts)
-  for (const path of [`${output}/base.glb`, ...packs.map(name => `${output}/animations/${name}.glb`)]) {
+  for (const path of [...(selectedPack ? [] : [`${output}/base.glb`]), ...builtPacks.map(name => `${output}/animations/${name}.glb`)]) {
     const gltf = path.endsWith('/base.glb') ? base : await load(path)
     const bakes = bakeFemaleClips(scene, gltf.animations)
     const doc = await io.read(path)
@@ -176,7 +181,7 @@ try {
   for (const name of ['idle2', 'idle3', 'idle4', 'idle5']) {
     const clip = corrected.get('idle1').clone(); clip.name = name; corrected.set(name, clip)
   }
-  for (const name of packs) {
+  for (const name of builtPacks) {
     const source = `client/public/models/animations/${name}.glb`
     record(source)
     const pack = await load(source)
@@ -198,4 +203,8 @@ try {
   await bakeBootsAndGrip(path => server.ssrLoadModule(path), load)
 } finally { await server.close() }
 for (const path of [...Object.keys(sources).map(name => `${output}/${name}.glb`), ...packs.map(name => `${output}/animations/${name}.glb`)]) report.outputs[path] = hash(path)
-writeFileSync('doc/assets/female-knight-runtime-sources.json', JSON.stringify(report, null, 2) + '\n')
+if (selectedPack && existsSync(reportPath)) {
+  const previous = JSON.parse(readFileSync(reportPath))
+  report.inputs = { ...previous.inputs, ...report.inputs }
+}
+writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n')
