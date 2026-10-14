@@ -57,11 +57,11 @@ function networkResponse(body = '0123456789', status = 200) {
   return response
 }
 
-function worker(maxBytes = 500_000_000, terrainBytes = 128_000_000) {
+function worker(maxBytes = 1_000_000_000, terrainBytes = 128_000_000) {
   const handlers = new Map<string, (event: WorkerEvent) => void>()
   runInNewContext(
     source
-      .replace('500_000_000', String(maxBytes))
+      .replace('1_000_000_000', String(maxBytes))
       .replace('128_000_000', String(terrainBytes)),
     {
       self: {

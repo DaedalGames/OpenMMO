@@ -1,7 +1,7 @@
 const ASSET_CACHE = 'openmmo-models-v1'
 const MANIFEST_CACHE = 'openmmo-model-manifests-v1'
 const MANIFEST_KEY = '/__openmmo_model_manifest__'
-const MAX_CACHE_BYTES = 500_000_000
+const MAX_CACHE_BYTES = 1_000_000_000
 const MANIFEST_MESSAGE = 'openmmo:asset-manifest'
 const OWNED_CACHE_PREFIX = 'openmmo-model'
 const HASHED_ASSET_URL =
