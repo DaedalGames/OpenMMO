@@ -5,7 +5,6 @@ import type { ArmorEquipment } from '../network/networkTypes'
 import { loadGLB } from './gltfCache'
 import { MODULAR_FEMALE_DIRECTORY } from './modelPaths'
 import { bindModularPart, skinnedParts } from './modularCharacter'
-import { modularOutfitForArmor } from './modularEquipment'
 import { femaleOutfitMask } from './female-outfit-mask'
 
 const armorParts = ['top', 'bottom', 'boots', 'gloves', 'helmet'] as const
@@ -210,13 +209,13 @@ export function applyFemaleArmor(
 ): boolean {
   const scene = femaleScene(root)
   if (!scene) return false
-  const outfit = modularOutfitForArmor(armor)
+  // Plate is the only female outfit so far, so any armor in a slot shows it.
   const equipped: ArmorKey = {
-    top: outfit.top === 'plate',
-    bottom: outfit.pants === 'plate',
-    boots: outfit.boots === 'plate',
-    gloves: outfit.gloves === 'plate',
-    helmet: outfit.helmet === 'plate',
+    top: !!armor?.chest,
+    bottom: !!armor?.pants,
+    boots: !!armor?.boots,
+    gloves: !!armor?.hands,
+    helmet: !!armor?.head,
   }
   let state = states.get(scene)
   if (

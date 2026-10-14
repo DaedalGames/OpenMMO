@@ -98,6 +98,22 @@ describe('female knight starter outfit', () => {
     disposeCharacterSkeletons(first)
     disposeCharacterSkeletons(second)
   })
+  it('shows plate for non-plate armor until other female outfits exist', async () => {
+    const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
+    const { modelRoot: plate } = createCharacterModelRoot(source.scene)
+    const { modelRoot: leather } = createCharacterModelRoot(source.scene)
+    await applyCharacterArmor(plate, armor)
+    await applyCharacterArmor(leather, {
+      head: 'leather_helmet',
+      chest: 'worn_rogue_top',
+      pants: 'leather_pants',
+      boots: 'leather_boots',
+      hands: 'leather_gloves',
+    })
+    expect(count(leather)).toBe(count(plate))
+    disposeCharacterSkeletons(plate)
+    disposeCharacterSkeletons(leather)
+  })
   it('plays baked runtime motions with a rigid helmet and finite boot correction', async () => {
     const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
     const { modelRoot } = createCharacterModelRoot(source.scene)
