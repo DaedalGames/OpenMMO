@@ -283,7 +283,7 @@ impl super::GameState {
         self.tick_monster_ai_with(None).await;
     }
 
-    /// Tests drive simulated time explicitly instead of waiting it out.
+    /// Tests drive simulated time explicitly, without the wall-clock budget.
     #[cfg(test)]
     pub(crate) async fn tick_monster_ai_by(&self, delta_ms: f32) {
         self.tick_monster_ai_with(Some(delta_ms)).await;
@@ -507,10 +507,11 @@ impl super::GameState {
             let start = brains.cursor % n.max(1);
             brains.cursor = 0;
             let mut node_budget_exhausted = false;
+            let time_budget = forced_delta_ms.is_none().then_some(TICK_BUDGET);
             for i in 0..n {
                 let brain_started = Instant::now();
                 let out_of_nodes = tick_remaining.get() == 0;
-                if out_of_nodes || brain_started - started > TICK_BUDGET {
+                if out_of_nodes || time_budget.is_some_and(|b| brain_started - started > b) {
                     node_budget_exhausted = out_of_nodes;
                     brains.cursor = (start + i) % n;
                     break;
