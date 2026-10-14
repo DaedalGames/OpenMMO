@@ -1406,6 +1406,11 @@ pub enum ServerMessage {
     ServerAnnouncement {
         message: String,
     },
+    /// Direct operator notice (see doc/IP_NOTICES.md); clients keep it on
+    /// screen until the player confirms it.
+    OperatorNotice {
+        message: String,
+    },
     PlayerTorchToggled {
         player_id: PlayerId,
         enabled: bool,
@@ -2033,6 +2038,7 @@ impl ServerMessage {
             | Self::DungeonDiscoveries { .. }
             | Self::WhisperMessage { .. }
             | Self::SystemMessage { .. }
+            | Self::OperatorNotice { .. }
             | Self::SongRequested { .. }
             | Self::PartyChatMessage { .. }
             | Self::PartyInviteReceived { .. }

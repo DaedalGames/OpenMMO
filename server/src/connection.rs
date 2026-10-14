@@ -77,6 +77,9 @@ const HEARTBEAT_TIMEOUT_SECS: u64 = 30;
 /// sockets can't hold server resources without ever authenticating.
 const UNAUTH_TIMEOUT_SECS: u64 = 60;
 
+/// IP notices repeat while in game so a long session still sees them.
+const IP_NOTICE_INTERVAL: std::time::Duration = std::time::Duration::from_secs(60 * 60);
+
 /// Caps tungstenite's 64 MiB default; legit client messages are a few KB.
 const MAX_WS_MESSAGE_BYTES: usize = 64 * 1024;
 
@@ -192,6 +195,7 @@ struct ConnectionState {
     pending_character_attributes: Option<CharacterAttributes>,
     connected_at: std::time::Instant,
     last_heartbeat: std::time::Instant,
+    next_ip_notice: Option<std::time::Instant>,
     is_official_npc: bool,
     /// Account email is on the admin allowlist.
     admin_eligible: bool,
@@ -250,6 +254,7 @@ impl ConnectionState {
             pending_character_attributes: None,
             connected_at: std::time::Instant::now(),
             last_heartbeat: std::time::Instant::now(),
+            next_ip_notice: None,
             is_official_npc: false,
             admin_eligible: false,
             is_admin: false,
@@ -343,6 +348,8 @@ pub struct ServerContext {
     pub auth_service: Arc<AuthService>,
     pub auth_ctx: Arc<AuthContext>,
     pub connect_limiter: ConnectLimiter,
+    /// See doc/IP_NOTICES.md.
+    pub ip_notices: Option<std::path::PathBuf>,
 }
 
 pub async fn handle_connection(
@@ -358,6 +365,7 @@ pub async fn handle_connection(
         auth_service,
         auth_ctx,
         connect_limiter,
+        ip_notices,
     } = &*ctx;
     let ws_config = WebSocketConfig::default()
         .max_message_size(Some(MAX_WS_MESSAGE_BYTES))
@@ -485,6 +493,7 @@ pub async fn handle_connection(
                     )).await;
                     break;
                 }
+                send_due_ip_notices(&mut ws_sender, ip_notices.as_deref(), &mut state).await;
                 continue;
             }
 
@@ -529,6 +538,7 @@ pub async fn handle_connection(
                                             error = %e, "Failed to send direct response to client");
                                     }
                                 }
+                                send_due_ip_notices(&mut ws_sender, ip_notices.as_deref(), &mut state).await;
                                 if state.must_close {
                                     debug!("Closing connection: failed protocol handshake");
                                     // Short reason: 123-byte cap. The full
@@ -835,6 +845,32 @@ fn handle_handshake(
         }]);
     }
     None
+}
+
+/// Sends this IP's operator notices once due and schedules the next round.
+async fn send_due_ip_notices<S>(
+    sender: &mut S,
+    path: Option<&std::path::Path>,
+    state: &mut ConnectionState,
+) where
+    S: futures_util::Sink<Message> + Unpin,
+{
+    let now = std::time::Instant::now();
+    let Some(path) = path.filter(|_| state.next_ip_notice.is_some_and(|due| due <= now)) else {
+        return;
+    };
+    state.next_ip_notice = Some(now + IP_NOTICE_INTERVAL);
+    let notices = crate::ip_notices::notices_for(path, state.client_ip).await;
+    if notices.is_empty() {
+        return;
+    }
+    info!(ip = %state.client_ip, account = state.account_name.as_deref(),
+        character = state.character_name.as_deref(), count = notices.len(), "Sent IP notices");
+    for message in notices {
+        if let Some(bytes) = encode_server_msg(&ServerMessage::OperatorNotice { message }) {
+            let _ = sender.send(Message::Binary(bytes)).await;
+        }
+    }
 }
 
 async fn handle_client_message(
@@ -1432,6 +1468,9 @@ async fn handle_client_message(
             state.player_id = Some(id);
             state.last_furniture_tip.clear();
             state.character_name = Some(selected_character.name.clone());
+            if !state.is_official_npc {
+                state.next_ip_notice = Some(std::time::Instant::now());
+            }
             game_state
                 .begin_account_activity(id, &authed_account_name, &state.country, auth_service)
                 .await;
@@ -2614,6 +2653,55 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn ip_notice_follows_entry_then_waits_an_interval() {
+        let notices =
+            std::env::temp_dir().join(format!("onlinerpg_ip_notices_{}.txt", uuid::Uuid::new_v4()));
+        std::fs::write(&notices, "203.0.113.7 fix your cache\n").unwrap();
+        let game = Arc::new(crate::game_state::tests::make_test_game_state("ip_notice"));
+        let auth = Arc::new(crate::game_state::tests::make_test_auth("ip_notice"));
+        let account = auth.login_google("ip-notice").unwrap();
+        let character = auth
+            .create_character(
+                &account,
+                "Notice",
+                &roll_character_attributes(&CharacterClass::Knight, crate::types::Gender::Male),
+                16,
+                CharacterClass::Knight,
+                crate::types::Gender::Male,
+            )
+            .unwrap();
+        let mut state = ConnectionState::new("203.0.113.7".parse().unwrap());
+        handle_handshake(
+            &client_info(onlinerpg_shared::PROTOCOL_VERSION, "web"),
+            &mut state,
+        );
+        finish_auth(&game, &auth, &mut state, account, false).await;
+        let encoded = onlinerpg_shared::serialize_client_msg(&ClientMessage::EnterGame {
+            character_id: character.id,
+        })
+        .unwrap();
+        handle_client_message(&encoded, &game, &auth, &test_auth_ctx(), &mut state)
+            .await
+            .unwrap();
+
+        let mut sent: Vec<Message> = Vec::new();
+        for _ in 0..2 {
+            send_due_ip_notices(&mut sent, Some(&notices), &mut state).await;
+        }
+        let decoded: Vec<_> = sent
+            .iter()
+            .map(|message| {
+                onlinerpg_shared::deserialize_server_msg(&message.clone().into_data()).unwrap()
+            })
+            .collect();
+        assert!(
+            matches!(decoded.as_slice(), [ServerMessage::OperatorNotice { message }] if message == "fix your cache"),
+            "{decoded:?}"
+        );
+        let _ = std::fs::remove_file(notices);
+    }
+
+    #[tokio::test]
     async fn enter_game_restores_only_current_dungeon_visits() {
         use onlinerpg_shared::dungeon::{cell_center, entrance, generate_dungeon_for};
 
@@ -2825,6 +2913,7 @@ mod tests {
             )),
             auth_ctx: test_auth_ctx(),
             connect_limiter: Default::default(),
+            ip_notices: None,
         });
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let address = listener.local_addr().unwrap();

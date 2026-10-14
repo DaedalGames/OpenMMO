@@ -2,10 +2,14 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { get } from 'svelte/store'
 import {
   ANNOUNCEMENT_DURATION_MS,
+  acknowledgeOperatorNotice,
   announcements,
   clearAnnouncements,
+  clearOperatorNotices,
   dismissAnnouncement,
+  operatorNotices,
   showAnnouncement,
+  showOperatorNotice,
 } from './announcementStore'
 
 beforeEach(() => {
@@ -55,4 +59,16 @@ it('clears announcements and timers when leaving the game', () => {
   showAnnouncement('New session')
   vi.advanceTimersByTime(ANNOUNCEMENT_DURATION_MS)
   expect(get(announcements)).toEqual([])
+})
+
+it('keeps operator notices until each is acknowledged and drops repeats', () => {
+  showOperatorNotice('Fix your cache')
+  showOperatorNotice('Fix your cache')
+  showOperatorNotice('Second')
+  vi.advanceTimersByTime(ANNOUNCEMENT_DURATION_MS * 10)
+  expect(get(operatorNotices)).toEqual(['Fix your cache', 'Second'])
+  acknowledgeOperatorNotice()
+  expect(get(operatorNotices)).toEqual(['Second'])
+  clearOperatorNotices()
+  expect(get(operatorNotices)).toEqual([])
 })

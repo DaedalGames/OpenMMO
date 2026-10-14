@@ -49,6 +49,7 @@
   import ServerNotice from './ServerNotice.svelte'
   import SkillFailureToast from './SkillFailureToast.svelte'
   import AnnouncementToasts from './AnnouncementToasts.svelte'
+  import OperatorNoticeDialog from './OperatorNoticeDialog.svelte'
   import {
     mapEditorMode,
     worldMapVisible,
@@ -425,6 +426,8 @@
   <LoadingDialog
     message={$t(isSceneCompiling ? 'loading.world' : 'loading.loading')}
   />
+{:else}
+  <OperatorNoticeDialog />
 {/if}
 
 {#if showRespawnDialog}

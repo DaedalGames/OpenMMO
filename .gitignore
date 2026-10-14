@@ -104,6 +104,8 @@ data/announcements/*.md
 
 # Banned character names: contains real names, kept out of the public repo
 data/banned_names.txt
+# IP notices: operator file naming client IPs
+data/ip_notices.txt
 data/combat-audit.txt
 data/land-ownership-preview.json
 

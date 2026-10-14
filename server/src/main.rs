@@ -16,6 +16,7 @@ mod google_auth;
 mod hardware;
 mod health;
 mod housing;
+mod ip_notices;
 mod item_defs;
 mod land_grades;
 mod merchant_defs;
@@ -332,6 +333,7 @@ struct StatePaths {
     announcements: PathBuf,
     cape_textures: PathBuf,
     banned_names: PathBuf,
+    ip_notices: PathBuf,
 }
 
 fn state_paths(state_dir: &Path) -> StatePaths {
@@ -342,6 +344,7 @@ fn state_paths(state_dir: &Path) -> StatePaths {
         announcements: state_dir.join("announcements"),
         cape_textures: state_dir.join("cape-textures"),
         banned_names: state_dir.join("banned_names.txt"),
+        ip_notices: state_dir.join("ip_notices.txt"),
     }
 }
 
@@ -990,6 +993,7 @@ async fn main() -> ExitCode {
         auth_service: Arc::clone(&auth_service),
         auth_ctx: Arc::clone(&auth_ctx),
         connect_limiter: ConnectLimiter::default(),
+        ip_notices: Some(paths.ip_notices),
     });
     let signal = shutdown_signal();
     tokio::pin!(signal);
@@ -1128,6 +1132,7 @@ mod tests {
             paths.announcements,
             PathBuf::from("/srv/state/announcements")
         );
+        assert_eq!(paths.ip_notices, PathBuf::from("/srv/state/ip_notices.txt"));
         assert_eq!(args.npc_data_dir, PathBuf::from("/srv/npcs"));
     }
 

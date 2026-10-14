@@ -1,5 +1,8 @@
 import { manaState } from '../stores/manaStore'
-import { showAnnouncement } from '../stores/announcementStore'
+import {
+  showAnnouncement,
+  showOperatorNotice,
+} from '../stores/announcementStore'
 import { translate, type MessageKey } from '../i18n'
 import {
   playTeleportEffect,
@@ -1080,8 +1083,10 @@ export function handleServerMessage(
       })
       break
 
+    case 'OperatorNotice':
     case 'ServerAnnouncement':
-      showAnnouncement(data.message)
+      if (type === 'OperatorNotice') showOperatorNotice(data.message)
+      else showAnnouncement(data.message)
       addChatMessage({
         text: `[${translate('announcements.title')}] ${data.message}`,
         autoTranslate: true,

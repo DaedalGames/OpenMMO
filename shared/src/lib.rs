@@ -209,7 +209,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v117: selectable ranger face and hair.
 /// v118: server-driven player auto-attacks.
 /// v119: transient global announcements via `/announce`.
-pub const PROTOCOL_VERSION: u32 = 119;
+/// v120: per-IP operator notices that stay until confirmed.
+pub const PROTOCOL_VERSION: u32 = 120;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from
@@ -773,6 +774,9 @@ mod tests {
             ServerMessage::ServerNotice { message: None },
             ServerMessage::ServerAnnouncement {
                 message: "전부 재접속 부탁드립니다".to_string(),
+            },
+            ServerMessage::OperatorNotice {
+                message: "fix your cache".to_string(),
             },
         ];
         for msg in messages {

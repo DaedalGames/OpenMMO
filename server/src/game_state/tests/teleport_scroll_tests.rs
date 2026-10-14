@@ -61,6 +61,7 @@ async fn scroll_request_over_websocket(item_def_id: &str) {
             admin_emails: vec![],
         }),
         connect_limiter: Default::default(),
+        ip_notices: None,
     });
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();

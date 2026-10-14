@@ -513,6 +513,7 @@ pub fn msg_name(msg: &onlinerpg_shared::ServerMessage) -> &'static str {
         ServerMessage::Kicked { .. } => "Kicked",
         ServerMessage::ServerNotice { .. } => "ServerNotice",
         ServerMessage::ServerAnnouncement { .. } => "ServerAnnouncement",
+        ServerMessage::OperatorNotice { .. } => "OperatorNotice",
         ServerMessage::PlayerTorchToggled { .. } => "PlayerTorchToggled",
         ServerMessage::PlayerMountChanged { .. } => "PlayerMountChanged",
         ServerMessage::PlayerWetToggled { .. } => "PlayerWetToggled",

@@ -26,6 +26,24 @@ export function clearAnnouncements() {
   })
 }
 
+/** Operator notices that stay up until the player confirms them. The server
+ *  repeats them, so a repeat of one still waiting is dropped. */
+export const operatorNotices = writable<string[]>([])
+
+export function showOperatorNotice(text: string) {
+  operatorNotices.update((queue) =>
+    queue.includes(text) ? queue : [...queue, text]
+  )
+}
+
+export function acknowledgeOperatorNotice() {
+  operatorNotices.update((queue) => queue.slice(1))
+}
+
+export function clearOperatorNotices() {
+  operatorNotices.set([])
+}
+
 export function showAnnouncement(text: string) {
   const id = ++nextId
   const timer = setTimeout(
