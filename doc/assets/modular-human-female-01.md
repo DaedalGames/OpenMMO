@@ -638,8 +638,8 @@ blender -b --python tools/blender-scripts/fix_female_eye_highlight.py
 
 - `rig-female-base.py`를 다시 실행하면 원본 텍스처로 돌아가므로 그 뒤 이 스크립트를 다시 실행한다.
 - `female-base.blend`에 들어 있는 이미지는 수정 전 것이다.
-- 게임용 `client/public/models/characters/modular_female/base.glb`는 다시 만들지 않았다. 게임에서는 속옷이나 기사 상의가
-  항상 이 영역을 덮어 차이가 없다. 다음 `prepare-female-knight.mjs` 실행 때 반영된다.
+- 게임용 `client/public/models/characters/modular_female/base.glb`에는 2026-10-14 `prepare-female-knight.mjs` 재실행 때 반영했다.
+  게임에서는 속옷이나 기사 상의가 항상 이 영역을 덮어 차이가 없다.
 
 ```bash
 .venv/bin/python tools/clean-female-underwear-skin.py

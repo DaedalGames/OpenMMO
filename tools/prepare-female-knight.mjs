@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { NodeIO } from '@gltf-transform/core'
+import { NodeIO, PropertyType } from '@gltf-transform/core'
 import { ALL_EXTENSIONS, EXTTextureWebP } from '@gltf-transform/extensions'
+import { prune } from '@gltf-transform/functions'
 import sharp from 'sharp'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { GLTFExporter } from '../client/node_modules/three/examples/jsm/exporters/GLTFExporter.js'
@@ -103,6 +104,8 @@ for (const [name, source] of Object.entries(sources)) {
   }
   doc.createExtension(EXTTextureWebP).setRequired(true)
   bakeDimensions(doc)
+  // Fitting sources carry unreferenced accessors from earlier iterations.
+  await doc.transform(prune({ propertyTypes: [PropertyType.ACCESSOR], keepAttributes: true, keepIndices: true }))
   const path = `${output}/${name}.glb`
   await io.write(path, doc)
   console.log(path)
