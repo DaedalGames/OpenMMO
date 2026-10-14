@@ -6,7 +6,7 @@
   },
   "bottom": {
     "path": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb",
-    "sha256": "a2bc77d533bb479ffd89f7a32a8033a31763fdb4917e7405b92a9c773b182010"
+    "sha256": "8eae7dc9df4702a3d428d4144f2e1df14381601e7744de970e907b00e347cacd"
   },
   "triangles": 3256,
   "vertices": 4796,
@@ -27,9 +27,9 @@
       "maximum_motion": 0.06115343645140747,
       "maximum_edge_length_ratio": 2.2721601139934093,
       "maximum_rigid_edge_length_change": 4.194236136179086e-8,
-      "maximum_penetrating_vertices": 7,
+      "maximum_penetrating_vertices": 13,
       "penetrating_regions_at_worst": {
-        "belt": 0,
+        "belt": 6,
         "fur": 7,
         "fittings": 0
       },
@@ -41,9 +41,9 @@
       "maximum_motion": 0.06115343645140747,
       "maximum_edge_length_ratio": 2.2721601139934093,
       "maximum_rigid_edge_length_change": 4.194236136179086e-8,
-      "maximum_penetrating_vertices": 7,
+      "maximum_penetrating_vertices": 13,
       "penetrating_regions_at_worst": {
-        "belt": 0,
+        "belt": 6,
         "fur": 7,
         "fittings": 0
       },
@@ -69,9 +69,9 @@
       "maximum_motion": 0.13138033202272328,
       "maximum_edge_length_ratio": 6.395772953818039,
       "maximum_rigid_edge_length_change": 1.0642176395680991e-7,
-      "maximum_penetrating_vertices": 553,
+      "maximum_penetrating_vertices": 556,
       "penetrating_regions_at_worst": {
-        "belt": 42,
+        "belt": 45,
         "fur": 511,
         "fittings": 0
       },
@@ -83,9 +83,9 @@
       "maximum_motion": 0.5185142066974768,
       "maximum_edge_length_ratio": 5.350489578619988,
       "maximum_rigid_edge_length_change": 1.2507156388341656e-7,
-      "maximum_penetrating_vertices": 1377,
+      "maximum_penetrating_vertices": 1397,
       "penetrating_regions_at_worst": {
-        "belt": 187,
+        "belt": 207,
         "fur": 1190,
         "fittings": 0
       },
@@ -97,9 +97,9 @@
       "maximum_motion": 0.20703285864471205,
       "maximum_edge_length_ratio": 8.348317389878472,
       "maximum_rigid_edge_length_change": 1.0477269785091892e-7,
-      "maximum_penetrating_vertices": 1007,
+      "maximum_penetrating_vertices": 1008,
       "penetrating_regions_at_worst": {
-        "belt": 81,
+        "belt": 82,
         "fur": 926,
         "fittings": 0
       },
@@ -111,9 +111,9 @@
       "maximum_motion": 0.3687162253148841,
       "maximum_edge_length_ratio": 8.666392113491948,
       "maximum_rigid_edge_length_change": 9.626636665593935e-8,
-      "maximum_penetrating_vertices": 1048,
+      "maximum_penetrating_vertices": 1054,
       "penetrating_regions_at_worst": {
-        "belt": 93,
+        "belt": 99,
         "fur": 955,
         "fittings": 0
       },
@@ -125,9 +125,9 @@
       "maximum_motion": 0.8346652254523745,
       "maximum_edge_length_ratio": 7.632150846590413,
       "maximum_rigid_edge_length_change": 9.908729692309493e-8,
-      "maximum_penetrating_vertices": 1119,
+      "maximum_penetrating_vertices": 1125,
       "penetrating_regions_at_worst": {
-        "belt": 169,
+        "belt": 175,
         "fur": 946,
         "fittings": 4
       },
@@ -139,9 +139,9 @@
       "maximum_motion": 0.2951817230729866,
       "maximum_edge_length_ratio": 2.57725953903969,
       "maximum_rigid_edge_length_change": 4.381315044099665e-8,
-      "maximum_penetrating_vertices": 894,
+      "maximum_penetrating_vertices": 919,
       "penetrating_regions_at_worst": {
-        "belt": 106,
+        "belt": 131,
         "fur": 788,
         "fittings": 0
       },
