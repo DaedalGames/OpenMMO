@@ -243,6 +243,15 @@ describe('CombatController', () => {
       expect(controller.beginCombat('m1', true).startRequested).toBe(true)
     })
 
+    it('ends the chase when the server rejects and stops its attack', () => {
+      const { controller } = attacking()
+      expect(tick(controller, 16, { x: 4, y: 0, z: 0 }).action).toBe('chasing')
+      controller.attackRejected('m1')
+      controller.attackStopped('m1', controller.attackRequestId)
+      expect(tick(controller).action).toBe('idle')
+      expect(controller.targetMonsterId).toBeNull()
+    })
+
     it('lets movement stop the old attack when chasing a different monster', () => {
       const { controller, stop } = attacking()
       const requestId = controller.attackRequestId

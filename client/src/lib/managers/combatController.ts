@@ -30,6 +30,7 @@ export class CombatController {
   private _attackRequestId = 0
   private _pendingSwing = false
   private _serverStopped = false
+  private _rejectedMonsterId: string | null = null
   readonly attackStopRequested = createEvent<(requestId: number) => void>()
 
   get attackRequested(): boolean {
@@ -117,9 +118,18 @@ export class CombatController {
     this._pendingSwing = true
   }
 
+  attackRejected(monsterId: string) {
+    this._rejectedMonsterId = monsterId
+  }
+
   attackStopped(monsterId: string, requestId: number) {
+    // The server follows a rejection with the stop for that request. A chase
+    // drops the request locally, but a rejected one must still end combat, or
+    // reaching range re-sends it every goal interval.
+    const rejected = this._rejectedMonsterId === monsterId
+    this._rejectedMonsterId = null
     if (
-      !this._attackRequested ||
+      (!this._attackRequested && !rejected) ||
       monsterId !== this._targetMonsterId ||
       requestId !== this._attackRequestId
     )
