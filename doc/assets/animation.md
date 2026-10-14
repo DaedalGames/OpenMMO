@@ -109,6 +109,13 @@ tip followed the handle. Other rigs and offhand props kept their previous placem
   `fb7731cf0899275486471696c55ea011d2641e2d`; all three downloads were verified
   against their SHA-256 hashes. Dataset-owner review and merge are pending.
   Rebuild the pack from the preserved FBX files when needed.
+- Modular packs (2026-10-14): `client/public/models/characters/modular_male/animations/dagger_preview.glb`
+  and the `modular_female` equivalent hold `dagger_inward` and `dagger_outward` on each modular rig.
+  The game loads these per-rig packs; since 10/02 the missing files returned 404 and modular rogues lost the combo.
+  They are retargeted and grounded from the old-rig pack above, as the other modular packs are.
+  Reproduce with `node tools/prepare-modular-character.mjs --pack dagger_preview` and
+  `node tools/prepare-female-knight.mjs --pack dagger_preview`. Clip durations stay 53/24 and 49/24 seconds.
+  Animation only: no meshes or textures. Source and license are unchanged; no new generation.
 
 - 애니메이션 파이프라인/매핑 규칙 문서: [ANIMATION.md](../ANIMATION.md)
 - 말의 애니메이션 출처·분할 구간: [Horse](animals.md#애니메이션-분할) (Sketchfab, CC BY 4.0).

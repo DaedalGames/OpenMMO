@@ -116,6 +116,7 @@ const packs = [
   "enchant_armor",
   "great_sword",
   "riding",
+  "dagger_preview",
 ];
 const hash = (path) =>
   createHash("sha256")

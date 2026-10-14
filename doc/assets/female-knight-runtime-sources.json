@@ -1,7 +1,7 @@
 {
   "date": "2026-10-14",
   "inputs": {
-    "tools/prepare-female-knight.mjs": "0d1361f4735eea5094dc97449cca4a190a617a89e3d0bf2ac4b163dcfd24ce57",
+    "tools/prepare-female-knight.mjs": "83b4212bfa3f1f89e603c814fc4b8e78a061300ae64cc2477717ebf093f06cd3",
     "client/src/lib/utils/female-clip-bake.ts": "619ea34427e67f70421dc085237231dc435420c2313c8dd8ddb5503fe9493e02",
     "client/src/lib/utils/female-boot-ground.ts": "34614cb3430b308ead42a29ef7dbffba23244efda5da9b2d6b79948c7fe34652",
     "assets/modular_human_female_01/rig_v1/female-base.glb": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732",
@@ -33,7 +33,8 @@
     "client/public/models/animations/offhand.glb": "b9dfabc7e57505515da545622ac7b781541d550d035c3351bfb1c532fc2df125",
     "client/public/models/animations/enchant_armor.glb": "77178f2ea299e1ebd73351c290285442347134c8519723e37c07ce722c409568",
     "client/public/models/animations/great_sword.glb": "ff7e995994d4f95298c1dd444e0e16dd5f93b7c6728de1fe6d8077a2624c366d",
-    "client/public/models/animations/riding.glb": "e0d76b9900e0f9bf76425c4165ebba8fd9e350895f9d99779a085af6dc51c9f8"
+    "client/public/models/animations/riding.glb": "e0d76b9900e0f9bf76425c4165ebba8fd9e350895f9d99779a085af6dc51c9f8",
+    "client/public/models/animations/dagger_preview.glb": "550c601a7459fb3229e54b549129c9643d1041059d7f54c915f26292afe033a6"
   },
   "outputs": {
     "client/public/models/characters/modular_female/base.glb": "420735bc4c80f05abd554c0958e230f83805aff688dde5992ab852496ef3791c",
@@ -51,6 +52,7 @@
     "client/public/models/characters/modular_female/animations/offhand.glb": "fb33d1713f855daee577f154ab3bb63d3e6cbfd995233690e48b75d4682c537d",
     "client/public/models/characters/modular_female/animations/enchant_armor.glb": "60de28ad33ed72e85f004e20abcd2438afec4a8340a3fdd417920085f1ec1ca2",
     "client/public/models/characters/modular_female/animations/great_sword.glb": "61c911cb4986f354fd0bb3e84a2a2065b8ae018dfdd4ead6d697a20de82059ab",
-    "client/public/models/characters/modular_female/animations/riding.glb": "4aad803ec6d4f1ac70e49025cec127d826ea24c9eea6a4feac66f40e02934758"
+    "client/public/models/characters/modular_female/animations/riding.glb": "4aad803ec6d4f1ac70e49025cec127d826ea24c9eea6a4feac66f40e02934758",
+    "client/public/models/characters/modular_female/animations/dagger_preview.glb": "f5a1f45ba8e560cdc783afeb3fd162d681d542108ab0eaa8d09e10c092451ce1"
   }
 }
