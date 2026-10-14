@@ -241,13 +241,15 @@ describe('female knight starter outfit', () => {
             y = Math.min(y, mesh.getVertexPosition(i, point).y)
         return y
       }
+      const rawFoot = track(raw, 'LeftFoot.quaternion')
+      expect(rawFoot.getInterpolation()).toBe(THREE.InterpolateLinear)
       for (const time of [0, walk.duration / 3, (walk.duration * 2) / 3]) {
         await applyCharacterArmor(modelRoot, { ...armor, boots: null })
         mixer.setTime(time)
         modelRoot.updateMatrixWorld(true)
         const floor = lowest([body])
         const expected = new THREE.Quaternion().fromArray(
-          track(raw, 'LeftFoot.quaternion').createInterpolant().evaluate(time)
+          rawFoot.InterpolantFactoryMethodLinear().evaluate(time)
         )
         expect(
           modelRoot.getObjectByName('LeftFoot')!.quaternion.angleTo(expected)
