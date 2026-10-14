@@ -22,6 +22,8 @@ OFFSET = (-.028, .003, .779)
 BUST_WIDTH = 1.18
 BUST_DEPTH = 1.27
 CLEARANCE = .006
+STRAP_CLEARANCE = .002
+SMOOTHING = 16
 PREVIEW = '--preview' in sys.argv
 PAULDRON_BONE = next((a.split('=')[1] for a in sys.argv if a.startswith('--pauldron=')), 'RightShoulder')
 
@@ -106,9 +108,11 @@ for i, p in enumerate(points):
 tree.balance()
 inner = np.array([min(depth[j] for _, j, _ in tree.find_range(Vector(p), .010)) for p in points])
 layer = depth - inner
-front = smooth((-.02 - points[:, 1]) / .02) * smooth((points[:, 2] - .70) / .02)
-wanted = CLEARANCE + layer
-# Cups bridge the cleavage; only straps and band are drawn onto the skin.
+front = smooth((-.02 - points[:, 1]) / .02) * smooth((points[:, 2] - .70) / .02) * (1 - smooth((points[:, 2] - .79) / .015))
+front *= 1 - smooth((np.abs(points[:, 0]) - .025) / .015)
+straps = (points[:, 2] > .795) & ~pauldron
+wanted = np.where(straps, STRAP_CLEARANCE, CLEARANCE) + layer
+# Only the cleavage bridge is kept off the skin; cups, straps and band are drawn onto it.
 wanted = np.where(front > .5, np.maximum(wanted, np.minimum(depth, CLEARANCE + layer + .02)), wanted)
 targets = points + outward * (wanted - depth)[:, None]
 
@@ -146,6 +150,10 @@ subprocess.run([str(ROOT / '.venv/bin/python'), str(ROOT / 'tools/outfits/fit_fe
                 str(OUTPUT / 'arap-input.npz')], check=True)
 arap = np.load(OUTPUT / 'arap-result.npz')
 points = arap['points'].copy()
+for i, point in enumerate(points):
+    distance, normal = signed(point)
+    if distance < .001:
+        points[i] += normal * (.001 - distance)
 final_depth = np.array([signed(p)[0] for p in points])
 
 normal_values = np.einsum('nij,nj->ni', arap['rotations'][loop_vertices], source_normals)
@@ -172,15 +180,11 @@ for i, p in enumerate(points):
     factors = np.array([1 / max(distance, .001) ** 2 for _, _, distance in neighbors])
     weights[i] = (body_weights[[j for _, j, _ in neighbors]] * factors[:, None]).sum(0) / factors.sum()
 
-# Cups and pauldron are hard shells: one averaged influence each keeps them rigid.
 cups = ((bust > .5) & (points[:, 1] < -.02) & ~pauldron) | jewel
-rigid_groups = [cups, pauldron]
-for group in rigid_groups:
-    weights[group] = weights[group].mean(0)
-spine = [index[name] for name in ['Spine', 'Spine1', 'Spine2']]
-mean = np.zeros(len(names))
-mean[spine] = weights[cups][0, spine] / weights[cups][0, spine].sum()
-weights[cups] = mean
+# Cups follow the skin so they stay on the breasts when the arms move; the jewel and pauldron are hard shells.
+rigid_groups = [jewel, pauldron]
+weights[jewel] = 0
+weights[jewel, index['Spine1']], weights[jewel, index['Spine2']] = .9, .1
 weights[pauldron] = 0
 weights[pauldron, index[PAULDRON_BONE]] = 1
 
@@ -197,13 +201,21 @@ for group in rigid_groups:
     locked[welded[group]] = True
 unique_weights = weights[first].copy()
 original_weights = unique_weights.copy()
-for _ in range(40):
+for _ in range(SMOOTHING):
     updated = unique_weights.copy()
     for i, neighbors in enumerate(adj):
         if not locked[i] and neighbors:
             updated[i] = .5 * unique_weights[i] + .5 * unique_weights[neighbors].mean(0)
     unique_weights = updated
-weights = unique_weights[welded]
+# Cups take smoothed skin weights; straps away from the shells keep the skin's own weights so they move with it.
+shell_points = points[jewel | pauldron]
+shells = KDTree(len(shell_points))
+for i, point in enumerate(shell_points):
+    shells.insert(Vector(point), i)
+shells.balance()
+reach = smooth((np.array([shells.find(Vector(point))[2] for point in points]) - .005) / .025)[:, None]
+reach[cups & ~jewel] = 0
+weights = reach * weights + (1 - reach) * unique_weights[welded]
 for side, sign in [('Left', -1), ('Right', 1)]:
     opposite = [index[name] for name in names if name.startswith(side) and ('Shoulder' in name or 'Arm' in name)]
     weights[np.ix_(points[:, 0] * sign > 0, opposite)] = 0
@@ -231,13 +243,13 @@ report = {'date': '2026-10-14', 'source': str(SOURCE.relative_to(ROOT)),
           'body': str(BODY.relative_to(ROOT)), 'body_sha256': hashlib.sha256(BODY.read_bytes()).hexdigest(),
           'output_dir': str(OUTPUT.relative_to(ROOT)), 'triangles': len(faces),
           'alignment': {'scale': SCALE, 'offset_blender': OFFSET, 'rotation_z_degrees': -90},
-          'bust': {'width_factor': BUST_WIDTH, 'depth_factor': BUST_DEPTH, 'clearance': CLEARANCE},
+          'bust': {'width_factor': BUST_WIDTH, 'depth_factor': BUST_DEPTH, 'clearance': CLEARANCE, 'strap_clearance': STRAP_CLEARANCE},
           'method': 'Global alignment, bust pre-scale, then ARAP with contact vertices targeted to body surface plus layer offset. Cups bridge the cleavage (push-out only). Pauldron and gem/ring placed rigidly outside the skin.',
           'arap': {'iterations': int(arap['iterations']), 'last_maximum_vertex_step': float(arap['residual']),
                    'fixed_vertices': int(fixed.sum())},
           'rest_clearance': {'penetrating_vertices': int((final_depth < 0).sum()), 'minimum': float(final_depth.min())},
           'weights': {'cups': summary(cups), 'pauldron': summary(pauldron), 'pauldron_bone': PAULDRON_BONE,
-                      'method': 'Inverse-distance transfer from skin; cups use the spine-chain mean of the skin beneath them and the pauldron follows one shoulder bone, so both stay rigid; straps and band smoothed across the welded surface.'},
+                      'method': 'Inverse-distance transfer from skin; cups take smoothed skin weights, the jewel Spine1 0.9/Spine2 0.1 and the pauldron one shoulder bone (both rigid); straps and band smoothed across the welded surface.'},
           'no_new_api_requests': True, 'status': 'Candidate; validation pending'}
 (ROOT / 'doc/assets/modular-female-barbarian-top-fitting-v1.json').write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps(report['weights']), flush=True)

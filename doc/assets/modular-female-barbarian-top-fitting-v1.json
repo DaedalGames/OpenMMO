@@ -3,7 +3,7 @@
   "source": "assets/items/female_barbarian_top/tripo_v1/source/model_url.glb",
   "source_sha256": "6b47004a16182a1585bb131f1c7dd897aa5d688278bcf57522f97e5662dfafca",
   "body": "assets/modular_human_female_01/rig_v1/female-base.glb",
-  "body_sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732",
+  "body_sha256": "d49dd18893b6de9289f6d35eb8946781d5db793e0bcba031e5672a4ce6e247c6",
   "output_dir": "assets/items/female_barbarian_top/tripo_v1/fitted_v1",
   "triangles": 2983,
   "alignment": {
@@ -18,29 +18,32 @@
   "bust": {
     "width_factor": 1.18,
     "depth_factor": 1.27,
-    "clearance": 0.006
+    "clearance": 0.006,
+    "strap_clearance": 0.002
   },
   "method": "Global alignment, bust pre-scale, then ARAP with contact vertices targeted to body surface plus layer offset. Cups bridge the cleavage (push-out only). Pauldron and gem/ring placed rigidly outside the skin.",
   "arap": {
-    "iterations": 60,
-    "last_maximum_vertex_step": 1.1510245688131322e-06,
+    "iterations": 59,
+    "last_maximum_vertex_step": 9.156876015023522e-07,
     "fixed_vertices": 1254
   },
   "rest_clearance": {
     "penetrating_vertices": 0,
-    "minimum": 0.0006942535296148212
+    "minimum": 0.0009999959230500607
   },
   "weights": {
     "cups": {
-      "Spine": 0.279,
-      "Spine1": 0.655,
-      "Spine2": 0.066
+      "Spine": 0.068,
+      "Spine1": 0.734,
+      "Spine2": 0.074,
+      "LeftShoulder": 0.054,
+      "RightShoulder": 0.051
     },
     "pauldron": {
       "RightShoulder": 1.0
     },
     "pauldron_bone": "RightShoulder",
-    "method": "Inverse-distance transfer from skin; cups use the spine-chain mean of the skin beneath them and the pauldron follows one shoulder bone, so both stay rigid; straps and band smoothed across the welded surface."
+    "method": "Inverse-distance transfer from skin; cups take smoothed skin weights, the jewel Spine1 0.9/Spine2 0.1 and the pauldron one shoulder bone (both rigid); straps and band smoothed across the welded surface."
   },
   "no_new_api_requests": true,
   "status": "Candidate; validation pending",
@@ -48,9 +51,9 @@
     "rig_id": "human_female_01_local_v1",
     "bones": 65,
     "output": "assets/items/female_barbarian_top/tripo_v1/fitted_v1/top_female_barbarian.glb",
-    "sha256": "8fd3fc10345c60d1b9a317254d441e95ae8095e22d1555f410dcf04ec15b9fa0",
+    "sha256": "10cef800e0aac35ae474d1b0d6ec328e8af3026acdc9062bf3cbf9a41d4994f3",
     "vertices": 2150,
     "exact_female_hierarchy_and_inverse_bind": true,
-    "method": "Inverse-distance transfer from skin; cups use the spine-chain mean of the skin beneath them and the pauldron follows one shoulder bone, so both stay rigid; straps and band smoothed across the welded surface."
+    "method": "Inverse-distance transfer from skin; cups take smoothed skin weights, the jewel Spine1 0.9/Spine2 0.1 and the pauldron one shoulder bone (both rigid); straps and band smoothed across the welded surface."
   }
 }
