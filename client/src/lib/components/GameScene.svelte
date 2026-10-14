@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { setupPointShadow } from '../utils/pointShadow'
   import { T, useTask, useThrelte } from '@threlte/core'
   import { OrbitControls } from '@threlte/extras'
   import * as THREE from 'three'
@@ -1347,6 +1348,7 @@
 {#if graphicsPreset.enableTorchShadows}
   <T.PointLight
     bind:ref={placeholderShadowLight}
+    oncreate={setupPointShadow}
     position={isSceneCompiling ? [0, 0, 0] : [0, OFFSCREEN_Y, 0]}
     intensity={0}
     distance={50}

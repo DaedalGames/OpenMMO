@@ -30,6 +30,7 @@
   import { loadGLB } from '../utils/gltfCache'
   import { loadIconTexture } from '../utils/iconTextureCache'
   import { createRng } from '../utils/simplex-noise'
+  import { reparentGroundItem } from '../utils/groundItemAttachment'
   import { localPlayerRightHand } from '../stores/playerHandRegistry'
   import { hoveredGroundItemId } from '../stores/gameStore'
   import { billboardScale } from '../utils/billboardScale'
@@ -304,7 +305,7 @@
     } else {
       applyRestPose(scene, restPose)
     }
-    targetParent.add(scene)
+    reparentGroundItem(scene, targetParent)
   })
 
   function makeNameTexture(text: string): THREE.CanvasTexture {

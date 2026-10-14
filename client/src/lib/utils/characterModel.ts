@@ -2,7 +2,18 @@ import * as THREE from 'three'
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { loadGLB } from './gltfCache'
-import { MODULAR_MALE_DIRECTORY, MODULAR_MALE_MODEL_PATH } from './modelPaths'
+import {
+  MODULAR_MALE_DIRECTORY,
+  MODULAR_MALE_MODEL_PATH,
+  MODULAR_FEMALE_DIRECTORY,
+  MODULAR_FEMALE_MODEL_PATH,
+} from './modelPaths'
+import {
+  loadFemaleCharacter,
+  loadFemaleAnimationPack,
+  applyFemaleArmor,
+  disposeFemaleCharacter,
+} from './femaleCharacter'
 import type {
   ArmorEquipment,
   CharacterAppearance,
@@ -71,6 +82,7 @@ export function loadCharacterModel(
   path: string,
   appearance?: Pick<CharacterAppearance, 'face'>
 ): Promise<GLTF> {
+  if (path === MODULAR_FEMALE_MODEL_PATH) return loadFemaleCharacter()
   if (path !== MODULAR_MALE_MODEL_PATH) return loadGLB(path)
   const face = appearance?.face ?? 'default'
   let maleModel = maleModels.get(face)
@@ -161,6 +173,7 @@ export async function applyCharacterArmor(
   armor?: ArmorEquipment,
   appearance?: CharacterAppearance
 ): Promise<void> {
+  if (applyFemaleArmor(root, armor)) return
   const scene = modularScene(root)
   if (!scene) return
   const outfit = modularOutfitForArmor(armor)
@@ -198,8 +211,13 @@ export function loadCharacterAnimationPack(
   modelPath: string,
   packPath: string
 ): Promise<GLTF> {
+  const packFile = packPath.split('/').pop()
+  if (modelPath === MODULAR_FEMALE_MODEL_PATH)
+    return loadFemaleAnimationPack(
+      `${MODULAR_FEMALE_DIRECTORY}/animations/${packFile}`
+    )
   if (modelPath !== MODULAR_MALE_MODEL_PATH) return loadGLB(packPath)
-  const path = `${MODULAR_MALE_DIRECTORY}/animations/${packPath.split('/').pop()}`
+  const path = `${MODULAR_MALE_DIRECTORY}/animations/${packFile}`
   let pending = animations.get(path)
   if (!pending) {
     pending = Promise.all([loadGLB(MODULAR_MALE_MODEL_PATH), loadGLB(path)])
@@ -248,6 +266,7 @@ export function modularSwordAttachment(
 }
 
 export function disposeCharacterSkeletons(root: THREE.Object3D): void {
+  disposeFemaleCharacter(root)
   const scene = modularScene(root)
   if (scene) lazyStates.delete(scene)
   disposeAppearanceColors(root)

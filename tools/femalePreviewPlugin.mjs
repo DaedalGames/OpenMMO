@@ -1,27 +1,8 @@
 import { readFile, stat } from 'node:fs/promises'
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
-import { fileURLToPath } from 'node:url'
-import { root, directory, sources, signature, output } from './lib/female-preview.mjs'
+import { sources, output } from './lib/female-preview.mjs'
+import { ensureFemalePreview } from './lib/ensure-female-preview.mjs'
 
-const execute = promisify(execFile)
 const pending = new Map()
-
-async function prepare(name) {
-  const current = await signature(name)
-  try {
-    const manifest = JSON.parse(await readFile(new URL(`${name}.manifest.json`, directory), 'utf8'))
-    if (manifest.signature === current) {
-      await stat(output(name))
-      if (name === 'animations') await stat(new URL(output(name).href + '.gz'))
-      return
-    }
-  } catch (error) {
-    if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error
-  }
-  await execute(process.execPath, [fileURLToPath(new URL('tools/build-female-preview.mjs', root)), name],
-    { cwd: fileURLToPath(root), maxBuffer: 1024 * 1024 })
-}
 
 export function femalePreviewPlugin() {
   return {
@@ -33,7 +14,7 @@ export function femalePreviewPlugin() {
         if (req.method !== 'GET' || !match) return next()
         const name = match[1] ?? match[2]
         if (!Object.hasOwn(sources, name)) return next()
-        if (!pending.has(name)) pending.set(name, prepare(name).finally(() => pending.delete(name)))
+        if (!pending.has(name)) pending.set(name, ensureFemalePreview(name).finally(() => pending.delete(name)))
         void pending.get(name).then(async () => {
           const compressed = name === 'animations' && /\bgzip\b/.test(req.headers['accept-encoding'] ?? '')
           const target = compressed ? new URL(output(name).href + '.gz') : output(name)

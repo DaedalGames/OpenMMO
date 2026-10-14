@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { readFileSync, writeFileSync } from 'node:fs'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
+import { ensureFemalePreview } from './lib/ensure-female-preview.mjs'
+await ensureFemalePreview('animations')
 
 const directory = 'assets/items/female_knight_gloves/tripo_v1/fitted_v3'
 const paired = process.argv.includes('--pair')
@@ -10,7 +12,7 @@ const partPath = `${directory}/${paired ? 'gloves_female_knight' : 'glove_right'
 const { server, load } = await headlessThree()
 try {
   const { bindModularPart } = await server.ssrLoadModule('/src/lib/utils/modularCharacter.ts')
-  const { femaleOutfitMask } = await server.ssrLoadModule('/src/previews/female-outfit-mask.ts')
+  const { femaleOutfitMask } = await server.ssrLoadModule('/src/lib/utils/female-outfit-mask.ts')
   const base = await load(basePath)
   const prepared = JSON.parse(readFileSync('assets/modular_human_female_01/preview/animations.json'))
   for (const data of prepared.clips) {

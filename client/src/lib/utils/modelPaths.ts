@@ -3,6 +3,13 @@ import type { CharacterClass, Gender } from '../network/networkTypes'
 export const MODULAR_MALE_DIRECTORY = '/models/characters/modular_male'
 export const MODULAR_MALE_MODEL_PATH = `${MODULAR_MALE_DIRECTORY}/base.glb`
 
+export const MODULAR_FEMALE_DIRECTORY = '/models/characters/modular_female'
+export const MODULAR_FEMALE_MODEL_PATH = `${MODULAR_FEMALE_DIRECTORY}/base.glb`
+
+export function isModularModel(path: string): boolean {
+  return path === MODULAR_MALE_MODEL_PATH || path === MODULAR_FEMALE_MODEL_PATH
+}
+
 export const KNIGHT_CHARACTER_MODEL_PATH = '/models/characters/knight.glb'
 export const FEMALE_KNIGHT_CHARACTER_MODEL_PATH =
   '/models/characters/female_knight.glb'
@@ -125,6 +132,8 @@ export function getCharacterModelPath(
     genders?.male
   )
     return MODULAR_MALE_MODEL_PATH
+  if (!isNpc && characterClass === 'knight' && effectiveGender === 'female')
+    return MODULAR_FEMALE_MODEL_PATH
   if (genders) {
     if (gender && genders[gender]) return genders[gender]
     return Object.values(genders)[0]

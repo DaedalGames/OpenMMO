@@ -1,7 +1,7 @@
 import type { Object3D, AnimationClip } from 'three'
 import type { WeaponAnimationDefinition } from '../data/weaponAnimationDefs'
 import { loadCharacterAnimationPack } from './characterModel'
-import { MODULAR_MALE_MODEL_PATH } from './modelPaths'
+import { isModularModel } from './modelPaths'
 import { PLAYER_ATTACK_IMPACT_DELAY_MS } from '../data/combatTiming'
 import {
   groundRetargetedClips,
@@ -20,7 +20,7 @@ export function loadWeaponAnimations(
   if (!pending) {
     pending = loadCharacterAnimationPack(modelPath, `/models/${profile.pack}`)
       .then(async (pack) => {
-        if (modelPath === MODULAR_MALE_MODEL_PATH) return pack.animations
+        if (isModularModel(modelPath)) return pack.animations
         const clips = await retargetAnimationsForCharacterModel(
           target,
           pack.scene,

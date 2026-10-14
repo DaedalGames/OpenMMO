@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-const standingMotions = new Set([
+export const standingMotions = new Set([
   'rest',
   'idle1',
   'idle_armed',
@@ -10,11 +10,29 @@ const standingMotions = new Set([
   'torch_sword_idle1',
 ])
 
+const parentRotation = new THREE.Quaternion()
+const worldRotation = new THREE.Quaternion()
+const correction = new THREE.Quaternion()
+const lateral = new THREE.Vector3()
+const horizontal = new THREE.Vector3()
+const heading = new THREE.Vector3()
+const level = new THREE.Vector3()
+const up = new THREE.Vector3(0, 1, 0)
+
+function setWorldQuaternion(bone: THREE.Bone, rotation: THREE.Quaternion) {
+  bone.quaternion.copy(
+    bone.parent!.getWorldQuaternion(parentRotation).invert().multiply(rotation)
+  )
+  bone.updateMatrixWorld(true)
+}
+
 export function femaleBootGround(
   model: THREE.Object3D,
   body: THREE.SkinnedMesh,
   boots: THREE.SkinnedMesh[],
-  config: { local_quaternion_offsets: Record<string, number[]> }
+  config: { local_quaternion_offsets: Record<string, number[]> },
+  metersPerSourceUnit = 1,
+  stride = 1
 ) {
   const offsets = Object.entries(config.local_quaternion_offsets).map(
     ([name, values]) => {
@@ -37,29 +55,26 @@ export function femaleBootGround(
   const states = [...offsets, ...legStates]
   const footAxes = offsets
     .filter(({ bone }) => bone.name.endsWith('Foot'))
-    .map(({ bone, rotation }) => ({
-      bone,
-      direction: new THREE.Vector3(1, 0, 0)
-        .transformDirection(
-          body.skeleton.boneInverses[body.skeleton.bones.indexOf(bone)]
-        )
-        .applyQuaternion(rotation.clone().invert()),
-      forward: new THREE.Vector3(0, 0, 1)
-        .transformDirection(
-          body.skeleton.boneInverses[body.skeleton.bones.indexOf(bone)]
-        )
-        .applyQuaternion(rotation.clone().invert()),
-    }))
+    .map(({ bone, rotation }) => {
+      const inverse =
+        body.skeleton.boneInverses[body.skeleton.bones.indexOf(bone)]
+      const undo = rotation.clone().invert()
+      const axis = (x: number, z: number) =>
+        new THREE.Vector3(x, 0, z)
+          .transformDirection(inverse)
+          .applyQuaternion(undo)
+      return { bone, direction: axis(1, 0), forward: axis(0, 1) }
+    })
   let applied = false
   const sample = (mesh: THREE.SkinnedMesh, height: number) => {
     const position = mesh.geometry.attributes.position
     const indices: number[] = []
-    for (let i = 0; i < position.count; i++)
+    for (let i = 0; i < position.count; i += stride)
       if (position.getY(i) < height) indices.push(i)
     return { mesh, indices }
   }
-  const feet = sample(body, 0.08)
-  const soles = boots.map((mesh) => sample(mesh, 0.18))
+  const feet = sample(body, 0.08 * metersPerSourceUnit)
+  const soles = boots.map((mesh) => sample(mesh, 0.18 * metersPerSourceUnit))
   const point = new THREE.Vector3()
   const aim = (bone: THREE.Bone, child: THREE.Bone, target: THREE.Vector3) => {
     const origin = bone.getWorldPosition(new THREE.Vector3())
@@ -68,14 +83,8 @@ export function femaleBootGround(
         child.getWorldPosition(new THREE.Vector3()).sub(origin).normalize(),
         target.clone().sub(origin).normalize()
       )
-      .multiply(bone.getWorldQuaternion(new THREE.Quaternion()))
-    bone.quaternion.copy(
-      bone
-        .parent!.getWorldQuaternion(new THREE.Quaternion())
-        .invert()
-        .multiply(rotation)
-    )
-    bone.updateMatrixWorld(true)
+      .multiply(bone.getWorldQuaternion(worldRotation))
+    setWorldQuaternion(bone, rotation)
   }
   const liftFoot = (side: string, amount: number) => {
     const upper = model.getObjectByName(`${side}UpLeg`) as THREE.Bone
@@ -104,13 +113,7 @@ export function femaleBootGround(
       .addScaledVector(bend, Math.sqrt(Math.max(0, a * a - along * along)))
     aim(upper, lower, joint)
     aim(lower, end, target)
-    end.quaternion.copy(
-      end
-        .parent!.getWorldQuaternion(new THREE.Quaternion())
-        .invert()
-        .multiply(rotation)
-    )
-    end.updateMatrixWorld(true)
+    setWorldQuaternion(end, rotation)
   }
   const minimum = (entries: typeof soles) => {
     let result = Infinity
@@ -124,59 +127,58 @@ export function femaleBootGround(
     for (const { bone, original } of states) bone.quaternion.copy(original)
     applied = false
   }
+  const pose = (motion: string) => {
+    for (const state of states) state.original.copy(state.bone.quaternion)
+    for (const state of offsets) state.bone.quaternion.multiply(state.rotation)
+    applied = true
+    model.updateMatrixWorld(true)
+    if (standingMotions.has(motion)) {
+      for (const { bone, direction, forward } of footAxes) {
+        const rotation = bone.getWorldQuaternion(worldRotation)
+        lateral.copy(direction).applyQuaternion(rotation)
+        horizontal
+          .crossVectors(up, heading.copy(forward).applyQuaternion(rotation))
+          .normalize()
+        rotation.premultiply(correction.setFromUnitVectors(lateral, horizontal))
+        heading.copy(forward).applyQuaternion(rotation)
+        rotation.premultiply(
+          correction.setFromUnitVectors(
+            heading,
+            level.copy(heading).setY(0).normalize()
+          )
+        )
+        setWorldQuaternion(bone, rotation)
+      }
+    }
+  }
+  const apply = (seatOffset?: number, motion = 'rest') => {
+    restore()
+    model.updateMatrixWorld(true)
+    const originalFloor = minimum([feet])
+    pose(motion)
+    if (seatOffset !== undefined) {
+      for (const side of ['Left', 'Right']) {
+        const entries = soles.filter(({ mesh }) => {
+          const x = mesh.geometry.attributes.position.getX(0)
+          return side === 'Left' ? x > 0 : x < 0
+        })
+        const amount = Math.max(0, -minimum(entries) - seatOffset)
+        if (amount > 0) liftFoot(side, amount)
+      }
+      model.updateMatrixWorld(true)
+      return 0
+    }
+    const lift = originalFloor - minimum(soles)
+    return Number.isFinite(lift) ? Math.max(0, lift) : 0
+  }
   return {
+    offsets,
     restore,
-    apply(seatOffset?: number, motion = 'rest') {
+    apply,
+    lift: (motion: string) => apply(undefined, motion),
+    pose(motion: string) {
       restore()
-      model.updateMatrixWorld(true)
-      const originalFloor = minimum([feet])
-      for (const state of states) state.original.copy(state.bone.quaternion)
-      for (const state of offsets)
-        state.bone.quaternion.multiply(state.rotation)
-      applied = true
-      model.updateMatrixWorld(true)
-      if (standingMotions.has(motion)) {
-        for (const { bone, direction, forward } of footAxes) {
-          const rotation = bone.getWorldQuaternion(new THREE.Quaternion())
-          const lateral = direction.clone().applyQuaternion(rotation)
-          const horizontal = new THREE.Vector3(0, 1, 0)
-            .cross(forward.clone().applyQuaternion(rotation))
-            .normalize()
-          const correction = new THREE.Quaternion().setFromUnitVectors(
-            lateral,
-            horizontal
-          )
-          rotation.premultiply(correction)
-          const heading = forward.clone().applyQuaternion(rotation)
-          rotation.premultiply(
-            correction.setFromUnitVectors(
-              heading,
-              heading.clone().setY(0).normalize()
-            )
-          )
-          bone.quaternion.copy(
-            bone
-              .parent!.getWorldQuaternion(new THREE.Quaternion())
-              .invert()
-              .multiply(rotation)
-          )
-          bone.updateMatrixWorld(true)
-        }
-      }
-      if (seatOffset !== undefined) {
-        for (const side of ['Left', 'Right']) {
-          const entries = soles.filter(({ mesh }) => {
-            const x = mesh.geometry.attributes.position.getX(0)
-            return side === 'Left' ? x > 0 : x < 0
-          })
-          const amount = Math.max(0, -minimum(entries) - seatOffset)
-          if (amount > 0) liftFoot(side, amount)
-        }
-        model.updateMatrixWorld(true)
-        return 0
-      }
-      const lift = originalFloor - minimum(soles)
-      return Number.isFinite(lift) ? Math.max(0, lift) : 0
+      pose(motion)
     },
   }
 }

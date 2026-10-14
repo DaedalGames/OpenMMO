@@ -1,9 +1,6 @@
 import * as THREE from 'three'
 import { loadCharacterAnimationPack } from './characterModel'
-import {
-  CHARACTER_ANIMATION_PACK_PATHS,
-  MODULAR_MALE_MODEL_PATH,
-} from './modelPaths'
+import { CHARACTER_ANIMATION_PACK_PATHS, isModularModel } from './modelPaths'
 import {
   groundRetargetedClips,
   retargetAnimationsForCharacterModel,
@@ -55,13 +52,13 @@ export function loadEnchantAnimations(modelPath: string, root: THREE.Object3D) {
             ENCHANT_LEFT_ARMOR_ANIMATION,
           ].includes(clip.name)
         )
-        return modelPath === MODULAR_MALE_MODEL_PATH
+        return isModularModel(modelPath)
           ? clips
           : retargetAnimationsForCharacterModel(root, gltf.scene, clips)
       })
     )
       .then((packs) =>
-        modelPath === MODULAR_MALE_MODEL_PATH
+        isModularModel(modelPath)
           ? packs.flat()
           : groundRetargetedClips(root, packs.flat())
       )

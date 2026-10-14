@@ -1,3 +1,4 @@
+import { setupPointShadow } from '../utils/pointShadow'
 import * as THREE from 'three'
 import {
   TORCH_BASE_INTENSITY,
@@ -83,6 +84,7 @@ export class RadianceEffect {
   })
 
   constructor(lighting = true) {
+    setupPointShadow(this.light)
     this.light.castShadow = true
     this.light.shadow.mapSize.set(TORCH_SHADOW_MAP_SIZE, TORCH_SHADOW_MAP_SIZE)
     this.light.shadow.camera.near = 0.2

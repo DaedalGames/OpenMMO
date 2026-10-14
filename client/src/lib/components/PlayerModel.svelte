@@ -1,6 +1,7 @@
 <script module lang="ts">
   import * as THREE from 'three'
   import { HOVER_SCALE_IDLE, stickyHoverScale } from '../utils/stickyHover'
+  import { FEMALE_BOOTS_PROPERTY } from '../utils/femaleCharacter'
 
   const HEALTH_BAR_WIDTH = 1.0
   const HEALTH_BAR_HEIGHT = 0.08
@@ -41,6 +42,7 @@
     additive.tracks = additive.tracks.filter(
       (track) =>
         !track.name.endsWith('.position') &&
+        track.name !== `Hips.${FEMALE_BOOTS_PROPERTY}` &&
         !track.name.startsWith(`${MODULAR_SWORD_ATTACHMENT}.`)
     )
     THREE.AnimationUtils.makeClipAdditive(additive)
@@ -123,7 +125,7 @@
     getCharacterModelPath,
     getNpcModelPath,
     getWeaponModelPath,
-    MODULAR_MALE_MODEL_PATH,
+    isModularModel,
   } from '../utils/modelPaths'
   import { loadGLB } from '../utils/gltfCache'
   import {
@@ -462,14 +464,13 @@
       loadCharacterAnimationPack(modelPath, RIDING_ANIMATION_PATH),
     ])
       .then(async ([horse, rider]) => {
-        const clips =
-          modelPath === MODULAR_MALE_MODEL_PATH
-            ? rider.animations
-            : await retargetAnimationsForCharacterModel(
-                root,
-                rider.scene,
-                getGltfAnimations(rider)
-              )
+        const clips = isModularModel(modelPath)
+          ? rider.animations
+          : await retargetAnimationsForCharacterModel(
+              root,
+              rider.scene,
+              getGltfAnimations(rider)
+            )
         if (cancelled) return
         mount = new HorseMount(horse)
         await warmupPipelines(threlte, 'mount:horse', mount.root)
@@ -577,7 +578,8 @@
         itemDefId,
         boneName === 'LeftHand'
           ? forearmLength(characterRoot, boneName, `${modelPath}:${boneName}`)
-          : undefined
+          : undefined,
+        modelPath
       )
     if (itemDefId === 'fishing_rod') {
       rodTipNode = resolveTipNode(
@@ -1397,18 +1399,17 @@
         locomotionAnimations,
         combatMeleeAnimations
       )
-      const animations =
-        modelPath === MODULAR_MALE_MODEL_PATH
-          ? orderedSelections.map((selection) => selection.clip)
-          : retargetOrderedCharacterAnimationsForModel(
-              newModelRoot,
-              orderedSelections,
-              {
-                base: activeGltf.scene,
-                locomotion: locomotionGltfData?.scene,
-                combatMelee: combatMeleeGltfData?.scene,
-              }
-            )
+      const animations = isModularModel(modelPath)
+        ? orderedSelections.map((selection) => selection.clip)
+        : retargetOrderedCharacterAnimationsForModel(
+            newModelRoot,
+            orderedSelections,
+            {
+              base: activeGltf.scene,
+              locomotion: locomotionGltfData?.scene,
+              combatMelee: combatMeleeGltfData?.scene,
+            }
+          )
 
       const [clips] = await Promise.all([animations, warmed])
       if (destroyed) {

@@ -12,6 +12,7 @@
   import {
     CHARACTER_ANIMATION_PACK_PATHS,
     getCharacterModelPath,
+    isModularModel,
   } from '../utils/modelPaths'
   import {
     getEffectivePreset,
@@ -103,7 +104,8 @@
         for (const clip of getGltfAnimations(socialGltf)) {
           clipsByName.set(clip.name, clip)
         }
-        root.position.y = computeSoleGroundOffset(root)
+        if (!isModularModel(path))
+          root.position.y = computeSoleGroundOffset(root)
         mixer = new THREE.AnimationMixer(root)
         modelRoot = root
         // Compile pipelines before showing the preview.

@@ -49,10 +49,7 @@ export function applyGraphicsPreset(
     const cur = directionalLight.shadow.mapSize
     if (cur.x !== preset.shadowMapSize) {
       cur.set(preset.shadowMapSize, preset.shadowMapSize)
-      if (directionalLight.shadow.map) {
-        directionalLight.shadow.map.dispose()
-        directionalLight.shadow.map = null
-      }
+      directionalLight.shadow.needsUpdate = true
     }
   }
 }

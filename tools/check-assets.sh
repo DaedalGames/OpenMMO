@@ -17,7 +17,7 @@ for line in open("assets.lock"):
 files = subprocess.run(
     ["bash", "-c",
      r"find client/public -type f \( -name '*.glb' -o -name '*.mp3' -o -name '*.m4a' -o -name '*.blend' \) -print0;"
-     r"[ -d assets ] && find assets -type f ! -name '*.blend1' -print0 || true"],
+     r"[ -d assets ] && find assets -type f ! -name '*.blend1' ! -path '*/preview/*' -print0 || true"],
     capture_output=True, check=True).stdout.decode().split("\0")
 files = sorted(f for f in files if f)
 

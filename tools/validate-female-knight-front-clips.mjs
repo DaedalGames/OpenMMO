@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";
 import * as THREE from "../client/node_modules/three/build/three.module.js";
 import { headlessThree, clipSampler, hash } from "./lib/headless-three.mjs";
+import { ensureFemalePreview } from "./lib/ensure-female-preview.mjs";
+await ensureFemalePreview("animations");
 
 const version = process.argv[2] ?? "v35";
 assert.ok(["v35", "v36", "v37", "v38", "v39", "v40", "v41", "v42"].includes(version));

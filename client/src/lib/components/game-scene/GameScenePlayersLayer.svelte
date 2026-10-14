@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { setupPointShadow } from '../../utils/pointShadow'
   import { T } from '@threlte/core'
   import * as THREE from 'three'
   import { get } from 'svelte/store'
@@ -281,16 +282,6 @@
   let teleportLayer: GameSceneTeleportLayer | undefined
   // One shadow light: enchantment, fire, local light, then nearby light.
   let unifiedTorchLight = $state<THREE.PointLight | undefined>(undefined)
-
-  // mapSize is only read when the cube map is allocated, so a quality switch
-  // mid-session needs the old map dropped for the new size to take effect.
-  $effect(() => {
-    const map = unifiedTorchLight?.shadow?.map
-    if (map && map.width !== torchShadowMapSize) {
-      map.dispose()
-      unifiedTorchLight!.shadow.map = null
-    }
-  })
 
   let unifiedTorchFlickerTime = 0
   const radianceStrengths = new SvelteMap<number, number>()
@@ -777,6 +768,7 @@
   {#if !torchEffectsDisabled}
     <T.PointLight
       bind:ref={unifiedTorchLight}
+      oncreate={setupPointShadow}
       position={[0, 0, 0]}
       color="#ffcc66"
       intensity={0}

@@ -8,7 +8,7 @@ interface OutfitMask {
   hide_triangle_indices: number[]
 }
 
-export function femaleOutfitMask(base: GLTF) {
+export function femaleOutfitMask(base?: GLTF) {
   const states = new Map<
     THREE.Mesh,
     {
@@ -43,6 +43,14 @@ export function femaleOutfitMask(base: GLTF) {
       }
     }
   }
+  const toggle = (name: string, enabled: boolean) => {
+    if (enabled && !slots.has(name))
+      throw new Error('의상 가림 정보가 없습니다.')
+    if (equipped.has(name) === enabled) return false
+    if (enabled) equipped.add(name)
+    else equipped.delete(name)
+    return true
+  }
   return {
     register(name: string, value: unknown, target?: THREE.Mesh) {
       const mask = value as OutfitMask | null
@@ -62,7 +70,7 @@ export function femaleOutfitMask(base: GLTF) {
         throw new Error('의상 가림 정보가 올바르지 않습니다.')
       let body: THREE.Mesh | undefined = target
       if (!target)
-        base.scene.traverse((node) => {
+        base?.scene.traverse((node) => {
           const association = base.parser.associations.get(node)
           if (
             node instanceof THREE.Mesh &&
@@ -89,12 +97,13 @@ export function femaleOutfitMask(base: GLTF) {
       })
     },
     setEquipped(name: string, enabled: boolean) {
-      if (enabled && !slots.has(name))
-        throw new Error('의상 가림 정보가 없습니다.')
-      if (equipped.has(name) === enabled) return
-      if (enabled) equipped.add(name)
-      else equipped.delete(name)
-      apply()
+      if (toggle(name, enabled)) apply()
+    },
+    setEquippedAll(entries: Record<string, boolean>) {
+      let changed = false
+      for (const [name, enabled] of Object.entries(entries))
+        changed = toggle(name, enabled) || changed
+      if (changed) apply()
     },
     unregister(name: string) {
       const wasEquipped = equipped.delete(name)

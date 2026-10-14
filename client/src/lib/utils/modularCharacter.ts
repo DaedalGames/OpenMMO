@@ -932,7 +932,10 @@ export function parseModularHandProfile(value: unknown): ModularHandProfile {
 
 export function applyModularFingerPose(
   clip: THREE.AnimationClip,
-  profile: ModularHandProfile,
+  profile: Pick<
+    ModularHandProfile,
+    'rig_id' | 'finger_pose_sources' | 'finger_poses' | 'finger_relaxation'
+  >,
   rigId: string
 ): THREE.AnimationClip {
   if (profile.rig_id !== rigId)

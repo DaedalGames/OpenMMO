@@ -11,8 +11,8 @@ repo=$(awk '$1 == "repo" {print $2; exit}' assets.lock)
 mapfile -d '' files < <({
     find client/public -type f \
         \( -name '*.glb' -o -name '*.mp3' -o -name '*.m4a' -o -name '*.blend' \) -print0
-    # Exclude Blender backups.
-    if [[ -d assets ]]; then find assets -type f ! -name '*.blend1' -print0; fi
+    # Exclude Blender backups and preview/ (rebuilt locally by tools/lib/ensure-female-preview.mjs).
+    if [[ -d assets ]]; then find assets -type f ! -name '*.blend1' ! -path '*/preview/*' -print0; fi
 } | sort -z)
 
 stage=$(mktemp -d)

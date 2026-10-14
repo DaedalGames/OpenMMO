@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { readFileSync, writeFileSync } from 'node:fs'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
+import { ensureFemalePreview } from './lib/ensure-female-preview.mjs'
+await ensureFemalePreview('animations')
 
 const version = process.argv[2] ?? 'v17'
 assert.ok(['v1', 'v2', 'v3', 'v4', 'v5', 'v6', 'v7', 'v8', 'v9', 'v10', 'v11', 'v13', 'v14', 'v15', 'v16', 'v17', 'v18', 'v19', 'v20', 'v21', 'v22', 'v23', 'v24', 'v25', 'v26', 'v27', 'v28', 'v29', 'v30', 'v31', 'v32', 'v33', 'v34', 'v35', 'v36', 'v37', 'v38', 'v39', 'v40', 'v41', 'v42'].includes(version))
@@ -11,7 +13,7 @@ const partPath = `${directory}/bottom_female_knight.glb`
 const { server, load } = await headlessThree()
 try {
   const { bindModularPart } = await server.ssrLoadModule('/src/lib/utils/modularCharacter.ts')
-  const { femaleOutfitMask } = await server.ssrLoadModule('/src/previews/female-outfit-mask.ts')
+  const { femaleOutfitMask } = await server.ssrLoadModule('/src/lib/utils/female-outfit-mask.ts')
   const base = await load(basePath)
   const previewAnimations = 'assets/modular_human_female_01/preview/animations.json'
   const prepared = JSON.parse(readFileSync(previewAnimations))

@@ -1,6 +1,8 @@
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import * as THREE from "../client/node_modules/three/build/three.module.js";
 import { headlessThree, clipSampler } from "./lib/headless-three.mjs";
+import { ensureFemalePreview } from "./lib/ensure-female-preview.mjs";
+await ensureFemalePreview("animations");
 const { server, load } = await headlessThree();
 try {
   const { bindModularPart } = await server.ssrLoadModule(

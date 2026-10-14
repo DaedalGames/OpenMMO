@@ -23,7 +23,7 @@
     CHARACTER_ANIMATION_PACK_PATHS,
     getCharacterModelPath,
     getWeaponModelPath,
-    MODULAR_MALE_MODEL_PATH,
+    isModularModel,
   } from '../utils/modelPaths'
   import { loadGLB } from '../utils/gltfCache'
   import {
@@ -243,7 +243,8 @@
           itemDefId,
           boneName === 'LeftHand'
             ? forearmLength(characterRoot, boneName, `${modelPath}:${boneName}`)
-            : undefined
+            : undefined,
+          modelPath
         )
       } else if (!mainHand) poseOffHandProp(prop, worldModel, modelPath)
       ;(socket ?? bone).add(prop)
@@ -383,18 +384,13 @@
       getGltfAnimations(combatMeleeGltfData)
     )
 
-    const animations =
-      modelPath === MODULAR_MALE_MODEL_PATH
-        ? Promise.resolve(orderedAnims.map((selection) => selection.clip))
-        : retargetOrderedCharacterAnimationsForModel(
-            newModelRoot,
-            orderedAnims,
-            {
-              base: sourceScene,
-              locomotion: locomotionGltfData.scene,
-              combatMelee: combatMeleeGltfData.scene,
-            }
-          )
+    const animations = isModularModel(modelPath)
+      ? Promise.resolve(orderedAnims.map((selection) => selection.clip))
+      : retargetOrderedCharacterAnimationsForModel(newModelRoot, orderedAnims, {
+          base: sourceScene,
+          locomotion: locomotionGltfData.scene,
+          combatMelee: combatMeleeGltfData.scene,
+        })
     Promise.all([animations, armored]).then(([clips]) => {
       if (generation !== setupGeneration) {
         disposeCharacterSkeletons(newModelRoot)
@@ -457,7 +453,7 @@
       mixer.update(delta)
 
       if (
-        modelPath !== MODULAR_MALE_MODEL_PATH &&
+        !isModularModel(modelPath) &&
         clonedScene &&
         modelRoot &&
         footBones.length > 0

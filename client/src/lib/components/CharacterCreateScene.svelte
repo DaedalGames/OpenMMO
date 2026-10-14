@@ -82,6 +82,11 @@
       },
     },
   }
+  const FEMALE_STARTER_EQUIPMENT: typeof STARTER_EQUIPMENT = {
+    knight: {
+      armor: { ...STARTER_EQUIPMENT.knight?.armor, head: 'worn_plate_helmet' },
+    },
+  }
 
   const CAMERA_FOV = 42
   const CAMERA_POSITION_Y = 1.4
@@ -264,9 +269,9 @@
     {characterClass}
     {gender}
     {appearance}
-    equipment={gender === 'male'
-      ? STARTER_EQUIPMENT[characterClass]
-      : undefined}
+    equipment={(gender === 'male'
+      ? STARTER_EQUIPMENT
+      : FEMALE_STARTER_EQUIPMENT)[characterClass]}
     rotationY={modelRotationY}
   />
 {/key}

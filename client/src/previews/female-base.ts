@@ -7,8 +7,8 @@ import { femaleSeat, femaleSeatOffset } from './female-seat'
 import { femaleTorchMotions, mirroredSwordGrip } from './female-torch'
 import { poseOffHandProp } from '../lib/utils/handProps'
 import { bindModularPart } from '../lib/utils/modularCharacter'
-import { femaleOutfitMask } from './female-outfit-mask'
-import { femaleBootGround } from './female-boot-ground'
+import { femaleOutfitMask } from '../lib/utils/female-outfit-mask'
+import { femaleBootGround } from '../lib/utils/female-boot-ground'
 
 export async function showFemaleBase(
   scene: THREE.Scene,

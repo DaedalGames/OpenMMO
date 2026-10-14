@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { readFileSync, writeFileSync } from 'node:fs'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
+import { ensureFemalePreview } from './lib/ensure-female-preview.mjs'
+await ensureFemalePreview('animations')
 
 const directory = process.argv[2] ?? 'assets/items/female_knight_boots/fitted_v5'
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
@@ -9,8 +11,8 @@ const partPath = `${directory}/boots_female_knight.glb`
 const { server, load } = await headlessThree()
 try {
   const { bindModularPart } = await server.ssrLoadModule('/src/lib/utils/modularCharacter.ts')
-  const { femaleOutfitMask } = await server.ssrLoadModule('/src/previews/female-outfit-mask.ts')
-  const { femaleBootGround } = await server.ssrLoadModule('/src/previews/female-boot-ground.ts')
+  const { femaleOutfitMask } = await server.ssrLoadModule('/src/lib/utils/female-outfit-mask.ts')
+  const { femaleBootGround } = await server.ssrLoadModule('/src/lib/utils/female-boot-ground.ts')
   const { femaleSeatOffset } = await server.ssrLoadModule('/src/previews/female-seat.ts')
   const base = await load(basePath)
   const prepared = JSON.parse(readFileSync('assets/modular_human_female_01/preview/animations.json'))

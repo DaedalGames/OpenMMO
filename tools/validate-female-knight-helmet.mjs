@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { readFileSync, writeFileSync } from 'node:fs'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
+import { ensureFemalePreview } from './lib/ensure-female-preview.mjs'
+await ensureFemalePreview('animations')
 
 const directory = 'assets/items/female_knight_helmet/tripo_v1/fitted_v1'
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
