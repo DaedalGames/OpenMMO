@@ -1,7 +1,7 @@
 {
   "date": "2026-10-14",
   "inputs": {
-    "tools/prepare-female-knight.mjs": "66ae812f7b69c5bda0664ac92d3d8eaa3473d5936f2bbb1c1cfd44850e7afe46",
+    "tools/prepare-female-knight.mjs": "0668d0b55e1e8101024b5fba8d0c251f78af299e6df44a446b9131ee5e37b628",
     "client/src/lib/utils/female-clip-bake.ts": "619ea34427e67f70421dc085237231dc435420c2313c8dd8ddb5503fe9493e02",
     "client/src/lib/utils/female-boot-ground.ts": "34614cb3430b308ead42a29ef7dbffba23244efda5da9b2d6b79948c7fe34652",
     "assets/modular_human_female_01/rig_v1/female-base.glb": "d49dd18893b6de9289f6d35eb8946781d5db793e0bcba031e5672a4ce6e247c6",
@@ -37,13 +37,13 @@
     "client/public/models/animations/dagger_preview.glb": "550c601a7459fb3229e54b549129c9643d1041059d7f54c915f26292afe033a6"
   },
   "outputs": {
-    "client/public/models/characters/modular_female/base.glb": "376e340b9ee76806b7dfe2986521f81c9e35a51bafe399bd7ec2fd800d187c81",
-    "client/public/models/characters/modular_female/hair.glb": "e7ce1ffaea68e11a0c393016b949108a97dc5787e7692e58ab9de37ebb1a0f1f",
-    "client/public/models/characters/modular_female/top.glb": "0077283450515df31c3d5cf944639a9fcd043974c7ed071a3bd1e9dd499d98dd",
-    "client/public/models/characters/modular_female/bottom.glb": "780c3f8aff8735344db9bc1edcd4c4c7b0ddfadbba3a24620777f5f8eeefdad9",
-    "client/public/models/characters/modular_female/boots.glb": "c03e27a1632d18a873fbd3a673ae25c96104b0d20525a92b31a0c90cdf2f3488",
-    "client/public/models/characters/modular_female/gloves.glb": "09040f0c12e9890e2c55bc1693dd4805176c17e0585d0c4a69e833f26b55a5e8",
-    "client/public/models/characters/modular_female/helmet.glb": "ea50f62e07ba7062b33febf61f0c68c55536f0ce797ca8c4edaaea7b58fb354f",
+    "client/public/models/characters/modular_female/base.glb": "38cce241767a508e78b47108273fe7b3a98d9602e1f3956ed10a6b6ab5cdadd5",
+    "client/public/models/characters/modular_female/hair.glb": "34ddcf1e70c0fab40a4fc41cffd116c9f9e7cc73544373c2db2a3aa5e1bbc221",
+    "client/public/models/characters/modular_female/top.glb": "27d1bbbfcc438b852dcd3abd7b616369dd8ab2f8bad6ff691b1c10e37b325d0e",
+    "client/public/models/characters/modular_female/bottom.glb": "d108e2c9912657e32a4648f4b7f4617496f42ae6ebf781f50254771dcfe9cc6e",
+    "client/public/models/characters/modular_female/boots.glb": "0f4d4db870a3cf55b9fbc440c61375a0d26f94aee872f55e6a676b05936496ba",
+    "client/public/models/characters/modular_female/gloves.glb": "80b4c964202e66c3331518755fad415b304fba12dcba1aab3099c41c3614d126",
+    "client/public/models/characters/modular_female/helmet.glb": "c6987102ca10d2eb13af94f561de2546d90abd13590defd553d13dfa9eacd1ba",
     "client/public/models/characters/modular_female/animations/locomotion.glb": "83e8327a501257e810286b06789324b855d335e2defdc0409547983feeb04749",
     "client/public/models/characters/modular_female/animations/combat_melee.glb": "2105d80c49d45da00fffdc3df4eab41a4a3bc6419d9be5adaadb21422e0dd15c",
     "client/public/models/characters/modular_female/animations/social.glb": "32385c0eb068fedb64068e279e8b91d97153b04f1e9b16cdfdcc3667dec41ecf",

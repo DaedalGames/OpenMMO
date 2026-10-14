@@ -99,7 +99,7 @@ for (const [name, source] of Object.entries(sources)) {
     if (/eyelash/i.test(texture.getName())) continue
     const color = colors.has(texture)
     const image = await sharp(texture.getImage()).resize({ width: color ? 2048 : 1024, height: color ? 2048 : 1024, fit: 'inside', withoutEnlargement: true })
-      .webp(color ? { quality: 94, effort: 5 } : { lossless: true, effort: 5 }).toBuffer()
+      .webp(color ? { quality: 94, effort: 5 } : { quality: 90, smartSubsample: true, effort: 5 }).toBuffer()
     texture.setImage(image).setMimeType('image/webp')
   }
   doc.createExtension(EXTTextureWebP).setRequired(true)
