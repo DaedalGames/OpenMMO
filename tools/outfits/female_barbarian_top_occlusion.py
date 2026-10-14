@@ -16,8 +16,8 @@ from lib.glb_accessors import accessor
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
 DIRECTORY = ROOT / 'assets/items/female_barbarian_top/tripo_v1/fitted_v1'
 TOP = DIRECTORY / 'top_female_barbarian.glb'
-REACH = .02
-INSET = .01
+REACH = .012
+INSET = .02
 
 
 def mesh(path):

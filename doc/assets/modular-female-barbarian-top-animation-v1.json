@@ -98,9 +98,9 @@
         "pauldron": 7.858798611870554e-8
       },
       "maximum_cup_edge_length_change": 0.9501846961434741,
-      "maximum_penetrating_vertices": 44,
+      "maximum_penetrating_vertices": 37,
       "penetrating_regions_at_worst": {
-        "cups": 9,
+        "cups": 2,
         "pauldron": 32,
         "straps": 3
       },
@@ -116,13 +116,13 @@
         "pauldron": 4.036542278207378e-8
       },
       "maximum_cup_edge_length_change": 0.4599253484949828,
-      "maximum_penetrating_vertices": 6,
+      "maximum_penetrating_vertices": 4,
       "penetrating_regions_at_worst": {
-        "cups": 2,
+        "cups": 0,
         "pauldron": 0,
         "straps": 4
       },
-      "maximum_penetration": 0.006569668073816972
+      "maximum_penetration": 0.0035426922837091535
     },
     {
       "name": "slash1",
@@ -134,9 +134,9 @@
         "pauldron": 1.2407377036893763e-7
       },
       "maximum_cup_edge_length_change": 1.4043678315676478,
-      "maximum_penetrating_vertices": 96,
+      "maximum_penetrating_vertices": 93,
       "penetrating_regions_at_worst": {
-        "cups": 5,
+        "cups": 2,
         "pauldron": 76,
         "straps": 15
       },
@@ -152,9 +152,9 @@
         "pauldron": 7.955585235031037e-8
       },
       "maximum_cup_edge_length_change": 0.789933658708982,
-      "maximum_penetrating_vertices": 55,
+      "maximum_penetrating_vertices": 53,
       "penetrating_regions_at_worst": {
-        "cups": 2,
+        "cups": 0,
         "pauldron": 49,
         "straps": 4
       },
