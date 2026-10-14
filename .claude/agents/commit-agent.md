@@ -24,22 +24,38 @@ Run `npm run lint` to check for linting errors. If there are fixable errors, run
 ### Step 3: Type Check
 Run `npm run check` to perform Svelte and TypeScript type checking. If type errors exist, report them clearly to the user and do not proceed with the commit.
 
-### Step 4: Sync Binary Assets
+### Step 4: Remove Intermediate Files
+Before syncing, delete intermediates the current work produced, so they are neither committed nor published. Only consider files that are new in this work: untracked files from `git status` and `new` lines from `bash tools/check-assets.sh`. Never delete a file already in git or in `assets.lock`.
+
+Delete:
+- Comparison and review images other than the ones docs link to (per-view renders, before/after crops, debug overlays). Keep the combined image a doc embeds.
+- Data a script regenerates on every run (e.g. `arap-*.npz`, unskinned or pre-rig GLBs that the next pipeline step rebuilds).
+- Image copies that a script can rebuild deterministically from a recorded source.
+
+Keep:
+- Anything a doc under `doc/` links to, or that a tool reads as input (`grep` the path or file name in `doc/` and `tools/` first).
+- Generation inputs and provenance records: concept art, prompts, `sources.json`, `build.json`, `generation.json`, reference crops, raw generator outputs.
+- Final outputs, masks, and Blender sources.
+
+When unsure, keep the file and list it in your report. Report every deleted path.
+
+### Step 5: Sync Binary Assets
 Binary assets (GLB/MP3/M4A/blend under `client/public/`, everything under `assets/`) are not in git — they live on Hugging Face, pinned by `assets.lock`. A commit that references a changed asset without an updated lock ships a stale file on the next deploy. Before committing, run `bash tools/check-assets.sh` from the repo root. It prints `new`/`modified`/`missing` lines for anything out of sync and exits 1.
 
 This step is NOT optional and is independent of commit scope: run it even when your launch prompt restricts the commit to specific files or says assets are handled elsewhere. If out-of-sync assets are unrelated to the requested commit and you are unsure they should be published, stop and report them instead of silently skipping the sync.
 
 If it prints anything:
-1. Run `bash tools/push-assets.sh` (uploads to Hugging Face and rewrites `assets.lock`; needs the `hf` CLI logged in — if it fails on auth, stop and tell the user).
-2. Inspect `git diff assets.lock`. Every `-file` line must be paired with a `+file` for the same path (a changed hash). A `-file` with no `+file` means a source was deleted locally and the push removed it from the dataset — report it and stop, so the user can restore it from the previous revision.
-3. Include `assets.lock` in the commit.
+1. Confirm the dataset head still matches the lock: `python3 -c "import json, urllib.request; print(json.load(urllib.request.urlopen('https://huggingface.co/api/datasets/jake-song-openmmo/onlinerpg-assets'))['sha'])"` must equal the `revision` line of `assets.lock`. If it differs, another machine pushed since; stop and report, because the push mirrors with `--delete` and would remove its files. Also confirm `check-assets.sh` printed no `missing` lines.
+2. Run `bash tools/push-assets.sh` (uploads to Hugging Face and rewrites `assets.lock`; needs the `hf` CLI logged in — if it fails on auth, stop and tell the user).
+3. Inspect `git diff assets.lock`. Every `-file` line must be paired with a `+file` for the same path (a changed hash). A `-file` with no `+file` means a source was deleted locally and the push removed it from the dataset — report it and stop, so the user can restore it from the previous revision.
+4. Include `assets.lock` in the commit.
 
 If it prints nothing, the assets are in sync — proceed.
 
-### Step 5: Review Changes
+### Step 6: Review Changes
 Run `git status` and `git diff --staged` (or `git diff` if nothing is staged) to understand what changes will be committed. Analyze the changes to craft a meaningful commit message.
 
-### Step 6: Stage and Commit
+### Step 7: Stage and Commit
 If all checks pass:
 1. Stage the changes with `git add .` (or stage specific files if more appropriate)
 2. Create a concise, descriptive commit message that summarizes the actual code changes
