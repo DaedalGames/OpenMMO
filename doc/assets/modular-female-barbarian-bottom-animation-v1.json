@@ -6,7 +6,7 @@
   },
   "bottom": {
     "path": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb",
-    "sha256": "8eae7dc9df4702a3d428d4144f2e1df14381601e7744de970e907b00e347cacd"
+    "sha256": "7003ddb09ebbfcd81b7dfef9987234b3f48c0244bfe18d4feae065c42f5128cb"
   },
   "triangles": 3256,
   "vertices": 4796,
@@ -69,11 +69,11 @@
       "maximum_motion": 0.13138033202272328,
       "maximum_edge_length_ratio": 6.395772953818039,
       "maximum_rigid_edge_length_change": 1.0642176395680991e-7,
-      "maximum_penetrating_vertices": 556,
+      "maximum_penetrating_vertices": 559,
       "penetrating_regions_at_worst": {
-        "belt": 45,
+        "belt": 41,
         "fur": 511,
-        "fittings": 0
+        "fittings": 7
       },
       "maximum_penetration": 0.04186689264220105
     },
@@ -83,11 +83,11 @@
       "maximum_motion": 0.5185142066974768,
       "maximum_edge_length_ratio": 5.350489578619988,
       "maximum_rigid_edge_length_change": 1.2507156388341656e-7,
-      "maximum_penetrating_vertices": 1397,
+      "maximum_penetrating_vertices": 1446,
       "penetrating_regions_at_worst": {
-        "belt": 207,
+        "belt": 187,
         "fur": 1190,
-        "fittings": 0
+        "fittings": 69
       },
       "maximum_penetration": 0.0677320614872979
     },
@@ -97,11 +97,11 @@
       "maximum_motion": 0.20703285864471205,
       "maximum_edge_length_ratio": 8.348317389878472,
       "maximum_rigid_edge_length_change": 1.0477269785091892e-7,
-      "maximum_penetrating_vertices": 1008,
+      "maximum_penetrating_vertices": 1038,
       "penetrating_regions_at_worst": {
-        "belt": 82,
+        "belt": 69,
         "fur": 926,
-        "fittings": 0
+        "fittings": 43
       },
       "maximum_penetration": 0.04979976224512202
     },
@@ -111,25 +111,25 @@
       "maximum_motion": 0.3687162253148841,
       "maximum_edge_length_ratio": 8.666392113491948,
       "maximum_rigid_edge_length_change": 9.626636665593935e-8,
-      "maximum_penetrating_vertices": 1054,
+      "maximum_penetrating_vertices": 1089,
       "penetrating_regions_at_worst": {
-        "belt": 99,
+        "belt": 71,
         "fur": 955,
-        "fittings": 0
+        "fittings": 63
       },
       "maximum_penetration": 0.06573337864687501
     },
     {
       "name": "dying",
       "samples": 121,
-      "maximum_motion": 0.8346652254523745,
+      "maximum_motion": 0.8408184526427782,
       "maximum_edge_length_ratio": 7.632150846590413,
       "maximum_rigid_edge_length_change": 9.908729692309493e-8,
-      "maximum_penetrating_vertices": 1125,
+      "maximum_penetrating_vertices": 1171,
       "penetrating_regions_at_worst": {
-        "belt": 175,
+        "belt": 160,
         "fur": 946,
-        "fittings": 4
+        "fittings": 65
       },
       "maximum_penetration": 0.08068829795840464
     },
@@ -139,11 +139,11 @@
       "maximum_motion": 0.2951817230729866,
       "maximum_edge_length_ratio": 2.57725953903969,
       "maximum_rigid_edge_length_change": 4.381315044099665e-8,
-      "maximum_penetrating_vertices": 919,
+      "maximum_penetrating_vertices": 945,
       "penetrating_regions_at_worst": {
-        "belt": 131,
+        "belt": 121,
         "fur": 788,
-        "fittings": 0
+        "fittings": 36
       },
       "maximum_penetration": 0.04438152137942165
     }

@@ -65,10 +65,11 @@
     "rig_id": "human_female_01_local_v1",
     "bones": 65,
     "output": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb",
-    "sha256": "8eae7dc9df4702a3d428d4144f2e1df14381601e7744de970e907b00e347cacd",
+    "sha256": "7003ddb09ebbfcd81b7dfef9987234b3f48c0244bfe18d4feae065c42f5128cb",
     "vertices": 4796,
     "exact_female_hierarchy_and_inverse_bind": true,
     "method": "Inverse-distance transfer from skin; panel leg influence capped by height below the belt with the rest on Hips; the belt keeps skin weights; medallion, rings and loops rigid on the bone that dominates the belt around them; smoothed across the welded surface; braid copies the panel under it."
   },
-  "belt_lining_repair": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_repair_v2/repair.json"
+  "belt_lining_repair": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_repair_v2/repair.json",
+  "waistband_repair": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/waistband_repair_v1/repair.json"
 }

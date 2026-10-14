@@ -42,8 +42,7 @@ for label in np.unique(face_labels):
     if label != main and q[:, 1].max() < .66:
         panties |= face_labels == label
 
-# Skin and panties count as covered when a ray along the normal meets the belt within REACH and
-# lies at least INSET inside the covered area. The fur panels swing away from the legs, so they hide nothing.
+# Mask covered skin conservatively; keep the fur openings visible.
 fit = np.load(DIRECTORY / 'fit-data.npz')
 blender = fit['fitted']
 _, nearest = cKDTree(np.c_[blender[:, 0], blender[:, 2], -blender[:, 1]]).query(bottom_points)
@@ -77,6 +76,8 @@ for label_mask in [labels[welded] == main, labels[welded] != main]:
         if not hit[group[tree.query_ball_point(p[i], INSET)]].all():
             covered[i] = False
 hidden = covered[f].all(1)
+waistband = panties & (p[f, 1].min(1) > .585)
+hidden |= waistband
 source_triangles = sum(doc['accessors'][part['indices']]['count'] // 3 for part in doc['meshes'][0]['primitives'])
 record = {'body': str(BODY.relative_to(ROOT)), 'body_sha256': hashlib.sha256(BODY.read_bytes()).hexdigest(),
           'bottom': 'bottom_female_barbarian', 'bottom_sha256': hashlib.sha256(BOTTOM.read_bytes()).hexdigest(),
@@ -84,7 +85,8 @@ record = {'body': str(BODY.relative_to(ROOT)), 'body_sha256': hashlib.sha256(BOD
           'hide_triangle_indices': np.flatnonzero(hidden).tolist(),
           'covered_skin_triangles': int((hidden & (face_labels == main)).sum()),
           'covered_panty_triangles': int((hidden & panties).sum()),
+          'removed_panty_waistband_triangles': int(waistband.sum()),
           'visible_triangles': source_triangles - int(hidden.sum()),
-          'scope': f'Reversible equipment mask on this exact body. Skin and panties whose normal ray meets the belt within {REACH} and lie at least {INSET} inside the covered area; the rest of the panties stay visible under the open fur panels. Restore full index buffer on unequip/load failure.'}
+          'scope': f'Reversible equipment mask on this exact body. Covered skin and panties use a normal ray within {REACH} and an inset of {INSET}; panty waistband faces entirely above 0.585 m are also hidden. Lower panties stay visible under the open fur panels. Restore full index buffer on unequip/load failure.'}
 (DIRECTORY / 'body-occlusion.json').write_text(json.dumps(record, indent=2) + '\n')
 print({key: record[key] for key in ['covered_skin_triangles', 'covered_panty_triangles', 'visible_triangles']})
