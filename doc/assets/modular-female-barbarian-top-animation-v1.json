@@ -6,7 +6,7 @@
   },
   "top": {
     "path": "assets/items/female_barbarian_top/tripo_v1/fitted_v1/top_female_barbarian.glb",
-    "sha256": "10cef800e0aac35ae474d1b0d6ec328e8af3026acdc9062bf3cbf9a41d4994f3"
+    "sha256": "a4e1fcc82855ce611e3c7c702d2c7d4cbd2b144fedf7acb1f4ff4a90f5ee29b9"
   },
   "triangles": 2983,
   "vertices": 2150,
@@ -34,10 +34,10 @@
       "maximum_motion": 0.035561114819693034,
       "maximum_edge_length_ratio": 1.4355194878437683,
       "maximum_rigid_edge_length_change": {
-        "jewel": 0.0006294529195718379,
+        "jewel": 0.0006294672314869354,
         "pauldron": 5.1251403676566554e-8
       },
-      "maximum_cup_edge_length_change": 0.5398978999871084,
+      "maximum_cup_edge_length_change": 0.40640021722424147,
       "maximum_penetrating_vertices": 0,
       "penetrating_regions_at_worst": {},
       "maximum_penetration": 0
@@ -48,10 +48,10 @@
       "maximum_motion": 0.035561114819693034,
       "maximum_edge_length_ratio": 1.4355194878437683,
       "maximum_rigid_edge_length_change": {
-        "jewel": 0.0006294529195718379,
+        "jewel": 0.0006294672314869354,
         "pauldron": 5.1251403676566554e-8
       },
-      "maximum_cup_edge_length_change": 0.5398978999871084,
+      "maximum_cup_edge_length_change": 0.40640021722424147,
       "maximum_penetrating_vertices": 0,
       "penetrating_regions_at_worst": {},
       "maximum_penetration": 0
@@ -62,10 +62,10 @@
       "maximum_motion": 0.039181559023678966,
       "maximum_edge_length_ratio": 1.6293302518977268,
       "maximum_rigid_edge_length_change": {
-        "jewel": 0.0014473170283157977,
+        "jewel": 0.0014473428620980222,
         "pauldron": 1.3072024129812121e-8
       },
-      "maximum_cup_edge_length_change": 0.6935115830169827,
+      "maximum_cup_edge_length_change": 0.4490165996704458,
       "maximum_penetrating_vertices": 0,
       "penetrating_regions_at_worst": {},
       "maximum_penetration": 0
@@ -74,12 +74,12 @@
       "name": "run",
       "samples": 121,
       "maximum_motion": 0.11308501750262423,
-      "maximum_edge_length_ratio": 2.3440229255067377,
+      "maximum_edge_length_ratio": 2.3441330091129573,
       "maximum_rigid_edge_length_change": {
-        "jewel": 0.0014982185967369333,
+        "jewel": 0.001498213523815295,
         "pauldron": 9.543944201606536e-8
       },
-      "maximum_cup_edge_length_change": 0.7976406795093243,
+      "maximum_cup_edge_length_change": 0.7976379284986221,
       "maximum_penetrating_vertices": 11,
       "penetrating_regions_at_worst": {
         "cups": 0,
@@ -92,17 +92,17 @@
       "name": "jump",
       "samples": 121,
       "maximum_motion": 0.41927583293373627,
-      "maximum_edge_length_ratio": 2.7651714835790635,
+      "maximum_edge_length_ratio": 2.7653518693703654,
       "maximum_rigid_edge_length_change": {
-        "jewel": 0.007883443555898983,
+        "jewel": 0.007883428817638483,
         "pauldron": 7.858798611870554e-8
       },
-      "maximum_cup_edge_length_change": 0.9501846961434741,
-      "maximum_penetrating_vertices": 37,
+      "maximum_cup_edge_length_change": 0.9501922786472843,
+      "maximum_penetrating_vertices": 38,
       "penetrating_regions_at_worst": {
         "cups": 2,
         "pauldron": 32,
-        "straps": 3
+        "straps": 4
       },
       "maximum_penetration": 0.015183145842354678
     },
@@ -110,12 +110,12 @@
       "name": "combat_idle",
       "samples": 121,
       "maximum_motion": 0.19756341806398586,
-      "maximum_edge_length_ratio": 1.6462623062897885,
+      "maximum_edge_length_ratio": 1.6462718040667614,
       "maximum_rigid_edge_length_change": {
-        "jewel": 0.0007038268410141102,
+        "jewel": 0.0007038264163581331,
         "pauldron": 4.036542278207378e-8
       },
-      "maximum_cup_edge_length_change": 0.4599253484949828,
+      "maximum_cup_edge_length_change": 0.45992412010128336,
       "maximum_penetrating_vertices": 4,
       "penetrating_regions_at_worst": {
         "cups": 0,
@@ -128,12 +128,12 @@
       "name": "slash1",
       "samples": 121,
       "maximum_motion": 0.6201869284387252,
-      "maximum_edge_length_ratio": 3.2683671523795295,
+      "maximum_edge_length_ratio": 3.2683091572112177,
       "maximum_rigid_edge_length_change": {
-        "jewel": 0.002058861655779065,
+        "jewel": 0.0020588625021104034,
         "pauldron": 1.2407377036893763e-7
       },
-      "maximum_cup_edge_length_change": 1.4043678315676478,
+      "maximum_cup_edge_length_change": 0.8939176206721529,
       "maximum_penetrating_vertices": 93,
       "penetrating_regions_at_worst": {
         "cups": 2,
@@ -145,13 +145,13 @@
     {
       "name": "dying",
       "samples": 121,
-      "maximum_motion": 1.1315979021746254,
-      "maximum_edge_length_ratio": 2.2790839342041904,
+      "maximum_motion": 1.1315978941002531,
+      "maximum_edge_length_ratio": 2.279206763387095,
       "maximum_rigid_edge_length_change": {
-        "jewel": 0.005588967806136713,
+        "jewel": 0.005588965963782999,
         "pauldron": 7.955585235031037e-8
       },
-      "maximum_cup_edge_length_change": 0.789933658708982,
+      "maximum_cup_edge_length_change": 0.7899323441821893,
       "maximum_penetrating_vertices": 53,
       "penetrating_regions_at_worst": {
         "cups": 0,
@@ -164,19 +164,19 @@
       "name": "sit_idle",
       "samples": 121,
       "maximum_motion": 0.28035302484979324,
-      "maximum_edge_length_ratio": 1.3625825176779542,
+      "maximum_edge_length_ratio": 1.3625823503778127,
       "maximum_rigid_edge_length_change": {
-        "jewel": 0.0002817369206914444,
+        "jewel": 0.0002817403902426463,
         "pauldron": 8.60897841903352e-8
       },
-      "maximum_cup_edge_length_change": 0.6102245060643119,
+      "maximum_cup_edge_length_change": 0.37192192931319557,
       "maximum_penetrating_vertices": 3,
       "penetrating_regions_at_worst": {
         "cups": 3,
         "pauldron": 0,
         "straps": 0
       },
-      "maximum_penetration": 0.0028271417498761963
+      "maximum_penetration": 0.002620840295830557
     }
   ],
   "scope": "Runtime binding through bindModularPart, rest shape, finite deformation, rigid jewel/pauldron, reported soft-cup edge change, and penetration (>2 mm deeper than rest) against the nearest visible skin vertex along its skinned normal. Approximate: not a full mesh collision test."

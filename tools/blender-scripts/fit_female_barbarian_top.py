@@ -23,6 +23,7 @@ BUST_WIDTH = 1.18
 BUST_DEPTH = 1.27
 CLEARANCE = .006
 STRAP_CLEARANCE = .002
+JEWEL_CLEARANCE = .003
 SMOOTHING = 16
 PREVIEW = '--preview' in sys.argv
 PAULDRON_BONE = next((a.split('=')[1] for a in sys.argv if a.startswith('--pauldron=')), 'RightShoulder')
@@ -111,10 +112,27 @@ layer = depth - inner
 front = smooth((-.02 - points[:, 1]) / .02) * smooth((points[:, 2] - .70) / .02) * (1 - smooth((points[:, 2] - .79) / .015))
 front *= 1 - smooth((np.abs(points[:, 0]) - .025) / .015)
 straps = (points[:, 2] > .795) & ~pauldron
-wanted = np.where(straps, STRAP_CLEARANCE, CLEARANCE) + layer
+# The underbust band sits as close as the straps; its rim showed a dark gap from below.
+underband = 1 - smooth((points[:, 2] - .70) / .015)
+wanted = np.where(straps, STRAP_CLEARANCE, CLEARANCE - (CLEARANCE - STRAP_CLEARANCE) * underband) + layer
 # Only the cleavage bridge is kept off the skin; cups, straps and band are drawn onto it.
 wanted = np.where(front > .5, np.maximum(wanted, np.minimum(depth, CLEARANCE + layer + .02)), wanted)
 targets = points + outward * (wanted - depth)[:, None]
+
+# The band spans the fold under the bust, so seen from below its lower edge hung 1-2 cm in front
+# of the sternum. Rest the lower edge near the centre on the ribs and let the strip tilt into the fold.
+band = (1 - smooth((source[:, 2] - .705) / .01)) * (1 - smooth((np.abs(points[:, 0]) - .03) / .015))
+band *= (points[:, 1] < -.02) & ~pauldron & ~jewel
+back = np.array([0, 1, 0])
+for i in np.where(band > 0)[0]:
+    hit = surface.ray_cast(Vector(targets[i]), Vector(back), .05)
+    if hit[0] is None:
+        continue
+    low, high = 0, max(hit[3] - wanted[i], 0) * band[i]
+    for _ in range(12):
+        mid = (low + high) / 2
+        low, high = (mid, high) if signed(targets[i] + mid * back)[0] >= .002 + layer[i] else (low, mid)
+    targets[i] += low * back
 
 shoulder = joints['RightArm']
 lift = np.array([-.55, 0, .83])
@@ -129,22 +147,40 @@ targets[pauldron] = rigid
 around = (np.linalg.norm(points[:, [0, 2]] - points[jewel][:, [0, 2]].mean(0), axis=1) < .035) & ~jewel
 rigid = points[jewel] + (targets[around] - points[around]).mean(0)
 for step in range(40):
-    if min(signed(p)[0] for p in rigid) >= CLEARANCE:
+    if min(signed(p)[0] for p in rigid) >= JEWEL_CLEARANCE:
         break
     rigid[:, 1] -= .0005
 targets[jewel] = rigid
+
+
+def vertex_colors(image):
+    pixels = np.empty(image.size[0] * image.size[1] * 4, dtype=np.float32)
+    image.pixels.foreach_get(pixels)
+    pixels = pixels.reshape(image.size[1], image.size[0], 4)
+    uv = np.array([loop.uv for loop in mesh.uv_layers.active.data])
+    uv_pixels = np.clip(np.floor(uv * np.array(image.size)).astype(int), 0, np.array(image.size) - 1)
+    colors = np.zeros((len(source), 3))
+    np.add.at(colors, loop_vertices, pixels[uv_pixels[:, 1], uv_pixels[:, 0], :3])
+    return colors / np.maximum(np.bincount(loop_vertices, minlength=len(source))[:, None], 1)
+
+
+# ARAP stiffness has always sampled the body texture (first Color_ image); kept so the reviewed fit doesn't shift.
+colors = vertex_colors(next(image for image in bpy.data.images if image.name.startswith('Color_')))
+own = vertex_colors(next(node.image for node in top.active_material.node_tree.nodes
+                         if node.type == 'TEX_IMAGE' and node.image.name.startswith('Color_')))
+saturation = 1 - own.min(1) / np.maximum(own.max(1), 1e-6)
+# The ring hinges where it threads the plate; swing it back so it rests on the band, not in mid-air.
+ring = jewel & (source[:, 2] < .716) & (saturation > .45)
+rigid = targets[ring]
+pivot = rigid[rigid[:, 2] > rigid[:, 2].max() - .002].mean(0)
+for degrees in range(45, 0, -1):
+    tilted = (np.array(Matrix.Rotation(math.radians(degrees), 3, 'X')) @ (rigid - pivot).T).T + pivot
+    if min(signed(p)[0] for p in tilted) >= JEWEL_CLEARANCE:
+        targets[ring] = tilted
+        break
 contact = (layer < .002) & ~pauldron & ~jewel
 fixed = contact | pauldron | jewel
 
-image = next(image for image in bpy.data.images if image.name.startswith('Color_'))
-pixels = np.empty(image.size[0] * image.size[1] * 4, dtype=np.float32)
-image.pixels.foreach_get(pixels)
-pixels = pixels.reshape(image.size[1], image.size[0], 4)
-uv = np.array([loop.uv for loop in mesh.uv_layers.active.data])
-uv_pixels = np.clip(np.floor(uv * np.array(image.size)).astype(int), 0, np.array(image.size) - 1)
-colors = np.zeros((len(source), 3))
-np.add.at(colors, loop_vertices, pixels[uv_pixels[:, 1], uv_pixels[:, 0], :3])
-colors /= np.maximum(np.bincount(loop_vertices, minlength=len(source))[:, None], 1)
 np.savez(OUTPUT / 'arap-input.npz', points=points, faces=faces, colors=colors, fixed=fixed, targets=targets)
 subprocess.run([str(ROOT / '.venv/bin/python'), str(ROOT / 'tools/outfits/fit_female_knight_top_surface.py'),
                 str(OUTPUT / 'arap-input.npz')], check=True)
@@ -238,13 +274,14 @@ bpy.ops.export_scene.gltf(filepath=str(OUTPUT / 'top-fitted-unskinned.glb'), exp
 np.savez(OUTPUT / 'fit-data.npz', source=source, fitted=points, faces=faces, pauldron=pauldron, cups=cups,
          contact=contact, jewel=jewel, depth=final_depth, joints=order, weights=values, bone_names=np.array(names))
 summary = lambda group: {names[i]: round(float(w), 3) for i, w in enumerate(weights[group].mean(0)) if w > .01}
-report = {'date': '2026-10-14', 'source': str(SOURCE.relative_to(ROOT)),
+report = {'date': '2026-10-15', 'source': str(SOURCE.relative_to(ROOT)),
           'source_sha256': hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
           'body': str(BODY.relative_to(ROOT)), 'body_sha256': hashlib.sha256(BODY.read_bytes()).hexdigest(),
           'output_dir': str(OUTPUT.relative_to(ROOT)), 'triangles': len(faces),
           'alignment': {'scale': SCALE, 'offset_blender': OFFSET, 'rotation_z_degrees': -90},
-          'bust': {'width_factor': BUST_WIDTH, 'depth_factor': BUST_DEPTH, 'clearance': CLEARANCE, 'strap_clearance': STRAP_CLEARANCE},
-          'method': 'Global alignment, bust pre-scale, then ARAP with contact vertices targeted to body surface plus layer offset. Cups bridge the cleavage (push-out only). Pauldron and gem/ring placed rigidly outside the skin.',
+          'bust': {'width_factor': BUST_WIDTH, 'depth_factor': BUST_DEPTH, 'clearance': CLEARANCE, 'strap_clearance': STRAP_CLEARANCE,
+                   'jewel_clearance': JEWEL_CLEARANCE},
+          'method': 'Global alignment, bust pre-scale, then ARAP with contact vertices targeted to body surface plus layer offset. Cups bridge the cleavage (push-out only); the lower band edge near the centre rests on the ribs. Pauldron and gem plate placed rigidly outside the skin; the ring hinges back from the plate onto the band.',
           'arap': {'iterations': int(arap['iterations']), 'last_maximum_vertex_step': float(arap['residual']),
                    'fixed_vertices': int(fixed.sum())},
           'rest_clearance': {'penetrating_vertices': int((final_depth < 0).sum()), 'minimum': float(final_depth.min())},
