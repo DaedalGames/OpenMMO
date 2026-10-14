@@ -15,7 +15,7 @@ OUT, PART, REPORT, VERSION = (sys.argv[1:] + ['assets/items/female_knight_top/tr
                                               'doc/assets/modular-female-knight-top-fitting-v2.json', '2'][len(sys.argv) - 1:])
 OUT, REPORT, VERSION = ROOT / OUT, ROOT / REPORT, int(VERSION)
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
-doc, binary = read_glb(OUT / 'top-fitted-unskinned.glb')
+doc, binary = read_glb(next(OUT.glob('*-fitted-unskinned.glb')))
 binary = bytearray(binary)
 base, base_binary = read_glb(BODY)
 skin = base['skins'][0]

@@ -1,0 +1,152 @@
+{
+  "date": "2026-10-15",
+  "base": {
+    "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+    "sha256": "d49dd18893b6de9289f6d35eb8946781d5db793e0bcba031e5672a4ce6e247c6"
+  },
+  "bottom": {
+    "path": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb",
+    "sha256": "a2bc77d533bb479ffd89f7a32a8033a31763fdb4917e7405b92a9c773b182010"
+  },
+  "triangles": 3256,
+  "vertices": 4796,
+  "bones": 65,
+  "exact_bind_compatibility": true,
+  "normalized_weights": true,
+  "unchanged_rest_shape": true,
+  "no_upper_body_influence": true,
+  "rigid_fittings": {
+    "pieces": 3,
+    "vertices": 1321,
+    "checked_edges": 2832
+  },
+  "clips": [
+    {
+      "name": "idle1",
+      "samples": 121,
+      "maximum_motion": 0.06115343645140747,
+      "maximum_edge_length_ratio": 2.2721601139934093,
+      "maximum_rigid_edge_length_change": 4.194236136179086e-8,
+      "maximum_penetrating_vertices": 7,
+      "penetrating_regions_at_worst": {
+        "belt": 0,
+        "fur": 7,
+        "fittings": 0
+      },
+      "maximum_penetration": 0.004266903880199667
+    },
+    {
+      "name": "idle_armed",
+      "samples": 121,
+      "maximum_motion": 0.06115343645140747,
+      "maximum_edge_length_ratio": 2.2721601139934093,
+      "maximum_rigid_edge_length_change": 4.194236136179086e-8,
+      "maximum_penetrating_vertices": 7,
+      "penetrating_regions_at_worst": {
+        "belt": 0,
+        "fur": 7,
+        "fittings": 0
+      },
+      "maximum_penetration": 0.004266903880199667
+    },
+    {
+      "name": "walk",
+      "samples": 121,
+      "maximum_motion": 0.09652123676548917,
+      "maximum_edge_length_ratio": 4.297879104244377,
+      "maximum_rigid_edge_length_change": 1.0604352307375109e-7,
+      "maximum_penetrating_vertices": 166,
+      "penetrating_regions_at_worst": {
+        "belt": 14,
+        "fur": 152,
+        "fittings": 0
+      },
+      "maximum_penetration": 0.011481447049004438
+    },
+    {
+      "name": "run",
+      "samples": 121,
+      "maximum_motion": 0.13138033202272328,
+      "maximum_edge_length_ratio": 6.395772953818039,
+      "maximum_rigid_edge_length_change": 1.0642176395680991e-7,
+      "maximum_penetrating_vertices": 553,
+      "penetrating_regions_at_worst": {
+        "belt": 42,
+        "fur": 511,
+        "fittings": 0
+      },
+      "maximum_penetration": 0.04186689264220105
+    },
+    {
+      "name": "jump",
+      "samples": 121,
+      "maximum_motion": 0.5185142066974768,
+      "maximum_edge_length_ratio": 5.350489578619988,
+      "maximum_rigid_edge_length_change": 1.2507156388341656e-7,
+      "maximum_penetrating_vertices": 1377,
+      "penetrating_regions_at_worst": {
+        "belt": 187,
+        "fur": 1190,
+        "fittings": 0
+      },
+      "maximum_penetration": 0.0677320614872979
+    },
+    {
+      "name": "combat_idle",
+      "samples": 121,
+      "maximum_motion": 0.20703285864471205,
+      "maximum_edge_length_ratio": 8.348317389878472,
+      "maximum_rigid_edge_length_change": 1.0477269785091892e-7,
+      "maximum_penetrating_vertices": 1007,
+      "penetrating_regions_at_worst": {
+        "belt": 81,
+        "fur": 926,
+        "fittings": 0
+      },
+      "maximum_penetration": 0.04979976224512202
+    },
+    {
+      "name": "slash1",
+      "samples": 121,
+      "maximum_motion": 0.3687162253148841,
+      "maximum_edge_length_ratio": 8.666392113491948,
+      "maximum_rigid_edge_length_change": 9.626636665593935e-8,
+      "maximum_penetrating_vertices": 1048,
+      "penetrating_regions_at_worst": {
+        "belt": 93,
+        "fur": 955,
+        "fittings": 0
+      },
+      "maximum_penetration": 0.06573337864687501
+    },
+    {
+      "name": "dying",
+      "samples": 121,
+      "maximum_motion": 0.8346652254523745,
+      "maximum_edge_length_ratio": 7.632150846590413,
+      "maximum_rigid_edge_length_change": 9.908729692309493e-8,
+      "maximum_penetrating_vertices": 1119,
+      "penetrating_regions_at_worst": {
+        "belt": 169,
+        "fur": 946,
+        "fittings": 4
+      },
+      "maximum_penetration": 0.08068829795840464
+    },
+    {
+      "name": "sit_idle",
+      "samples": 121,
+      "maximum_motion": 0.2951817230729866,
+      "maximum_edge_length_ratio": 2.57725953903969,
+      "maximum_rigid_edge_length_change": 4.381315044099665e-8,
+      "maximum_penetrating_vertices": 894,
+      "penetrating_regions_at_worst": {
+        "belt": 106,
+        "fur": 788,
+        "fittings": 0
+      },
+      "maximum_penetration": 0.04438152137942165
+    }
+  ],
+  "scope": "Runtime binding through bindModularPart, rest shape, finite deformation, rigid medallion/rings/loops, edge stretch reported, and penetration (>2 mm deeper than rest) against the nearest visible skin vertex along its skinned normal. Approximate: not a full mesh collision test."
+}

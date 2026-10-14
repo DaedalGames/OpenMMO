@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-15",
+  "source": "assets/items/female_barbarian_bottom/tripo_v1/source/model_url.glb",
+  "source_sha256": "9fcf70854113abfaa2a744369fbb386312d3acebe7e5f2759ed31d08ededb495",
+  "body": "assets/modular_human_female_01/rig_v1/female-base.glb",
+  "body_sha256": "d49dd18893b6de9289f6d35eb8946781d5db793e0bcba031e5672a4ce6e247c6",
+  "output_dir": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1",
+  "triangles": 3256,
+  "alignment": {
+    "scale": 0.25,
+    "rotation_z_degrees": -90,
+    "belt_center_height": 0.595,
+    "belt_center_depth": 0.005607772618532181
+  },
+  "clearance": {
+    "belt": 0.004,
+    "fur": 0.006
+  },
+  "parts": {
+    "belt": 1122,
+    "fur": 2093,
+    "cord": 212,
+    "medallion": 97,
+    "fittings": [
+      82,
+      146,
+      164,
+      182,
+      39,
+      37,
+      182,
+      140,
+      168,
+      84
+    ]
+  },
+  "method": "Uniform scale onto the hip section; belt inner face drawn onto skin and panties, fur pushed out only and otherwise hung from the belt through ARAP; medallion, rings and loops ride the belt rigidly; the braid is laid onto the front panel slice by slice.",
+  "arap": {
+    "iterations": 60,
+    "last_maximum_vertex_step": 0.0002495965708355111,
+    "fixed_vertices": 2050
+  },
+  "rest_clearance": {
+    "penetrating_vertices": 0,
+    "minimum": 0.0009999991726435777
+  },
+  "weights": {
+    "belt": {
+      "Hips": 0.522,
+      "LeftUpLeg": 0.206,
+      "RightUpLeg": 0.227,
+      "Spine": 0.045
+    },
+    "fur": {
+      "Hips": 0.498,
+      "LeftUpLeg": 0.259,
+      "RightUpLeg": 0.243
+    },
+    "leg_share_max": 0.8,
+    "method": "Inverse-distance transfer from skin; panel leg influence capped by height below the belt with the rest on Hips; the belt keeps skin weights; medallion, rings and loops rigid on the bone that dominates the belt around them; smoothed across the welded surface; braid copies the panel under it."
+  },
+  "no_new_api_requests": true,
+  "status": "Candidate; validation pending",
+  "rigging": {
+    "rig_id": "human_female_01_local_v1",
+    "bones": 65,
+    "output": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb",
+    "sha256": "a2bc77d533bb479ffd89f7a32a8033a31763fdb4917e7405b92a9c773b182010",
+    "vertices": 4796,
+    "exact_female_hierarchy_and_inverse_bind": true,
+    "method": "Inverse-distance transfer from skin; panel leg influence capped by height below the belt with the rest on Hips; the belt keeps skin weights; medallion, rings and loops rigid on the bone that dominates the belt around them; smoothed across the welded surface; braid copies the panel under it."
+  }
+}
