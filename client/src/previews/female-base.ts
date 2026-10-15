@@ -44,8 +44,9 @@ export async function showFemaleBase(
       <select id="female-helmet">
         <option value="none">없음</option>
         <option value="knight">은빛 기사 투구</option>
+        <option value="barbarian">야만전사 뿔 투구</option>
       </select>
-      <p class="details">투구를 쓰면 헤어를 숨기고, 벗으면 선택한 헤어를 복원합니다.</p>
+      <p class="details">뿔 투구 아래로 보이는 헤어는 남기고, 은빛 기사 투구는 헤어를 숨깁니다. 투구를 벗으면 원래 헤어를 복원합니다.</p>
       <label for="female-top">상의</label>
       <select id="female-top">
         <option value="none">없음</option>
@@ -161,15 +162,26 @@ export async function showFemaleBase(
     else animations[index] = clip
   }
   const hairOptions: Record<string, THREE.SkinnedMesh[]> = { none: [] }
+  let helmetOutfit = 'none'
+  const hairKey = (name: string, helmet = helmetOutfit) =>
+    helmet === 'barbarian' && name !== 'none' ? `barbarian-${name}` : name
   if (initialHairAsset)
     hairOptions[initialHair] = bindModularPart(model, initialHairAsset.scene)
   const pendingHair = new Map<string, Promise<THREE.SkinnedMesh[]>>()
-  const loadHair = (name: string): Promise<THREE.SkinnedMesh[]> => {
-    if (hairOptions[name]) return Promise.resolve(hairOptions[name])
-    const pending = pendingHair.get(name)
+  const loadHair = (
+    name: string,
+    helmet = helmetOutfit
+  ): Promise<THREE.SkinnedMesh[]> => {
+    const key = hairKey(name, helmet)
+    if (hairOptions[key]) return Promise.resolve(hairOptions[key])
+    const pending = pendingHair.get(key)
     if (pending) return pending
     const promise = loader
-      .loadAsync(`/__female-preview/${name}.glb`)
+      .loadAsync(
+        key === name
+          ? `/__female-preview/${name}.glb`
+          : `/__modular-character/parts/female_barbarian_helmet_hair_${name}.glb`
+      )
       .then(({ scene: source }) => {
         if (disposed()) {
           disposeObjects([source])
@@ -177,18 +189,20 @@ export async function showFemaleBase(
         }
         const meshes = bindModularPart(model, source)
         for (const mesh of meshes) mesh.visible = false
-        hairOptions[name] = meshes
+        hairOptions[key] = meshes
         return meshes
       })
-      .finally(() => pendingHair.delete(name))
-    pendingHair.set(name, promise)
+      .finally(() => pendingHair.delete(key))
+    pendingHair.set(key, promise)
     return promise
   }
   let helmetEquipped = false
   const updateHair = () => {
     for (const [name, meshes] of Object.entries(hairOptions))
       for (const mesh of meshes)
-        mesh.visible = !helmetEquipped && hairSelect.value === name
+        mesh.visible =
+          (!helmetEquipped || helmetOutfit === 'barbarian') &&
+          hairKey(hairSelect.value) === name
   }
   updateHair()
   const swordGrip = animations.find((clip) => clip.name === 'idle_armed')
@@ -546,10 +560,20 @@ export async function showFemaleBase(
           status.textContent = '갑옷을 불러오는 중…'
           await load(requested)
         }
+        if (slot === 'helmet') {
+          do {
+            for (const mesh of await loadHair(hairSelect.value, requested))
+              collectMaterials(mesh)
+            if (disposed() || select.value !== requested) return
+          } while (!hairOptions[hairKey(hairSelect.value, requested)])
+          for (const material of materials)
+            material.wireframe = wireframe.checked
+        }
         if (disposed() || select.value !== requested) return
         const equipped = requested !== 'none'
         if (slot === 'boots') bootsEquipped = equipped
         if (slot === 'helmet') {
+          helmetOutfit = requested
           helmetEquipped = equipped
           updateHair()
           if (
@@ -572,6 +596,7 @@ export async function showFemaleBase(
         select.value = 'none'
         if (slot === 'boots') bootsEquipped = false
         if (slot === 'helmet') {
+          helmetOutfit = 'none'
           helmetEquipped = false
           updateHair()
           if (

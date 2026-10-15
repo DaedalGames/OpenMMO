@@ -164,6 +164,22 @@ function modularCharacterPreview(): Plugin {
       '../assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/body-occlusion.json',
       import.meta.url
     ),
+    female_barbarian_helmet: new URL(
+      '../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/helmet_female_barbarian.glb',
+      import.meta.url
+    ),
+    female_barbarian_helmet_hair_bob: new URL(
+      '../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair_bob_barbarian_helmet.glb',
+      import.meta.url
+    ),
+    female_barbarian_helmet_hair_knight: new URL(
+      '../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair_knight_barbarian_helmet.glb',
+      import.meta.url
+    ),
+    'female-barbarian-helmet-occlusion.json': new URL(
+      '../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/body-occlusion.json',
+      import.meta.url
+    ),
     female_knight_gloves: new URL(
       '../assets/items/female_knight_gloves/tripo_v1/fitted_v3/gloves_female_knight.glb',
       import.meta.url

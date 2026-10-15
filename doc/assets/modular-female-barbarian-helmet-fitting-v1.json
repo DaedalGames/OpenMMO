@@ -1,0 +1,111 @@
+{
+  "date": "2026-10-15",
+  "source": {
+    "path": "assets/items/female_barbarian_helmet/tripo_v2/source/model_url.glb",
+    "sha256": "7e1f9be83b2519e5f3e8a266a8dcb94029a8d8634aaf58945a08388f4af7da9f"
+  },
+  "body": {
+    "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+    "sha256": "9564457e8b23275aaf8cd0ff74c318baa4bbfa6b1c8afe608037cf7f40cf0982"
+  },
+  "output": {
+    "path": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/helmet_female_barbarian.glb",
+    "sha256": "ae8c47f1a44b6b0cdafcd0a844dc6a2d0735a8b8e522832ee320a19cde37a63b"
+  },
+  "rig_id": "human_female_01_local_v1",
+  "triangles": 2179,
+  "source_axis_mapping": "[-z, y, x]",
+  "scale_xyz": [
+    0.17750000000000002,
+    0.16,
+    0.17500000000000002
+  ],
+  "offset_xyz": [
+    0.0,
+    0.9647890625,
+    -0.006
+  ],
+  "brow_peak_y": 0.951,
+  "radial_center": [
+    0.0,
+    0.94,
+    -0.004
+  ],
+  "rays": 1422,
+  "rays_hitting_shell": 947,
+  "clearance_m": {
+    "required": 0.00306,
+    "minimum": 0.003231215320859102,
+    "median": 0.018002156149673522
+  },
+  "method": "Rotate the source +X front to +Z. Search per-axis scales (ratio within 1.12) and depth offset; the brow peak sits at BROW_PEAK_Y. Keep the smallest helmet whose inner shell clears the head and neck skin by CLEARANCE along every ray from the head center that meets the shell.",
+  "weights": "Head 100%; rigid helmet including horns and cheek guards",
+  "original_topology_uv_and_embedded_textures_preserved": true,
+  "status": "Candidate; preview-clip animation check passed (tools/validate-female-barbarian-helmet.mjs)",
+  "helmet_hair": {
+    "trim": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-trim.json",
+    "animation_validation": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-animation-validation.json",
+    "browser_validation": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-browser-validation.json",
+    "editable_blender": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/female-barbarian-helmet-hair-fitted.blend",
+    "review": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/review/helmet-hair-strip.png",
+    "scope": "Retain hair below the horned helmet opening; hide full hair for knight helmet; restore original selected hair on unequip. Original helmet and hair assets unchanged.",
+    "frames_per_hair": 239,
+    "minimum_clearance_m": {
+      "bob": 0.0011859516910773713,
+      "knight": 0.0006787107045519528
+    },
+    "triangle_counts": {
+      "bob": 1805,
+      "knight": 3707
+    },
+    "client_check": "passed: 0 errors, 0 warnings",
+    "client_lint": "passed",
+    "ear_refinement": {
+      "reason": "Retain the user-marked hair behind the cheek guard and ear. The original full-shell curtain cut too far down this region.",
+      "previous_hair_sha256": {
+        "bob": "9b1582add2725a323f222c47f60a7fad11c42eef754ea55058f940c7a2bcf4d4",
+        "knight": "c23ecc14ab706c5cc1e6bb23ca3f6e5676f0c3eb55b2bc156860a74309854a05"
+      },
+      "method": "Separate crown/back rim from cheek guard cut, restore behind-ear hair, and fit a shared continuous lateral-scale field against exact cheek guard triangle overlap constraints.",
+      "comparison": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/review/helmet-hair-ear-comparison.png",
+      "frames_per_hair": 239,
+      "crossings": 0
+    },
+    "cheek_gap_refinement": {
+      "reason": "The previous restoration stopped at z=0 and still removed outer side strands covering the skin below the cheek guard in a three-quarter view. Extend restoration to z=0.025 and retain guard fitting.",
+      "previous_bob_sha256": "99c99d16b210a3f358af974b3659436aacf645dd6bf527c309ca85880a467b8d",
+      "current_bob_sha256": "b4c5ccee83fa669b80cf26b8cd0dbcade46b15dc32185c5d099228a2c7619bd8",
+      "comparison": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/review/helmet-hair-cheek-comparison.png",
+      "browser_coverage": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-cheek-browser-validation.json",
+      "coverage_anchors": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-cheek-coverage-anchors.json",
+      "runtime_coverage": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-cheek-coverage-validation.json",
+      "browser_grid_rays": 696,
+      "exposed_skin_targets_before": 38,
+      "remaining_exposed_targets_after": 0,
+      "runtime_hair_first_before": 0,
+      "runtime_hair_first_after": 38
+    },
+    "tip_gap_refinement": {
+      "reason": "The z=0.025 restoration still clipped the outer strand below the cheek tip in the near-front view, exposing skin or the pale inner hair layer.",
+      "method": "Keep the existing upper cut; restore original strands to z=0.04 only below y=0.887. Retain the shared cheek-guard fit on both sides and both hairstyles.",
+      "previous_bob_sha256": "b4c5ccee83fa669b80cf26b8cd0dbcade46b15dc32185c5d099228a2c7619bd8",
+      "current_bob_sha256": "fc351d8e892285f79b416f789e9f3f0daf68af576b1b925d97101d76ade8978f",
+      "comparison": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/review/helmet-hair-tip-comparison.png",
+      "coverage_anchors": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-cheek-coverage-anchors.json",
+      "runtime_coverage": "assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-cheek-coverage-validation.json",
+      "near_front_grid_rays": 900,
+      "near_front_restored_surface_targets": 83,
+      "depth_tolerance_source_units": 0.001,
+      "regression_before": {
+        "covered": 38,
+        "samples": 121
+      },
+      "regression_after": {
+        "covered": 121,
+        "samples": 121
+      },
+      "frames_per_hair": 239,
+      "crossings": 0
+    }
+  }
+}
