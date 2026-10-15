@@ -6,147 +6,99 @@
   },
   "bottom": {
     "path": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb",
-    "sha256": "7003ddb09ebbfcd81b7dfef9987234b3f48c0244bfe18d4feae065c42f5128cb"
+    "sha256": "5ad9839a05049498cc106d0e1adf6602ce14d0ee89f3337e876ac23a2c8997a5"
   },
   "triangles": 3256,
-  "vertices": 4796,
+  "vertices": 4845,
   "bones": 65,
+  "parts": 5,
   "exact_bind_compatibility": true,
   "normalized_weights": true,
   "unchanged_rest_shape": true,
   "no_upper_body_influence": true,
-  "rigid_fittings": {
-    "pieces": 3,
-    "vertices": 1321,
-    "checked_edges": 2832
-  },
+  "physics_geometry_restored_on_dispose": true,
   "clips": [
     {
       "name": "idle1",
-      "samples": 121,
-      "maximum_motion": 0.06115343645140747,
-      "maximum_edge_length_ratio": 2.2721601139934093,
-      "maximum_rigid_edge_length_change": 4.194236136179086e-8,
-      "maximum_penetrating_vertices": 13,
-      "penetrating_regions_at_worst": {
-        "belt": 6,
-        "fur": 7,
-        "fittings": 0
-      },
-      "maximum_penetration": 0.004266903880199667
+      "samples": 17,
+      "maximum_edge_length_ratio": 1.4354886809942409,
+      "maximum_front_width_ratio": 1.0000000000000002,
+      "maximum_side_vertices_inside_thigh_collider": 0,
+      "before_front_width_ratio": 1.0349002969056205,
+      "before_side_vertices_inside_thigh_collider": 16
     },
     {
       "name": "idle_armed",
-      "samples": 121,
-      "maximum_motion": 0.06115343645140747,
-      "maximum_edge_length_ratio": 2.2721601139934093,
-      "maximum_rigid_edge_length_change": 4.194236136179086e-8,
-      "maximum_penetrating_vertices": 13,
-      "penetrating_regions_at_worst": {
-        "belt": 6,
-        "fur": 7,
-        "fittings": 0
-      },
-      "maximum_penetration": 0.004266903880199667
+      "samples": 17,
+      "maximum_edge_length_ratio": 1.4354886809942409,
+      "maximum_front_width_ratio": 1.0000000000000002,
+      "maximum_side_vertices_inside_thigh_collider": 0,
+      "before_front_width_ratio": 1.0349002969056205,
+      "before_side_vertices_inside_thigh_collider": 16
     },
     {
       "name": "walk",
-      "samples": 121,
-      "maximum_motion": 0.09652123676548917,
-      "maximum_edge_length_ratio": 4.297879104244377,
-      "maximum_rigid_edge_length_change": 1.0604352307375109e-7,
-      "maximum_penetrating_vertices": 166,
-      "penetrating_regions_at_worst": {
-        "belt": 14,
-        "fur": 152,
-        "fittings": 0
-      },
-      "maximum_penetration": 0.011481447049004438
+      "samples": 17,
+      "maximum_edge_length_ratio": 2.0328330088346043,
+      "maximum_front_width_ratio": 1.0000000000000004,
+      "maximum_side_vertices_inside_thigh_collider": 0,
+      "before_front_width_ratio": 1.0220816061760636,
+      "before_side_vertices_inside_thigh_collider": 12
     },
     {
       "name": "run",
-      "samples": 121,
-      "maximum_motion": 0.13138033202272328,
-      "maximum_edge_length_ratio": 6.395772953818039,
-      "maximum_rigid_edge_length_change": 1.0642176395680991e-7,
-      "maximum_penetrating_vertices": 559,
-      "penetrating_regions_at_worst": {
-        "belt": 41,
-        "fur": 511,
-        "fittings": 7
-      },
-      "maximum_penetration": 0.04186689264220105
+      "samples": 17,
+      "maximum_edge_length_ratio": 2.6220692371237853,
+      "maximum_front_width_ratio": 1.0000000000000002,
+      "maximum_side_vertices_inside_thigh_collider": 164,
+      "before_front_width_ratio": 1.014543855519375,
+      "before_side_vertices_inside_thigh_collider": 381
     },
     {
       "name": "jump",
-      "samples": 121,
-      "maximum_motion": 0.5185142066974768,
-      "maximum_edge_length_ratio": 5.350489578619988,
-      "maximum_rigid_edge_length_change": 1.2507156388341656e-7,
-      "maximum_penetrating_vertices": 1446,
-      "penetrating_regions_at_worst": {
-        "belt": 187,
-        "fur": 1190,
-        "fittings": 69
-      },
-      "maximum_penetration": 0.0677320614872979
+      "samples": 17,
+      "maximum_edge_length_ratio": 2.45318802235841,
+      "maximum_front_width_ratio": 1.0000000000000002,
+      "maximum_side_vertices_inside_thigh_collider": 169,
+      "before_front_width_ratio": 1.3149985426339559,
+      "before_side_vertices_inside_thigh_collider": 784
     },
     {
       "name": "combat_idle",
-      "samples": 121,
-      "maximum_motion": 0.20703285864471205,
-      "maximum_edge_length_ratio": 8.348317389878472,
-      "maximum_rigid_edge_length_change": 1.0477269785091892e-7,
-      "maximum_penetrating_vertices": 1038,
-      "penetrating_regions_at_worst": {
-        "belt": 69,
-        "fur": 926,
-        "fittings": 43
-      },
-      "maximum_penetration": 0.04979976224512202
+      "samples": 17,
+      "maximum_edge_length_ratio": 2.097637300944402,
+      "maximum_front_width_ratio": 1.0000000000000004,
+      "maximum_side_vertices_inside_thigh_collider": 6,
+      "before_front_width_ratio": 1.5206413937495216,
+      "before_side_vertices_inside_thigh_collider": 594
     },
     {
       "name": "slash1",
-      "samples": 121,
-      "maximum_motion": 0.3687162253148841,
-      "maximum_edge_length_ratio": 8.666392113491948,
-      "maximum_rigid_edge_length_change": 9.626636665593935e-8,
-      "maximum_penetrating_vertices": 1089,
-      "penetrating_regions_at_worst": {
-        "belt": 71,
-        "fur": 955,
-        "fittings": 63
-      },
-      "maximum_penetration": 0.06573337864687501
+      "samples": 17,
+      "maximum_edge_length_ratio": 2.9839511425646243,
+      "maximum_front_width_ratio": 1.0000000000000004,
+      "maximum_side_vertices_inside_thigh_collider": 139,
+      "before_front_width_ratio": 1.502091452385939,
+      "before_side_vertices_inside_thigh_collider": 636
     },
     {
       "name": "dying",
-      "samples": 121,
-      "maximum_motion": 0.8408184526427782,
-      "maximum_edge_length_ratio": 7.632150846590413,
-      "maximum_rigid_edge_length_change": 9.908729692309493e-8,
-      "maximum_penetrating_vertices": 1171,
-      "penetrating_regions_at_worst": {
-        "belt": 160,
-        "fur": 946,
-        "fittings": 65
-      },
-      "maximum_penetration": 0.08068829795840464
+      "samples": 17,
+      "maximum_edge_length_ratio": 3.1059608437001778,
+      "maximum_front_width_ratio": 1,
+      "maximum_side_vertices_inside_thigh_collider": 110,
+      "before_front_width_ratio": 1.478013064314879,
+      "before_side_vertices_inside_thigh_collider": 672
     },
     {
       "name": "sit_idle",
-      "samples": 121,
-      "maximum_motion": 0.2951817230729866,
-      "maximum_edge_length_ratio": 2.57725953903969,
-      "maximum_rigid_edge_length_change": 4.381315044099665e-8,
-      "maximum_penetrating_vertices": 945,
-      "penetrating_regions_at_worst": {
-        "belt": 121,
-        "fur": 788,
-        "fittings": 36
-      },
-      "maximum_penetration": 0.04438152137942165
+      "samples": 17,
+      "maximum_edge_length_ratio": 2.576599407748092,
+      "maximum_front_width_ratio": 0.7966987940179074,
+      "maximum_side_vertices_inside_thigh_collider": 286,
+      "before_front_width_ratio": 1.0019124515122193,
+      "before_side_vertices_inside_thigh_collider": 555
     }
   ],
-  "scope": "Runtime binding through bindModularPart, rest shape, finite deformation, rigid medallion/rings/loops, edge stretch reported, and penetration (>2 mm deeper than rest) against the nearest visible skin vertex along its skinned normal. Approximate: not a full mesh collision test."
+  "scope": "Runtime binding and existing pelt bending/collision across all base clips; front width, lower-panel edge stretch, finite deformation, collider overlap and disposal. Collider counts approximate body contact; not a triangle collision audit."
 }

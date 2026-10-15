@@ -9,6 +9,11 @@ import { poseOffHandProp } from '../lib/utils/handProps'
 import { bindModularPart } from '../lib/utils/modularCharacter'
 import { femaleOutfitMask } from '../lib/utils/female-outfit-mask'
 import { femaleBootGround } from '../lib/utils/female-boot-ground'
+import {
+  updatePeltPhysics,
+  resetPeltPhysics,
+  disposePeltPhysics,
+} from '../lib/effects/pelt-rig'
 
 export async function showFemaleBase(
   scene: THREE.Scene,
@@ -338,6 +343,7 @@ export async function showFemaleBase(
     time.disabled = pause.disabled = !action
     setPaused(false)
     updateAnimation(0)
+    resetPeltPhysics(model)
     if (select.value === 'full' || select.value.endsWith('-hand')) reset()
     updateStatus()
     updateStats()
@@ -374,6 +380,7 @@ export async function showFemaleBase(
     action.paused = false
     action.time = Number(time.value) * action.getClip().duration
     updateAnimation(0)
+    resetPeltPhysics(model)
     if (select.value.endsWith('-hand')) reset()
   }
   const skeleton = new THREE.SkeletonHelper(model)
@@ -425,6 +432,7 @@ export async function showFemaleBase(
     }
   }
   cleanup.push(() => outfitMask.dispose())
+  cleanup.push(() => disposePeltPhysics(model))
   const outfitSlots = ['top', 'bottom', 'boots', 'gloves', 'helmet']
   const outfitUpdates = outfitSlots.map((slot) => {
     const select = document.getElementById(
@@ -762,6 +770,7 @@ export async function showFemaleBase(
     }
     controls.update()
     updateGround()
+    updatePeltPhysics(model, paused ? 0 : delta)
     renderer.render(scene, camera)
   })
   const fieldset = document.getElementById(

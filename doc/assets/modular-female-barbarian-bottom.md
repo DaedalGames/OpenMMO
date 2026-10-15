@@ -84,23 +84,9 @@
 
 ### 검증
 
-`bindModularPart`로 결합해 9동작 × 121시점을 검사했다. 본·inverse bind 일치, 웨이트 정규화, 상체 본 영향 없음,
-강체 조각 변형 0. 관통(휴지 자세보다 2mm 이상 깊어진 정점, 가장 가까운 피부 정점 기준 근사)은 아래와 같다.
-
-| 동작 | 관통 정점 | 최대 깊이 | 모서리 최대 늘어남 |
-| --- | --- | --- | --- |
-| 대기 | 13 | 0.4cm | 2.3배 |
-| 걷기 | 166 | 1.1cm | 4.3배 |
-| 달리기 | 559 | 4.2cm | 6.4배 |
-| 점프 | 1,446 | 6.8cm | 5.4배 |
-| 전투 대기 | 1,038 | 5.0cm | 8.3배 |
-| 베기 | 1,089 | 6.6cm | 8.7배 |
-| 쓰러지기 | 1,171 | 8.1cm | 7.6배 |
-| 앉기 | 945 | 4.4cm | 2.6배 |
-
-큰 동작의 관통은 대부분 모피 판이다. 다리를 크게 들면 허벅지가 판을 뚫고, 다리를 벌리면 앞 가운데 판이 양 다리 사이에서 늘어난다.
-위 표는 아래 안쪽 면·허리선 보정과 가림 재계산 후의 값이다. 안쪽 면과 검사에 사용되는 가시 몸체 정점이 바뀌어 근사 관통 집계는 일부 늘었지만,
-휴지 자세의 실제 몸체 표면 검사에서는 관통 0, 최소 간격 1mm를 유지한다.
+초기 피부 웨이트 전사는 다리를 벌릴 때 앞 판을 좌우로 늘리고 옆 판을 허벅지 안으로 끌어들였다.
+큰 동작의 모피 관통도 있었다. 현재 판별 굽힘·충돌 검증은 아래 마지막 보정 항목과
+[동작 검사](modular-female-barbarian-bottom-animation-v1.json)에 기록한다.
 
 ### 뒤 벨트 안쪽 면 보정 v2 — 2026-10-15
 
@@ -142,12 +128,37 @@
   [몸체 간격 검증](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/waistband_repair_v1/rest-clearance.json),
   [재현 스크립트](../../tools/fit-female-barbarian-waistband.py).
 
+### 전투 대기에서 모피 판 변형 보정 — 2026-10-15
+
+![전투 대기 보정 후](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_weights_v1/review/combat.png)
+
+허리띠·버클·고리, 앞 판과 땋은 끈, 뒤 판, 왼쪽 판, 오른쪽 판을 5개 스킨 메시로 나눴다.
+삼각형 3,256개, 내보낸 정점 4,845개(경계 복제 49개), 각 메시의 여성 리그는 동일한 65본이다.
+원본 면의 위치·UV·텍스처는 유지했다. 원래 허리띠로 분류됐지만 실제 높이가 0.575m 아래인 연결부도 모피 판에 포함해 이음이 벌어지지 않게 했다.
+
+기존 `pelt_physics`의 굽힘·허벅지 충돌을 모피 4판에 연결했다. 판은 골반에 매달고,
+허벅지를 크게 벌리면 접히며 바깥으로 올라간다. 고정된 웨이트만 바꾸거나 휴지 자세의 판을 돌리는 시도는
+들림·관통 또는 기본 모양의 변화를 만들어 채택하지 않았다. 위쪽 2.5cm는 원래 피부 웨이트를 유지해 허리띠 연결을 보존한다.
+여성 미리보기에도 같은 물리 갱신·동작 전환/시점 조정 시 초기화·해제 시 정리를 연결했다.
+
+9동작 × 17시점에서 원본 모델과 같은 허벅지 충돌체로 비교했다. 전투 대기의 앞 판 폭은 기준 대비
+**1.52배 → 1.00배**, 충돌체 안쪽 옆 판 정점은 **594 → 6개**로 줄었다. 대기·걷기의 옆 판 충돌체 겹침은 0개다.
+달리기·점프·앉기 등 큰 동작에는 일부 겹침이 남는다. 충돌체는 실제 몸체를 근사하므로 전체 삼각형 관통 검사와는 다르다.
+본 결합, 웨이트 정규화, 유한 변형과 물리 해제 시 원래 지오메트리 복원을 검증했다.
+클라이언트 check/lint와 모피·로브·모듈 결합 테스트 54개를 통과했다.
+
+- [기본 자세](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_weights_v1/review/rest.png),
+  [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_weights_v1/repair.json),
+  [재현용 입력](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_weights_v1/before.glb),
+  [재현 스크립트](../../tools/weight-female-barbarian-panels.py).
+- 원래 Tripo 결과를 재사용했으며 새 이미지·3D 생성 요청과 비용은 없다.
+
 ### 남은 문제
 
 - 기본 몸체 피부에 하의 속옷이 구워져 있어 팬티 메시를 숨겨도 같은 흰색이 보인다. 그래서 틈은 메워서 막았다.
 - 뒤 허리띠의 가죽 이음 무늬는 원본 그대로다. 철판 위 검은 삼각형과 안쪽 면의 겹침은 위 형상 보정으로 수정했다.
 - 앞 가운데 판 끝은 무릎 위 약 5cm다. 원화보다 조금 길다.
-- 큰 동작의 모피 관통과 늘어남(위 표).
+- 큰 동작의 모피 관통과 일부 이음 변형(동작 검사 참조).
 
 | 용도 | 파일 |
 | --- | --- |
@@ -167,6 +178,7 @@ blender -b --python-exit-code 1 -P tools/blender-scripts/fit_female_barbarian_bo
 .venv/bin/python tools/rig-female-knight-top-v2.py assets/items/female_barbarian_bottom/tripo_v1/fitted_v1 bottom_female_barbarian doc/assets/modular-female-barbarian-bottom-fitting-v1.json 1
 .venv/bin/python tools/fix-female-barbarian-belt.py assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb
 .venv/bin/python tools/fit-female-barbarian-waistband.py assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb
+.venv/bin/python tools/weight-female-barbarian-panels.py assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb
 .venv/bin/python tools/outfits/female_barbarian_bottom_occlusion.py
 node tools/validate-female-barbarian-bottom.mjs
 blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_barbarian_bottom.py

@@ -20,16 +20,23 @@ REACH = .012
 INSET = .01
 
 
-def mesh(path):
+def mesh(path, all_parts=False):
     doc, binary = read_glb(path)
-    primitive = doc['meshes'][0]['primitives'][0]
-    attributes = primitive['attributes']
-    return (doc, accessor(doc, binary, attributes['POSITION']), accessor(doc, binary, attributes['NORMAL']),
-            accessor(doc, binary, primitive['indices']).reshape(-1, 3))
+    points, normals, faces = [], [], []
+    offset = 0
+    for part in doc['meshes'] if all_parts else doc['meshes'][:1]:
+        primitive = part['primitives'][0]
+        attributes = primitive['attributes']
+        vertices = accessor(doc, binary, attributes['POSITION'])
+        points.append(vertices)
+        normals.append(accessor(doc, binary, attributes['NORMAL']))
+        faces.append(accessor(doc, binary, primitive['indices']).reshape(-1, 3) + offset)
+        offset += len(vertices)
+    return doc, np.concatenate(points), np.concatenate(normals), np.concatenate(faces)
 
 
 doc, p, n, f = mesh(BODY)
-_, bottom_points, _, bottom_faces = mesh(BOTTOM)
+_, bottom_points, _, bottom_faces = mesh(BOTTOM, all_parts=True)
 _, welded = np.unique(np.round(p, 6), axis=0, return_inverse=True)
 welded = welded.ravel()
 edges = welded[f[:, [0, 1, 1, 2, 2, 0]].reshape(-1, 2)]

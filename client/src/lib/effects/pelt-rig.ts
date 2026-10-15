@@ -10,6 +10,7 @@ export interface PeltPhysics {
   pivot: [number, number, number]
   outward: [number, number, number]
   length: number
+  attachment_depth?: number
   cloth?: { columns: number; rows: number; pinned_rows: number }
   bend?: {
     droop: number
@@ -136,6 +137,11 @@ export function createPeltRig(
     'skinWeight'
   ) as THREE.BufferAttribute
   for (let i = 0; i < rest.count; i++) {
+    if (
+      config.attachment_depth !== undefined &&
+      rest.getY(i) > pivot.y - config.attachment_depth
+    )
+      continue
     skinIndex.setXYZW(i, bone, 0, 0, 0)
     skinWeight.setXYZW(i, 1, 0, 0, 0)
   }

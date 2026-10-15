@@ -84,6 +84,39 @@ function worldVertex(mesh: THREE.SkinnedMesh, i: number) {
 }
 
 describe('pelt physics', () => {
+  it('preserves the skin attachment while letting the lower pelt follow its physics bone', () => {
+    const { root, hip, mesh } = fixture()
+    const thigh = new THREE.Bone()
+    thigh.name = 'LeftUpLeg'
+    hip.add(thigh)
+    root.updateMatrixWorld(true)
+    mesh.bind(new THREE.Skeleton([hip, thigh]))
+    const original = mesh.geometry
+    const positions = original.getAttribute('position')
+    const joints = original.getAttribute('skinIndex') as THREE.BufferAttribute
+    const weights = original.getAttribute('skinWeight') as THREE.BufferAttribute
+    for (let i = 0; i < positions.count; i++) {
+      joints.setXYZW(i, 0, 1, 0, 0)
+      weights.setXYZW(i, 0.3, 0.7, 0, 0)
+    }
+    const rig = createPeltRig(mesh, { ...config, attachment_depth: 0.06 })
+    const activeJoints = mesh.geometry.getAttribute('skinIndex')
+    const activeWeights = mesh.geometry.getAttribute('skinWeight')
+    for (let i = 0; i < positions.count; i++) {
+      if (positions.getY(i) > config.pivot[1] - 0.06) {
+        expect(activeJoints.getY(i)).toBe(1)
+        expect(activeWeights.getY(i)).toBeCloseTo(0.7)
+      } else {
+        expect(activeJoints.getX(i)).toBe(0)
+        expect(activeWeights.getX(i)).toBe(1)
+        expect(activeWeights.getY(i)).toBe(0)
+      }
+    }
+    rig.dispose()
+    expect(mesh.geometry).toBe(original)
+    expect(weights.getY(positions.count - 1)).toBeCloseTo(0.7)
+  })
+
   it('releases a covered pelt before fitting and resumes its original simulation after uncovering', () => {
     const { root, mesh } = softFixture('fur')
     const original = mesh.geometry
