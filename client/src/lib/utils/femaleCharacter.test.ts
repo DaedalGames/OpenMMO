@@ -18,6 +18,8 @@ import {
 import { skinnedParts } from './modularCharacter'
 import { FEMALE_BOOTS_PARTS, FEMALE_BOOTS_PROPERTY } from './femaleCharacter'
 import { poseMainHandProp } from './handProps'
+import { updatePeltPhysics } from '../effects/pelt-rig'
+import { robeBaseSkeleton } from '../effects/robe-rig'
 
 vi.mock('./gltfCache', async (importOriginal) => {
   const original = await importOriginal<typeof import('./gltfCache')>()
@@ -185,6 +187,92 @@ describe('female modular starter outfits', () => {
       }
     }
   )
+  it.skipIf(!hasAssets)(
+    'shares static skirt buffers and one hem skeleton per wearer across ten wearers',
+    async () => {
+      const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
+      const characters = []
+      for (let i = 0; i < 10; i++) {
+        const { modelRoot } = createCharacterModelRoot(source.scene)
+        await applyCharacterArmor(modelRoot, barbarian)
+        const panels = skinnedParts(modelRoot).filter(
+          (mesh) => mesh.userData.pelt_physics
+        )
+        const originals = panels.map((mesh) => mesh.geometry)
+        const base = panels[0].skeleton
+        modelRoot.position.x = i * 0.7
+        updatePeltPhysics(modelRoot, 0)
+        expect(panels).toHaveLength(4)
+        for (const panel of panels) {
+          expect(panel.userData.robe_physics).toBeDefined()
+          expect(panel.skeleton).toBe(panels[0].skeleton)
+          expect(robeBaseSkeleton(panel)).toBe(base)
+        }
+        expect(panels[0].skeleton.bones).toHaveLength(base.bones.length + 8)
+        characters.push({ modelRoot, panels, originals })
+      }
+      const first = characters[0]
+      for (const { panels } of characters.slice(1))
+        for (let i = 0; i < panels.length; i++) {
+          expect(panels[i].geometry).toBe(first.panels[i].geometry)
+          expect(panels[i].skeleton).not.toBe(first.panels[i].skeleton)
+        }
+      const attributes = first.panels.flatMap((panel) =>
+        Object.values(panel.geometry.attributes).map((attribute) => {
+          const buffer =
+            attribute instanceof THREE.InterleavedBufferAttribute
+              ? attribute.data
+              : attribute
+          return { attribute: buffer, version: buffer.version }
+        })
+      )
+      const reference = new THREE.SkinnedMesh()
+      const actual = new THREE.Vector3(),
+        expected = new THREE.Vector3()
+      let movement = 0
+      const hem = first.originals[0].getAttribute('position')
+      let lower = 0
+      for (let i = 1; i < hem.count; i++)
+        if (hem.getY(i) < hem.getY(lower)) lower = i
+      const initial = first.panels[0].getVertexPosition(
+        lower,
+        new THREE.Vector3()
+      )
+      for (let frame = 0; frame < 60; frame++) {
+        first.modelRoot.getObjectByName('LeftUpLeg')!.rotation.x =
+          -Math.sin(frame / 15) * 0.8
+        first.modelRoot.getObjectByName('RightUpLeg')!.rotation.x =
+          Math.sin(frame / 15) * 0.8
+        for (const { modelRoot } of characters)
+          updatePeltPhysics(modelRoot, 1 / 60)
+        movement = Math.max(
+          movement,
+          first.panels[0].getVertexPosition(lower, actual).distanceTo(initial)
+        )
+        for (const [i, panel] of first.panels.entries()) {
+          reference.geometry = first.originals[i]
+          reference.bind(robeBaseSkeleton(panel), panel.bindMatrix)
+          for (const vertex of panel.userData.pelt_physics.attachment_vertices)
+            expect(
+              panel
+                .getVertexPosition(vertex, actual)
+                .distanceTo(reference.getVertexPosition(vertex, expected))
+            ).toBeLessThan(1e-6)
+        }
+      }
+      expect(movement).toBeGreaterThan(0.01)
+      for (const { attribute, version } of attributes)
+        expect(attribute.version).toBe(version)
+      for (const { modelRoot, panels, originals } of characters) {
+        disposeCharacterSkeletons(modelRoot)
+        for (const [i, panel] of panels.entries()) {
+          expect(panel.geometry).toBe(originals[i])
+          expect(panel.skeleton.bones).toHaveLength(65)
+        }
+      }
+    }
+  )
+
   it.skipIf(!hasAssets)(
     'plays baked runtime motions with a rigid helmet and finite boot correction',
     async () => {

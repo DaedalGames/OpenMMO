@@ -55,6 +55,27 @@ function bakeDimensions(doc) {
     })
   }
 }
+// The four fur panels hang from one shared hem rig, so they get one waist and ellipse.
+function bakeSkirtRobe(doc) {
+  const panels = doc.getRoot().listNodes().filter(node => node.getExtras().pelt_physics)
+  const configs = panels.map(node => node.getExtras().pelt_physics)
+  const front = Math.max(...configs.map(c => c.pivot[2]))
+  const back = Math.min(...configs.map(c => c.pivot[2]))
+  const shared = {
+    waist_height_m: Math.max(...configs.map(c => c.pivot[1])),
+    center_z_m: (front + back) / 2,
+    waist_radii_m: [Math.max(...configs.map(c => Math.abs(c.pivot[0]))), (front - back) / 2],
+  }
+  for (const [i, node] of panels.entries()) {
+    const c = configs[i]
+    node.setExtras({ ...node.getExtras(), robe_physics: {
+      ...shared,
+      hem_height_m: c.pivot[1] - c.length,
+      driven_below_m: c.pivot[1] - (c.attachment_depth ?? 0),
+      fixed_vertices: c.attachment_vertices,
+    } })
+  }
+}
 const sources = {
   base: 'assets/modular_human_female_01/rig_v1/female-base.glb',
   hair: 'assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb',
@@ -134,6 +155,7 @@ for (const [name, source] of Object.entries(sources)) {
   }
   doc.createExtension(EXTTextureWebP).setRequired(true)
   bakeDimensions(doc)
+  if (name === 'barbarian_bottom') bakeSkirtRobe(doc)
   // Fitting sources carry unreferenced accessors from earlier iterations.
   await doc.transform(prune({ propertyTypes: [PropertyType.ACCESSOR], keepAttributes: true, keepIndices: true }))
   const path = `${output}/${name}.glb`

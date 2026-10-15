@@ -56,6 +56,16 @@ export function createPeltBend(
     }
   }
   const links = [...edges.values()]
+  const free = links.filter(({ a, b }) => weights[a] + weights[b])
+  const linkA = Int32Array.from(free, ({ a }) => a * 3)
+  const linkB = Int32Array.from(free, ({ b }) => b * 3)
+  const linkLength = Float64Array.from(free, ({ length }) => length)
+  const shareA = Float64Array.from(
+    free,
+    ({ a, b }) => weights[a] / (weights[a] + weights[b])
+  )
+  const xyz = new Float64Array(rest.length * 3)
+  const settled = 1e-5 * unit
   const median = (values: number[]) => {
     values.sort((a, b) => a - b)
     return values[Math.floor(values.length / 2)]
@@ -180,29 +190,67 @@ export function createPeltBend(
     return point.add(pivot)
   }
 
-  function constrain(angle: number, contact?: (point: THREE.Vector3) => void) {
-    for (let i = 0; i < positions.count; i++)
-      points[ids[i]].fromBufferAttribute(positions, i)
-    for (let iteration = 0; iteration < (contact ? 512 : 128); iteration++) {
-      if (contact && iteration % 8 === 0)
-        for (let i = 0; i < points.length; i++)
-          if (weights[i]) contact(points[i])
-      for (const { a, b, length } of links) {
-        const weight = weights[a] + weights[b]
-        if (!weight) continue
-        delta.copy(points[b]).sub(points[a])
-        const distance = delta.length()
-        if (distance < 1e-10) continue
-        const target = THREE.MathUtils.clamp(
-          distance,
-          0,
-          length * (contact ? 1.02 : 1.01)
-        )
-        delta.multiplyScalar((distance - target) / (distance * weight))
-        if (weights[a]) points[a].add(delta)
-        if (weights[b]) points[b].sub(delta)
+  function push(contact: (point: THREE.Vector3) => void) {
+    let pushed = false
+    for (let i = 0; i < points.length; i++) {
+      if (!weights[i]) continue
+      const p = points[i].fromArray(xyz, i * 3)
+      const x = p.x,
+        y = p.y,
+        z = p.z
+      contact(p)
+      if (Math.abs(p.x - x) + Math.abs(p.y - y) + Math.abs(p.z - z) > settled) {
+        p.toArray(xyz, i * 3)
+        pushed = true
       }
     }
+    return pushed
+  }
+
+  function relax(stretch: number) {
+    let moved = false
+    for (let k = 0; k < linkLength.length; k++) {
+      const a = linkA[k],
+        b = linkB[k]
+      const dx = xyz[b] - xyz[a],
+        dy = xyz[b + 1] - xyz[a + 1],
+        dz = xyz[b + 2] - xyz[a + 2]
+      const distanceSq = dx * dx + dy * dy + dz * dz
+      const maximum = linkLength[k] * stretch
+      if (distanceSq <= (maximum + settled) ** 2) continue
+      moved = true
+      const scale = 1 - maximum / Math.sqrt(distanceSq)
+      const moveA = scale * shareA[k]
+      const moveB = scale - moveA
+      xyz[a] += dx * moveA
+      xyz[a + 1] += dy * moveA
+      xyz[a + 2] += dz * moveA
+      xyz[b] -= dx * moveB
+      xyz[b + 1] -= dy * moveB
+      xyz[b + 2] -= dz * moveB
+    }
+    return moved
+  }
+
+  function constrain(angle: number, contact?: (point: THREE.Vector3) => void) {
+    for (let i = 0; i < positions.count; i++) {
+      const offset = ids[i] * 3
+      xyz[offset] = positions.getX(i)
+      xyz[offset + 1] = positions.getY(i)
+      xyz[offset + 2] = positions.getZ(i)
+    }
+    const stretch = contact ? 1.02 : 1.01
+    let relaxed = false
+    for (let pass = 0; pass < (contact ? 64 : 1); pass++) {
+      if (contact && !push(contact) && relaxed) break
+      relaxed = false
+      for (let step = 0; step < (contact ? 8 : 128); step++)
+        if (!relax(stretch)) {
+          relaxed = true
+          break
+        }
+    }
+    for (let i = 0; i < points.length; i++) points[i].fromArray(xyz, i * 3)
     if (!pinned.size) {
       rotation.setFromAxisAngle(axis, angle)
       for (let i = 0; i < rest.length; i++)

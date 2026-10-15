@@ -1,0 +1,288 @@
+{
+  "date": "2026-10-16",
+  "target": "60 FPS rendering with ten skirted female barbarians; prioritize runtime cost over precise cloth collision.",
+  "strategy": {
+    "implementation": "Reuse the existing bone-driven robe rig for the four female barbarian skirt panels. The panels share one waist hinge baked by tools/prepare-female-knight.mjs, so each character gets one extended skeleton. Preserve authored attachment vertices and the top attachment band.",
+    "physics_hz": 30,
+    "shared_static_skirt_geometries_for_ten_characters": 4,
+    "per_frame_skirt_vertex_uploads": 0,
+    "tradeoff": "Approximate thigh-driven hem clearance and spring motion replace per-vertex collision and length constraints. Detailed folds and exact body contact are reduced.",
+    "control_bones_per_character": 8,
+    "robe_skeletons_per_character": 1
+  },
+  "method": "Game-scale female barbarians with baked boots tracks; one local at 60 Hz, remaining characters on the game remote scheduler at 30 Hz. 30 warmup and 120 measured frames per clip. mean/median/p95 cover aggregate CPU physics including world matrices; animation_and_physics_mean_ms also includes mixers and scheduling. Rendering is excluded; these are CPU costs, not game FPS.",
+  "runtime": "v25.2.1",
+  "scope": "CPU timings include world matrices and the actual local/remote scheduling. They exclude rendering, terrain, vegetation and buildings. They do not establish full Haramen FPS on the user browser.",
+  "reproduce": [
+    "node tools/benchmark-female-barbarian.mjs --count=1 --output=/tmp/female-single.json",
+    "node tools/benchmark-female-barbarian.mjs --count=10 --legacy --output=/tmp/female-crowd-before.json",
+    "node tools/benchmark-female-barbarian.mjs --count=10 --output=/tmp/female-crowd-after.json"
+  ],
+  "sources": [
+    {
+      "path": "client/public/models/characters/modular_female/base.glb",
+      "sha256": "32a0f977374a9b5092b926143ec546b422ab7bb5ee25f3f2c8a79d5a04291b1f"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/hair.glb",
+      "sha256": "34ddcf1e70c0fab40a4fc41cffd116c9f9e7cc73544373c2db2a3aa5e1bbc221"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/top.glb",
+      "sha256": "00315cbb76128a072d4b4ee5214997eb41b66b684feb173df8f6b160f22fe981"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/bottom.glb",
+      "sha256": "c1c4abd2239f7c6574e6805ed2642323f56aa9183fb826e88f1d1f163259babb"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/boots.glb",
+      "sha256": "d0db119d8113fa65fba22e8845fa9573177b9128052004d33446202447d87433"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/gloves.glb",
+      "sha256": "2e78b0cd19e292aaf4cdbb0dc0f8ff9a95da1f6e5925bf0d2e2421a04a09c28b"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/helmet.glb",
+      "sha256": "c6987102ca10d2eb13af94f561de2546d90abd13590defd553d13dfa9eacd1ba"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/barbarian_hair.glb",
+      "sha256": "99e10fc3fb56b52fc92617d8191cb977b3bddac022e0b339670dd3038d591fcf"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/barbarian_top.glb",
+      "sha256": "3b047a7863d26aa19a62a554a7be11004636c1972738cae68552eb4073c95582"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/barbarian_bottom.glb",
+      "sha256": "f922b4433342776677f65d7419c789c69ec8e9a1bf743741411fc323e6c26de9"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/barbarian_boots.glb",
+      "sha256": "dee6da5c6e773946ccc0ae2f68a076baba2b3bc9dd89fb40edd02f27adf57d6a"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/barbarian_gloves.glb",
+      "sha256": "1df7afe0567aa26899c1b23b9856d53b9ee0cd58cc30c2550f9907847ff1e755"
+    },
+    {
+      "path": "client/public/models/characters/modular_female/barbarian_helmet.glb",
+      "sha256": "6f767590d72491e8cb9312dfd9b8314e5bb64581da8495fb4061bc000fa1edd5"
+    }
+  ],
+  "code_sources": [
+    {
+      "path": "client/src/lib/utils/femaleCharacter.ts",
+      "sha256": "0f8fd2d041b906a80176299bf1d03ab8e1e1a0422bb66c0b1980073dd533d040"
+    },
+    {
+      "path": "client/src/lib/effects/robe-rig.ts",
+      "sha256": "d337b45ab6a71405c55dddaa0972d43411e20a166325e2d4d04c670d1d5e9022"
+    },
+    {
+      "path": "client/src/lib/effects/secondary-motion-scheduler.ts",
+      "sha256": "8ce8ad60c639da2fbde7a34a532237ef5d4cbc6235ac9fe7d551ece797838098"
+    },
+    {
+      "path": "tools/benchmark-female-barbarian.mjs",
+      "sha256": "f7e7296174369fbabc3c6d4b80eb4afad8ae0b5fd71c93c6fc5a76231df9d92e"
+    },
+    {
+      "path": "tools/prepare-female-knight.mjs",
+      "sha256": "d274bc03316a7b7a8c6c649845d76e32eda335aae944efd079123cc1155ff431"
+    }
+  ],
+  "single_character_physics": [
+    {
+      "clip": "idle1",
+      "frames": 120,
+      "mean_ms": 0.01641829166666374,
+      "median_ms": 0.01758299999994506,
+      "p95_ms": 0.023144000000002052
+    },
+    {
+      "clip": "walk",
+      "frames": 120,
+      "mean_ms": 0.014240700000001046,
+      "median_ms": 0.013635000000022046,
+      "p95_ms": 0.019416000000035183
+    },
+    {
+      "clip": "run",
+      "frames": 120,
+      "mean_ms": 0.012612708333332516,
+      "median_ms": 0.013054000000011001,
+      "p95_ms": 0.014155999999957203
+    },
+    {
+      "clip": "combat_idle",
+      "frames": 120,
+      "mean_ms": 0.012419558333332267,
+      "median_ms": 0.012664000000029318,
+      "p95_ms": 0.014518000000009579
+    },
+    {
+      "clip": "slash1",
+      "frames": 120,
+      "mean_ms": 0.01230047499999974,
+      "median_ms": 0.012693999999953576,
+      "p95_ms": 0.013414999999952215
+    },
+    {
+      "clip": "sit_idle",
+      "frames": 120,
+      "mean_ms": 0.012173541666663823,
+      "median_ms": 0.012624000000016622,
+      "p95_ms": 0.013384999999971114
+    }
+  ],
+  "ten_characters": [
+    {
+      "clip": "idle1",
+      "frames": 120,
+      "before": {
+        "clip": "idle1",
+        "frames": 120,
+        "mean_ms": 22.061014524999973,
+        "median_ms": 23.420195999999578,
+        "p95_ms": 24.765515999999934,
+        "animation_and_physics_mean_ms": 22.111644666666677
+      },
+      "after": {
+        "clip": "idle1",
+        "frames": 120,
+        "mean_ms": 0.07876909166666385,
+        "median_ms": 0.08246600000001081,
+        "p95_ms": 0.09106100000008155,
+        "animation_and_physics_mean_ms": 0.11530130000000204
+      },
+      "physics_mean_reduction_percent": 99.64294891525772
+    },
+    {
+      "clip": "walk",
+      "frames": 120,
+      "before": {
+        "clip": "walk",
+        "frames": 120,
+        "mean_ms": 29.057258675000032,
+        "median_ms": 28.588777999999365,
+        "p95_ms": 35.98036300000149,
+        "animation_and_physics_mean_ms": 29.104521766666714
+      },
+      "after": {
+        "clip": "walk",
+        "frames": 120,
+        "mean_ms": 0.07906554999999477,
+        "median_ms": 0.0837060000000065,
+        "p95_ms": 0.09046200000000226,
+        "animation_and_physics_mean_ms": 0.12209070833333252
+      },
+      "physics_mean_reduction_percent": 99.72789742183072
+    },
+    {
+      "clip": "run",
+      "frames": 120,
+      "before": {
+        "clip": "run",
+        "frames": 120,
+        "mean_ms": 34.28597499999981,
+        "median_ms": 34.21267700000135,
+        "p95_ms": 39.92596400000002,
+        "animation_and_physics_mean_ms": 34.350426800000044
+      },
+      "after": {
+        "clip": "run",
+        "frames": 120,
+        "mean_ms": 0.0785536750000053,
+        "median_ms": 0.08405799999997043,
+        "p95_ms": 0.09124199999996563,
+        "animation_and_physics_mean_ms": 0.12386585833333186
+      },
+      "physics_mean_reduction_percent": 99.77088685679784
+    },
+    {
+      "clip": "combat_idle",
+      "frames": 120,
+      "before": {
+        "clip": "combat_idle",
+        "frames": 120,
+        "mean_ms": 44.76162902500023,
+        "median_ms": 48.41259800000262,
+        "p95_ms": 49.31777300000249,
+        "animation_and_physics_mean_ms": 44.834029525000126
+      },
+      "after": {
+        "clip": "combat_idle",
+        "frames": 120,
+        "mean_ms": 0.08796485833333302,
+        "median_ms": 0.08246599999989712,
+        "p95_ms": 0.08970900000002757,
+        "animation_and_physics_mean_ms": 0.12705080833332782
+      },
+      "physics_mean_reduction_percent": 99.80348155272856
+    },
+    {
+      "clip": "slash1",
+      "frames": 120,
+      "before": {
+        "clip": "slash1",
+        "frames": 120,
+        "mean_ms": 43.25983603333319,
+        "median_ms": 41.67847400000028,
+        "p95_ms": 49.16623800000161,
+        "animation_and_physics_mean_ms": 43.328104683333095
+      },
+      "after": {
+        "clip": "slash1",
+        "frames": 120,
+        "mean_ms": 0.07573097499999287,
+        "median_ms": 0.08216400000003432,
+        "p95_ms": 0.08494999999999209,
+        "animation_and_physics_mean_ms": 0.11693290833333046
+      },
+      "physics_mean_reduction_percent": 99.82493929255386
+    },
+    {
+      "clip": "sit_idle",
+      "frames": 120,
+      "before": {
+        "clip": "sit_idle",
+        "frames": 120,
+        "mean_ms": 41.30165264166723,
+        "median_ms": 44.87910400000328,
+        "p95_ms": 45.191162999999506,
+        "animation_and_physics_mean_ms": 41.3432596166667
+      },
+      "after": {
+        "clip": "sit_idle",
+        "frames": 120,
+        "mean_ms": 0.07594875000000106,
+        "median_ms": 0.08176500000007536,
+        "p95_ms": 0.0849510000000464,
+        "animation_and_physics_mean_ms": 0.1015206583333357
+      },
+      "physics_mean_reduction_percent": 99.81611207992346
+    }
+  ],
+  "validation": {
+    "related_tests_passed": 601,
+    "typecheck_passed": true,
+    "lint_passed": true,
+    "ten_character_regression": "Skirt geometry is shared across characters; the four panels of one character share one extended skeleton while characters stay independent. Attachment skinning matches the original within 1e-6, all attribute buffer versions stay unchanged over 60 moving frames, disposal restores the original geometry and 65-bone skeleton.",
+    "webgpu": {
+      "environment": "Headless Chromium 1208; WebGPU Vulkan/SwiftShader, 400x400, shadows and asynchronous pipeline preparation.",
+      "scenario": "Ten animated female barbarians; pipeline warmup before physics; 51 frames including armor removal, plus re-equipping before a screenshot.",
+      "backend_draw_calls": 12621,
+      "gpu_errors": 0,
+      "console_errors": 0,
+      "pipeline_layout_mismatches": 0,
+      "missing_shader_attributes": 0,
+      "shared_skirt_geometries": 4,
+      "aggregate_physics_mean_ms": 0.3967742035465856,
+      "scope": "Rendering correctness and buffer sharing; software GPU timings are not a full-town hardware FPS benchmark.",
+      "note": "Measured before the panels shared one hem skeleton; not rerun."
+    }
+  }
+}

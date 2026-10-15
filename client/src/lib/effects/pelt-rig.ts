@@ -104,6 +104,7 @@ export function createPeltRig(
       .makeScale(...shape.radii)
       .setPosition(...shape.center),
     inverse: new THREE.Matrix4(),
+    forward: new THREE.Matrix4(),
     world: new THREE.Matrix4(),
     worldInverse: new THREE.Matrix4(),
   }))
@@ -137,7 +138,6 @@ export function createPeltRig(
   const anchor = new THREE.Vector3()
   const lastAnchor = new THREE.Vector3()
   const anchorShift = new THREE.Vector3()
-  const contactDirection = new THREE.Vector3()
   const maxAngle = config.motion?.max_angle ?? MAX_ANGLE
   const samples = new Map<string, THREE.Vector3>()
   const sample = (p: THREE.Vector3) => {
@@ -175,8 +175,15 @@ export function createPeltRig(
   }
   for (const attr of [position, normals, tangents])
     attr?.setUsage(THREE.DynamicDrawUsage)
+  const layoutChanged =
+    original.hasAttribute('tangent') !== geometry.hasAttribute('tangent')
+  // WebGPU keeps the old pipeline on a geometry swap unless the object is disposed.
+  const relink = () => {
+    if (layoutChanged) mesh.dispose()
+  }
   const culled = mesh.frustumCulled
   mesh.geometry = geometry
+  relink()
   mesh.frustumCulled = false
   let initialized = false
   let active = true
@@ -231,6 +238,8 @@ export function createPeltRig(
       shape.world.copy(matrix)
       shape.worldInverse.copy(matrix).invert()
       shape.inverse.copy(shape.worldInverse).multiply(frame)
+      if (config.bend?.contact)
+        shape.forward.copy(inverseFrame).multiply(shape.world)
     }
   }
 
@@ -347,17 +356,14 @@ export function createPeltRig(
   }
 
   function bendContact(p: THREE.Vector3) {
-    p.applyMatrix4(frame)
-    contactDirection.copy(outward).transformDirection(frame)
     for (const shape of shapes) {
-      local.copy(p).applyMatrix4(shape.worldInverse)
+      local.copy(p).applyMatrix4(shape.inverse)
       if (local.lengthSq() >= 1.06) continue
       if (local.lengthSq() < 1e-10)
-        local.copy(contactDirection).transformDirection(shape.worldInverse)
+        local.copy(outward).transformDirection(shape.inverse)
       local.setLength(Math.sqrt(1.06))
-      p.copy(local.applyMatrix4(shape.world))
+      p.copy(local.applyMatrix4(shape.forward))
     }
-    p.applyMatrix4(inverseFrame)
   }
 
   function reset() {
@@ -474,6 +480,7 @@ export function createPeltRig(
     if (!active) return
     active = false
     mesh.geometry = original
+    relink()
     mesh.frustumCulled = culled
     geometry.dispose()
     mesh.removeEventListener('removed', dispose)

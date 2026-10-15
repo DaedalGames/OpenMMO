@@ -518,6 +518,34 @@ describe('pelt physics', () => {
 })
 
 describe('flexible belt attachments', () => {
+  it('rebuilds render objects when the tangent layout changes', () => {
+    const mesh: THREE.SkinnedMesh = fixture().mesh
+    mesh.geometry.computeTangents()
+    const original = mesh.geometry
+    let disposed = 0
+    mesh.addEventListener('dispose', () => disposed++)
+    const rig = createPeltRig(mesh, { ...config, bend: { droop: 0.6 } })
+    expect(mesh.geometry.hasAttribute('tangent')).toBe(false)
+    expect(disposed).toBe(1)
+    rig.reset()
+    rig.update(1 / 60)
+    expect(disposed).toBe(1)
+    rig.dispose()
+    expect(mesh.geometry).toBe(original)
+    expect(mesh.geometry.hasAttribute('tangent')).toBe(true)
+    expect(disposed).toBe(2)
+  })
+
+  it('keeps render objects when the tangent layout is unchanged', () => {
+    const { mesh } = fixture()
+    let disposed = 0
+    mesh.addEventListener('dispose', () => disposed++)
+    const rig = createPeltRig(mesh, { ...config, bend: { droop: 0.6 } })
+    rig.reset()
+    rig.dispose()
+    expect(disposed).toBe(0)
+  })
+
   it('keeps side clearance and lifts further when the thigh swings forward', () => {
     const { root, hip, mesh } = fixture()
     mesh.geometry.rotateY(Math.PI / 2)
@@ -648,6 +676,34 @@ describe('flexible belt attachments', () => {
     expect(Array.from(source.getAttribute('position').array)).toEqual(original)
     rig.dispose()
     expect(mesh.geometry).toBe(source)
+  })
+
+  it('keeps flexible contact consistent under character translation, rotation and scale', () => {
+    const a = fixture(),
+      b = fixture()
+    b.root.position.set(7, 2, -4)
+    b.root.rotation.set(0.1, 0.7, -0.2)
+    b.root.scale.set(1.3, 0.8, 1.1)
+    const settings: PeltPhysics = {
+      ...config,
+      bend: { droop: 0.6, contact: true },
+      colliders: [
+        { bone: 'Hips', center: [0, 0.82, 0.16], radii: [0.11, 0.12, 0.09] },
+      ],
+    }
+    const ra = createPeltRig(a.mesh, settings),
+      rb = createPeltRig(b.mesh, settings)
+    for (const angle of [0, 0.2, -0.3]) {
+      a.hip.rotation.x = b.hip.rotation.x = angle
+      ra.reset()
+      rb.reset()
+      const first = a.mesh.geometry.getAttribute('position').array
+      const second = b.mesh.geometry.getAttribute('position').array
+      for (let i = 0; i < first.length; i++)
+        expect(first[i]).toBeCloseTo(second[i], 5)
+    }
+    ra.dispose()
+    rb.dispose()
   })
 
   it('updates local thigh contact even when the hip hinge angle stays still', () => {

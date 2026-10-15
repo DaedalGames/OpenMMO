@@ -1,7 +1,7 @@
 {
   "date": "2026-10-16",
   "inputs": {
-    "tools/prepare-female-knight.mjs": "b09b5b1bdb7912388f5dedae1748a5f7b1c58fafe61f17de2a6247feab388f37",
+    "tools/prepare-female-knight.mjs": "d274bc03316a7b7a8c6c649845d76e32eda335aae944efd079123cc1155ff431",
     "client/src/lib/utils/female-clip-bake.ts": "620406c2456972178dd65681de37ee52294488478d87d1fbd654640ddb6082f8",
     "client/src/lib/utils/female-boot-ground.ts": "34614cb3430b308ead42a29ef7dbffba23244efda5da9b2d6b79948c7fe34652",
     "assets/modular_human_female_01/rig_v1/female-base.glb": "9564457e8b23275aaf8cd0ff74c318baa4bbfa6b1c8afe608037cf7f40cf0982",
@@ -35,7 +35,7 @@
     "client/src/lib/utils/characterAnimationUtils.ts": "b63398fd7d1c81d21135308c0495ecf346319a7cd074677cf7a5337dbe83e176",
     "client/src/lib/utils/modularCharacter.ts": "79c9679f01dc64c8e3f17e3591a9951c0186a2c0fa66ea2a07220361309d772a",
     "client/src/lib/utils/frameYield.ts": "309c0686990d6c93d214ef108b746a77e92f5f374ae0272967be440aec5835e4",
-    "tools/lib/headless-three.mjs": "55e55c5214b55cd2c232b796d747eafd76ac78146413235ab8c5201235707eb2",
+    "tools/lib/headless-three.mjs": "058be10d93a71b1a2e70601c6eda9aef302e31f20099662a8e8d4cf13d42dae8",
     "client/public/models/animations/locomotion.glb": "cfa79f5b5f82f3b26d0d0bc86e4293a919fbc28829a2c6192f19a4a488271da8",
     "client/public/models/animations/combat_melee.glb": "b29f34de8cf7523d176a634ceac7ab4791084994493adbfac5f59dda686a057b",
     "client/public/models/animations/social.glb": "789cea2a6670840e53f1ca0d5555b5c599765414ca52c7dd16cc7d49536fea95",
@@ -57,7 +57,7 @@
     "client/public/models/characters/modular_female/helmet.glb": "c6987102ca10d2eb13af94f561de2546d90abd13590defd553d13dfa9eacd1ba",
     "client/public/models/characters/modular_female/barbarian_hair.glb": "99e10fc3fb56b52fc92617d8191cb977b3bddac022e0b339670dd3038d591fcf",
     "client/public/models/characters/modular_female/barbarian_top.glb": "3b047a7863d26aa19a62a554a7be11004636c1972738cae68552eb4073c95582",
-    "client/public/models/characters/modular_female/barbarian_bottom.glb": "2205c290798d6311333168db73c9629ec6c4e79d5bc4abcc55f0ea9450a18529",
+    "client/public/models/characters/modular_female/barbarian_bottom.glb": "f922b4433342776677f65d7419c789c69ec8e9a1bf743741411fc323e6c26de9",
     "client/public/models/characters/modular_female/barbarian_boots.glb": "dee6da5c6e773946ccc0ae2f68a076baba2b3bc9dd89fb40edd02f27adf57d6a",
     "client/public/models/characters/modular_female/barbarian_gloves.glb": "1df7afe0567aa26899c1b23b9856d53b9ee0cd58cc30c2550f9907847ff1e755",
     "client/public/models/characters/modular_female/barbarian_helmet.glb": "6f767590d72491e8cb9312dfd9b8314e5bb64581da8495fb4061bc000fa1edd5",

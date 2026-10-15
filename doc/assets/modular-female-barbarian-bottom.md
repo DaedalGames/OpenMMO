@@ -263,6 +263,17 @@
   [재현 스크립트](../../tools/join-female-barbarian-belt.py).
 - 기존 Tripo 원본을 재사용했으며 새 생성 요청과 비용은 없다.
 
+### 게임 내 모피 판을 로브 리그로 전환 — 2026-10-16
+
+여러 캐릭터가 함께 있을 때의 비용을 줄이려고 게임에서는 모피 4판을 정점 단위 굽힘·충돌 대신 기존 로브 리그로 움직인다.
+`tools/prepare-female-knight.mjs`가 패키징할 때 각 판의 `pelt_physics`에서 `robe_physics`를 만든다.
+4판은 허리 높이·중심·반경을 하나로 공유하므로 캐릭터당 확장 스켈레톤 1개와 제어 본 8개만 쓴다.
+판마다 고정 정점과 위쪽 띠는 원래 피부 웨이트를 유지한다. 원본 피팅 GLB에는 `robe_physics`가 없어서
+아래 검증 스크립트 두 개는 여전히 `pelt_physics` 경로를 검사한다.
+
+- 공유 허리 높이는 4판 피벗 중 가장 높은 값이다. 앞·뒤 판은 회전 축이 약 2.6cm 올라간다.
+- 10명 기준 CPU 물리 시간과 재현 명령은 [성능 기록](modular-female-barbarian-performance.json)에 있다.
+
 ### 남은 문제
 
 - 기본 몸체 피부에 하의 속옷이 구워져 있어 팬티 메시를 숨겨도 같은 흰색이 보인다. 그래서 틈은 메워서 막았다.
@@ -276,6 +287,7 @@
 | 가림 명세 | [body-occlusion.json](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/body-occlusion.json) |
 | 피팅 기록 | [modular-female-barbarian-bottom-fitting-v1.json](modular-female-barbarian-bottom-fitting-v1.json) |
 | 동작 검사 | [modular-female-barbarian-bottom-animation-v1.json](modular-female-barbarian-bottom-animation-v1.json) |
+| 성능 기록 | [modular-female-barbarian-performance.json](modular-female-barbarian-performance.json) |
 
 ### 미리보기
 
@@ -298,6 +310,7 @@ cp assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbari
 cp assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_fur_join_v1/before.glb
 .venv/bin/python tools/join-female-barbarian-belt.py
 .venv/bin/python tools/outfits/female_barbarian_bottom_occlusion.py
+node tools/prepare-female-knight.mjs
 node tools/validate-female-barbarian-bottom.mjs
 node tools/validate-female-barbarian-thigh-contact.mjs
 blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_barbarian_bottom.py
