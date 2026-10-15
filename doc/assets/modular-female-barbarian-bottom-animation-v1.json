@@ -6,7 +6,7 @@
   },
   "bottom": {
     "path": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb",
-    "sha256": "5ad9839a05049498cc106d0e1adf6602ce14d0ee89f3337e876ac23a2c8997a5"
+    "sha256": "c66f625efb142c03d90b2ad5054eb760bc9b1ef948f1c298822a276b13b14b01"
   },
   "triangles": 3256,
   "vertices": 4845,
@@ -39,7 +39,7 @@
     {
       "name": "walk",
       "samples": 17,
-      "maximum_edge_length_ratio": 2.0328330088346043,
+      "maximum_edge_length_ratio": 2.0501927696220505,
       "maximum_front_width_ratio": 1.0000000000000004,
       "maximum_side_vertices_inside_thigh_collider": 0,
       "before_front_width_ratio": 1.0220816061760636,
@@ -48,7 +48,7 @@
     {
       "name": "run",
       "samples": 17,
-      "maximum_edge_length_ratio": 2.6220692371237853,
+      "maximum_edge_length_ratio": 2.273813712942001,
       "maximum_front_width_ratio": 1.0000000000000002,
       "maximum_side_vertices_inside_thigh_collider": 164,
       "before_front_width_ratio": 1.014543855519375,
@@ -57,7 +57,7 @@
     {
       "name": "jump",
       "samples": 17,
-      "maximum_edge_length_ratio": 2.45318802235841,
+      "maximum_edge_length_ratio": 2.4763703732928017,
       "maximum_front_width_ratio": 1.0000000000000002,
       "maximum_side_vertices_inside_thigh_collider": 169,
       "before_front_width_ratio": 1.3149985426339559,
@@ -75,7 +75,7 @@
     {
       "name": "slash1",
       "samples": 17,
-      "maximum_edge_length_ratio": 2.9839511425646243,
+      "maximum_edge_length_ratio": 3.0187661767625844,
       "maximum_front_width_ratio": 1.0000000000000004,
       "maximum_side_vertices_inside_thigh_collider": 139,
       "before_front_width_ratio": 1.502091452385939,

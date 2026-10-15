@@ -79,7 +79,7 @@
   대기에서도 엉덩이 피부가 허리띠를 뚫었다. 버클·고리는 주변 허리띠에서 가장 큰 본 하나에 강체로 묶었다(버클 Hips, 옆 고리 UpLeg).
   여러 본을 섞으면 걷기에서 고리가 4% 휘었다. 땋은 끈은 바로 뒤 모피 정점의 웨이트를 복사한다.
 - 가림: 허리띠가 1.2cm 안에서 덮고 가장자리에서 1cm 이상 안쪽인 피부와 팬티를 숨기고, 높이 0.585m 위 팬티 윗단도 가린다.
-  현재 피부 189면·팬티 406면을 숨긴다(아래 허리선 보정 후 다시 계산).
+  현재 피부 183면·팬티 408면을 숨긴다(아래 벨트 윗선 보정 후 다시 계산).
   나머지 팬티는 모피 틈으로 보이므로 그대로 둔다.
 
 ### 검증
@@ -153,6 +153,29 @@
   [재현 스크립트](../../tools/weight-female-barbarian-panels.py).
 - 원래 Tripo 결과를 재사용했으며 새 이미지·3D 생성 요청과 비용은 없다.
 
+### 벨트 윗선 정리 — 2026-10-15
+
+![대기 자세의 벨트 보정 후](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/review/idle.png)
+
+원본 벨트 옆 철판의 솟은 꼭짓점과 가죽 윗단을 높이 0.615m에 가까워지는 부드러운 곡선으로 눌렀다.
+0.607m 아래는 유지하고 위쪽 348정점만 최대 13.38mm 낮췄다. 낮아진 허리 단면이 넓어지는 만큼
+가로 반경도 보정해 수정 부위의 최소 방사 간격 2.74mm를 유지했다. 노멀은 변형된 면을 따라 회전했다.
+버클·고리·모피 판의 형상, 모든 UV·텍스처·본·웨이트·물리 설정은 유지한다.
+
+앞 오른쪽 철판의 V자 패임은 표시된 양 끝을 잇는 기울기를 따라 모서리만 올렸다.
+윗단의 세 모서리와 짝을 이루는 두께 면 17정점만 추가로 최대 9.76mm 올렸다.
+양 끝점과 나머지 모든 정점 위치는 앞 보정 상태 그대로다. 판 전체를 넓게 펴는 방식은 되돌렸다.
+
+대기·기본 자세의 사선·앞·뒤·옆과 전투 대기를 브라우저에서 확인했다. 9동작 × 17시점 검증도 통과했다.
+가림 정보를 다시 계산했고 뒤쪽 흰 속옷이 윗단으로 보이지 않는 것을 확인했다.
+
+- [윗단 연결 확대](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/review/bridge.png),
+  [뒤쪽 확인](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/review/back.png),
+  [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/repair.json),
+  [재현용 입력](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/before.glb),
+  [재현 스크립트](../../tools/smooth-female-barbarian-belt.py).
+- 기존 Tripo 원본을 재사용했으며 새 생성 요청과 비용은 없다.
+
 ### 남은 문제
 
 - 기본 몸체 피부에 하의 속옷이 구워져 있어 팬티 메시를 숨겨도 같은 흰색이 보인다. 그래서 틈은 메워서 막았다.
@@ -179,6 +202,8 @@ blender -b --python-exit-code 1 -P tools/blender-scripts/fit_female_barbarian_bo
 .venv/bin/python tools/fix-female-barbarian-belt.py assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb
 .venv/bin/python tools/fit-female-barbarian-waistband.py assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb
 .venv/bin/python tools/weight-female-barbarian-panels.py assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb
+cp assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/before.glb
+.venv/bin/python tools/smooth-female-barbarian-belt.py
 .venv/bin/python tools/outfits/female_barbarian_bottom_occlusion.py
 node tools/validate-female-barbarian-bottom.mjs
 blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_barbarian_bottom.py
