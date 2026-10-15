@@ -30,6 +30,13 @@ MAX_RING_THICKNESS = .006
 STRAP_CLEARANCE = .002
 TOE_MARGIN = .004
 HEEL_MARGIN = .003
+SHOE_YAW_ADJUSTMENT_DEGREES = -7
+LEFT_LATERAL_OFFSET = .0055
+LEFT_REARWARD_OFFSET = .003
+RIGHT_TOE_LIFT = .003
+RIGHT_TOE_FOLLOW = .45
+RIGHT_INSTEP_LIFT = .004
+RIGHT_INSTEP_CLEARANCE = .001
 
 
 def smooth(value):
@@ -137,6 +144,9 @@ foot_origin = np.array(pose_config['posed_foot_positions_before_root_lift']['Rig
 forward = toe_base - foot_origin
 forward[1] = 0
 forward /= np.linalg.norm(forward)
+yaw = np.deg2rad(SHOE_YAW_ADJUSTMENT_DEGREES)
+forward = np.array([[np.cos(yaw), 0, np.sin(yaw)], [0, 1, 0],
+                    [-np.sin(yaw), 0, np.cos(yaw)]]) @ forward
 up = np.array([0., 1., 0.])
 lateral = np.cross(up, forward)
 foot_frame = np.column_stack([lateral, up, forward])
@@ -374,13 +384,64 @@ joints, weights = np.take_along_axis(joints, order, 1), np.take_along_axis(weigh
 binary = bytearray(raw)
 meshes, nodes = [], []
 left_fit = {}
+right_fitted = fitted.copy()
+right_weights = weights.copy()
+right_toe_lift = RIGHT_TOE_LIFT
 for side in ['Right', 'Left']:
     points_side, normals_side, faces_side, joints_side = fitted.copy(), fitted_normals.copy(), faces.copy(), joints.copy()
     weights_side = weights.copy()
+    if side == 'Right':
+        strap_progress = np.clip((points_side[:, 1] - ground - .005) / .02, 0, 1)
+        points_side[:, 1] += RIGHT_INSTEP_LIFT * smooth(strap_progress) * toe_strap
+        strap_slope = RIGHT_INSTEP_LIFT * 6 * strap_progress * (1 - strap_progress) / .02 * toe_strap
+        normals_side[:, 1] /= 1 + strap_slope
+        normals_side /= np.linalg.norm(normals_side, axis=1, keepdims=True)
+        _, strap_direction = skin.signed(points_side)
+        points_side += (RIGHT_INSTEP_CLEARANCE * smooth(strap_progress) * toe_strap)[:, None] * strap_direction
+        toe_start = toe_local[2] + .038
+        toe_span = (points_side @ forward).max() - toe_start
+        toe_progress = np.clip((points_side @ forward - toe_start) / toe_span, 0, 1)
+        ankle_progress = np.clip((points_side[:, 1] - heel_top) / (ring_bottom - heel_top), 0, 1)
+        ankle_share = 1 - smooth(ankle_progress)
+        lift_share = toe_progress ** 2 * ankle_share
+        triangles = points_side[faces]
+        face_normals = np.cross(triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0])
+        top = ((source[faces, 1] < -.4).all(1)
+               & (face_normals[:, 1] > .4 * np.linalg.norm(face_normals, axis=1)))
+        probes = np.einsum('sk,fkj->fsj', sample_weights, triangles[top]).reshape(-1, 3)
+        probe_share = np.einsum('sk,fk->fs', sample_weights, lift_share[faces[top]]).reshape(-1)
+        for probe, share in zip(probes, probe_share):
+            if share < .001:
+                continue
+            hit = skin.ray(probe, up, .04)
+            if hit is not None:
+                clearance = min(SOLE_GAP * .2, hit * .2)
+                right_toe_lift = min(right_toe_lift, (hit - clearance) / share)
+        points_side[:, 1] += right_toe_lift * lift_share
+        slope = right_toe_lift * 2 * toe_progress / toe_span * ankle_share
+        gradient = slope[:, None] * forward
+        gradient[:, 1] = -right_toe_lift * toe_progress ** 2 * 6 * ankle_progress * (1 - ankle_progress) / (ring_bottom - heel_top)
+        normals_side -= gradient * (normals_side[:, 1] / (1 + gradient[:, 1]))[:, None]
+        normals_side /= np.linalg.norm(normals_side, axis=1, keepdims=True)
+        follow_start = toe_local[2] + .026
+        follow_span = (points_side @ forward).max() - follow_start
+        follow_progress = np.clip((points_side @ forward - follow_start) / follow_span, 0, 1)
+        toe_follow = RIGHT_TOE_FOLLOW * follow_progress ** 2 * ankle_share
+        weights_side *= 1 - toe_follow[:, None]
+        weights_side += (joints_side == toe_bone) * toe_follow[:, None]
+        right_weights = weights_side.copy()
+        right_fitted = points_side.copy()
+        final_depth = skin.signed(points_side)[0]
     if side == 'Left':
         points_side[:, 0] *= -1
         normals_side[:, 0] *= -1
         faces_side = faces_side[:, ::-1]
+        transition = np.clip((points_side[:, 1] - heel_top) / (ring_bottom - heel_top), 0, 1)
+        offset = lateral * [1, 1, -1] * LEFT_LATERAL_OFFSET - forward * [-1, 1, 1] * LEFT_REARWARD_OFFSET
+        points_side += (1 - smooth(transition))[:, None] * offset
+        slope = -6 * transition * (1 - transition) / (ring_bottom - heel_top)
+        normals_side[:, 1] -= slope * (normals_side @ offset)
+        normals_side /= np.linalg.norm(normals_side, axis=1, keepdims=True)
         for name in ['Leg', 'Foot', 'ToeBase']:
             joints_side[joints == names.index('Right' + name)] = names.index('Left' + name)
         left_faces = bf[(body_labels[bf[:, 0]] == skin_label) & (posed[bf, 1] < .30).all(1)
@@ -455,13 +516,11 @@ spec.loader.exec_module(plate)
 binary = plate.compact(doc, binary)
 write_glb(OUTPUT / 'boots_female_barbarian.glb', doc, binary)
 
-garment = Surface(np.vstack([fitted, fitted * [-1, 1, 1]]), np.vstack([faces, faces[:, ::-1] + len(fitted)]),
+garment = Surface(np.vstack([right_fitted, left_fit['left_fitted']]), np.vstack([faces, faces[:, ::-1] + len(fitted)]),
                   np.vstack([fitted_normals, fitted_normals * [-1, 1, 1]]))
-mirror = np.where(posed[:, :1] < 0, 1, -1) * [1, 0, 0] + [0, 1, 1]
-probes, probe_normals = posed * mirror, posed_normals * mirror
 covered = np.zeros(len(bv), dtype=bool)
 for i in np.flatnonzero((posed[:, 1] < .06) & (body_labels == skin_label) & (posed_normals[:, 1] < -.3)):
-    covered[i] = garment.ray(probes[i], probe_normals[i], .012) is not None
+    covered[i] = garment.ray(posed[i], posed_normals[i], .012) is not None
 skin_points = np.flatnonzero(body_labels == skin_label)
 near = cKDTree(posed[skin_points])
 for i in np.flatnonzero(covered):
@@ -475,8 +534,8 @@ mask = {'body': str(BODY.relative_to(ROOT)), 'body_sha256': pose_config['body_sh
                  'footbed within 0.012 and lies 0.005 inside the covered area; everything else stays visible. Restore on unequip/load failure.'}
 (OUTPUT / 'body-occlusion.json').write_text(json.dumps(mask, indent=2) + '\n')
 
-np.savez(OUTPUT / 'fit-data.npz', source=source, start=start, fitted=fitted, faces=faces, fixed=fixed,
-         rings=ring_any, buckles=np.any(buckles, axis=0), depth=final_depth, joints=joints, weights=weights,
+np.savez(OUTPUT / 'fit-data.npz', source=source, start=start, fitted=right_fitted, faces=faces, fixed=fixed,
+         rings=ring_any, buckles=np.any(buckles, axis=0), depth=final_depth, joints=joints, weights=right_weights,
          bone_names=np.array(names), original_vertex_count=original_vertex_count, **left_fit)
 report = {'date': '2026-10-15',
           'source': {'path': str(SOURCE.relative_to(ROOT)), 'sha256': hashlib.sha256(SOURCE.read_bytes()).hexdigest()},
@@ -485,6 +544,17 @@ report = {'date': '2026-10-15',
           'rig_id': 'human_female_01_local_v1', 'triangles': int(len(faces) * 2), 'scale': float(scale),
           'heel_pose': {'pitch_degrees': pose_config['pitch_degrees'], 'shared_with': 'female_knight_boots', 'toe_animation_override': False},
           'shoe_yaw_degrees': {'right': float(np.rad2deg(np.arctan2(forward[0], forward[2]))), 'left': float(-np.rad2deg(np.arctan2(forward[0], forward[2])))},
+          'shoe_yaw_adjustment_degrees': {'right': SHOE_YAW_ADJUSTMENT_DEGREES, 'left': -SHOE_YAW_ADJUSTMENT_DEGREES},
+          'lateral_offset_source_units': {'right': 0, 'left': LEFT_LATERAL_OFFSET},
+          'lateral_offset_m': {'right': 0, 'left': LEFT_LATERAL_OFFSET * CHARACTER_HEIGHT_M},
+          'rearward_offset_source_units': {'right': 0, 'left': LEFT_REARWARD_OFFSET},
+          'rearward_offset_m': {'right': 0, 'left': LEFT_REARWARD_OFFSET * CHARACTER_HEIGHT_M},
+          'toe_lift_source_units': {'right': float(right_toe_lift), 'left': 0},
+          'toe_lift_m': {'right': float(right_toe_lift * CHARACTER_HEIGHT_M), 'left': 0},
+          'toe_animation_follow': {'right': RIGHT_TOE_FOLLOW, 'left': 0},
+          'toe_profile': 'Quadratic toe lift and animation blend for a continuous, gradually increasing curve.',
+          'instep_strap_lift_m': {'right': RIGHT_INSTEP_LIFT * CHARACTER_HEIGHT_M, 'left': 0},
+          'instep_surface_offset_m': {'right': RIGHT_INSTEP_CLEARANCE * CHARACTER_HEIGHT_M, 'left': 0},
           'ground_source': str(KNIGHT_FITTING.relative_to(ROOT)),
           'posed_ground': float(ground), 'heel_height_m': float((fitted[seat, 1].min() - ground) * CHARACTER_HEIGHT_M),
           'meters_per_source_unit': CHARACTER_HEIGHT_M,
@@ -493,11 +563,15 @@ report = {'date': '2026-10-15',
           'rest_clearance': {'penetrating_vertices': int((final_depth < 0).sum()), 'minimum': float(final_depth.min())},
           'arap': {'iterations': int(arap['iterations']), 'fixed_vertices': int(fixed.sum())},
           'hidden_body_triangles': int(hidden.sum()),
-          'method': 'Rotate the shoe into the existing Foot-to-ToeBase heading; fit one right sandal on the shared 30-degree heel pose: uniform scale to foot length, footbed SOLE_GAP under '
+          'method': 'Rotate the shoe 7 degrees outward from the Foot-to-ToeBase heading to center the heel on the footbed; fit one right sandal on the shared 30-degree heel pose: uniform scale to foot length, footbed SOLE_GAP under '
                     'the posed sole, stiletto tip on the forefoot ground, rings radially RING_CLEARANCE off the ankle, ARAP for '
-                    'the straps, outward push for any strap inside the skin. Mirror for the left, then inverse-skin both into the '
+                    'the straps, outward push for any strap inside the skin. Mirror for the left and move its footbed outward '
+                    'by LEFT_LATERAL_OFFSET and rearward by LEFT_REARWARD_OFFSET. Fade these translations '
+                    'to zero at the ankle rings and refit the front straps. Curve the right toe tip upward, capped by '
+                    'sampled footbed-to-skin clearance while preserving the ball contact. Use quadratic toe lift and animation '
+                    'blends for a gradual curve, and raise the right instep strap while tapering to its sole attachments. Inverse-skin both into the '
                     'canonical bind pose and store heel_pose in scene extras like the knight boots.',
-          'weights': 'Transfer ankle skin weights separately on both legs and smooth within 4 mm in source units. Buckles take the ring mean, the heel strap blends from Foot to the lower ring, and the new rear connector uses an 8 mm smoothing radius. Toe strap influence ramps to 0.35; sole and stiletto remain on Foot. Existing foot and toe animation evaluation is unchanged. The shoe is rotated into the anatomical Foot-to-ToeBase heading before fitting.',
+          'weights': 'Transfer ankle skin weights separately on both legs and smooth within 4 mm in source units. Buckles take the ring mean, the heel strap blends from Foot to the lower ring, and the new rear connector uses an 8 mm smoothing radius. Toe strap influence ramps to 0.35. The right toe tip additionally blends up to 0.45 toward ToeBase to follow the original toe animation. Ball contact, heel and stiletto remain on Foot. Existing foot and toe animation evaluation is unchanged.',
           'status': 'Candidate; validation pending'}
 REPORT.write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps({k: report[k] for k in ['scale', 'posed_ground', 'heel_height_m', 'rest_clearance', 'hidden_body_triangles', 'triangles']}))

@@ -161,13 +161,24 @@ try {
           index,
           point: mesh.getVertexPosition(index, new THREE.Vector3()),
         })
-      ).filter(({ point }) => Math.sign(point.x) === side && point.y < -0.03026)
+      ).filter(({ mesh, index, point }) => {
+        const { skinIndex, skinWeight } = mesh.geometry.attributes
+        return (
+          Math.sign(point.x) === side &&
+          point.y < -0.03026 &&
+          skinWeight.getX(index) > 0.99999 &&
+          skeleton.bones[skinIndex.getX(index)].name.endsWith('Foot')
+        )
+      })
     )
     const rear = support.reduce((a, b) => (a.point.z < b.point.z ? a : b))
-    const front = support.filter(({ point }) => point.z > 0.04)
+    const front = support.filter(({ point }) => point.z > 0.015)
     const left = front.reduce((a, b) => (a.point.x < b.point.x ? a : b))
     const right = front.reduce((a, b) => (a.point.x > b.point.x ? a : b))
-    assert.ok(left.point.distanceTo(right.point) > 0.02)
+    assert.ok(
+      left.point.distanceTo(right.point) > 0.02,
+      `Sole support side ${side}: ${front.length} vertices, width ${left.point.distanceTo(right.point)}`
+    )
     assert.ok(rear.point.distanceTo(left.point) > 0.05)
     return [rear, left, right]
   })
@@ -339,6 +350,8 @@ try {
     four_normalized_influences: true,
     flexible_edge_reference:
       'Equipped heel pose; edges longer than 0.002 source units',
+    sole_plane_reference:
+      'Heel tip and rigid Foot-weighted ball contact; flexing toe tip excluded',
     original_toe_animation_preserved: true,
     no_opposite_leg_weights: true,
     skin_mask_restores: true,

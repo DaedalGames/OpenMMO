@@ -11,19 +11,60 @@
   "output": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/boots_female_barbarian.glb",
   "rig_id": "human_female_01_local_v1",
   "triangles": 3624,
-  "scale": 0.13090373526073676,
+  "scale": 0.12848034067496433,
   "heel_pose": {
     "pitch_degrees": 30,
     "shared_with": "female_knight_boots",
     "toe_animation_override": false
   },
   "shoe_yaw_degrees": {
-    "right": -10.954062643398316,
-    "left": 10.954062643398316
+    "right": -17.954062643398316,
+    "left": 17.954062643398316
+  },
+  "shoe_yaw_adjustment_degrees": {
+    "right": -7,
+    "left": 7
+  },
+  "lateral_offset_source_units": {
+    "right": 0,
+    "left": 0.0055
+  },
+  "lateral_offset_m": {
+    "right": 0,
+    "left": 0.009899999999999999
+  },
+  "rearward_offset_source_units": {
+    "right": 0,
+    "left": 0.003
+  },
+  "rearward_offset_m": {
+    "right": 0,
+    "left": 0.0054
+  },
+  "toe_lift_source_units": {
+    "right": 0.003,
+    "left": 0
+  },
+  "toe_lift_m": {
+    "right": 0.0054,
+    "left": 0
+  },
+  "toe_animation_follow": {
+    "right": 0.45,
+    "left": 0
+  },
+  "toe_profile": "Quadratic toe lift and animation blend for a continuous, gradually increasing curve.",
+  "instep_strap_lift_m": {
+    "right": 0.007200000000000001,
+    "left": 0
+  },
+  "instep_surface_offset_m": {
+    "right": 0.0018000000000000002,
+    "left": 0
   },
   "ground_source": "assets/items/female_knight_boots/fitted_v5/fitting.json",
   "posed_ground": -0.030273308473303836,
-  "heel_height_m": 0.06624815929170721,
+  "heel_height_m": 0.06669190442276046,
   "meters_per_source_unit": 1.8,
   "clearance_source_units": {
     "sole": 0.0015,
@@ -41,38 +82,48 @@
   },
   "arap": {
     "iterations": 60,
-    "fixed_vertices": 1254
+    "fixed_vertices": 1253
   },
-  "hidden_body_triangles": 93,
-  "method": "Rotate the shoe into the existing Foot-to-ToeBase heading; fit one right sandal on the shared 30-degree heel pose: uniform scale to foot length, footbed SOLE_GAP under the posed sole, stiletto tip on the forefoot ground, rings radially RING_CLEARANCE off the ankle, ARAP for the straps, outward push for any strap inside the skin. Mirror for the left, then inverse-skin both into the canonical bind pose and store heel_pose in scene extras like the knight boots.",
-  "weights": "Transfer ankle skin weights separately on both legs and smooth within 4 mm in source units. Buckles take the ring mean, the heel strap blends from Foot to the lower ring, and the new rear connector uses an 8 mm smoothing radius. Toe strap influence ramps to 0.35; sole and stiletto remain on Foot. Existing foot and toe animation evaluation is unchanged. The shoe is rotated into the anatomical Foot-to-ToeBase heading before fitting.",
-  "status": "Heel alignment corrected by shoe rotation; original toe animation retained. Front strap clipping during some original motions remains to be fitted.",
-  "output_sha256": "6177fee6dd0d631456068325028f98ddbce9a17200d3aee1e5407c9a277b1727",
+  "hidden_body_triangles": 86,
+  "method": "Rotate the shoe 7 degrees outward from the Foot-to-ToeBase heading to center the heel on the footbed; fit one right sandal on the shared 30-degree heel pose: uniform scale to foot length, footbed SOLE_GAP under the posed sole, stiletto tip on the forefoot ground, rings radially RING_CLEARANCE off the ankle, ARAP for the straps, outward push for any strap inside the skin. Mirror for the left and move its footbed outward by LEFT_LATERAL_OFFSET and rearward by LEFT_REARWARD_OFFSET. Fade these translations to zero at the ankle rings and refit the front straps. Curve the right toe tip upward, capped by sampled footbed-to-skin clearance while preserving the ball contact. Use quadratic toe lift and animation blends for a gradual curve, and raise the right instep strap while tapering to its sole attachments. Inverse-skin both into the canonical bind pose and store heel_pose in scene extras like the knight boots.",
+  "weights": "Transfer ankle skin weights separately on both legs and smooth within 4 mm in source units. Buckles take the ring mean, the heel strap blends from Foot to the lower ring, and the new rear connector uses an 8 mm smoothing radius. Toe strap influence ramps to 0.35. The right toe tip additionally blends up to 0.45 toward ToeBase to follow the original toe animation. Ball contact, heel and stiletto remain on Foot. Existing foot and toe animation evaluation is unchanged.",
+  "status": "Right toe curl relaxed: static lift reduced from 7.2 to 5.4 mm and quadratic toe-animation blend from 0.55 to 0.45. Instep strap fit, left shoe and right heel preserved. Runtime and rest/idle strap checks passed; existing front strap intersections during some motions remain.",
+  "output_sha256": "76d83bff4d510799235bf7bed795d72483d3dc1fb6cc8ba15315e870653fc836",
   "foot_runtime_restored_to_repository_original": true,
   "body_and_animation_unchanged": true,
   "animation_sha256": "7983cac216586bbf2efee3551da361d7c44e02d106ae179902e33df97cebcc92",
   "validation": {
     "runtime": {
       "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/runtime-validation.json",
-      "status": "passed: 14 clips x 61 frames; original toe animation preserved"
+      "status": "passed: 14 clips x 61 frames; original toe animation preserved",
+      "sole_plane_reference": "Heel tip and rigid Foot-weighted ball contact; flexing toe tip excluded."
     },
     "strap_clearance": {
       "right": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/clearance-validation.json",
       "left": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/clearance-left-validation.json",
-      "status": "ankle and rear connector clear; front strap intersections remain"
+      "status": "171 frames per foot: ankle and rear connector clear; front intersections remain during some motions (right slash1, left torch_run). Left clearance reused after exact mesh and left skin-mask equality checks."
     },
     "frontend": {
       "check": "passed: 0 errors, 0 warnings",
-      "lint": "passed"
+      "lint": "passed",
+      "scope": "Prior v3 checks; no frontend code changed in this heel adjustment."
     },
-    "knight_boots_regression": "passed"
+    "knight_boots_regression": "passed",
+    "browser": {
+      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-review.json",
+      "status": "passed: rest heel/sole views, idle1 bottom views and repeated equip/unequip; no browser errors"
+    },
+    "instep_rest_and_idle": {
+      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/instep-idle-validation.json",
+      "status": "passed: rest + all 61 idle1 frames; vertices, face centers and edge midpoints"
+    }
   },
   "polygon_budget": {
     "base": 22175,
     "hair": 2436,
     "boots": 3624,
     "assembled": 28235,
-    "visible": 28142,
+    "visible": 28149,
     "face_region_including_lashes": 4604
   },
   "cleanup": {
@@ -89,6 +140,68 @@
       "superseded v1/v2 fitting binaries and review outputs",
       "ARAP caches and temporary posed-body GLBs",
       "individual verification renders and browser comparisons"
+    ]
+  },
+  "heel_refinement": {
+    "date": "2026-10-15",
+    "previous_output_sha256": "6177fee6dd0d631456068325028f98ddbce9a17200d3aee1e5407c9a277b1727",
+    "yaw_delta_degrees": {
+      "right": -7,
+      "left": 7
+    },
+    "review": "Both feet from underneath, rear and side at rest; idle1 underneath at 35%.",
+    "shared_pose_and_body_unchanged": true
+  },
+  "centerline_refinement": {
+    "date": "2026-10-15",
+    "previous_output_sha256": "395423d9471292ba674933f7a86c1d132b0e6ec58f89afe17aed44f6d5356e87",
+    "side": "Left",
+    "lateral_offset_source_units": 0.0055,
+    "lateral_offset_m": 0.0099,
+    "angle_unchanged": true,
+    "ankle_rings_unchanged": true,
+    "right_mesh_attributes_unchanged": true,
+    "mask_uses_actual_left_and_right_fitted_geometry": true
+  },
+  "rearward_refinement": {
+    "date": "2026-10-15",
+    "previous_output_sha256": "60b1ffdbbdde6ae5b400774fdcc3fb490f492d40e6e2c0aa72ae831582dea613",
+    "side": "Left",
+    "rearward_offset_source_units": 0.003,
+    "rearward_offset_m": 0.0054,
+    "angle_and_lateral_alignment_unchanged": true,
+    "ankle_rings_unchanged": true,
+    "accepted_right_mesh_and_skin_mask_unchanged": true,
+    "review": "Both feet underneath, rear and side at rest; idle1 underneath at 35%."
+  },
+  "toe_refinement": {
+    "previous_output_sha256": "f078ed492711cb690acd28fbf158443d3902863b03c81e84b71718f03b02697a",
+    "side": "Right",
+    "maximum_static_lift_m": 0.0054,
+    "toe_animation_blend_maximum": 0.45,
+    "profile": "Quadratic lift and animation weight ramp",
+    "static_lift_reduction": 0.25,
+    "animation_blend_reduction": 0.18181818181818188,
+    "left_mesh_and_mask_unchanged": true,
+    "right_heel_and_instep_fitted_positions_unchanged": true
+  },
+  "instep_refinement": {
+    "maximum_vertical_lift_m": 0.0072,
+    "maximum_skin_normal_offset_m": 0.0018,
+    "taper": "Smooth transition into sole attachments",
+    "validation": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/instep-idle-validation.json",
+    "frames": 62,
+    "minimum_sampled_front_distance_m": 7.836982179417443e-05,
+    "scope": "Sandal vertices, face centers and edge midpoints against exact posed skin triangles after the reversible sole mask."
+  },
+  "checkpoint_cleanup": {
+    "date": "2026-10-15",
+    "removed_temporary_files": 251,
+    "removed_bytes": 314324991,
+    "retained": [
+      "Concept artwork, generation inputs and source assets",
+      "Current fitted GLB, editable Blender and fit data",
+      "Documented review strips, masks and validation reports"
     ]
   }
 }

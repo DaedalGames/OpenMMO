@@ -10,6 +10,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('directory', nargs='?', default='assets/items/female_barbarian_boots/tripo_v1/fitted_v3')
 parser.add_argument('--side', choices=['right', 'left'], default='right')
 parser.add_argument('--stride', type=int, default=1)
+parser.add_argument('--motions', nargs='+')
+parser.add_argument('--output')
 args = parser.parse_args()
 directory = Path(args.directory)
 prefix = 'clearance' if args.side == 'right' else 'clearance-left'
@@ -30,6 +32,8 @@ barycentric = np.array([[1/3, 1/3, 1/3], [.5, .5, 0], [0, .5, .5], [.5, 0, .5]])
 minimum = {name: {'distance': float('inf')} for name in regions}
 frames = []
 for frame in range(0, len(poses), args.stride):
+    if args.motions and manifest['poses'][frame]['name'] not in args.motions:
+        continue
     body, boots = poses[frame, :body_count], poses[frame, body_count:]
     mesh = trimesh.Trimesh(body, body_faces, process=False)
     result = dict(manifest['poses'][frame])
@@ -48,10 +52,13 @@ for frame in range(0, len(poses), args.stride):
     frames.append(result)
     if frame % 61 == 0:
         print(json.dumps({'frame': frame, 'minimum': minimum}), flush=True)
-report = {'source_sha256': source_hash, 'side': args.side,
+if not frames:
+    raise SystemExit('No matching poses; check --motions and --stride')
+
+report = {'source_sha256': source_hash, 'side': args.side, 'selected_motions': args.motions,
           'meters_per_source_unit': 1.8, 'frame_count': len(frames), 'stride': args.stride, 'minimum': minimum, 'frames': frames,
           'scope': 'Sandal vertices, face centers and edge midpoints against exact posed skin triangles after the reversible sole mask.'}
-(directory / f'{prefix}-validation.json').write_text(json.dumps(report, indent=2) + '\n')
+(directory / (args.output or f'{prefix}-validation.json')).write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps({'frames': len(frames), 'minimum': minimum}), flush=True)
 
 if any(value['distance'] < -.0002 for value in minimum.values()):
