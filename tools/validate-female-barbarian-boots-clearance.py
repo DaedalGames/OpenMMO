@@ -11,6 +11,7 @@ parser.add_argument('directory', nargs='?', default='assets/items/female_barbari
 parser.add_argument('--side', choices=['right', 'left'], default='right')
 parser.add_argument('--stride', type=int, default=1)
 parser.add_argument('--motions', nargs='+')
+parser.add_argument('--regions', nargs='+', choices=['ankle', 'front', 'connector', 'heel'])
 parser.add_argument('--output')
 args = parser.parse_args()
 directory = Path(args.directory)
@@ -28,6 +29,10 @@ source = fit['source']
 front = (source[:, 0] < -.1) & (source[:, 1] > -.42)
 connector = np.arange(boot_count) >= int(fit.get('original_vertex_count', boot_count))
 regions = {'ankle': fit['rings'] | fit['buckles'], 'front': front, 'connector': connector}
+if 'heel_straps' in fit:
+    regions['heel'] = fit['heel_straps']
+if args.regions:
+    regions = {name: regions[name] for name in args.regions}
 barycentric = np.array([[1/3, 1/3, 1/3], [.5, .5, 0], [0, .5, .5], [.5, 0, .5]])
 minimum = {name: {'distance': float('inf')} for name in regions}
 frames = []
@@ -56,6 +61,7 @@ if not frames:
     raise SystemExit('No matching poses; check --motions and --stride')
 
 report = {'source_sha256': source_hash, 'side': args.side, 'selected_motions': args.motions,
+          'selected_regions': list(regions),
           'meters_per_source_unit': 1.8, 'frame_count': len(frames), 'stride': args.stride, 'minimum': minimum, 'frames': frames,
           'scope': 'Sandal vertices, face centers and edge midpoints against exact posed skin triangles after the reversible sole mask.'}
 (directory / (args.output or f'{prefix}-validation.json')).write_text(json.dumps(report, indent=2) + '\n')
