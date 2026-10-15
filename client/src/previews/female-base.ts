@@ -62,6 +62,7 @@ export async function showFemaleBase(
       <select id="female-boots">
         <option value="none">없음</option>
         <option value="knight">은빛 기사 판금 부츠</option>
+        <option value="barbarian">야만전사 가죽 하이힐 샌들</option>
       </select>
       <label for="female-gloves">장갑</label>
       <select id="female-gloves">

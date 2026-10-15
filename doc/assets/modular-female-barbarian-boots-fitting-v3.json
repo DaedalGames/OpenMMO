@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-15",
+  "source": {
+    "path": "assets/items/female_barbarian_boots/tripo_v1/source/model_url.glb",
+    "sha256": "0a5c78edf236530ced3fd45c400f5ba624fbccb02448a2f38e8d559f5d1ba068"
+  },
+  "body": {
+    "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+    "sha256": "d49dd18893b6de9289f6d35eb8946781d5db793e0bcba031e5672a4ce6e247c6"
+  },
+  "output": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/boots_female_barbarian.glb",
+  "rig_id": "human_female_01_local_v1",
+  "triangles": 3624,
+  "scale": 0.13090373526073676,
+  "heel_pose": {
+    "pitch_degrees": 30,
+    "shared_with": "female_knight_boots",
+    "toe_animation_override": false
+  },
+  "shoe_yaw_degrees": {
+    "right": -10.954062643398316,
+    "left": 10.954062643398316
+  },
+  "ground_source": "assets/items/female_knight_boots/fitted_v5/fitting.json",
+  "posed_ground": -0.030273308473303836,
+  "heel_height_m": 0.06624815929170721,
+  "meters_per_source_unit": 1.8,
+  "clearance_source_units": {
+    "sole": 0.0015,
+    "rings": 0.0065,
+    "straps": 0.002
+  },
+  "clearance_m": {
+    "sole": 0.0027,
+    "rings": 0.0117,
+    "straps": 0.0036000000000000003
+  },
+  "rest_clearance": {
+    "penetrating_vertices": 0,
+    "minimum": 0.0004026994205056278
+  },
+  "arap": {
+    "iterations": 60,
+    "fixed_vertices": 1254
+  },
+  "hidden_body_triangles": 93,
+  "method": "Rotate the shoe into the existing Foot-to-ToeBase heading; fit one right sandal on the shared 30-degree heel pose: uniform scale to foot length, footbed SOLE_GAP under the posed sole, stiletto tip on the forefoot ground, rings radially RING_CLEARANCE off the ankle, ARAP for the straps, outward push for any strap inside the skin. Mirror for the left, then inverse-skin both into the canonical bind pose and store heel_pose in scene extras like the knight boots.",
+  "weights": "Transfer ankle skin weights separately on both legs and smooth within 4 mm in source units. Buckles take the ring mean, the heel strap blends from Foot to the lower ring, and the new rear connector uses an 8 mm smoothing radius. Toe strap influence ramps to 0.35; sole and stiletto remain on Foot. Existing foot and toe animation evaluation is unchanged. The shoe is rotated into the anatomical Foot-to-ToeBase heading before fitting.",
+  "status": "Heel alignment corrected by shoe rotation; original toe animation retained. Front strap clipping during some original motions remains to be fitted.",
+  "output_sha256": "6177fee6dd0d631456068325028f98ddbce9a17200d3aee1e5407c9a277b1727",
+  "foot_runtime_restored_to_repository_original": true,
+  "body_and_animation_unchanged": true,
+  "animation_sha256": "7983cac216586bbf2efee3551da361d7c44e02d106ae179902e33df97cebcc92",
+  "validation": {
+    "runtime": {
+      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/runtime-validation.json",
+      "status": "passed: 14 clips x 61 frames; original toe animation preserved"
+    },
+    "strap_clearance": {
+      "right": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/clearance-validation.json",
+      "left": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/clearance-left-validation.json",
+      "status": "ankle and rear connector clear; front strap intersections remain"
+    },
+    "frontend": {
+      "check": "passed: 0 errors, 0 warnings",
+      "lint": "passed"
+    },
+    "knight_boots_regression": "passed"
+  },
+  "polygon_budget": {
+    "base": 22175,
+    "hair": 2436,
+    "boots": 3624,
+    "assembled": 28235,
+    "visible": 28142,
+    "face_region_including_lashes": 4604
+  },
+  "cleanup": {
+    "date": "2026-10-15",
+    "removed_files": 74,
+    "removed_bytes": 125891410,
+    "retained": [
+      "concept artwork, prompts, provenance and Tripo inputs",
+      "Tripo source GLB, source Blender and generation records",
+      "current v3 GLB, Blender, occlusion mask and fit data",
+      "current validation reports, animation offsets and documentation strips"
+    ],
+    "removed": [
+      "superseded v1/v2 fitting binaries and review outputs",
+      "ARAP caches and temporary posed-body GLBs",
+      "individual verification renders and browser comparisons"
+    ]
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-15",
+  "source": {
+    "path": "assets/items/female_barbarian_boots/tripo_v1/source/model_url.glb",
+    "sha256": "0a5c78edf236530ced3fd45c400f5ba624fbccb02448a2f38e8d559f5d1ba068"
+  },
+  "body": {
+    "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+    "sha256": "d49dd18893b6de9289f6d35eb8946781d5db793e0bcba031e5672a4ce6e247c6"
+  },
+  "output": "assets/items/female_barbarian_boots/tripo_v1/fitted_v2/boots_female_barbarian.glb",
+  "rig_id": "human_female_01_local_v1",
+  "triangles": 3624,
+  "scale": 0.13154241534760497,
+  "heel_pose": {
+    "pitch_degrees": 30,
+    "shared_with": "female_knight_boots"
+  },
+  "ground_source": "assets/items/female_knight_boots/fitted_v5/fitting.json",
+  "posed_ground": -0.030273308473303836,
+  "heel_height_m": 0.06470124343135164,
+  "meters_per_source_unit": 1.8,
+  "clearance_source_units": {
+    "sole": 0.0015,
+    "rings": 0.0065,
+    "straps": 0.002
+  },
+  "clearance_m": {
+    "sole": 0.0027,
+    "rings": 0.0117,
+    "straps": 0.0036000000000000003
+  },
+  "rest_clearance": {
+    "penetrating_vertices": 0,
+    "minimum": 0.00031265611036383474
+  },
+  "arap": {
+    "iterations": 60,
+    "fixed_vertices": 1237
+  },
+  "hidden_body_triangles": 88,
+  "method": "Fit one right sandal on the shared 30-degree heel pose: uniform scale to foot length, footbed SOLE_GAP under the posed sole, stiletto tip on the forefoot ground, rings radially RING_CLEARANCE off the ankle, ARAP for the straps, outward push for any strap inside the skin. Mirror for the left, then inverse-skin both into the canonical bind pose and store heel_pose in scene extras like the knight boots.",
+  "weights": "Transfer ankle skin weights separately on both legs and smooth within 4 mm in source units. Buckles take the ring mean, the heel strap blends from Foot to the lower ring, and the new rear connector uses an 8 mm smoothing radius. Toe strap influence ramps to 0.35; sole and stiletto remain on Foot. Fixed equipped ToeBase rotations keep the exposed toes aligned with the rigid sole and restore on unequip.",
+  "status": "[\ubbf8\uc0ac\uc6a9] Superseded by v3; intermediate binaries and temporary review outputs removed.",
+  "output_sha256": "32cf4f6d31924e30e41b59afa0af86739c9c2d310b6271be4d80112585cfd79a",
+  "added_rear_connector_triangles": 296,
+  "fixed_toe_posture": true,
+  "validation": {
+    "runtime": "assets/items/female_barbarian_boots/tripo_v1/fitted_v2/runtime-validation.json",
+    "right_straps": "assets/items/female_barbarian_boots/tripo_v1/fitted_v2/clearance-validation.json",
+    "left_straps": "assets/items/female_barbarian_boots/tripo_v1/fitted_v2/clearance-left-validation.json",
+    "browser": "assets/items/female_barbarian_boots/tripo_v1/fitted_v2/browser-review.json"
+  },
+  "polygon_budget": {
+    "base": 22175,
+    "hair": 2436,
+    "boots": 3624,
+    "assembled": 28235,
+    "visible": 28147,
+    "face_region_including_lashes": 4604
+  },
+  "quality_checks": {
+    "npm_run_check": "passed: 0 errors, 0 warnings",
+    "npm_run_lint": "passed",
+    "female_knight_boots_regression": "passed"
+  },
+  "superseded_by": "doc/assets/modular-female-barbarian-boots-fitting-v3.json",
+  "output_retained": false,
+  "validation_outputs_retained": false
+}

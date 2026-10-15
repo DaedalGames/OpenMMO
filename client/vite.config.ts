@@ -140,6 +140,14 @@ function modularCharacterPreview(): Plugin {
       '../assets/items/female_barbarian_top/tripo_v1/fitted_v1/body-occlusion.json',
       import.meta.url
     ),
+    female_barbarian_boots: new URL(
+      '../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/boots_female_barbarian.glb',
+      import.meta.url
+    ),
+    'female-barbarian-boots-occlusion.json': new URL(
+      '../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/body-occlusion.json',
+      import.meta.url
+    ),
     female_barbarian_bottom: new URL(
       '../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb',
       import.meta.url
