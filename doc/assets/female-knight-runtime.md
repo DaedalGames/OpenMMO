@@ -49,3 +49,25 @@
 - 프런트엔드 타입·린트, Rust 형식·컴파일 검사.
 
 게임용 GLB 16개 검사는 오류 0개다. 기존 몸체·부츠의 탄젠트 자동 생성 경고 3개는 유지하며 실제 WebGPU 표시를 확인했다.
+
+## 여성 야만용사 적용 — 2026-10-16
+
+여성 야만용사도 같은 모듈형 여성 베이스를 쓴다. 서버는 남성과 같은 `worn_barbarian_*` 5종을 지급·장착하고,
+캐릭터 생성 화면은 뿔 투구까지 입힌 모습을 보여준다.
+`prepare-female-knight.mjs`가 `barbarian_{top,bottom,boots,gloves,helmet,hair}.glb`를 함께 만든다.
+`barbarian_hair`는 뿔 투구 아래에 맞춘 단발이며 투구를 쓰면 기본 단발 대신 표시된다.
+부위마다 판금·야만용사 외형을 따로 고르므로 섞어 입을 수 있다. 야만용사 아이템이 아닌 장비는 계속 판금으로 표시한다.
+
+샌들과 기사 부츠는 발 회전은 같지만 밑창이 달라 접지 높이가 달리기에서 최대 약 4.8cm 차이 난다.
+그래서 보정 동작을 부츠 부위별 `<클립>|femaleBoots:<부위>`로 굽고, 클라이언트는 [맨발, 기사 부츠, 샌들] 값 중 하나를 고른다.
+
+모피 치마 4장의 `pelt_physics` 길이 값(기준점·길이·부착 깊이·충돌체)도 1.8배하고 `unit: 1.8`을 기록한다.
+`pelt-rig`의 내장 거리·중력은 `unit`만큼 커져서, 원본 단위 미리보기와 같은 움직임을 낸다(달리기 90프레임 비교 시 소수 셋째 자리까지 일치).
+모피 파츠는 정점 위치를 직접 고쳐 쓰므로 인터리브하지 않고 저장한다.
+
+원본 출처·라이선스는 [상의](modular-female-barbarian-top.md), [하의](modular-female-barbarian-bottom.md),
+[샌들](modular-female-barbarian-boots.md), [손목 보호대](modular-female-barbarian-bracers.md),
+[투구·헤어](modular-female-barbarian-helmet.md) 기록을 따른다. 추가 유료 생성은 없다.
+
+기존 여성 야만용사에게는 배포 중 서버와 NPC를 멈춘 뒤 `tools/grant-female-barbarian-starter-armor-20261016.py`로 1회 지급한다.
+사용법은 기사 지급 스크립트와 같다(미리보기 후 `--apply --expected-preview`, 가방에 없는 품목만 추가).

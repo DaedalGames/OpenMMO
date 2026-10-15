@@ -6,6 +6,8 @@ import type { WindSample } from '../shaders/grass-material'
 
 export interface PeltPhysics {
   kind: 'plate' | 'strap' | 'fur'
+  /** Metres per authored unit; scales the rig's built-in distances and forces. */
+  unit?: number
   bone: string
   pivot: [number, number, number]
   outward: [number, number, number]
@@ -71,6 +73,7 @@ export function createPeltRig(
     return index
   }
   const bone = findBone(config.bone)
+  const unit = config.unit ?? 1
   const attachments = new Set(config.attachment_vertices)
   const pivot = new THREE.Vector3(...config.pivot)
   const skinnedAttachments = config.attachment_vertices !== undefined
@@ -117,7 +120,8 @@ export function createPeltRig(
         config.bend.joint,
         config.bend.crease,
         [...attachments],
-        config.bend.constraint_triangles
+        config.bend.constraint_triangles,
+        unit
       )
     : null
   const frame = new THREE.Matrix4()
@@ -137,9 +141,10 @@ export function createPeltRig(
   const maxAngle = config.motion?.max_angle ?? MAX_ANGLE
   const samples = new Map<string, THREE.Vector3>()
   const sample = (p: THREE.Vector3) => {
-    if (cloth || p.y > pivot.y - 0.055) return
+    if (cloth || p.y > pivot.y - 0.055 * unit) return
+    const cell = 0.025 * unit
     samples.set(
-      `${Math.round(p.x / 0.025)},${Math.round(p.y / 0.025)},${Math.round(p.z / 0.025)}`,
+      `${Math.round(p.x / cell)},${Math.round(p.y / cell)},${Math.round(p.z / cell)}`,
       p.clone().sub(pivot)
     )
   }
@@ -219,7 +224,7 @@ export function createPeltRig(
         target.addScaledVector(local, weight)
       }
     }
-    scale = frame.getMaxScaleOnAxis()
+    scale = frame.getMaxScaleOnAxis() * unit
     anchor.copy(pivot).applyMatrix4(frame)
     for (const shape of shapes) {
       skin(matrix, shape.bone).multiply(shape.rest)

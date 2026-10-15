@@ -50,7 +50,7 @@ fn class_starter_items(
             ("worn_plate_boots", 1, Some("boots")),
             ("worn_plate_gauntlets", 1, Some("hands")),
         ],
-        CharacterClass::Barbarian if gender == Gender::Male => &[
+        CharacterClass::Barbarian => &[
             ("worn_barbarian_helmet", 1, Some("head")),
             ("worn_barbarian_armor", 1, Some("chest")),
             ("worn_barbarian_pants", 1, Some("pants")),
@@ -2634,11 +2634,6 @@ mod tests {
                 .unwrap();
             let items = auth.load_inventory(character.id).unwrap();
             let worn = auth.load_character_equipment(character.id).unwrap();
-            if gender == Gender::Female {
-                assert_eq!(items.len(), STARTER_ITEMS.len());
-                assert_eq!(worn.armor, Default::default());
-                continue;
-            }
             for (id, slot) in [
                 ("worn_barbarian_helmet", "head"),
                 ("worn_barbarian_armor", "chest"),

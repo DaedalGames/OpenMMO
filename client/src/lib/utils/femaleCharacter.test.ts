@@ -16,7 +16,7 @@ import {
   CHARACTER_ANIMATION_PACK_PATHS,
 } from './modelPaths'
 import { skinnedParts } from './modularCharacter'
-import { FEMALE_BOOTS_PROPERTY } from './femaleCharacter'
+import { FEMALE_BOOTS_PARTS, FEMALE_BOOTS_PROPERTY } from './femaleCharacter'
 import { poseMainHandProp } from './handProps'
 
 vi.mock('./gltfCache', async (importOriginal) => {
@@ -36,6 +36,13 @@ const armor = {
   boots: 'worn_plate_boots',
   hands: 'worn_plate_gauntlets',
 }
+const barbarian = {
+  head: 'worn_barbarian_helmet',
+  chest: 'worn_barbarian_armor',
+  pants: 'worn_barbarian_pants',
+  boots: 'worn_barbarian_boots',
+  hands: 'worn_barbarian_bracers',
+}
 const count = (root: THREE.Object3D, part?: string) =>
   skinnedParts(root)
     .filter(
@@ -48,7 +55,7 @@ const hasAssets = existsSync(
   resolve('public', MODULAR_FEMALE_MODEL_PATH.slice(1))
 )
 
-describe('female knight starter outfit', () => {
+describe('female modular starter outfits', () => {
   it.skipIf(!hasAssets)(
     'stores game dimensions in the rig and keeps attached props at unit scale',
     async () => {
@@ -78,6 +85,9 @@ describe('female knight starter outfit', () => {
   )
   it('uses the modular female player while keeping NPCs and other classes unchanged', () => {
     expect(getCharacterModelPath('knight', 'female')).toBe(
+      MODULAR_FEMALE_MODEL_PATH
+    )
+    expect(getCharacterModelPath('barbarian', 'female')).toBe(
       MODULAR_FEMALE_MODEL_PATH
     )
     expect(getCharacterModelPath('knight', 'female', true)).toBe(
@@ -112,7 +122,7 @@ describe('female knight starter outfit', () => {
     }
   )
   it.skipIf(!hasAssets)(
-    'shows plate for non-plate armor until other female outfits exist',
+    'shows plate for armor without a female outfit of its own',
     async () => {
       const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
       const { modelRoot: plate } = createCharacterModelRoot(source.scene)
@@ -128,6 +138,51 @@ describe('female knight starter outfit', () => {
       expect(count(leather)).toBe(count(plate))
       disposeCharacterSkeletons(plate)
       disposeCharacterSkeletons(leather)
+    }
+  )
+  it.skipIf(!hasAssets)(
+    'equips the barbarian outfit with helmet hair and mixes it with plate',
+    async () => {
+      const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
+      const { modelRoot } = createCharacterModelRoot(source.scene)
+      const original = count(modelRoot)
+      await applyCharacterArmor(modelRoot, barbarian)
+      for (const part of ['top', 'bottom', 'boots', 'gloves', 'helmet']) {
+        expect(count(modelRoot, `barbarian_${part}`)).toBeGreaterThan(0)
+        expect(count(modelRoot, part)).toBe(0)
+      }
+      expect(count(modelRoot, 'hair')).toBe(0)
+      expect(count(modelRoot, 'barbarian_hair')).toBeGreaterThan(0)
+      const body = skinnedParts(modelRoot).find((m) => m.userData.female_body)!
+      const covered = body.geometry.index!.count
+      await applyCharacterArmor(modelRoot, { ...barbarian, head: null })
+      expect(count(modelRoot, 'hair')).toBeGreaterThan(0)
+      expect(count(modelRoot, 'barbarian_hair')).toBe(0)
+      await applyCharacterArmor(modelRoot, { ...armor, chest: barbarian.chest })
+      expect(count(modelRoot, 'barbarian_top')).toBeGreaterThan(0)
+      expect(count(modelRoot, 'top')).toBe(0)
+      expect(count(modelRoot, 'helmet')).toBeGreaterThan(0)
+      expect(count(modelRoot, 'barbarian_hair')).toBe(0)
+      expect(body.geometry.index!.count).not.toBe(covered)
+      await applyCharacterArmor(modelRoot, {})
+      expect(count(modelRoot)).toBe(original)
+      disposeCharacterSkeletons(modelRoot)
+    }
+  )
+  it.skipIf(!hasAssets)(
+    'scales the barbarian fur physics to game units',
+    async () => {
+      const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
+      const panels = skinnedParts(source.scene).filter(
+        (m) => m.userData.pelt_physics
+      )
+      expect(panels).toHaveLength(4)
+      for (const mesh of panels) {
+        const { pelt_physics } = mesh.userData
+        expect(pelt_physics.unit).toBeCloseTo(1.8, 6)
+        expect(pelt_physics.pivot[1]).toBeGreaterThan(0.95)
+        expect(pelt_physics.pivot[1]).toBeLessThan(1.15)
+      }
     }
   )
   it.skipIf(!hasAssets)(
@@ -171,11 +226,13 @@ describe('female knight starter outfit', () => {
             expect(a.distanceTo(b)).toBeCloseTo(length, 5)
             expect(hips.quaternion.length()).toBeCloseTo(1, 5)
           }
-          for (let i = 0; i < lift.values.length; i += 6) {
-            const boots = lift.values[i + 4] - lift.values[i + 1]
-            expect(boots).toBeGreaterThanOrEqual(-1e-6)
-            expect(boots).toBeLessThan(0.2)
-          }
+          const width = (FEMALE_BOOTS_PARTS.length + 1) * 3
+          for (let i = 0; i < lift.values.length; i += width)
+            for (let v = 1; v <= FEMALE_BOOTS_PARTS.length; v++) {
+              const boots = lift.values[i + v * 3 + 1] - lift.values[i + 1]
+              expect(boots).toBeGreaterThanOrEqual(-1e-6)
+              expect(boots).toBeLessThan(0.2)
+            }
         }
       }
       mixer.stopAllAction()
@@ -211,12 +268,15 @@ describe('female knight starter outfit', () => {
       const q = new THREE.Quaternion()
       for (const i of [0, 10, 40]) {
         const expected = q.fromArray(bare, i * 4)
-        const angle = (start: number) =>
+        const angle = (variant: number) =>
           new THREE.Quaternion()
-            .fromArray(foot, i * 8 + start)
-            .angleTo(start ? expected.clone().multiply(offset) : expected)
-        expect(angle(0)).toBeLessThan(1e-3)
-        expect(angle(4)).toBeLessThan(1e-3)
+            .fromArray(
+              foot,
+              (i * (FEMALE_BOOTS_PARTS.length + 1) + variant) * 4
+            )
+            .angleTo(variant ? expected.clone().multiply(offset) : expected)
+        for (let v = 0; v <= FEMALE_BOOTS_PARTS.length; v++)
+          expect(angle(v)).toBeLessThan(1e-3)
       }
       for (const [bone, quaternion] of Object.entries(
         source.scene.userData.female_grip as Record<string, number[]>
@@ -230,9 +290,8 @@ describe('female knight starter outfit', () => {
       mixer.clipAction(walk).play()
       const scene = modelRoot.children[0]
       const body = skinnedParts(modelRoot).find((m) => m.userData.female_body)!
-      const soles = skinnedParts(modelRoot).filter(
-        (m) => m.userData.female_part === 'boots'
-      )
+      const soles = (part: string) =>
+        skinnedParts(modelRoot).filter((m) => m.userData.female_part === part)
       const lowest = (meshes: THREE.SkinnedMesh[]) => {
         let y = Infinity
         const point = new THREE.Vector3()
@@ -254,10 +313,15 @@ describe('female knight starter outfit', () => {
         expect(
           modelRoot.getObjectByName('LeftFoot')!.quaternion.angleTo(expected)
         ).toBeLessThan(1e-3)
-        await applyCharacterArmor(modelRoot, armor)
-        mixer.setTime(time)
-        modelRoot.updateMatrixWorld(true)
-        expect(Math.abs(lowest(soles) - floor)).toBeLessThan(0.01)
+        for (const [boots, part] of [
+          [armor.boots, 'boots'],
+          [barbarian.boots, 'barbarian_boots'],
+        ]) {
+          await applyCharacterArmor(modelRoot, { ...armor, boots })
+          mixer.setTime(time)
+          modelRoot.updateMatrixWorld(true)
+          expect(Math.abs(lowest(soles(part)) - floor)).toBeLessThan(0.01)
+        }
         expect(scene.position.y).toBe(0)
       }
       mixer.stopAllAction()

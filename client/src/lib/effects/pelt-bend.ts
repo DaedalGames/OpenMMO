@@ -9,7 +9,8 @@ export function createPeltBend(
   joint?: { at: number; width: number },
   crease?: { width: number },
   attachmentVertices: readonly number[] = [],
-  constraintTriangles = Infinity
+  constraintTriangles = Infinity,
+  unit = 1
 ) {
   const axis = new THREE.Vector3().crossVectors(
     outward,
@@ -42,7 +43,7 @@ export function createPeltBend(
   }
   const pinned = new Set(attachmentVertices.map((i) => ids[i]))
   const weights = rest.map((p, i) =>
-    pinned.has(i) || p.y > pivot.y - 0.025 ? 0 : 1
+    pinned.has(i) || p.y > pivot.y - 0.025 * unit ? 0 : 1
   )
   const edges = new Map<string, { a: number; b: number; length: number }>()
   const index = geometry.index!
@@ -129,7 +130,7 @@ export function createPeltBend(
       const slope = ((centerline[low + 1] - centerline[low]) * 8) / length
       const across = point.dot(axis)
       const weight =
-        THREE.MathUtils.smoothstep(originalDepth, 0.025, 0.08) *
+        THREE.MathUtils.smoothstep(originalDepth, 0.025 * unit, 0.08 * unit) *
         THREE.MathUtils.smoothstep(Math.abs(across), 0, crease.width)
       creasePivot.copy(outward).multiplyScalar(radius)
       creasePivot.y = -originalDepth

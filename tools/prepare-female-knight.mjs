@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { NodeIO, PropertyType } from '@gltf-transform/core'
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { NodeIO, PropertyType, VertexLayout } from '@gltf-transform/core'
 import { ALL_EXTENSIONS, EXTTextureWebP } from '@gltf-transform/extensions'
 import { prune } from '@gltf-transform/functions'
 import sharp from 'sharp'
@@ -38,6 +38,22 @@ function bakeDimensions(doc) {
     }
   }
   for (const scene of root.listScenes()) scene.setExtras({ ...scene.getExtras(), meters_per_source_unit: metersPerSourceUnit })
+  for (const node of root.listNodes()) {
+    const pelt = node.getExtras().pelt_physics
+    if (!pelt) continue
+    const scale = values => values.map(v => v * metersPerSourceUnit)
+    node.setExtras({
+      ...node.getExtras(),
+      pelt_physics: {
+        ...pelt,
+        unit: metersPerSourceUnit,
+        pivot: scale(pelt.pivot),
+        length: pelt.length * metersPerSourceUnit,
+        ...(pelt.attachment_depth !== undefined && { attachment_depth: pelt.attachment_depth * metersPerSourceUnit }),
+        colliders: pelt.colliders.map(c => ({ ...c, center: scale(c.center), radii: scale(c.radii) })),
+      },
+    })
+  }
 }
 const sources = {
   base: 'assets/modular_human_female_01/rig_v1/female-base.glb',
@@ -47,6 +63,12 @@ const sources = {
   boots: 'assets/items/female_knight_boots/fitted_v5/boots_female_knight.glb',
   gloves: 'assets/items/female_knight_gloves/tripo_v1/fitted_v3/gloves_female_knight.glb',
   helmet: 'assets/items/female_knight_helmet/tripo_v1/fitted_v1/helmet_female_knight.glb',
+  barbarian_hair: 'assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair_bob_barbarian_helmet.glb',
+  barbarian_top: 'assets/items/female_barbarian_top/tripo_v1/fitted_v1/top_female_barbarian.glb',
+  barbarian_bottom: 'assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb',
+  barbarian_boots: 'assets/items/female_barbarian_boots/tripo_v1/fitted_v3/boots_female_barbarian.glb',
+  barbarian_gloves: 'assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/gloves_female_barbarian.glb',
+  barbarian_helmet: 'assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/helmet_female_barbarian.glb',
 }
 const packs = ['locomotion', 'combat_melee', 'social', 'fishing', 'combat_ranged', 'offhand', 'enchant_armor', 'great_sword', 'riding', 'dagger_preview']
 const packFlag = process.argv.indexOf('--pack')
@@ -55,10 +77,18 @@ if (selectedPack !== undefined && !packs.includes(selectedPack)) throw new Error
 const builtPacks = selectedPack ? [selectedPack] : packs
 mkdirSync(`${output}/animations`, { recursive: true })
 const reportPath = 'doc/assets/female-knight-runtime-sources.json'
-const report = { date: '2026-10-14', inputs: {}, outputs: {} }
+const report = { date: '2026-10-16', inputs: {}, outputs: {} }
 const record = (path) => { report.inputs[path] = hash(path) }
 for (const path of ['tools/prepare-female-knight.mjs', 'client/src/lib/utils/female-clip-bake.ts', 'client/src/lib/utils/female-boot-ground.ts']) record(path)
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS)
+// Replaces the file instead of rewriting it, since worktrees may hard-link these GLBs.
+async function write(path, doc) {
+  // Pelt rigs rewrite positions in place, which interleaved attributes do not support.
+  const pelt = doc.getRoot().listNodes().some(node => node.getExtras().pelt_physics)
+  io.setVertexLayout(pelt ? VertexLayout.SEPARATE : VertexLayout.INTERLEAVED)
+  writeFileSync(`${path}.tmp`, await io.writeBinary(doc))
+  renameSync(`${path}.tmp`, path)
+}
 sharp.cache(false)
 sharp.concurrency(2)
 for (const [name, source] of Object.entries(sources)) {
@@ -67,7 +97,7 @@ for (const [name, source] of Object.entries(sources)) {
   const doc = await io.read(source)
   const scene = doc.getRoot().listScenes()[0]
   const metadata = { ...scene.getExtras(), female_part: name }
-  if (!['base', 'hair'].includes(name)) {
+  if (!/^(base|(barbarian_)?hair)$/.test(name)) {
     const path = source.replace(/[^/]+$/, 'body-occlusion.json')
     record(path)
     metadata.body_mask = JSON.parse(readFileSync(path))
@@ -107,14 +137,14 @@ for (const [name, source] of Object.entries(sources)) {
   // Fitting sources carry unreferenced accessors from earlier iterations.
   await doc.transform(prune({ propertyTypes: [PropertyType.ACCESSOR], keepAttributes: true, keepIndices: true }))
   const path = `${output}/${name}.glb`
-  await io.write(path, doc)
+  await write(path, doc)
   console.log(path)
 }
 // Bakes from the written GLBs so the values match what the client loads; companion animations carry the boots variants.
 async function bakeBootsAndGrip(module, load) {
   const female = await module('/src/lib/utils/femaleCharacter.ts')
   const { bakeFemaleClips } = await module('/src/lib/utils/female-clip-bake.ts')
-  const [base, ...parts] = await Promise.all(Object.keys(sources).map(name => load(`${output}/${name}.glb`)))
+  const [base, ...parts] = await Promise.all(['base', ...female.FEMALE_PARTS].map(name => load(`${output}/${name}.glb`)))
   const scene = female.assembleFemaleCharacter(base, parts)
   for (const path of [...(selectedPack ? [] : [`${output}/base.glb`]), ...builtPacks.map(name => `${output}/animations/${name}.glb`)]) {
     const gltf = path.endsWith('/base.glb') ? base : await load(path)
@@ -145,17 +175,19 @@ async function bakeBootsAndGrip(module, load) {
           disposeSampler(old)
         } else animation.addChannel(doc.createAnimationChannel().setTargetNode(node).setTargetPath(target).setSampler(sampler))
       }
-      const companion = doc.createAnimation(`${animation.getName()}${female.FEMALE_BOOTS_CLIP_SUFFIX}`)
-      for (const track of bakes[i].boots) {
-        const { node, target, found } = channel(track)
-        assert.ok(found, track.name)
-        const bare = found.getSampler()
-        const sampler = doc.createAnimationSampler().setInterpolation(bare.getInterpolation())
-          .setInput(bare.getInput()).setOutput(accessor(bare.getOutput().getType(), new Float32Array(track.values)))
-        companion.addSampler(sampler).addChannel(doc.createAnimationChannel().setTargetNode(node).setTargetPath(target).setSampler(sampler))
+      for (const [boots, tracks] of Object.entries(bakes[i].boots)) {
+        const companion = doc.createAnimation(female.femaleBootsClipName(animation.getName(), boots))
+        for (const track of tracks) {
+          const { node, target, found } = channel(track)
+          assert.ok(found, track.name)
+          const bare = found.getSampler()
+          const sampler = doc.createAnimationSampler().setInterpolation(bare.getInterpolation())
+            .setInput(bare.getInput()).setOutput(accessor(bare.getOutput().getType(), new Float32Array(track.values)))
+          companion.addSampler(sampler).addChannel(doc.createAnimationChannel().setTargetNode(node).setTargetPath(target).setSampler(sampler))
+        }
       }
     }
-    await io.write(path, doc)
+    await write(path, doc)
     console.log(`${path}: baked ${bakes.length} clips`)
   }
 }
@@ -200,14 +232,12 @@ try {
     const path = `${output}/animations/${name}.glb`
     const doc = await io.readBinary(new Uint8Array(bytes))
     bakeDimensions(doc)
-    await io.write(path, doc)
+    await write(path, doc)
     console.log(`${name}: ${animations.length} clips`)
   }
   await bakeBootsAndGrip(path => server.ssrLoadModule(path), load)
 } finally { await server.close() }
 for (const path of [...Object.keys(sources).map(name => `${output}/${name}.glb`), ...packs.map(name => `${output}/animations/${name}.glb`)]) report.outputs[path] = hash(path)
-if (selectedPack && existsSync(reportPath)) {
-  const previous = JSON.parse(readFileSync(reportPath))
-  report.inputs = { ...previous.inputs, ...report.inputs }
-}
-writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n')
+const previous = existsSync(reportPath) ? JSON.parse(readFileSync(reportPath)) : {}
+if (selectedPack) report.inputs = { ...previous.inputs, ...report.inputs }
+writeFileSync(reportPath, JSON.stringify({ ...previous, ...report }, null, 2) + '\n')

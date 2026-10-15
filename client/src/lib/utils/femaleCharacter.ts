@@ -5,14 +5,28 @@ import type { ArmorEquipment } from '../network/networkTypes'
 import { loadGLB } from './gltfCache'
 import { MODULAR_FEMALE_DIRECTORY } from './modelPaths'
 import { bindModularPart, skinnedParts } from './modularCharacter'
+import { modularOutfitForArmor } from './modularEquipment'
 import { femaleOutfitMask } from './female-outfit-mask'
 
-const armorParts = ['top', 'bottom', 'boots', 'gloves', 'helmet'] as const
-const parts = ['hair', ...armorParts] as const
-// Baked tracks carry [bare, boots] values; this property picks one per character.
+const slots = ['top', 'bottom', 'boots', 'gloves', 'helmet'] as const
+type Slot = (typeof slots)[number]
+type Style = 'plate' | 'barbarian'
+const prefixes: Record<Style, string> = { plate: '', barbarian: 'barbarian_' }
+const styles = Object.keys(prefixes) as Style[]
+const partName = (style: Style, slot: Slot | 'hair') =>
+  `${prefixes[style]}${slot}`
+export const FEMALE_PARTS = styles.flatMap((style) =>
+  (['hair', ...slots] as const).map((slot) => partName(style, slot))
+)
+/** Boots parts in the order their baked variants follow the bare value. */
+export const FEMALE_BOOTS_PARTS = styles.map((style) =>
+  partName(style, 'boots')
+)
+// Baked tracks carry [bare, ...boots] values; this property picks one per character.
 export const FEMALE_BOOTS_PROPERTY = 'femaleBoots'
-// glTF allows one channel per node and path, so boots values ship as a companion animation.
-export const FEMALE_BOOTS_CLIP_SUFFIX = `|${FEMALE_BOOTS_PROPERTY}`
+// glTF allows one channel per node and path, so boots values ship as companion animations.
+export const femaleBootsClipName = (clip: string, boots: string) =>
+  `${clip}|${FEMALE_BOOTS_PROPERTY}:${boots}`
 let model: Promise<GLTF> | undefined
 const packs = new Map<string, Promise<GLTF>>()
 
@@ -32,7 +46,7 @@ export function assembleFemaleCharacter(
   })
   scene.userData.modular_character = true
   scene.userData.female_parts = {}
-  for (const [i, name] of parts.entries()) {
+  for (const [i, name] of FEMALE_PARTS.entries()) {
     scene.userData.female_parts[name] = sources[i].scene.userData
     for (const mesh of bindModularPart(scene, sources[i].scene)) {
       mesh.userData.female_part = name
@@ -58,7 +72,7 @@ export function assembleFemaleCharacter(
 
 export function loadFemaleCharacter(): Promise<GLTF> {
   return (model ??= Promise.all(
-    ['base', ...parts].map((name) =>
+    ['base', ...FEMALE_PARTS].map((name) =>
       loadGLB(`${MODULAR_FEMALE_DIRECTORY}/${name}.glb`)
     )
   )
@@ -96,43 +110,50 @@ function canonical(values: Float32Array, offset: number, rest: number[]) {
   if (dot < 0) for (let i = 0; i < 4; i++) values[offset + i] *= -1
 }
 
-/** Zips each clip's companion boots animation into `<node>.femaleBoots` [bare, boots] tracks. */
+/** Zips each clip's companion boots animations into `<node>.femaleBoots` [bare, ...boots] tracks. */
 function pairFemaleClips(
   scene: THREE.Object3D,
   clips: THREE.AnimationClip[]
 ): THREE.AnimationClip[] {
-  const variants = new Map(
-    clips
-      .filter((clip) => clip.name.endsWith(FEMALE_BOOTS_CLIP_SUFFIX))
-      .map((clip) => [
-        clip.name.slice(0, -FEMALE_BOOTS_CLIP_SUFFIX.length),
-        clip,
-      ])
+  const byName = new Map(clips.map((clip) => [clip.name, clip]))
+  const companions = new Set(
+    clips.flatMap((clip) =>
+      FEMALE_BOOTS_PARTS.map((boots) => femaleBootsClipName(clip.name, boots))
+    )
   )
+  const width = FEMALE_BOOTS_PARTS.length + 1
   return clips
-    .filter((clip) => !clip.name.endsWith(FEMALE_BOOTS_CLIP_SUFFIX))
+    .filter((clip) => !companions.has(clip.name))
     .map((clip) => {
-      const variant = variants.get(clip.name)
-      if (!variant) throw new Error(`부츠 보정 동작이 없습니다: ${clip.name}`)
+      const variants = FEMALE_BOOTS_PARTS.map((boots) => {
+        const variant = byName.get(femaleBootsClipName(clip.name, boots))
+        if (!variant) throw new Error(`부츠 보정 동작이 없습니다: ${clip.name}`)
+        return variant
+      })
       const tracks = clip.tracks.slice()
-      for (const boots of variant.tracks) {
-        const index = tracks.findIndex((track) => track.name === boots.name)
+      for (const { name } of variants[0].tracks) {
+        const index = tracks.findIndex((track) => track.name === name)
         const bare = tracks[index]
-        if (!bare || bare.times.length !== boots.times.length)
-          throw new Error(`부츠 보정 트랙이 맞지 않습니다: ${boots.name}`)
-        const [node] = boots.name.split('.')
-        const size = boots.getValueSize()
+        const sources = variants.map((variant) =>
+          variant.tracks.find((track) => track.name === name)
+        )
+        if (
+          !bare ||
+          sources.some((track) => track?.times.length !== bare.times.length)
+        )
+          throw new Error(`부츠 보정 트랙이 맞지 않습니다: ${name}`)
+        const [node] = name.split('.')
+        const size = bare.getValueSize()
         const rest =
           size === 4 ? scene.getObjectByName(node)!.quaternion.toArray() : []
-        const values = new Float32Array(bare.values.length * 2)
+        const values = new Float32Array(bare.values.length * width)
         for (let i = 0; i < bare.times.length; i++) {
-          for (let j = 0; j < size; j++) {
-            values[i * size * 2 + j] = bare.values[i * size + j]
-            values[i * size * 2 + size + j] = boots.values[i * size + j]
+          for (const [v, track] of [bare, ...sources].entries()) {
+            const offset = (i * width + v) * size
+            for (let j = 0; j < size; j++)
+              values[offset + j] = track!.values[i * size + j]
+            if (size === 4) canonical(values, offset, rest)
           }
-          if (size !== 4) continue
-          canonical(values, i * 8, rest)
-          canonical(values, i * 8 + 4, rest)
         }
         tracks[index] = new THREE.KeyframeTrack(
           `${node}.${FEMALE_BOOTS_PROPERTY}`,
@@ -149,12 +170,12 @@ function pairFemaleClips(
     })
 }
 
-type ArmorKey = Record<(typeof armorParts)[number], boolean>
+type Outfit = Record<Slot, Style | null>
 
 interface FemaleState {
   mask: ReturnType<typeof femaleOutfitMask>
   refreshBoots: () => void
-  equipped?: ArmorKey
+  equipped?: Outfit
 }
 
 const states = new WeakMap<THREE.Object3D, FemaleState>()
@@ -165,7 +186,7 @@ function femaleScene(root: THREE.Object3D) {
     : root.children.find((child) => child.userData.female_parts)
 }
 
-// PropertyMixer skips unchanged values, so a boots toggle re-applies the last pair.
+// PropertyMixer skips unchanged values, so a boots toggle re-applies the last values.
 function installBootsSwitch(scene: THREE.Object3D, state: FemaleState) {
   const offsets = scene.userData.female_parts.boots.heel_pose
     .local_quaternion_offsets as Record<string, number[]>
@@ -176,24 +197,27 @@ function installBootsSwitch(scene: THREE.Object3D, state: FemaleState) {
     })
   const hips = scene.getObjectByName('Hips')!
   targets.push([hips, hips.position, 3])
+  const width = FEMALE_BOOTS_PARTS.length + 1
   const refreshes = targets.map(([node, target, size]) => {
-    const pair = new Float32Array(size * 2)
+    const values = new Float32Array(size * width)
     let ready = false
     const select = () => {
       if (!ready) return
-      target.fromArray(pair, state.equipped?.boots ? size : 0)
+      const boots = state.equipped?.boots
+      const variant = boots ? styles.indexOf(boots) + 1 : 0
+      target.fromArray(values, variant * size)
       if (target instanceof THREE.Quaternion) target.normalize()
     }
     Object.assign(node, {
       [FEMALE_BOOTS_PROPERTY]: {
         fromArray(array: ArrayLike<number>, offset: number) {
-          for (let i = 0; i < pair.length; i++) pair[i] = array[offset + i]
+          for (let i = 0; i < values.length; i++) values[i] = array[offset + i]
           ready = true
           select()
         },
         toArray(array: number[], offset: number) {
-          target.toArray(array, offset)
-          target.toArray(array, offset + size)
+          for (let v = 0; v < width; v++)
+            target.toArray(array, offset + v * size)
           return array
         },
       },
@@ -203,24 +227,27 @@ function installBootsSwitch(scene: THREE.Object3D, state: FemaleState) {
   return () => refreshes.forEach((refresh) => refresh())
 }
 
+const femaleStyle = (style: string): Style | null =>
+  style === 'none' ? null : style === 'barbarian' ? 'barbarian' : 'plate'
+
 export function applyFemaleArmor(
   root: THREE.Object3D,
   armor?: ArmorEquipment
 ): boolean {
   const scene = femaleScene(root)
   if (!scene) return false
-  // Plate is the only female outfit so far, so any armor in a slot shows it.
-  const equipped: ArmorKey = {
-    top: !!armor?.chest,
-    bottom: !!armor?.pants,
-    boots: !!armor?.boots,
-    gloves: !!armor?.hands,
-    helmet: !!armor?.head,
+  const outfit = modularOutfitForArmor(armor)
+  const equipped: Outfit = {
+    top: femaleStyle(outfit.top),
+    bottom: femaleStyle(outfit.pants),
+    boots: femaleStyle(outfit.boots),
+    gloves: femaleStyle(outfit.gloves),
+    helmet: femaleStyle(outfit.helmet),
   }
   let state = states.get(scene)
   if (
     state?.equipped &&
-    armorParts.every((name) => state!.equipped![name] === equipped[name])
+    slots.every((slot) => state!.equipped![slot] === equipped[slot])
   )
     return true
   const meshes = skinnedParts(scene)
@@ -230,20 +257,34 @@ export function applyFemaleArmor(
     const { female_parts } = scene.userData
     const body = meshes.find((mesh) => mesh.userData.female_body)!
     const mask = femaleOutfitMask()
-    for (const name of armorParts)
-      mask.register(name, female_parts[name].body_mask, body)
+    for (const style of styles)
+      for (const slot of slots) {
+        const name = partName(style, slot)
+        mask.register(name, female_parts[name].body_mask, body)
+      }
     mask.register('sleeves', female_parts.gloves.sleeve_mask, part('top')[0])
     state = { mask, refreshBoots: () => {} }
     state.refreshBoots = installBootsSwitch(scene, state)
     states.set(scene, state)
   }
-  for (const mesh of part('hair')) mesh.visible = !equipped.helmet
-  for (const name of armorParts)
-    for (const mesh of part(name)) mesh.visible = equipped[name]
-  state.mask.setEquippedAll({
-    ...equipped,
-    sleeves: equipped.top && equipped.gloves,
-  })
+  const hair =
+    equipped.helmet === 'plate'
+      ? null
+      : partName(equipped.helmet ?? 'plate', 'hair')
+  for (const style of styles) {
+    const name = partName(style, 'hair')
+    for (const mesh of part(name)) mesh.visible = name === hair
+  }
+  const shown: Record<string, boolean> = {
+    sleeves: equipped.top === 'plate' && equipped.gloves === 'plate',
+  }
+  for (const style of styles)
+    for (const slot of slots) {
+      const name = partName(style, slot)
+      shown[name] = equipped[slot] === style
+      for (const mesh of part(name)) mesh.visible = shown[name]
+    }
+  state.mask.setEquippedAll(shown)
   const bootsChanged = state.equipped?.boots !== equipped.boots
   state.equipped = equipped
   if (bootsChanged) state.refreshBoots()

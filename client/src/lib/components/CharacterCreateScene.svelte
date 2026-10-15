@@ -86,6 +86,12 @@
     knight: {
       armor: { ...STARTER_EQUIPMENT.knight?.armor, head: 'worn_plate_helmet' },
     },
+    barbarian: {
+      armor: {
+        ...STARTER_EQUIPMENT.barbarian?.armor,
+        head: 'worn_barbarian_helmet',
+      },
+    },
   }
 
   const CAMERA_FOV = 42
