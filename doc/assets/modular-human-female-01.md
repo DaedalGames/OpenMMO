@@ -644,3 +644,29 @@ blender -b --python tools/blender-scripts/fix_female_eye_highlight.py
 ```bash
 .venv/bin/python tools/clean-female-underwear-skin.py
 ```
+
+## 기본 상의 옆면 관통 보정 — 2026-10-15
+
+대기 동작에서 가슴 옆의 피부가 흰색 기본 상의를 뚫고 나와 깜빡였다.
+겉면 정점은 정지 상태에서 피부 밖에 있었지만, 옆면의 피부와 상의가 서로 다른 본 웨이트로
+움직여 삼각형 내부에서 최대 약 1.87mm 관통했다.
+
+- 양쪽 컵 아래 바깥쪽의 상의 80정점만, 가장 가까운 피부 삼각형의 무게중심 보간 웨이트에
+  부드럽게 맞췄다. 네 개의 정규화된 본 영향을 유지한다.
+- 형상·노멀·UV·삼각형 인덱스·텍스처·피부 웨이트·리그·애니메이션은 유지했다.
+  현재 `female-base.glb`, 게임용 `modular_female/base.glb`, 편집용 `female-base.blend`에 반영했다.
+- [검증 기록](../../assets/modular_human_female_01/underwear_fit_v1/validation.json):
+  정지 자세와 대기 동작 전체 61시점에서 겉면 496삼각형의 정점·면 중심·내부 격자를 검사했다.
+  수정 후 표본의 최소 피부 여유는 약 1.07mm다. 원래 관통을 재현한 뒤 수정 결과와 비교했다.
+- [원래 웨이트와 수정값](../../assets/modular_human_female_01/underwear_fit_v1/source-influences.npz)을
+  보존한다. 이 값으로 되돌린 GLB가 수정 전 SHA-256과 정확히 같은지 검사해 다른 데이터의 보존도 확인했다.
+- 몸체 SHA-256은 `d49dd188…`에서 `9564457e…`로 바뀌었다. 현재 장비 가림 명세 8개의 해시와
+  기사 장갑·투구 피팅의 입력 해시를 갱신했으며, 가림 인덱스는 유지했다.
+- 기존 여성 몸체의 출처·라이선스를 따른 웨이트 직접 수정이며, 추가 유료 생성은 하지 않았다.
+  [피팅 기록](../../assets/modular_human_female_01/underwear_fit_v1/fitting.json).
+
+```bash
+.venv/bin/python tools/fix-female-underwear-clipping.py
+blender -b assets/modular_human_female_01/rig_v1/female-base.blend --python-exit-code 1 --python tools/blender-scripts/sync_female_underwear_weights.py
+.venv/bin/python tools/validate-female-underwear.py
+```
