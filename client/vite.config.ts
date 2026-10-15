@@ -156,6 +156,14 @@ function modularCharacterPreview(): Plugin {
       '../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/body-occlusion.json',
       import.meta.url
     ),
+    female_barbarian_gloves: new URL(
+      '../assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/gloves_female_barbarian.glb',
+      import.meta.url
+    ),
+    'female-barbarian-gloves-occlusion.json': new URL(
+      '../assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/body-occlusion.json',
+      import.meta.url
+    ),
     female_knight_gloves: new URL(
       '../assets/items/female_knight_gloves/tripo_v1/fitted_v3/gloves_female_knight.glb',
       import.meta.url

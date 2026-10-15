@@ -1,0 +1,181 @@
+{
+  "date": "2026-10-15",
+  "source": {
+    "path": "assets/items/female_barbarian_bracers/tripo_v1/source/model_url.glb",
+    "sha256": "458824b20bf340b427e781622894f34abcb96f270622b3a71d50109dd6ce5a9d"
+  },
+  "body": {
+    "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
+    "sha256": "9564457e8b23275aaf8cd0ff74c318baa4bbfa6b1c8afe608037cf7f40cf0982"
+  },
+  "output": {
+    "path": "assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/gloves_female_barbarian.glb",
+    "sha256": "1a35d963b864c8f7efd301820c1952d579b7ec24ba8213f4aed6c8da7546dcf1"
+  },
+  "rig_id": "human_female_01_local_v1",
+  "meters_per_source_unit": 1.8,
+  "wrist_offset_m": 0.0117,
+  "length_m": 0.15300000000000002,
+  "clearance_m": 0.00396,
+  "sides": {
+    "Right": {
+      "wrist": [
+        -0.26353996992111206,
+        0.6008399724960327,
+        -0.002810004400089383
+      ],
+      "axis": [
+        0.6541098952293396,
+        0.735319197177887,
+        -0.17732995748519897
+      ],
+      "basis": [
+        [
+          -0.02045849710702896,
+          0.2515525221824646,
+          0.9676272869110107
+        ],
+        [
+          -0.7561227679252625,
+          0.6293066740036011,
+          -0.1795865297317505
+        ]
+      ],
+      "scale": 0.08504152418172936,
+      "axial_interval_m": [
+        0.0117,
+        0.1647
+      ],
+      "forearm_length_m": 0.23539161682128906,
+      "minimum_offset_m": 0.003960066804207759,
+      "maximum_offset_m": 0.017851986006637552,
+      "rest_skin_gap_min_m": 0.00396006680420776,
+      "triangles": 1704,
+      "vertices": 2218,
+      "hidden_body_triangles": 104
+    },
+    "Left": {
+      "wrist": [
+        0.2630000114440918,
+        0.6010000109672546,
+        -0.01900000497698784
+      ],
+      "axis": [
+        -0.6619249582290649,
+        0.7475854158401489,
+        -0.05451139807701111
+      ],
+      "basis": [
+        [
+          0.12886536121368408,
+          0.18513694405555725,
+          0.9742269515991211
+        ],
+        [
+          0.7384098172187805,
+          0.6378404498100281,
+          -0.21888461709022522
+        ]
+      ],
+      "scale": 0.08504152418172936,
+      "axial_interval_m": [
+        0.0117,
+        0.1647
+      ],
+      "forearm_length_m": 0.23114405572414398,
+      "minimum_offset_m": 0.003960066804207759,
+      "maximum_offset_m": 0.017851986006637552,
+      "rest_skin_gap_min_m": 0.00396006680420776,
+      "triangles": 1704,
+      "vertices": 2218,
+      "hidden_body_triangles": 104
+    }
+  },
+  "hidden_body_triangles": 208,
+  "method": "Map the source inner wall per height and angle onto 48 actual forearm sections plus clearance, keeping relief above the inner wall at the uniform length scale. The source flare toward the elbow follows the forearm. Left uses the mirrored frame on its own bones with reversed winding. Each bracer follows its ForeArm rigidly.",
+  "original_topology_uv_and_embedded_textures_preserved": true,
+  "status": "Reviewed locally; own-arm clearance passed for preview clips. Existing contacts with other body regions remain in walk, sit_idle and dying.",
+  "cleanup": {
+    "removed": [
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/review/back.png",
+        "bytes": 851653
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/review/elbow.png",
+        "bytes": 712855
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/review/front.png",
+        "bytes": 858429
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/review/side.png",
+        "bytes": 922599
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/review/wrist.png",
+        "bytes": 771128
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/combat_idle.png",
+        "bytes": 774372
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/idle_armed.png",
+        "bytes": 834365
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/left-outer.png",
+        "bytes": 882577
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/rest-front.png",
+        "bytes": 747990
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/right-inner.png",
+        "bytes": 848216
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/right-outer.png",
+        "bytes": 861240
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/run.png",
+        "bytes": 755291
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/sit_idle.png",
+        "bytes": 887797
+      },
+      {
+        "path": "assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/slash1.png",
+        "bytes": 787834
+      }
+    ],
+    "reason": "Remove individual source and fitted review frames; retain source assets, editable Blender files, runtime GLB, validation record, and three documentation strips."
+  },
+  "preview_sleeve_validation": {
+    "scope": "Initial knight top plus barbarian bracers, six glove switches and four top switches. Retain full sleeves for barbarian bracers or no gloves; cut only for knight plate gloves.",
+    "full_top_indices": 12837,
+    "knight_glove_cut_indices": 10677,
+    "restored_triangles": 720,
+    "browser_errors": [],
+    "status": "passed"
+  },
+  "asset_publication": {
+    "repo": "jake-song-openmmo/onlinerpg-assets",
+    "revision": "42eacaaa9d08c52b5a02aac91c5576018f0e6977",
+    "changed_files": 25,
+    "verification": "Every uploaded file downloaded from the pinned revision and SHA-256 verified; unrelated remote files and assets.lock entries preserved."
+  },
+  "precommit_validation": {
+    "client_format": "passed",
+    "client_lint": "passed",
+    "client_check": "passed: 0 errors, 0 warnings",
+    "python_syntax": "passed",
+    "validator_js_syntax": "passed",
+    "animation_evidence": "Current GLB and body-mask hashes match the retained report; no own-arm penetration in rest and 14 preview clips."
+  }
+}

@@ -68,6 +68,7 @@ export async function showFemaleBase(
       <select id="female-gloves">
         <option value="none">없음</option>
         <option value="knight">은빛 기사 판금 장갑</option>
+        <option value="barbarian">야만전사 손목 보호대</option>
       </select>
       <label for="female-motion">동작</label>
       <select id="female-motion">
@@ -419,7 +420,7 @@ export async function showFemaleBase(
   }
   collectMaterials(model)
   const outfitMask = femaleOutfitMask(base)
-  let glovesEquipped = false
+  let knightGlovesEquipped = false
   let sleeveMaskRegistered = false
   const updateGround = () => {
     bootGround?.restore()
@@ -457,7 +458,6 @@ export async function showFemaleBase(
       loaded.set(outfit, entry)
       if (!entry.pending) {
         let source: THREE.Object3D | undefined
-        // Glove sleeve cutouts only exist for the knight top.
         const sleeves = slot === 'top' && outfit === 'knight'
         entry.pending = (async () => {
           const response = await fetch(
@@ -488,7 +488,7 @@ export async function showFemaleBase(
           if (sleeves) {
             outfitMask.register('glove-sleeves', sleeveMask, meshes[0])
             sleeveMaskRegistered = true
-            outfitMask.setEquipped('glove-sleeves', glovesEquipped)
+            outfitMask.setEquipped('glove-sleeves', knightGlovesEquipped)
           }
           if (slot === 'boots') {
             let body: THREE.SkinnedMesh | undefined
@@ -559,9 +559,9 @@ export async function showFemaleBase(
             reset()
         }
         if (slot === 'gloves') {
-          glovesEquipped = equipped
+          knightGlovesEquipped = requested === 'knight'
           if (sleeveMaskRegistered)
-            outfitMask.setEquipped('glove-sleeves', equipped)
+            outfitMask.setEquipped('glove-sleeves', knightGlovesEquipped)
         }
         show(requested)
         updateGround()
@@ -581,7 +581,7 @@ export async function showFemaleBase(
             reset()
         }
         if (slot === 'gloves') {
-          glovesEquipped = false
+          knightGlovesEquipped = false
           if (sleeveMaskRegistered)
             outfitMask.setEquipped('glove-sleeves', false)
         }
