@@ -10,7 +10,7 @@
     },
     {
       "path": "client/public/models/characters/modular_male/animations/locomotion.glb",
-      "sha256": "d4aa8d7369c6396f7455b7066d2342ef7662fa2ef46595c42de76f3f3855055d"
+      "sha256": "b99c491b2c66f47a98fc03da923c892d59d62b240317203ec699c5b2d70d47ae"
     },
     {
       "path": "client/public/models/characters/modular_male/animations/combat_melee.glb",
@@ -26,11 +26,11 @@
     }
   ],
   "simulation": {
-    "controls": 8,
+    "controls": 6,
     "maximum_hz": 30,
     "added_render_vertices": 0,
     "exported_bones": 65,
-    "runtime_bones": 73
+    "runtime_bones": 71
   },
   "clips": [
     {
@@ -84,23 +84,23 @@
     "measured_frames": 240,
     "frame_hz": 60,
     "simulation_hz": 30,
-    "average_ms_per_100_actor_frame": 0.9215216208333346,
-    "p95_ms_per_100_actor_frame": 1.0118230000000494,
+    "average_ms_per_100_actor_frame": 0.9037892291666648,
+    "p95_ms_per_100_actor_frame": 1.0233240000000023,
     "shared_robe_geometries": 1,
     "independent_robe_skeletons": 100
   },
   "code": [
     {
       "path": "client/src/lib/effects/robe-rig.ts",
-      "sha256": "2f73c92bf900a74e2a89d09a83db1d868bc007132a1ca8ef4ba807ae09a3dcc2"
+      "sha256": "f7a95b5902c62e1ccabde436f85a651bfe148f80f35f72c3b6a695b419226ca3"
     },
     {
       "path": "client/src/lib/effects/pelt-rig.ts",
-      "sha256": "4addfb840cdbe539d08924623cd174f6052fa8c2c2e42af75ec012741d4fb46c"
+      "sha256": "3b874adbbce3141fc7c8119810f4ff35ac7759c813be5959c45825339f51e29e"
     },
     {
       "path": "client/src/lib/utils/modularCharacter.ts",
-      "sha256": "1acbf61e48e124902f1ad74c2083ff2152fd4ed91ff404e5e5c5236a0a5eff2a"
+      "sha256": "79c9679f01dc64c8e3f17e3591a9951c0186a2c0fa66ea2a07220361309d772a"
     }
   ],
   "limits": "Approximate thigh-direction clearance; no cloth mesh contacts, self-collision or wrinkle solver. Extreme raised-leg poses and mixed equipment need further visual acceptance. CPU timings exclude rendering."

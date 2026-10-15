@@ -208,7 +208,7 @@ describe('female modular starter outfits', () => {
           expect(panel.skeleton).toBe(panels[0].skeleton)
           expect(robeBaseSkeleton(panel)).toBe(base)
         }
-        expect(panels[0].skeleton.bones).toHaveLength(base.bones.length + 8)
+        expect(panels[0].skeleton.bones).toHaveLength(base.bones.length + 6)
         characters.push({ modelRoot, panels, originals })
       }
       const first = characters[0]
@@ -230,14 +230,17 @@ describe('female modular starter outfits', () => {
       const actual = new THREE.Vector3(),
         expected = new THREE.Vector3()
       let movement = 0
-      const hem = first.originals[0].getAttribute('position')
-      let lower = 0
-      for (let i = 1; i < hem.count; i++)
-        if (hem.getY(i) < hem.getY(lower)) lower = i
-      const initial = first.panels[0].getVertexPosition(
-        lower,
-        new THREE.Vector3()
-      )
+      const hems = first.panels.map((panel, i) => {
+        const position = first.originals[i].getAttribute('position')
+        let lower = 0
+        for (let k = 1; k < position.count; k++)
+          if (position.getY(k) < position.getY(lower)) lower = k
+        return {
+          panel,
+          lower,
+          initial: panel.getVertexPosition(lower, new THREE.Vector3()),
+        }
+      })
       for (let frame = 0; frame < 60; frame++) {
         first.modelRoot.getObjectByName('LeftUpLeg')!.rotation.x =
           -Math.sin(frame / 15) * 0.8
@@ -245,10 +248,11 @@ describe('female modular starter outfits', () => {
           Math.sin(frame / 15) * 0.8
         for (const { modelRoot } of characters)
           updatePeltPhysics(modelRoot, 1 / 60)
-        movement = Math.max(
-          movement,
-          first.panels[0].getVertexPosition(lower, actual).distanceTo(initial)
-        )
+        for (const { panel, lower, initial } of hems)
+          movement = Math.max(
+            movement,
+            panel.getVertexPosition(lower, actual).distanceTo(initial)
+          )
         for (const [i, panel] of first.panels.entries()) {
           reference.geometry = first.originals[i]
           reference.bind(robeBaseSkeleton(panel), panel.bindMatrix)

@@ -19,7 +19,7 @@ try {
     ['client/public/models/characters/modular_male/animations/social.glb', ['sit_idle']],
   ])
   const sampler = clipSampler(body, { samples: 13, restore: [...originalSkeleton.bones] })
-  const report = { sources, simulation: { controls: 8, maximum_hz: 30, added_render_vertices: 0, exported_bones: 65, runtime_bones: 73 }, clips: [] }
+  const report = { sources, simulation: { controls: 6, maximum_hz: 30, added_render_vertices: 0, exported_bones: 65, runtime_bones: 71 }, clips: [] }
   const duplicates = new Map()
   const rest = originalGeometry.attributes.position
   for (let i = 0; i < rest.count; i++) {
@@ -33,7 +33,7 @@ try {
     for (const _sample of sampler(clip)) {
       resetPeltPhysics(body)
       updatePeltPhysics(body, 1 / 30)
-      assert.equal(mesh.skeleton.bones.length, 73)
+      assert.equal(mesh.skeleton.bones.length, 71)
       const points = Array.from({ length: rest.count }, (_, i) => mesh.getVertexPosition(i, new THREE.Vector3()))
       for (const p of points) assert.ok(p.toArray().every(Number.isFinite))
       for (const ids of seams) for (const id of ids.slice(1)) maximumSeamGap = Math.max(maximumSeamGap, points[id].distanceTo(points[ids[0]]))
@@ -44,7 +44,7 @@ try {
   assert.deepEqual(mesh.geometry.attributes.position.array, originalGeometry.attributes.position.array)
   const hair = await load('assets/modular_human_male_01/fitted/hair_crop.glb')
   bindModularPart(body, hair.scene)
-  assert.equal(mesh.skeleton.bones.length, 73)
+  assert.equal(mesh.skeleton.bones.length, 71)
   report.late_part_bind_preserves_robe = true
   disposePeltPhysics(body)
   assert.equal(mesh.geometry, originalGeometry)

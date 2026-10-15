@@ -267,9 +267,23 @@
 
 여러 캐릭터가 함께 있을 때의 비용을 줄이려고 게임에서는 모피 4판을 정점 단위 굽힘·충돌 대신 기존 로브 리그로 움직인다.
 `tools/prepare-female-knight.mjs`가 패키징할 때 각 판의 `pelt_physics`에서 `robe_physics`를 만든다.
-4판은 허리 높이·중심·반경을 하나로 공유하므로 캐릭터당 확장 스켈레톤 1개와 제어 본 8개만 쓴다.
-판마다 고정 정점과 위쪽 띠는 원래 피부 웨이트를 유지한다. 원본 피팅 GLB에는 `robe_physics`가 없어서
-아래 검증 스크립트 두 개는 여전히 `pelt_physics` 경로를 검사한다.
+4판은 허리 높이·중심·반경을 하나로 공유하므로 캐릭터당 확장 스켈레톤 1개와 제어 본 6개만 쓴다.
+앞·뒤 가운데 제어 본은 두 다리 중 더 앞으로 나온 쪽을 따른다. 좌우가 따로 움직이면 가운데 선에서
+판이 찢어졌다(달리기·베기 모서리 최대 35배).
+
+각 열은 허벅지 축을 그대로 따르지 않고, 열의 실제 밑단 방향이 모피 판의 허벅지 충돌체(6개)를
+벗어날 때까지만 든다. 그 각도의 70%만 쓰고, 휴지 자세에서 이미 닿아 있는 만큼은 허용한다.
+다리가 빠르게 움직이면(초당 3rad에서 최대) 허벅지 방향도 따라가 달릴 때 흔들림을 살린다. 최대 1.35rad.
+앞 판은 가운데 열 하나로만 움직인다. 옆 열과 섞이면 달릴 때 폭이 1.4배로 벌어졌다(지금 1.00배).
+벨트 고정 정점 근처는 원래 피부 웨이트를, 멀어질수록 골반 웨이트를 섞어 벨트 아래 틈이 벌어지지 않게 했다.
+브라우저 미리보기에서 모피 굽힘 결과와 비교해 값을 정했다. 정지 자세의 정점 위치 평균 차이는 6.7cm → 4.0cm,
+달리기 밑단 속도는 이전 로브와 같은 초당 약 32cm다(모피 굽힘은 13cm).
+
+`validate-female-barbarian-bottom.mjs`는 원본 피팅 GLB로 결합·웨이트·휴지 형상을 확인하고,
+패키징된 GLB로 실제 로브 경로의 이음 간격·모서리 늘어남·해제 복원을 검사한다.
+허벅지 충돌 검사(`validate-female-barbarian-thigh-contact.mjs`)는 모피 굽힘 전용이라 삭제했다.
+
+- 큰 동작에서 허벅지가 모피 판 앞으로 조금 지나가고, 달리기·앉기에서 옆 판이 비스듬히 벌어진다. 늘어남은 쓰러짐 최대 5.2배다.
 
 - 공유 허리 높이는 4판 피벗 중 가장 높은 값이다. 앞·뒤 판은 회전 축이 약 2.6cm 올라간다.
 - 10명 기준 CPU 물리 시간과 재현 명령은 [성능 기록](modular-female-barbarian-performance.json)에 있다.
@@ -312,7 +326,6 @@ cp assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbari
 .venv/bin/python tools/outfits/female_barbarian_bottom_occlusion.py
 node tools/prepare-female-knight.mjs
 node tools/validate-female-barbarian-bottom.mjs
-node tools/validate-female-barbarian-thigh-contact.mjs
 blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_barbarian_bottom.py
 blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_barbarian_bottom.py -- --belt --output assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_repair_v2/blender
 ```
