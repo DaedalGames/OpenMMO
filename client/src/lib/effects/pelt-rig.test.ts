@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { describe, expect, it } from 'vitest'
+import { createPeltBend } from './pelt-bend'
 import {
   createPeltRig,
   disposePeltPhysics,
@@ -17,6 +18,52 @@ const config: PeltPhysics = {
   length: 0.365,
   colliders: [],
 }
+
+it('lets lining follow the pelt without adding cloth length constraints', () => {
+  const make = (lining: boolean) => {
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(
+        lining
+          ? [0, 1, 0, 0, 0.5, 0, 0.1, 0.5, 0, 10, 1, 0]
+          : [0, 1, 0, 0, 0.5, 0, 0.1, 0.5, 0],
+        3
+      )
+    )
+    geometry.setIndex(lining ? [0, 1, 2, 1, 3, 2] : [0, 1, 2])
+    const bend = createPeltBend(
+      geometry,
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, 0, 1),
+      0.5,
+      0,
+      undefined,
+      undefined,
+      lining ? [0, 3] : [0],
+      1
+    )
+    geometry.getAttribute('position').setY(1, -0.5)
+    if (lining) geometry.getAttribute('position').setX(3, 20)
+    bend.constrain(0)
+    return geometry
+  }
+  const original = make(false),
+    lined = make(true)
+  for (let i = 0; i < 3; i++)
+    expect(
+      new THREE.Vector3()
+        .fromBufferAttribute(lined.getAttribute('position'), i)
+        .toArray()
+    ).toEqual(
+      new THREE.Vector3()
+        .fromBufferAttribute(original.getAttribute('position'), i)
+        .toArray()
+    )
+  expect(lined.getAttribute('position').getX(3)).toBe(20)
+  original.dispose()
+  lined.dispose()
+})
 
 function fixture() {
   const root = new THREE.Group()
@@ -84,6 +131,47 @@ function worldVertex(mesh: THREE.SkinnedMesh, i: number) {
 }
 
 describe('pelt physics', () => {
+  it.each([true, false])(
+    'keeps an interior seam attached with contact %s',
+    (contact) => {
+      const { root, hip, mesh } = fixture()
+      const thigh = new THREE.Bone()
+      thigh.name = 'LeftUpLeg'
+      hip.add(thigh)
+      root.updateMatrixWorld(true)
+      mesh.bind(new THREE.Skeleton([hip, thigh]))
+      const source = mesh.geometry
+      const seam = 7
+      const joints = source.getAttribute('skinIndex') as THREE.BufferAttribute
+      joints.setXYZW(seam, 1, 0, 0, 0)
+      const reference = new THREE.SkinnedMesh(source, mesh.material)
+      root.add(reference)
+      reference.bind(mesh.skeleton, mesh.bindMatrix)
+      const rig = createPeltRig(mesh, {
+        ...config,
+        attachment_vertices: [seam],
+        bend: { droop: 0.9, contact },
+        colliders: [
+          { bone: 'Hips', center: [0, 0.82, 0.2], radii: [0.11, 0.09, 0.08] },
+        ],
+      })
+      for (let frame = 0; frame < 60; frame++) {
+        hip.rotation.z = Math.sin(frame / 10) * 0.2
+        thigh.rotation.x = Math.sin(frame / 8) * 0.4
+        root.updateMatrixWorld(true)
+        rig.update(1 / 60)
+        expect(
+          worldVertex(mesh, seam).distanceTo(worldVertex(reference, seam))
+        ).toBeLessThan(1e-6)
+      }
+      expect(
+        worldVertex(mesh, 16).distanceTo(worldVertex(reference, 16))
+      ).toBeGreaterThan(0.001)
+      rig.dispose()
+      expect(mesh.geometry).toBe(source)
+    }
+  )
+
   it('preserves the skin attachment while letting the lower pelt follow its physics bone', () => {
     const { root, hip, mesh } = fixture()
     const thigh = new THREE.Bone()

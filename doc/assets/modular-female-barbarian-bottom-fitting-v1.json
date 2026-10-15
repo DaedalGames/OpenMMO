@@ -5,7 +5,7 @@
   "body": "assets/modular_human_female_01/rig_v1/female-base.glb",
   "body_sha256": "d49dd18893b6de9289f6d35eb8946781d5db793e0bcba031e5672a4ce6e247c6",
   "output_dir": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1",
-  "triangles": 3256,
+  "triangles": 3340,
   "alignment": {
     "scale": 0.25,
     "rotation_z_degrees": -90,
@@ -65,13 +65,16 @@
     "rig_id": "human_female_01_local_v1",
     "bones": 65,
     "output": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb",
-    "sha256": "c66f625efb142c03d90b2ad5054eb760bc9b1ef948f1c298822a276b13b14b01",
-    "vertices": 4845,
+    "sha256": "e6259943201a9778efc4204b689f1001550bdc0947058524a21403719fc3cb39",
+    "vertices": 4999,
     "exact_female_hierarchy_and_inverse_bind": true,
     "method": "Inverse-distance transfer from skin; panel leg influence capped by height below the belt with the rest on Hips; the belt keeps skin weights; medallion, rings and loops rigid on the bone that dominates the belt around them; smoothed across the welded surface; braid copies the panel under it."
   },
   "belt_lining_repair": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_repair_v2/repair.json",
   "waistband_repair": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/waistband_repair_v1/repair.json",
   "panel_physics": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_weights_v1/repair.json",
-  "belt_rim_repair": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/repair.json"
+  "belt_rim_repair": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/repair.json",
+  "panel_seam_repair": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_seam_repair_v1/repair.json",
+  "thigh_contact_repair": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/thigh_contact_v1/repair.json",
+  "belt_fur_join": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_fur_join_v1/repair.json"
 }

@@ -16,8 +16,16 @@ from lib.glb_accessors import accessor
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
 DIRECTORY = ROOT / 'assets/items/female_barbarian_bottom/tripo_v1/fitted_v1'
 BOTTOM = DIRECTORY / 'bottom_female_barbarian.glb'
+SURFACE = DIRECTORY / 'belt_fur_join_v1/before.glb'
 REACH = .012
 INSET = .01
+HIP_CLEARANCE_FACES = [1912, 1916, 1919, 11823]
+COMBAT_HIP_FACES = [
+    1900, 1908, 1909, 1910, 1911, 1914, 4752, 6535, 6537, 6549,
+    6550, 6551, 6631, 6633, 6634, 6635, 6636, 6637, 6639, 6641,
+    11811, 11819, 11820, 11821, 11825, 14663, 16446, 16448, 16459, 16460,
+    16461, 16462, 16542, 16544, 16545, 16546, 16547,
+]
 
 
 def mesh(path, all_parts=False):
@@ -36,7 +44,7 @@ def mesh(path, all_parts=False):
 
 
 doc, p, n, f = mesh(BODY)
-_, bottom_points, _, bottom_faces = mesh(BOTTOM, all_parts=True)
+_, bottom_points, _, bottom_faces = mesh(SURFACE, all_parts=True)
 _, welded = np.unique(np.round(p, 6), axis=0, return_inverse=True)
 welded = welded.ravel()
 edges = welded[f[:, [0, 1, 1, 2, 2, 0]].reshape(-1, 2)]
@@ -85,15 +93,24 @@ for label_mask in [labels[welded] == main, labels[welded] != main]:
 hidden = covered[f].all(1)
 waistband = panties & (p[f, 1].min(1) > .585)
 hidden |= waistband
+assert np.array_equal(f[HIP_CLEARANCE_FACES], [[2173, 2230, 2166], [2173, 2177, 2193], [2453, 2193, 2177], [2173, 2166, 2177]])
+assert (face_labels[HIP_CLEARANCE_FACES] == main).all()
+hidden[HIP_CLEARANCE_FACES] = True
+assert hashlib.sha256(f[COMBAT_HIP_FACES].astype('<u4').tobytes()).hexdigest() == '73bc2f058e234706d3998f390c2ce7b9ae20b76f345f0c7f7ef25e38b44b2402'
+assert (face_labels[COMBAT_HIP_FACES] == main).all()
+hidden[COMBAT_HIP_FACES] = True
 source_triangles = sum(doc['accessors'][part['indices']]['count'] // 3 for part in doc['meshes'][0]['primitives'])
 record = {'body': str(BODY.relative_to(ROOT)), 'body_sha256': hashlib.sha256(BODY.read_bytes()).hexdigest(),
           'bottom': 'bottom_female_barbarian', 'bottom_sha256': hashlib.sha256(BOTTOM.read_bytes()).hexdigest(),
+          'coverage_surface': str(SURFACE.relative_to(ROOT)), 'coverage_surface_sha256': hashlib.sha256(SURFACE.read_bytes()).hexdigest(),
           'mesh_index': 0, 'primitive_index': 0, 'source_triangles': source_triangles, 'primitive_triangles': len(f),
           'hide_triangle_indices': np.flatnonzero(hidden).tolist(),
           'covered_skin_triangles': int((hidden & (face_labels == main)).sum()),
           'covered_panty_triangles': int((hidden & panties).sum()),
           'removed_panty_waistband_triangles': int(waistband.sum()),
+          'hip_clearance_skin_triangles': HIP_CLEARANCE_FACES,
+          'combat_hip_clearance_skin_triangles': COMBAT_HIP_FACES,
           'visible_triangles': source_triangles - int(hidden.sum()),
-          'scope': f'Reversible equipment mask on this exact body. Covered skin and panties use a normal ray within {REACH} and an inset of {INSET}; panty waistband faces entirely above 0.585 m are also hidden. Lower panties stay visible under the open fur panels. Restore full index buffer on unequip/load failure.'}
+          'scope': f'Reversible equipment mask on this exact body. Covered skin and panties use a normal ray within {REACH} and an inset of {INSET}; panty waistband faces entirely above 0.585 m are also hidden. Four covered right-front hip skin triangles are hidden to prevent idle-pose clipping through the upper pelt. Additional upper hip skin triangles are hidden below both belt sides to prevent combat-idle clipping. Lower panties stay visible under the open fur panels. Restore full index buffer on unequip/load failure.'}
 (DIRECTORY / 'body-occlusion.json').write_text(json.dumps(record, indent=2) + '\n')
 print({key: record[key] for key in ['covered_skin_triangles', 'covered_panty_triangles', 'visible_triangles']})

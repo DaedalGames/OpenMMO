@@ -11,10 +11,12 @@ export interface PeltPhysics {
   outward: [number, number, number]
   length: number
   attachment_depth?: number
+  attachment_vertices?: number[]
   cloth?: { columns: number; rows: number; pinned_rows: number }
   bend?: {
     droop: number
     contact?: boolean
+    constraint_triangles?: number
     joint?: {
       at: number
       width: number
@@ -69,7 +71,25 @@ export function createPeltRig(
     return index
   }
   const bone = findBone(config.bone)
+  const attachments = new Set(config.attachment_vertices)
   const pivot = new THREE.Vector3(...config.pivot)
+  const skinnedAttachments = config.attachment_vertices !== undefined
+  if (skinnedAttachments && config.attachment_depth !== undefined)
+    for (let i = 0; i < rest.count; i++)
+      if (rest.getY(i) > pivot.y - config.attachment_depth) attachments.add(i)
+  const attachmentTargets = new Map(
+    [...attachments].map((i) => [i, new THREE.Vector3()])
+  )
+  const attachmentMatrices = new Map<number, THREE.Matrix4>()
+  const sourceJoints = original.getAttribute('skinIndex')
+  const sourceWeights = original.getAttribute('skinWeight')
+  for (const i of attachments)
+    for (let k = 0; k < 4; k++)
+      if (sourceWeights.getComponent(i, k))
+        attachmentMatrices.set(
+          sourceJoints.getComponent(i, k),
+          new THREE.Matrix4()
+        )
   const outward = new THREE.Vector3(...config.outward).normalize()
   const axis = new THREE.Vector3().crossVectors(
     outward,
@@ -95,7 +115,9 @@ export function createPeltRig(
         config.length,
         config.bend.droop,
         config.bend.joint,
-        config.bend.crease
+        config.bend.crease,
+        [...attachments],
+        config.bend.constraint_triangles
       )
     : null
   const frame = new THREE.Matrix4()
@@ -138,6 +160,7 @@ export function createPeltRig(
   ) as THREE.BufferAttribute
   for (let i = 0; i < rest.count; i++) {
     if (
+      !skinnedAttachments &&
       config.attachment_depth !== undefined &&
       rest.getY(i) > pivot.y - config.attachment_depth
     )
@@ -181,6 +204,21 @@ export function createPeltRig(
     }
     skin(frame, bone)
     inverseFrame.copy(frame).invert()
+    for (const [index, matrix] of attachmentMatrices)
+      skin(matrix, index).premultiply(inverseFrame)
+    for (const [i, target] of attachmentTargets) {
+      target.set(0, 0, 0)
+      for (let k = 0; k < 4; k++) {
+        const weight = sourceWeights.getComponent(i, k)
+        if (!weight) continue
+        local
+          .fromBufferAttribute(rest, i)
+          .applyMatrix4(
+            attachmentMatrices.get(sourceJoints.getComponent(i, k))!
+          )
+        target.addScaledVector(local, weight)
+      }
+    }
     scale = frame.getMaxScaleOnAxis()
     anchor.copy(pivot).applyMatrix4(frame)
     for (const shape of shapes) {
@@ -267,6 +305,7 @@ export function createPeltRig(
 
   function deform() {
     if (
+      !skinnedAttachments &&
       !config.bend?.contact &&
       Math.abs(angle - drawnAngle) < 1e-7 &&
       Math.abs(jointAngle - drawnJointAngle) < 1e-7 &&
@@ -276,17 +315,21 @@ export function createPeltRig(
     rotation.setFromAxisAngle(axis, angle)
     for (let i = 0; i < rest.count; i++) {
       local.fromBufferAttribute(rest, i)
-      if (bend) bend.deform(local, angle, jointAngle, creaseAngle)
-      else local.sub(pivot).applyQuaternion(rotation).add(pivot)
+      const attachment = attachmentTargets.get(i)
+      if (attachment) local.copy(attachment)
+      else {
+        if (bend) bend.deform(local, angle, jointAngle, creaseAngle)
+        else local.sub(pivot).applyQuaternion(rotation).add(pivot)
+      }
       position.setXYZ(i, local.x, local.y, local.z)
       if (restNormals && !bend) {
         local.fromBufferAttribute(restNormals, i)
-        local.applyQuaternion(rotation)
+        if (!attachments.has(i)) local.applyQuaternion(rotation)
         normals.setXYZ(i, local.x, local.y, local.z)
       }
       if (restTangents && !bend) {
         local.fromBufferAttribute(restTangents, i)
-        local.applyQuaternion(rotation)
+        if (!attachments.has(i)) local.applyQuaternion(rotation)
         tangents.setXYZ(i, local.x, local.y, local.z)
       }
     }

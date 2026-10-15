@@ -7,7 +7,9 @@ export function createPeltBend(
   length: number,
   droop: number,
   joint?: { at: number; width: number },
-  crease?: { width: number }
+  crease?: { width: number },
+  attachmentVertices: readonly number[] = [],
+  constraintTriangles = Infinity
 ) {
   const axis = new THREE.Vector3().crossVectors(
     outward,
@@ -38,10 +40,13 @@ export function createPeltBend(
     }
     ids.push(id)
   }
-  const weights = rest.map((p) => (p.y > pivot.y - 0.025 ? 0 : 1))
+  const pinned = new Set(attachmentVertices.map((i) => ids[i]))
+  const weights = rest.map((p, i) =>
+    pinned.has(i) || p.y > pivot.y - 0.025 ? 0 : 1
+  )
   const edges = new Map<string, { a: number; b: number; length: number }>()
   const index = geometry.index!
-  for (let i = 0; i < index.count; i += 3) {
+  for (let i = 0; i < Math.min(index.count, constraintTriangles * 3); i += 3) {
     for (let j = 0; j < 3; j++) {
       const a = ids[index.getX(i + j)]
       const b = ids[index.getX(i + ((j + 1) % 3))]
@@ -197,25 +202,27 @@ export function createPeltBend(
         if (weights[b]) points[b].sub(delta)
       }
     }
-    rotation.setFromAxisAngle(axis, angle)
-    for (let i = 0; i < rest.length; i++)
-      rigid[i].copy(rest[i]).sub(pivot).applyQuaternion(rotation).add(pivot)
-    let amount = 1
-    for (const { a, b, length } of links) {
-      baseEdge.copy(rigid[b]).sub(rigid[a])
-      delta.copy(points[b]).sub(points[a]).sub(baseEdge)
-      const qa = delta.lengthSq()
-      if (qa < 1e-16) continue
-      const qb = 2 * baseEdge.dot(delta)
-      const qc = baseEdge.lengthSq() - (length * 1.02 + 1e-6) ** 2
-      amount = Math.min(
-        amount,
-        (-qb + Math.sqrt(Math.max(0, qb * qb - 4 * qa * qc))) / (2 * qa)
-      )
+    if (!pinned.size) {
+      rotation.setFromAxisAngle(axis, angle)
+      for (let i = 0; i < rest.length; i++)
+        rigid[i].copy(rest[i]).sub(pivot).applyQuaternion(rotation).add(pivot)
+      let amount = 1
+      for (const { a, b, length } of links) {
+        baseEdge.copy(rigid[b]).sub(rigid[a])
+        delta.copy(points[b]).sub(points[a]).sub(baseEdge)
+        const qa = delta.lengthSq()
+        if (qa < 1e-16) continue
+        const qb = 2 * baseEdge.dot(delta)
+        const qc = baseEdge.lengthSq() - (length * 1.02 + 1e-6) ** 2
+        amount = Math.min(
+          amount,
+          (-qb + Math.sqrt(Math.max(0, qb * qb - 4 * qa * qc))) / (2 * qa)
+        )
+      }
+      amount = THREE.MathUtils.clamp(amount, 0, 1)
+      for (let i = 0; i < points.length; i++)
+        points[i].lerpVectors(rigid[i], points[i], amount)
     }
-    amount = THREE.MathUtils.clamp(amount, 0, 1)
-    for (let i = 0; i < points.length; i++)
-      points[i].lerpVectors(rigid[i], points[i], amount)
     for (let i = 0; i < positions.count; i++) {
       const p = points[ids[i]]
       positions.setXYZ(i, p.x, p.y, p.z)
