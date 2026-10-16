@@ -87,49 +87,46 @@ export class DungeonPuddles {
     this.drips = schedules.flat()
     const geometry = new THREE.PlaneGeometry(1, 1)
     geometry.rotateX(-Math.PI / 2)
-    const size = new THREE.InstancedBufferAttribute(
-      new Float32Array(puddles.flatMap((p) => [p.width, p.depth])),
-      2
-    )
-    geometry.setAttribute('aPuddleSize', size)
     const bounds = puddles.map(dungeonPuddleBounds)
-    geometry.setAttribute(
-      'aPuddleUv',
-      new THREE.InstancedBufferAttribute(
-        new Float32Array(
-          puddles.flatMap((p, i) => {
-            const b = bounds[i]
-            return [
-              0.5 + (b.minX - p.x) / p.width,
-              0.5 - (b.maxZ - p.z) / p.depth,
-              (b.maxX - b.minX) / p.width,
-              (b.maxZ - b.minZ) / p.depth,
-            ]
-          })
-        ),
-        4
-      )
-    )
-    geometry.setAttribute(
-      'aPuddleSeed',
-      new THREE.InstancedBufferAttribute(
-        new Float32Array(puddles.map((p) => p.seed)),
-        1
-      )
-    )
-    geometry.setAttribute(
-      'aPuddleShape',
-      new THREE.InstancedBufferAttribute(
-        new Float32Array(
-          puddles.flatMap(({ shape }) => [
+    // One interleaved buffer: WebGPU caps a pipeline at 8 vertex buffers.
+    const statics = new THREE.InstancedInterleavedBuffer(
+      new Float32Array(
+        puddles.flatMap((p, i) => {
+          const b = bounds[i]
+          const { shape } = p
+          return [
+            p.width,
+            p.depth,
+            p.seed,
+            0,
+            0.5 + (b.minX - p.x) / p.width,
+            0.5 - (b.maxZ - p.z) / p.depth,
+            (b.maxX - b.minX) / p.width,
+            (b.maxZ - b.minZ) / p.depth,
             shape.lobes,
             shape.irregularity,
             shape.phase,
             shape.skew,
-          ])
-        ),
-        4
-      )
+          ]
+        })
+      ),
+      12
+    )
+    geometry.setAttribute(
+      'aPuddleSize',
+      new THREE.InterleavedBufferAttribute(statics, 2, 0)
+    )
+    geometry.setAttribute(
+      'aPuddleSeed',
+      new THREE.InterleavedBufferAttribute(statics, 1, 2)
+    )
+    geometry.setAttribute(
+      'aPuddleUv',
+      new THREE.InterleavedBufferAttribute(statics, 4, 4)
+    )
+    geometry.setAttribute(
+      'aPuddleShape',
+      new THREE.InterleavedBufferAttribute(statics, 4, 8)
     )
     const seed = attribute<'float'>('aPuddleSeed', 'float')
     const shape = attribute<'vec4'>('aPuddleShape', 'vec4')

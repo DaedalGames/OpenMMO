@@ -1,7 +1,8 @@
 /**
  * Measure solid catalog GLBs into data/furniture_footprints.json for shared Rust.
  * build:wasm regenerates stale footprints; --force always regenerates them.
- * Requires @gltf-transform/core and @gltf-transform/extensions when measuring.
+ * Requires @gltf-transform/core, @gltf-transform/extensions and meshoptimizer
+ * when measuring.
  * Without these tool dependencies, warn and keep existing output.
  */
 import { readFile, writeFile, stat } from "fs/promises";
@@ -109,10 +110,12 @@ if (!FORCE) {
 
 // Keep committed footprints when optional measurement dependencies are missing.
 let NodeIO;
-let EXTTextureWebP;
+let ALL_EXTENSIONS;
+let MeshoptDecoder;
 try {
   ({ NodeIO } = await import("@gltf-transform/core"));
-  ({ EXTTextureWebP } = await import("@gltf-transform/extensions"));
+  ({ ALL_EXTENSIONS } = await import("@gltf-transform/extensions"));
+  ({ MeshoptDecoder } = await import("meshoptimizer"));
 } catch (err) {
   const haveOutput = (await mtimeMs(OUT_PATH)) > -Infinity;
   if (haveOutput) {
@@ -132,7 +135,10 @@ try {
   process.exit(1);
 }
 
-const io = new NodeIO().registerExtensions([EXTTextureWebP]);
+await MeshoptDecoder.ready;
+const io = new NodeIO()
+  .registerExtensions(ALL_EXTENSIONS)
+  .registerDependencies({ "meshopt.decoder": MeshoptDecoder });
 const round = (v) => +v.toFixed(3);
 
 const out = {};

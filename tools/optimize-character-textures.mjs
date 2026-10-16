@@ -71,10 +71,11 @@ if (animationNames) {
     for (const sampler of animation.listSamplers()) sampler.dispose();
     animation.dispose();
   }
-  await document.transform(
-    prune({ propertyTypes: [PropertyType.ACCESSOR], keepAttributes: true }),
-  );
 }
+// Unused UVs and tangents each cost a vertex buffer; WebGPU allows 8.
+await document.transform(
+  prune({ propertyTypes: [PropertyType.ACCESSOR], keepAttributes: false }),
+);
 const textures = new Set(
   document
     .getRoot()

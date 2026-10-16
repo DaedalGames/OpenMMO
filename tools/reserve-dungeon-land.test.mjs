@@ -3,7 +3,11 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { defaultGrades, planReservation } from "./reserve-dungeon-land.mjs";
+import {
+  RINGS,
+  defaultGrades,
+  planReservation,
+} from "./reserve-dungeon-land.mjs";
 
 test("reserves edited plots while preserving unrelated edits and existing reserved land", () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "dungeon-land-"));
@@ -66,4 +70,17 @@ test("seeds a missing region from the default rings for a site outside the regis
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("default rings match the server", () => {
+  const rust = fs.readFileSync(
+    new URL("../server/src/land_grades.rs", import.meta.url),
+    "utf8",
+  );
+  const rings = Object.fromEntries(
+    [...rust.matchAll(/"(\w+)" => Some\(\(([\d.]+), ([\d.]+)\)\)/g)].map(
+      ([, kind, inner, outer]) => [kind, [Number(inner), Number(outer)]],
+    ),
+  );
+  assert.deepEqual(rings, RINGS);
 });

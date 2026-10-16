@@ -5,11 +5,15 @@ import { parseArgs } from "node:util";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const worldDelta = (from, to) => ((to - from + 49152) % 32768) - 16384;
+const plotCenter = (tx, tz, q) => [
+  tx * 64 - 16 + (q % 2) * 32,
+  tz * 64 - 16 + Math.floor(q / 2) * 32,
+];
 const regionName = (value) =>
   `${value < 0 ? "-" : "+"}${Math.abs(value).toString().padStart(2, "0")}`;
 
 // Mirrors server/src/land_grades.rs: [inner, outer] rings per anchor kind.
-const RINGS = {
+export const RINGS = {
   capital: [180, 400],
   city: [120, 320],
   town: [80, 250],
@@ -46,10 +50,11 @@ export function defaultGrades(anchors, rx, rz) {
   const grades = Buffer.alloc(1024, 1);
   for (let index = 0; index < 1024; index++) {
     const tile = Math.floor(index / 4);
-    const q = index % 4;
-    const cx = (rx * 16 + (tile % 16)) * 64 - 16 + (q % 2) * 32;
-    const cz =
-      (rz * 16 + Math.floor(tile / 16)) * 64 - 16 + Math.floor(q / 2) * 32;
+    const [cx, cz] = plotCenter(
+      rx * 16 + (tile % 16),
+      rz * 16 + Math.floor(tile / 16),
+      index % 4,
+    );
     for (const anchor of anchors) {
       const distance = Math.hypot(worldDelta(anchor.x, cx), cz - anchor.z);
       if (distance < anchor.inner) {
@@ -73,8 +78,7 @@ export function planReservation(terrainDir, dungeon, plots, anchors = null) {
     const { tile_x: tx, tile_z: tz, quadrant: q } = plot;
     if (![tx, tz, q].every(Number.isInteger) || q < 0 || q > 3)
       throw new Error("Invalid ownership row");
-    const cx = tx * 64 - 16 + (q % 2) * 32;
-    const cz = tz * 64 - 16 + Math.floor(q / 2) * 32;
+    const [cx, cz] = plotCenter(tx, tz, q);
     const distance = Math.hypot(
       Math.max(Math.abs(worldDelta(x, cx)) - 16, 0),
       Math.max(Math.abs(cz - z) - 16, 0),
@@ -110,10 +114,11 @@ export function planReservation(terrainDir, dungeon, plots, anchors = null) {
       let count = 0;
       for (let index = 0; index < 1024; index++) {
         const tile = Math.floor(index / 4);
-        const q = index % 4;
-        const cx = (canonicalRx * 16 + (tile % 16)) * 64 - 16 + (q % 2) * 32;
-        const cz =
-          (rz * 16 + Math.floor(tile / 16)) * 64 - 16 + Math.floor(q / 2) * 32;
+        const [cx, cz] = plotCenter(
+          canonicalRx * 16 + (tile % 16),
+          rz * 16 + Math.floor(tile / 16),
+          index % 4,
+        );
         const distance = Math.hypot(worldDelta(x, cx), cz - z);
         if (distance > 150) continue;
         const grade = distance < 60 || before[index] === 0 ? 0 : 2;
@@ -140,10 +145,11 @@ function main() {
       apply: { type: "boolean", default: false },
     },
   });
-  const byCoords = values.x !== undefined || values.z !== undefined;
+  const byCoords = !values.dungeon;
+  const coordArgs = [values.x, values.z, values.label];
   if (
     !values.ownership ||
-    (values.dungeon ? byCoords : !(values.x && values.z && values.label))
+    (byCoords ? !coordArgs.every(Boolean) : coordArgs.some(Boolean))
   )
     throw new Error(
       "Use --dungeon ID or --x X --z Z --label NAME, with --ownership owned-plots.json [--terrain DIR] [--apply]",
@@ -187,10 +193,11 @@ function main() {
       fs.rmSync(temporary, { force: true });
     }
   }
-  if (!byCoords)
-    console.log(
-      "Regions without edited grade files use the dungeon registry defaults.",
-    );
+  console.log(
+    byCoords && changes.some((change) => !change.exists)
+      ? "New grade files no longer follow later changes to the default rings."
+      : "Regions without edited grade files use the dungeon registry defaults.",
+  );
 }
 
 if (

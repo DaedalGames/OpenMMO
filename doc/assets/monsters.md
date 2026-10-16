@@ -101,9 +101,12 @@
     기존 Sketchfab 출처·이용 조건을 유지하며 새 생성·유료 호출은 없다.
     최적화 파일과 보존 원본을 HF에 게시하고 원격 SHA-256을 확인했으며 `assets.lock`에 고정했다.
     운영 배포는 수행하지 않았다.
-    최적화 파일 SHA-256: `7dcf2046a61897fd1e88f4e631bf4ac4c6171e001477898fe130d2b4e92c4499`.
     보존 원본 SHA-256: `0082435d28e9da83c31d5c42dbe6757fd729ba213953f084d8e4c579a029a64d`.
     재현: `node tools/optimize-character-textures.mjs assets/monsters/scp939/scp939-before-optimization.glb client/public/models/monsters/scp939.glb 512 --all-textures --keep-animations=939_Idle,939_Walking,939_Running,939_Attack1,939_AddStagger1,939_DieProne`.
+  - 미사용 UV 제거 (2026-10-17): 몸체 메시에 재질이 쓰지 않는 `TEXCOORD_1~4`가 있었다. meshopt 압축 뒤 속성이 버퍼마다
+    나뉘어 WebGPU 정점 버퍼 한도(8)를 넘었고, 렌더 파이프라인 생성이 실패했다. 최적화 도구가 재질이 참조하지 않는
+    UV를 지우도록 고치고 같은 재현 명령으로 다시 만들었다. 몸체 속성 10→6개, 1,395,576바이트. 텍스처·애니메이션은 이전 결과와 같다.
+    최적화 파일 SHA-256: `c654e5d3e467e44aeff3cd32534b3ed90d0fb685e5a83a91fa47cb522a9de374`.
   - `939_DieProne` (2026-08-24): 원본 클립 중 죽음이 `939_Die`(상체를 들었다 웅크림)·`939_Dead`뿐이고 모두 살아
     있어 보여서 새로 구웠다: `939_Attack1` 45~63프레임(뒷다리로 크게 일어서는 구간)을 앞에 깔고, 그 정점 포즈를
     고정한 채 18~34프레임에 걸쳐 루트를 엉덩이 기준으로 넘어뜨려 척추가 수평이 되는 각도에 40°를 더 돌리면서(살짝 뒤로
