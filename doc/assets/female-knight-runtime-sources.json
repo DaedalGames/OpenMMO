@@ -1,7 +1,7 @@
 {
   "date": "2026-10-16",
   "inputs": {
-    "tools/prepare-female-knight.mjs": "fe46da452601cb06d446c5c1651f0b969be4752f524b65d29822161f90c6d711",
+    "tools/prepare-female-knight.mjs": "17021660a041d946495c398a471302e75b66cbc1ba9831f767660ac923ed2ebe",
     "client/src/lib/utils/female-clip-bake.ts": "620406c2456972178dd65681de37ee52294488478d87d1fbd654640ddb6082f8",
     "client/src/lib/utils/female-boot-ground.ts": "34614cb3430b308ead42a29ef7dbffba23244efda5da9b2d6b79948c7fe34652",
     "assets/modular_human_female_01/rig_v1/female-base.glb": "9564457e8b23275aaf8cd0ff74c318baa4bbfa6b1c8afe608037cf7f40cf0982",
@@ -61,16 +61,16 @@
     "client/public/models/characters/modular_female/barbarian_boots.glb": "dee6da5c6e773946ccc0ae2f68a076baba2b3bc9dd89fb40edd02f27adf57d6a",
     "client/public/models/characters/modular_female/barbarian_gloves.glb": "1df7afe0567aa26899c1b23b9856d53b9ee0cd58cc30c2550f9907847ff1e755",
     "client/public/models/characters/modular_female/barbarian_helmet.glb": "6f767590d72491e8cb9312dfd9b8314e5bb64581da8495fb4061bc000fa1edd5",
-    "client/public/models/characters/modular_female/animations/locomotion.glb": "087a797fb87e930a5917438824ffa6cff664dc2c24229ebbc1b07ed19c75ba8b",
-    "client/public/models/characters/modular_female/animations/combat_melee.glb": "0af6ee9c9609501f35fbe381027db3e12466ba79e7f9c91bce6bd11d7b1f8727",
-    "client/public/models/characters/modular_female/animations/social.glb": "55b5c1ea9550950b72836d02cee3dbd40bdfc6a427ff631e175c041ac24976ab",
-    "client/public/models/characters/modular_female/animations/fishing.glb": "e43ae79c95d77bda6f7ef4ad007cbc01450c4849a2750edcce7dc4646aea429b",
-    "client/public/models/characters/modular_female/animations/combat_ranged.glb": "312fbb03903eb2444f57b339d81493cc7a17c6f0738a31eb9166655d0b6e9692",
-    "client/public/models/characters/modular_female/animations/offhand.glb": "07755636cf45a9c28b85c856e5d190dce37da171dd91e67c78547423a629c120",
-    "client/public/models/characters/modular_female/animations/enchant_armor.glb": "a7576d46b34c32cd45f9dc8484fc9a9723f1a8e7c2602b4da9edef93d890d798",
-    "client/public/models/characters/modular_female/animations/great_sword.glb": "a47789cb40cccbf6a53dd9e4aa26860b58ef6f0f2a0551c3c1cfe9619ddd0b44",
-    "client/public/models/characters/modular_female/animations/riding.glb": "753ed58b4bdbc87c2c71d7c299b30c68311ebfb073d0a94f0ede397202cd77d6",
-    "client/public/models/characters/modular_female/animations/dagger_preview.glb": "30273034ebe7a833441882f8941ea7a3286ecf35004c191da0314cba075dfb4d"
+    "client/public/models/characters/modular_female/animations/locomotion.glb": "327ecaa896faa62a7de06029bd15b86fc2b80a5d3b6e4bad80ad91ebda7c39e1",
+    "client/public/models/characters/modular_female/animations/combat_melee.glb": "f4b3a6b9253508f318185a34e05a764cfe2d50cb99a6126aac39bdd99483e223",
+    "client/public/models/characters/modular_female/animations/social.glb": "be84477c7fd8946abae3d786be6b4b466022aab008835e83f828251458024857",
+    "client/public/models/characters/modular_female/animations/fishing.glb": "615d776238893988b4c64b414051a162c59498f3e95fb4d1a7e35ad69118ba09",
+    "client/public/models/characters/modular_female/animations/combat_ranged.glb": "e6d5c441fcd23172f04a5505cedaa711f34a043067bde5082ba2bd04cff1aefb",
+    "client/public/models/characters/modular_female/animations/offhand.glb": "e581d493af239f7ae07a3ad5224bccac174dc5246453faa8d171ff436c34c77b",
+    "client/public/models/characters/modular_female/animations/enchant_armor.glb": "abffa12b64dc46266f1be292cc4bb6107f5d1c27f107653081c9f7e20a053823",
+    "client/public/models/characters/modular_female/animations/great_sword.glb": "9d74f9ca65c2fadefc351af68e17a8c1171d5eae5d0c7f5145fef4705810cc06",
+    "client/public/models/characters/modular_female/animations/riding.glb": "569192376f6e309ef35b721a955560a25ba0b68c87c07395d581af3240f5892e",
+    "client/public/models/characters/modular_female/animations/dagger_preview.glb": "66f39cd9af3b50b07162480fd25ef4025ace09ce092bfecb14c7a5155a52f012"
   },
   "underwear_weight_patch": {
     "date": "2026-10-15",

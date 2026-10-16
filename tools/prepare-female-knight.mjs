@@ -237,10 +237,16 @@ globalThis.FileReader = class {
 }
 try {
   const runtime = await server.ssrLoadModule('/src/lib/utils/characterAnimationUtils.ts')
-  const base = await load(sources.base)
-  const corrected = new Map(base.animations.map(c => [c.name, c]))
+  // Animation work happens in meters, the unit of the shared packs: the rig is the converted base, and the
+  // female's own clips are converted as they are read.
+  const base = await load(`${output}/base.glb`)
+  const toMeters = clip => {
+    for (const track of clip.tracks) if (track.name.endsWith('.position')) track.values = track.values.map(v => v * metersPerSourceUnit)
+    return clip
+  }
+  const corrected = new Map((await load(sources.base)).animations.map(c => [c.name, toMeters(c)]))
   for (const data of JSON.parse(readFileSync(preparedPath)).clips) {
-    const clip = THREE.AnimationClip.parse(data)
+    const clip = toMeters(THREE.AnimationClip.parse(data))
     corrected.set(clip.name, clip)
   }
   for (const name of ['idle2', 'idle3', 'idle4', 'idle5']) {
@@ -261,7 +267,7 @@ try {
     const bytes = await new GLTFExporter().parseAsync(scene, { binary: true, animations })
     const path = `${output}/animations/${name}.glb`
     const doc = await io.readBinary(new Uint8Array(bytes))
-    bakeDimensions(doc)
+    for (const s of doc.getRoot().listScenes()) s.setExtras({ ...s.getExtras(), meters_per_source_unit: metersPerSourceUnit })
     await write(path, doc)
     console.log(`${name}: ${animations.length} clips`)
   }
