@@ -257,6 +257,35 @@ gzip level 6 예상 전송량은 **2,160,114 → 850,759바이트(60.62% 감소)
 node tools/optimize-character-textures.mjs assets/npcs/maid/maid-before-textures-1024.glb client/public/models/characters/maid.glb 1024
 ```
 
+### Karl 게임용 텍스처 최적화 — 2026-10-16
+
+`guard.8c34d7e4.glb`의 색상맵을 **2048² JPEG → 1024² WebP q90·effort 6**으로
+줄이고 meshopt 압축을 적용했다. 노멀·metallicRoughness JPEG 바이트와
+`KHR_materials_specular`의 반사 설정을 유지한다.
+파일은 **2,174,512 → 1,141,324바이트(47.51% 감소)**,
+gzip level 6 예상 전송량은 **1,949,877 → 1,079,907바이트(44.62% 감소)**다.
+다음 빌드 파일명은 `guard.df923fd4.glb`다.
+
+9,945 triangles·8,012정점의 모든 속성, 스킨 가중치·49본 계층·역바인드 행렬과
+삼각형 순서·방향을 유지한다. GLB 작성기의 항등 회전 생략에 따른 본 변환 성분 차이는
+최대 0.00000430이다. 실제 게임 로더와 리타게팅으로 `idle1`·`walk`·`run`·`combat_idle`·`slash1`을
+각각 12개 시점에서 검사했고 스키닝 정점 좌표 차이는 최대 0.000000154m다.
+동일한 조명·자세의 전신·작은 표시 크기·얼굴 확대를 비교했다. 일반 캐릭터 표시 크기에서
+차이가 작으며 확대 시 얼굴과 갑옷의 미세한 색상 질감이 부드러워진다.
+브라우저 오류·경고 0, Khronos glTF Validator 오류 0·기존 경고 2개·meshopt 미지원 안내 1개다.
+관련 테스트 42개를 통과했다.
+
+최적화 전 게임 파일은 `assets/npcs/guard/guard-before-textures-1024.glb`에 보존한다.
+아래 NPC 출처의 Meshy 출처·라이선스를 유지하며 새 생성·유료 호출은 없다.
+최적화 파일과 보존 원본을 HF에 게시하고 원격 SHA-256을 확인했으며 `assets.lock`에 고정했다.
+운영 배포는 수행하지 않았다.
+최적화 파일 SHA-256: `6561eded17c3de4f966619970948abcd7fe2484d0cd03c49c5cb45bd4c3f7479`.
+보존 원본 SHA-256: `e494d0d3a8706d916cb77465d6d62e512210dc36395224e3328886d3adc92936`.
+
+```sh
+node tools/optimize-character-textures.mjs assets/npcs/guard/guard-before-textures-1024.glb client/public/models/characters/guard.glb 1024
+```
+
 ### NPC 출처
 
 - guard — 경비병 NPC Karl (`guard.glb`, CharacterClass::Guard); 원화 `../images/characters/karl-concept.png`, 3D는 Meshy.ai (라이센스는 위 License 표 참조); 거래 창 초상화 `../images/characters/karl-portrait.png` (ChatGPT, 2026-06-12, `doc/assets/ui.md` 참조)
