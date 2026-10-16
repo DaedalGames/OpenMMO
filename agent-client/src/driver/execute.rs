@@ -314,6 +314,27 @@ pub(super) fn append_memory(path: &str, update: &str) {
     }
 }
 
+async fn wait_for_teleport(
+    state: &Arc<Mutex<SharedState>>,
+    s: tokio::sync::MutexGuard<'_, SharedState>,
+) {
+    let requested_at = s.relocations;
+    drop(s);
+    loop {
+        let mut s = state.lock().await;
+        if !s.teleport_pending() {
+            if s.relocations == requested_at {
+                s.push_agent_event(
+                    "[TeleportFailed] Teleport was cancelled or did not complete in time. Recheck your position before moving.".to_string(),
+                );
+            }
+            return;
+        }
+        drop(s);
+        tokio::time::sleep(std::time::Duration::from_millis(25)).await;
+    }
+}
+
 pub(super) async fn handle_response(
     state: &Arc<Mutex<SharedState>>,
     response: &str,
@@ -693,6 +714,10 @@ pub(super) async fn handle_response(
             let cmd = onlinerpg_shared::ClientMessage::PartySummonRespond { caster_id, accept };
             if let Err(e) = s.send_command(cmd).await {
                 error!("Failed to send summon response: {e}");
+            } else if s.teleport_pending() {
+                wait_for_teleport(state, s).await;
+                lost_position = Some("teleport");
+                last_attack_target = None;
             } else if !accept {
                 s.push_agent_event(format!("[Party] You declined {caster_name}'s summons."));
             }
@@ -953,8 +978,7 @@ pub(super) async fn handle_response(
             continue;
         }
 
-        // Use an item: worn gear comes off, anything else is equipped or
-        // consumed out of the bag. Lighting a torch is equipping one.
+        // Worn gear comes off; other items are equipped or consumed.
         if let AgentAction::Use { item } = action {
             let mut s = state.lock().await;
             let Some((def_id, placed)) = s.find_carried(item) else {
@@ -980,6 +1004,10 @@ pub(super) async fn handle_response(
             };
             if let Err(e) = s.send_command(cmd).await {
                 error!("Failed to send use action: {e}");
+            } else if s.teleport_pending() {
+                wait_for_teleport(state, s).await;
+                lost_position = Some("teleport");
+                last_attack_target = None;
             }
             continue;
         }
@@ -1666,8 +1694,8 @@ pub(super) async fn handle_response(
     if let Some(failed) = lost_position.filter(|_| !skipped.is_empty()) {
         let mut s = state.lock().await;
         s.push_agent_event(format!(
-            "[Aborted] Your {failed} failed, so the rest of the turn that needed you to be \
-             somewhere did not run: {}. Reissue what still applies.",
+            "[Aborted] Your {failed} invalidated the previous position, so the remaining \
+             position-dependent actions did not run: {}. Reissue what still applies.",
             skipped.join(", ")
         ));
     }
@@ -1946,6 +1974,115 @@ mod tests {
     use crate::state::tests::{ground_item, test_player, test_state};
     use crate::state::EVENT_DELIVERY_RADIUS;
     use onlinerpg_shared::inventory::GroundItem;
+
+    #[tokio::test(start_paused = true)]
+    async fn teleport_scrolls_wait_for_ack_and_discard_the_previous_move() {
+        use crate::state::tests::{p, synchronize_view, teleport_state};
+        use onlinerpg_shared::{ClientMessage, ServerMessage};
+
+        for scroll in [
+            "scroll_of_return",
+            "scroll_of_estate_return",
+            "scroll_of_teleportation",
+        ] {
+            let (mut s, mut rx) = teleport_state(scroll);
+            synchronize_view(&mut s);
+            let state = Arc::new(Mutex::new(s));
+            let runner_state = state.clone();
+            let response = serde_json::json!({"actions":[
+                {"type":"use","item":scroll},
+                {"type":"move","x":10.5,"z":0.5},
+                {"type":"say","message":"ready"}
+            ]})
+            .to_string();
+            let runner = tokio::spawn(async move {
+                handle_response(&runner_state, &response, &None, &None, false).await
+            });
+            assert!(matches!(
+                rx.recv().await,
+                Some(ClientMessage::PlayerMoveStop { .. })
+            ));
+            assert!(matches!(
+                rx.recv().await,
+                Some(ClientMessage::UseItem { instance_id: 100 })
+            ));
+            assert!(!runner.is_finished());
+            assert!(rx.try_recv().is_err());
+
+            state
+                .lock()
+                .await
+                .push_event(ServerMessage::PlayerTeleported {
+                    player_id: 1.into(),
+                    position: p(500.5, 0.0, 500.5),
+                    rotation: 0.0,
+                    floor_level: 0,
+                });
+            assert!(runner.await.unwrap().is_none());
+            assert!(
+                matches!(rx.try_recv(), Ok(ClientMessage::ChatMessage { message }) if message == "ready")
+            );
+            assert!(
+                rx.try_recv().is_err(),
+                "old move must be discarded for {scroll}"
+            );
+            assert!(!state.lock().await.teleport_pending());
+        }
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn teleport_cancellation_and_timeout_release_the_action_wait() {
+        use crate::state::tests::{p, teleport_state};
+        use onlinerpg_shared::messages::TeleportPhase;
+        use onlinerpg_shared::{ClientMessage, ServerMessage};
+
+        for cancelled in [true, false] {
+            let (s, mut rx) = teleport_state("scroll_of_return");
+            let state = Arc::new(Mutex::new(s));
+            let runner_state = state.clone();
+            let response = serde_json::json!({"actions":[
+                {"type":"use","item":"scroll_of_return"},
+                {"type":"move","x":10.5,"z":0.5},
+                {"type":"say","message":"ready"}
+            ]})
+            .to_string();
+            let runner = tokio::spawn(async move {
+                handle_response(&runner_state, &response, &None, &None, false).await
+            });
+            assert!(matches!(
+                rx.recv().await,
+                Some(ClientMessage::PlayerMoveStop { .. })
+            ));
+            assert!(matches!(
+                rx.recv().await,
+                Some(ClientMessage::UseItem { .. })
+            ));
+            if cancelled {
+                state
+                    .lock()
+                    .await
+                    .push_event(ServerMessage::PlayerTeleportEffect {
+                        player_id: 1.into(),
+                        position: p(0.5, 0.0, 0.5),
+                        floor_level: 0,
+                        phase: TeleportPhase::Cancelled,
+                    });
+            } else {
+                tokio::time::advance(crate::state::TELEPORT_ACK_TIMEOUT).await;
+            }
+            runner.await.unwrap();
+            assert!(
+                matches!(rx.try_recv(), Ok(ClientMessage::ChatMessage { message }) if message == "ready")
+            );
+            assert!(rx.try_recv().is_err());
+            let mut s = state.lock().await;
+            assert!(!s.teleport_pending());
+            assert!(s
+                .drain_agent_events()
+                .iter()
+                .any(|event| event.contains("[TeleportFailed]")));
+        }
+    }
 
     #[tokio::test]
     async fn a_deal_with_a_titled_name_reaches_the_correct_player() {

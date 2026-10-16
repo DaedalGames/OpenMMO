@@ -363,6 +363,16 @@
     doorInteractionRetryTimer = null
   }
 
+  /** Drop timers and input left over from before a teleport. */
+  function abandonLocalActions() {
+    clearStandUpTimer()
+    clearPropSwingTimers()
+    clearDoorInteractionRetry()
+    inputHandler.clearTransientInput()
+    currentSpeed = 0
+    clickSprinting = false
+  }
+
   function clearPropSwingTimers() {
     if (propBreakTimer) {
       clearTimeout(propBreakTimer)
@@ -2121,13 +2131,8 @@
         if (!active) return
         cancelAutoTravel()
         combatController.cancelCombat()
-        clearStandUpTimer()
-        clearPropSwingTimers()
-        clearDoorInteractionRetry()
+        abandonLocalActions()
         keyboardSender.clear()
-        inputHandler.clearTransientInput()
-        currentSpeed = 0
-        clickSprinting = false
         transitionTo('idle')
         updatePlayerState()
       }
@@ -2318,15 +2323,22 @@
     const unsubscribeRelocated = networkManager.playerRelocated.on(
       (position, rotation) => {
         interactionRevision++
+        playerControlMachine.clearQueuedEvents()
+        clearCombat()
+        chaseGoal = null
+        abandonLocalActions()
+        pendingExit = null
+        dungeonManager.clearPendingBreak()
+        dungeonManager.clearPendingOpen()
         serverMovement.clear(false)
         keyboardSender.reset()
         officialPosition = { ...position }
         playerRotation = rotation
-        currentSpeed = 0
         writePlayerPosition(position, rotation)
         if (
           playerControlMachine.stateName === 'moving' ||
-          playerControlMachine.stateName === 'keyboard_moving'
+          playerControlMachine.stateName === 'keyboard_moving' ||
+          playerControlMachine.stateName === 'attacking'
         )
           transitionTo('idle')
         cancelAutoTravel()

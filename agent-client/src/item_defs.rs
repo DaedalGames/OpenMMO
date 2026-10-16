@@ -44,6 +44,13 @@ impl ItemDef {
         self.consumable
     }
 
+    pub fn is_teleport_scroll(&self) -> bool {
+        matches!(
+            self.category.as_deref(),
+            Some("return_scroll" | "estate_return_scroll" | "teleport_scroll")
+        )
+    }
+
     /// Food an inn maid can set on a table (the server's `meal::is_servable`).
     pub fn is_dish(&self) -> bool {
         onlinerpg_shared::meal::is_servable(

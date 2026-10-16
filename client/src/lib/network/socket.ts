@@ -543,6 +543,7 @@ class NetworkManager {
   }
 
   sendMoveGoal(goal: MoveGoal) {
+    if (get(localTeleportActive)) return
     this.sendMessage({ PlayerMoveGoal: goal })
   }
 
@@ -551,6 +552,7 @@ class NetworkManager {
   }
 
   sendMoveDirection(input: MoveDirection) {
+    if (get(localTeleportActive)) return
     this.sendMessage({ PlayerMoveDirection: input })
   }
 

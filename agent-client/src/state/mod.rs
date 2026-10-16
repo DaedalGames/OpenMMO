@@ -70,6 +70,7 @@ pub(crate) const DEFAULT_ATTACK_COOLDOWN: std::time::Duration =
     std::time::Duration::from_millis(1500);
 pub(crate) const FISHING_RECAST_DELAY: std::time::Duration = std::time::Duration::from_secs(5);
 pub(crate) const FISHING_CAST_ACK_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+pub(crate) const TELEPORT_ACK_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
 pub(crate) const FISHING_ERROR_RETRY_DELAY: std::time::Duration =
     std::time::Duration::from_secs(30);
 
@@ -416,10 +417,9 @@ pub struct SharedState {
     /// the passability cache's so it can be put straight into move packets;
     /// `passability_floor()` converts for path queries.
     pub self_floor_level: i8,
-    /// Bumped on authoritative teleport or respawn.
-    /// A path that produced a refused step will produce it again, so movers
-    /// watch this and abandon the path instead of grinding the same wall.
+    /// Invalidates walks when a teleport starts or the server relocates us.
     pub relocations: u32,
+    teleport_pending_until: Option<tokio::time::Instant>,
     pub move_request_id: u32,
     pub move_status: Option<onlinerpg_shared::messages::MoveStatus>,
     /// The chest we last asked the server to open, until it answers. Opening a
@@ -545,6 +545,7 @@ impl SharedState {
             game_minute: None,
             self_floor_level: 0,
             relocations: 0,
+            teleport_pending_until: None,
             move_request_id: 0,
             move_status: None,
             pending_chest_open: None,

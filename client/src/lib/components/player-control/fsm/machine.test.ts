@@ -100,6 +100,24 @@ describe('PlayerControlMachine', () => {
     expect(dispatchEvent).not.toHaveBeenCalled()
   })
 
+  it('discards delayed movement on relocation and accepts fresh events', () => {
+    const dispatchEvent = vi.fn()
+    const machine = new PlayerControlMachine({ dispatchEvent })
+    machine.enqueueEvent({
+      type: 'delayed_request_move',
+      position: { x: 10, y: 0, z: 20 },
+    })
+    machine.clearQueuedEvents()
+    const freshMove = {
+      type: 'request_move',
+      position: { x: 500, y: 0, z: 600 },
+    } satisfies PlayerControlEvent
+    machine.enqueueEvent(freshMove)
+    machine.update(16, { editorMode: false })
+
+    expect(dispatchEvent).toHaveBeenCalledExactlyOnceWith(freshMove)
+  })
+
   it('starts in the initial state and changes only via explicit transition', () => {
     const machine = new PlayerControlMachine(
       { dispatchEvent: vi.fn() },

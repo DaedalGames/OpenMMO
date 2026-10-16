@@ -6,6 +6,7 @@ mod movement_tests;
 mod music_tests;
 mod social_tests;
 mod stall_tests;
+mod teleport_tests;
 mod world_tests;
 
 use super::*;
@@ -100,6 +101,15 @@ fn dropped_item(id: u64, def: &str, x: f32, z: f32, by: PlayerId) -> GroundItem 
         dropped_by: Some(by),
         ..ground_item(id, def, x, z, 0)
     }
+}
+
+/// Us at (0.5, 0.5) carrying `scroll` as instance 100.
+pub(crate) fn teleport_state(scroll: &str) -> (SharedState, mpsc::Receiver<ClientMessage>) {
+    let (mut s, rx) = test_state();
+    s.self_player = Some(test_player(0.5, 0.5));
+    s.self_player_id = Some(1.into());
+    s.self_bag.push(bag_item(100, scroll, 1));
+    (s, rx)
 }
 
 pub(crate) fn test_player(x: f32, z: f32) -> Player {

@@ -580,7 +580,9 @@ pub(super) const ACTION_SPECS: &[ActionSpec] = &[
   already wear takes it off; wearing a torch is how you light your way
   outside at night (it lights on equip, so other players see your light too,
   and goes out when you take it off):
-  {"type": "use", "target": "torch"}"#,
+  {"type": "use", "target": "torch"}
+  Teleport scrolls wait for completion and discard the remaining position-dependent
+  actions in this reply. Plan your next move from the refreshed world state."#,
     },
     ActionSpec {
         names: &["pickup"],
@@ -730,7 +732,8 @@ pub(super) const ACTION_SPECS: &[ActionSpec] = &[
         doc: r#"- Answer a party summon (the [PartySummon] event): a party member read a
   summoning scroll asking everyone to teleport to their side. Accepting
   moves you there instantly; you cannot accept mid-combat. With several
-  pending, name the caster — bare answers the oldest:
+  pending, name the caster — bare answers the oldest. Accepting waits for completion
+  and discards the remaining position-dependent actions in this reply:
   {"type": "summon_accept"}
   {"type": "summon_decline", "target": "darkcocoa"}"#,
     },

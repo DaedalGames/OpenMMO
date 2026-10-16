@@ -63,6 +63,38 @@ impl SharedState {
         msg: ClientMessage,
         from_action: bool,
     ) -> anyhow::Result<()> {
+        let teleporting = match &msg {
+            ClientMessage::UseItem { instance_id } => self
+                .self_bag
+                .iter()
+                .find(|item| item.instance_id == *instance_id)
+                .and_then(|item| crate::item_defs::get(&item.item_def_id))
+                .is_some_and(|def| def.is_teleport_scroll()),
+            ClientMessage::PartySummonRespond { accept: true, .. } => true,
+            _ => false,
+        };
+        if self.teleport_pending()
+            && (teleporting
+                || matches!(
+                    &msg,
+                    ClientMessage::PlayerMoveGoal { .. }
+                        | ClientMessage::PlayerMoveDirection { .. }
+                        | ClientMessage::PlayerFace { .. }
+                        | ClientMessage::PlayerAttack { .. }
+                        | ClientMessage::UseAbility { .. }
+                ))
+        {
+            return Err(anyhow::anyhow!("Waiting for teleport completion"));
+        }
+        if teleporting {
+            self.invalidate_position();
+            self.cmd_tx
+                .send(ClientMessage::PlayerMoveStop {
+                    request_id: self.move_request_id,
+                })
+                .await
+                .map_err(|e| anyhow::anyhow!("Command channel closed: {e}"))?;
+        }
         let double_slash = matches!(
             &msg,
             ClientMessage::UseAbility {
@@ -156,6 +188,9 @@ impl SharedState {
             .send(msg)
             .await
             .map_err(|e| anyhow::anyhow!("Command channel closed: {e}"))?;
+        if teleporting {
+            self.teleport_pending_until = Some(tokio::time::Instant::now() + TELEPORT_ACK_TIMEOUT);
+        }
         if player_attack {
             self.last_player_attack_at = Some(tokio::time::Instant::now());
         }

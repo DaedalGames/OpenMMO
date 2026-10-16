@@ -512,6 +512,15 @@ impl SharedState {
                 }
                 return EventUrgency::Noise;
             }
+            ServerMessage::PlayerTeleportEffect {
+                player_id,
+                phase: onlinerpg_shared::messages::TeleportPhase::Cancelled,
+                ..
+            } => {
+                if self.self_player_id.as_ref() == Some(player_id) {
+                    self.teleport_pending_until = None;
+                }
+            }
             ServerMessage::PlayerTeleported {
                 player_id,
                 position,
@@ -520,7 +529,6 @@ impl SharedState {
             } => {
                 if self.self_player_id.as_ref() == Some(player_id) {
                     self.relocate_self(*position, *rotation, *floor_level);
-                    self.move_status = None;
                     // Any teleport settles the pending summons.
                     self.pending_party_summons.clear();
                 }

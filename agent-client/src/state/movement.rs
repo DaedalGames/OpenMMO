@@ -327,7 +327,21 @@ impl SharedState {
     /// Relocation invalidates any active walk.
     pub(super) fn relocate_self(&mut self, position: Position, rotation: f32, floor_level: i8) {
         self.apply_move_progress(position, rotation, floor_level);
+        self.invalidate_position();
+        self.teleport_pending_until = None;
+    }
+
+    /// Drops walks, follows and move replies tied to the old position.
+    pub(super) fn invalidate_position(&mut self) {
+        self.cancel_follow();
+        self.move_request_id = self.move_request_id.wrapping_add(1);
+        self.move_status = None;
         self.relocations = self.relocations.wrapping_add(1);
+    }
+
+    pub fn teleport_pending(&self) -> bool {
+        self.teleport_pending_until
+            .is_some_and(|until| tokio::time::Instant::now() < until)
     }
 
     /// Our own pose mirror. `send_command` writes it optimistically on

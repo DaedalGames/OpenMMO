@@ -61,6 +61,10 @@ export class PlayerControlMachine {
     this.queuedEvents.push(event)
   }
 
+  clearQueuedEvents() {
+    this.queuedEvents = []
+  }
+
   update(deltaTime: number, options: PlayerControlUpdateOptions) {
     if (this.disposed) return
 

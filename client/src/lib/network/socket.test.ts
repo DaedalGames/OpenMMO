@@ -22,6 +22,7 @@ vi.mock('../managers/remotePlayerManager', () => ({
 }))
 
 import { networkManager } from './socket'
+import { localTeleportActive } from '../stores/teleportEffectStore'
 
 class TestWebSocket {
   static OPEN = 1
@@ -109,5 +110,48 @@ describe('character deletion authentication', () => {
     authenticate()
     networkManager.clearSession()
     await expectBlocked(true)
+  })
+})
+
+describe('movement during teleport', () => {
+  beforeEach(async () => {
+    vi.stubGlobal('WebSocket', TestWebSocket)
+    await networkManager.ensureWasm()
+    networkManager.connect('ws://test')
+  })
+
+  afterEach(() => {
+    networkManager.disconnect()
+    vi.unstubAllGlobals()
+  })
+
+  it('drops goals and keyboard movement while allowing stop and fresh movement after arrival', () => {
+    const goal = { request_id: 1, x: 10, z: 20, sprinting: false }
+    const direction = {
+      request_id: 2,
+      rotation: 0,
+      forward: 1,
+      turn: 0,
+      sprinting: false,
+    }
+    localTeleportActive.set(true)
+    networkManager.sendMoveGoal(goal)
+    networkManager.sendMoveDirection(direction)
+    expect(TestWebSocket.current.send).not.toHaveBeenCalled()
+
+    networkManager.sendMoveStop(3)
+    localTeleportActive.set(false)
+    networkManager.sendMoveGoal({ ...goal, request_id: 4, x: 500, z: 600 })
+    networkManager.sendMoveDirection({ ...direction, request_id: 5 })
+
+    const sent = TestWebSocket.current.send.mock.calls.map(([bytes]) =>
+      JSON.parse(new TextDecoder().decode(bytes))
+    )
+    expect(sent).toEqual([
+      { ClientInfo: expect.any(Object) },
+      { PlayerMoveStop: { request_id: 3 } },
+      { PlayerMoveGoal: { ...goal, request_id: 4, x: 500, z: 600 } },
+      { PlayerMoveDirection: { ...direction, request_id: 5 } },
+    ])
   })
 })

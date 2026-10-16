@@ -486,7 +486,8 @@ pub async fn llm_driver(
     };
     let mut last_prompt_at = Instant::now() - idle_stagger;
     let mut prompt_backoff = PromptBackoff::default();
-    let mut attack_target: Option<(String, Option<bool>)> = None;
+    // The relocation count at targeting time; a teleport since drops the target.
+    let mut attack_target: Option<(String, Option<bool>, u32)> = None;
     let mut llm_in_flight: Option<tokio::task::JoinHandle<anyhow::Result<String>>> = None;
     let mut prompt_pending_since: Option<Instant> = None;
     // Track last chat/combat activity to decide polling interval
@@ -617,7 +618,7 @@ pub async fn llm_driver(
                         let s = state.lock().await;
                         has_action || s.trade_busy || s.self_fishing
                     };
-                    attack_target = handle_response(
+                    let target = handle_response(
                         &state,
                         &response,
                         &memory_file,
@@ -625,6 +626,8 @@ pub async fn llm_driver(
                         skip_movement,
                     )
                     .await;
+                    let relocations = state.lock().await.relocations;
+                    attack_target = target.map(|(id, sprint)| (id, sprint, relocations));
                     advance_tale_if_sung(&state, &mut tales, &mut tale_offered_at).await;
                 }
                 Err(e) => {
@@ -717,9 +720,15 @@ pub async fn llm_driver(
         }
 
         // === Combat tick ===
-        if let Some((monster_id, sprint)) = attack_target.clone() {
-            let attack_ready = state.lock().await.player_attack_wait().is_zero();
-            if attack_ready && !tick_combat(&state, &monster_id, sprint).await {
+        if let Some((monster_id, sprint, targeted_at)) = attack_target.clone() {
+            let (relocated, attack_ready) = {
+                let s = state.lock().await;
+                (
+                    s.relocations != targeted_at,
+                    s.player_attack_wait().is_zero(),
+                )
+            };
+            if relocated || (attack_ready && !tick_combat(&state, &monster_id, sprint).await) {
                 attack_target = None;
             }
         }
@@ -1166,8 +1175,8 @@ pub async fn llm_driver(
                     handle_response(&state, &response, &memory_file, &favor_file, skip_movement)
                         .await;
                 advance_tale_if_sung(&state, &mut tales, &mut tale_offered_at).await;
-                if new_target.is_some() {
-                    attack_target = new_target;
+                if let Some((id, sprint)) = new_target {
+                    attack_target = Some((id, sprint, state.lock().await.relocations));
                 }
             }
         }
