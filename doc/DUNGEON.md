@@ -3,6 +3,8 @@
 던전에서 **누가 층을 정하고 누가 Y를 정하는가**를 다룬다. 지형 생성과 맵 포맷은
 [MAP_DESIGN.md](MAP_DESIGN.md), 몬스터 배치는 [NPC_MONSTER_AI.md](NPC_MONSTER_AI.md), 보스 상자 규칙은 [DUNGEON_REWARD.md](DUNGEON_REWARD.md)에 있다.
 
+[티어 5 던전과 필드 레이드 연계 설계](TIER5_FIELD_RAID.md): 던전 상자의 아뮬렛을 착용해 효과를 받거나 제단에 봉헌해 테라클래시를 소환하는 미구현 디자인 초안.
+
 ## Skeleton Crypt — 티어 4
 
 - 입구: `world(-1064, 0.95, 4248)`, 서쪽 도로를 향하는 입구(`entranceDir=w`). 20층, 최종 보스 `skeleton_knight`(레벨 25·HP 350).

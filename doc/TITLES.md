@@ -72,6 +72,10 @@ sturgeon_angler,Who Landed the Golden Sturgeon,황금 철갑상어를 낚은 자
 둔다. 서버 최초는 "이미 누가 잡았는가"를 재시작 너머로 기억해야 하므로 영속 마커가 하나 더
 필요하다 — 하고 싶어지면 그때 `titles` 테이블에 `first_holder` 같은 것을 붙인다.
 
+## 테라클래시 막타 호칭 설계
+
+[티어 5 던전과 필드 레이드 연계 설계](TIER5_FIELD_RAID.md)에서는 테라클래시의 HP를 0으로 만든 마지막 피해의 주인에게 업적과 호칭을 부여한다. 가칭은 **테라클래시에 마지막 일격을 가한 자**다. 누적 피해량 문턱과 별도로 판단하며, 영구 해금·중복 방지·활성 호칭 선택은 기존 규칙을 따른다. 성능 보상은 없으며 미구현이다.
+
 ## 저장
 
 - `character_titles(character_id, title_id, earned_at)` — `character_dungeon_chests`와 같은

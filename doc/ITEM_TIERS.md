@@ -12,7 +12,7 @@
 | 2 | Orc Warrens | 가죽 세트 완성 (몸통·장갑·부츠) + 체인 세트 일부 (철 부츠·철 투구) + iron_sword | 운영 중 |
 | 3 | Ogre Stronghold (15층, ogre_boss) | 체인 세트 완성 (체인 메일·건틀릿) + 판금 세트 일부 (부츠·그리브) + 기본 망토 + steel_longsword | 운영 중 |
 | 4 | Skeleton Crypt (20층, skeleton_knight) | 판금 세트 완성 (흉갑·투구·건틀릿) + great_sword | 구현 완료·운영 배포 대기 |
-| 5 | (신규 던전) | ring_of_protection + rune_blade | 던전 미구현 |
+| 5 | [신규 던전·필드 레이드 연계 설계](TIER5_FIELD_RAID.md) | ring_of_protection + rune_blade + 대지의 아뮬렛 (가칭) | 던전 미구현 |
 
 특수 망토(투명·보호 등)·셔츠·amulet_of_life_saving·ring_of_regeneration은 던전 풀에 넣지 않는다 — **월드 드랍 전용 희소템**으로 유저 간 거래의 축을 만든다 (아래 참조).
 
@@ -54,6 +54,10 @@
 
 세트 guard 합계 = 19. 각 파츠는 같은 슬롯의 이전 세트보다 guard가 높아야 한다 (파밍 보상 원칙).
 
+### 필드 레이드 소환자 전용 투구
+
+[헬름 오브 브릴리언스](TIER5_FIELD_RAID.md)는 대지의 아뮬렛을 봉헌해 테라클래시를 소환한 사람에게 주는 전용 보상이다. 머리에 착용하면 지능(INT) +1과 횃불을 대체하는 머리 조명이 적용된다. 일반 확률 드롭·증표 교환 장비와 별도이며 미구현이다. 거래 가능하며 토벌 성공 시 매번 지급한다. 방어력은 미정이다.
+
 ### 장신구
 
 효과 장신구는 NetHack 계열로 간다 (효과 수치는 구현 시 확정). gold_ring은 CHA +1(ring of adornment 계열)로 전환 — 흥정 밴드 ±2%p, 반지 2슬롯 중첩 허용(캡 안). 구 체스트 규칙 유통분 77개는 소급 적용. 마찬가지로 이미 유통 중인 silver_necklace도 효과를 소급해서 받는다. silver_necklace는 티어 1–2에 장신구가 하나도 없던 공백을 메우는 약한 목 장비 — ring of sustenance 계열(허기 감소)이며, 전투력이 아닌 편의 효과라 guard·CHA·HP 재생 레인을 건드리지 않는다.
@@ -63,6 +67,7 @@
 | 아이템 | 효과 (`effects`) | 획득처 | 상태 |
 |--------|------|--------|------|
 | ring_of_protection | guard +1 (guard 열) | 티어 5 던전 (20% 롤) | 있음 |
+| 대지의 아뮬렛 (가칭) | 목 장비. 최대 HP +5% 후보, 제단 봉헌 시 소모하여 필드 보스 소환 | 티어 5 던전 개인 상자 (약 10%) | [디자인 초안](TIER5_FIELD_RAID.md), 미구현 |
 | gold_ring | CHA +1 (`cha+1`) | 티어 3 던전 (10% 롤) | 있음 |
 | silver_necklace | 허기 감소 ×0.75 (`sustenance`) | 티어 2 던전 (10% 롤) | 있음 (아이콘 필요) |
 | amulet_of_life_saving | 사망 1회 방지 후 소모 | **월드 드랍 전용** | 소모품 `phoenix_talisman`(죽은 뒤 사용해 제자리 부활, Rica 5,000c + 월드 드랍 0.2%)으로 대체 구현 (2026-08-20). 착용형 자동 발동판은 보류 |
