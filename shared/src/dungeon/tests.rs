@@ -38,7 +38,7 @@ fn depth_in_range() {
     for seed in 0..500u64 {
         let d = dungeon_depth(seed);
         assert!(
-            (MIN_DEPTH..=MAX_DEPTH).contains(&d),
+            (MIN_DRAWN_FLOORS..=MAX_DRAWN_FLOORS).contains(&d),
             "seed {seed}: depth {d}"
         );
     }
@@ -150,6 +150,43 @@ fn skeleton_crypt_has_twenty_floors_and_its_own_monsters() {
     }
 }
 
+#[test]
+fn sundered_bastion_has_twenty_five_floors_and_its_own_monsters() {
+    let floors = generate_dungeon_for("sundered_bastion");
+    assert_eq!(floors.len(), 25);
+    assert!(floors[0].up_shaft.along_z && floors[0].up_shaft.reversed);
+    assert_eq!(
+        locked_depths(floors.len() as u8).collect::<Vec<_>>(),
+        [5, 10, 15, 20, 25]
+    );
+    let mut bosses = Vec::new();
+    for floor in &floors {
+        let mut regular = 0;
+        for spawn in &floor.spawns {
+            assert!(spawn.aggressive);
+            if spawn.is_boss {
+                bosses.push((floor.depth, spawn.monster_type.as_str()));
+                continue;
+            }
+            regular += 1;
+            let allowed: &[&str] = match floor.depth {
+                1..=5 => &["stone_golem", "lizardfolk"],
+                6..=10 => &["lizardfolk", "cyclop", "skeleton"],
+                11..=20 => &["cyclop", "skeleton", "skeleton_warrior"],
+                _ => &["stone_golem", "cyclop", "skeleton_warrior"],
+            };
+            assert!(
+                allowed.contains(&spawn.monster_type.as_str()),
+                "{} on floor {}",
+                spawn.monster_type,
+                floor.depth
+            );
+        }
+        assert!(regular > 0, "empty floor {}", floor.depth);
+    }
+    assert_eq!(bosses, [(25, "barkan")]);
+}
+
 // Updated for chest flank and front clearance.
 const GOLDEN_OLD_CRYPT_HASH: u64 = 0x216b_8cee_51ff_2b67;
 
@@ -158,7 +195,7 @@ fn structure_invariants_many_seeds() {
     for seed in 0..200u64 {
         let floors = generate_dungeon(seed);
         let total = floors.len() as u8;
-        assert!((1..=MAX_DEPTH).contains(&total), "seed {seed}");
+        assert!((1..=MAX_DRAWN_FLOORS).contains(&total), "seed {seed}");
 
         for (i, f) in floors.iter().enumerate() {
             let depth = i as u8 + 1;
@@ -719,8 +756,8 @@ fn corridors_never_hug_a_room_wall() {
 fn passability_floor_mapping() {
     assert_eq!(passability_floor_for_depth(1), DUNGEON_FLOOR_INDEX_BASE);
     assert_eq!(
-        passability_floor_for_depth(MAX_DEPTH),
-        DUNGEON_FLOOR_INDEX_BASE + MAX_DEPTH - 1
+        passability_floor_for_depth(MAX_FLOORS),
+        DUNGEON_FLOOR_INDEX_BASE + MAX_FLOORS - 1
     );
     assert_eq!(floor_world_y(10.0, 1), 6.0);
     assert_eq!(floor_world_y(10.0, 20), -70.0);
@@ -738,8 +775,8 @@ fn wire_floor_level_maps_onto_passability_index() {
     }
     assert_eq!(passability_floor_for_level(-1), DUNGEON_FLOOR_INDEX_BASE);
     assert_eq!(
-        passability_floor_for_level(-(MAX_DEPTH as i8)),
-        DUNGEON_FLOOR_INDEX_BASE + MAX_DEPTH - 1
+        passability_floor_for_level(-(MAX_FLOORS as i8)),
+        DUNGEON_FLOOR_INDEX_BASE + MAX_FLOORS - 1
     );
     assert!(passability_floor_for_level(-1) > MAX_FLOOR_LEVEL);
 }
@@ -750,10 +787,12 @@ fn monster_level_scaling() {
     assert_eq!(monster_level_for_depth(2, 4), 2);
     assert_eq!(monster_level_for_depth(2, 6), 3);
     assert_eq!(monster_level_for_depth(4, 20), 12);
-    assert_eq!(monster_level_for_depth(19, 20), 20); // cap
+    assert_eq!(monster_level_for_depth(19, 20), 25); // cap
+    assert_eq!(monster_level_for_depth(16, 15), 21);
+    assert_eq!(monster_level_for_depth(20, 25), 25);
     assert_eq!(monster_level_for_depth(25, 20), 25);
     assert_eq!(monster_level_for_depth(25, 5), 25);
-    for depth in 1..=MAX_DEPTH {
+    for depth in 1..=MAX_DRAWN_FLOORS {
         assert!(!spawn_table_for("", depth).is_empty());
     }
 }

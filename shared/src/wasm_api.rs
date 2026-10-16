@@ -605,7 +605,7 @@ pub fn dungeon_constants() -> Result<JsValue, JsError> {
         shaft_w: crate::dungeon::SHAFT_W,
         shaft_len: crate::dungeon::SHAFT_LEN,
         landing_cells: crate::dungeon::LANDING_CELLS,
-        max_depth: crate::dungeon::MAX_DEPTH,
+        max_depth: crate::dungeon::MAX_FLOORS,
         path_max_nodes: crate::dungeon::DUNGEON_PATH_MAX_NODES as u32,
     })
 }

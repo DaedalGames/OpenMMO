@@ -10,7 +10,7 @@ use rand_chacha::ChaCha8Rng;
 use super::doors::wall_openings;
 use super::{
     is_locked_depth, FloorLayout, PropKind, PropSpec, Room, SpawnEntry, SpawnSpec, StairShaft,
-    BOSS_MONSTER_TYPE, GRID, MAX_DEPTH, MIN_DEPTH, SHAFT_LEN, SHAFT_W,
+    BOSS_MONSTER_TYPE, GRID, MAX_DRAWN_FLOORS, MAX_FLOORS, MIN_DRAWN_FLOORS, SHAFT_LEN, SHAFT_W,
 };
 use crate::housing::WallDirection;
 
@@ -41,7 +41,7 @@ const DEPTH_SALT: u64 = 0x9e37_79b9_7f4a_7c15;
 #[cfg(test)]
 pub fn dungeon_depth(seed: u64) -> u8 {
     let mut rng = ChaCha8Rng::seed_from_u64(seed);
-    rng.gen_range(MIN_DEPTH..=MAX_DEPTH)
+    rng.gen_range(MIN_DRAWN_FLOORS..=MAX_DRAWN_FLOORS)
 }
 
 pub fn generate_dungeon_with(
@@ -54,8 +54,8 @@ pub fn generate_dungeon_with(
     let mut meta = ChaCha8Rng::seed_from_u64(seed);
     // Always draw every seed-derived value so the meta stream is identical
     // with and without overrides.
-    let drawn = meta.gen_range(MIN_DEPTH..=MAX_DEPTH);
-    let total = floors_override.map_or(drawn, |f| f.clamp(1, MAX_DEPTH));
+    let drawn = meta.gen_range(MIN_DRAWN_FLOORS..=MAX_DRAWN_FLOORS);
+    let total = floors_override.map_or(drawn, |f| f.clamp(1, MAX_FLOORS));
     let drawn_along_z = meta.gen_range(0..2) == 1;
     let drawn_reversed = meta.gen_range(0..2) == 1;
     // Compass → shaft: the door opens outward from the entry landing, so the

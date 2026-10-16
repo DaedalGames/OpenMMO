@@ -10,7 +10,7 @@ fn main() {
     generate_data_json().expect("failed to generate data JSON from CSV");
     let mut inputs = vec![
         std::path::PathBuf::from("../data-src/dungeons.csv"),
-        std::path::PathBuf::from("../data-src/monsters.csv"),
+        std::path::PathBuf::from("../data-src/dungeon_spawns.csv"),
     ];
     println!("cargo:rerun-if-changed=src/dungeon");
     let dir = std::fs::read_dir("src/dungeon").expect("shared/src/dungeon");

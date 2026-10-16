@@ -10,7 +10,7 @@
 - 입구: `world(-1064, 0.95, 4248)`, 서쪽 도로를 향하는 입구(`entranceDir=w`). 20층, 최종 보스 `skeleton_knight`(레벨 25·HP 350).
 - 1–5층: 잊힌 망자(Forgotten Dead, `skeleton_weak`, 레벨 8·HP 40·방어 14·피해 3d6). 기존 Skeleton 모델·애니메이션·소리를 재사용한다.
 - 6–10층: 기존 Skeleton만 배치한다(기본 레벨 16·방어 20·명중 보너스 +20·피해 6d8, 깊이 보정 적용). 11–15층: Skeleton과 Skeleton Warrior(가중치 3:2). 16–20층: Skeleton Warrior. 기사는 20층에 한 마리만 배치한다. 모두 선공형이다.
-- `dungeons.csv`의 `spawnGroup=skeleton`과 `monsters.csv`의 `dungeonGroup`으로 전용 몬스터 풀을 연결한다. 빈 그룹은 기존 던전의 공용 풀이다.
+- `dungeons.csv`의 `spawnGroup=skeleton`과 `dungeon_spawns.csv`의 `group`으로 전용 몬스터 풀을 연결한다. 빈 그룹은 기존 던전의 공용 풀이다.
 - 5·10·15·20층 문에 각각 `skeleton_key_5/10/15/20`을 사용한다. 각 문 바로 앞 네 층에서 기존 확률(몬스터 5%, 잡동사니 1%)로 열쇠를 얻는다.
 - 최종 상자: `breastplate`·`great_sword` 확정, `plate_helmet`·`plate_gauntlets` 각 30%, 하위 티어 장비 각 10%, 10,000–30,000c. 20층 열쇠를 포함해 소지한 해당 던전 열쇠를 소모한다. 캐릭터별 게임 하룻밤 1회이며 보스 생사는 무관하다.
 - 기사 처치 칭호: `skeleton_slayer`, 단독 처치 `skeleton_slayer_solo`.
@@ -23,6 +23,18 @@ node tools/reserve-dungeon-land.mjs --dungeon skeleton_crypt --ownership /tmp/ow
 ```
 
 `dungeons.csv`에 아직 없는 장소는 `--dungeon` 대신 `--x=X --z=Z --label NAME`으로 같은 규칙을 적용한다(음수 좌표 때문에 `=`로 붙인다). 등록 전이라 기본값에 링이 없으므로, 등급 파일이 없는 지역은 서버 기본값(지도 라벨·던전 입구 링)으로 새 파일을 만든 뒤 예약을 더한다. 파일이 생기면 그 지역은 이후 기본값 변경을 따르지 않으니, 나중에 입구 좌표가 바뀌면 `--dungeon`으로 다시 실행한다.
+
+## Sundered Bastion — 티어 5
+
+설계는 [TIER5_FIELD_RAID.md](TIER5_FIELD_RAID.md). 1단계(던전 본체)만 구현했다.
+
+- 입구: `world(-1950, 1.1, 5456)`, 남향(`entranceDir=s`). 25층, 최종 보스 `barkan`(레벨 30·HP 600·guard 36·피해 7d12). 모델은 임시로 `skeleton_knight.glb`를 1.2배로 쓰고, 전조 패턴은 없다.
+- 입구 주변 80×80m 범위의 지형은 모두 입구 높이 − 1m 이상이어야 한다. 서버는 이 범위에서 `입구 높이 − 4m × 층` ±2.5m를 그 층으로 판정하므로, 낮은 지면은 지하로 취급된다. 그래서 경사지가 아닌 평지에 둔다.
+- 몬스터는 `data-src/dungeon_spawns.csv`의 `bastion` 그룹이다. 모든 던전의 스폰은 이 파일에서 그룹·몬스터·깊이 범위별 행으로 정의하므로, 같은 몬스터를 던전마다 다른 깊이에 둘 수 있다. 모두 선공형이다.
+- 층수 상한은 `MAX_FLOORS`(25)이고, `floors`가 비어 있는 던전의 무작위 층수 범위 `MIN_DRAWN_FLOORS..=MAX_DRAWN_FLOORS`(5–20)는 기존 배치를 지키기 위해 그대로 둔다. 깊이 보정 몬스터 레벨 상한은 25다.
+- 5·10·15·20·25층 문에 `bastion_key_5…25`. 아이콘·모델은 기존 열쇠를 재사용한다.
+- 최종 상자: 확정 보상 없음, 티어 5 확률 보상(`ring_of_protection` 20%)과 하위 티어 장비, 12,500–37,500c.
+- 바르칸 처치 칭호: `barkan_slayer`, 단독 처치 `barkan_slayer_solo`.
 
 ## 리셋과 재접속
 

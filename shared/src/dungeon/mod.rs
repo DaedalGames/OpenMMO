@@ -71,8 +71,12 @@ pub const DUNGEON_WALL_HEIGHT: f32 = 3.0;
 /// is recomputed at runtime and never persisted, so the shift is safe.
 pub const DUNGEON_FLOOR_INDEX_BASE: u8 = crate::housing::MAX_FLOOR_LEVEL + 1;
 
-pub const MIN_DEPTH: u8 = 5;
-pub const MAX_DEPTH: u8 = 20;
+/// Floor count for dungeons without a `floors` column. Changing it
+/// reshuffles their layouts.
+pub const MIN_DRAWN_FLOORS: u8 = 5;
+pub const MAX_DRAWN_FLOORS: u8 = 20;
+/// Deepest floor a registry `floors` override may ask for.
+pub const MAX_FLOORS: u8 = 25;
 
 /// Stair shaft footprint: `SHAFT_W` cells wide, `SHAFT_LEN` along the run.
 /// The run must stay ≤ 16 cells — stairwell intermediate floor keys get
@@ -517,9 +521,8 @@ pub fn is_dungeon_cache_key(key: &str) -> bool {
 }
 
 /// One weighted entry in a depth's spawn table. `aggressive` makes that dungeon
-/// spawn proactive (선공형 — attacks on sight). Sourced per monster from the
-/// `dungeonMinDepth`/`dungeonMaxDepth`/`dungeonWeight`/`dungeonAggressive`
-/// columns of `data-src/monsters.csv`.
+/// spawn proactive (선공형 — attacks on sight). Sourced from
+/// `data-src/dungeon_spawns.csv`.
 #[derive(Debug, Clone)]
 pub struct SpawnEntry {
     pub monster_type: String,
@@ -529,7 +532,7 @@ pub struct SpawnEntry {
 
 /// Embedded groups preserve CSV order for identical native/WASM draws.
 static SPAWN_TABLES: LazyLock<HashMap<String, Vec<Vec<SpawnEntry>>>> =
-    LazyLock::new(|| build_spawn_tables(include_str!("../../../data-src/monsters.csv")));
+    LazyLock::new(|| build_spawn_tables(include_str!("../../../data-src/dungeon_spawns.csv")));
 
 fn build_spawn_tables(csv: &str) -> HashMap<String, Vec<Vec<SpawnEntry>>> {
     let mut groups = HashMap::new();
@@ -541,15 +544,15 @@ fn build_spawn_tables(csv: &str) -> HashMap<String, Vec<Vec<SpawnEntry>>> {
     let col = |name: &str| {
         cols.iter()
             .position(|c| *c == name)
-            .unwrap_or_else(|| panic!("monsters.csv missing `{name}` column"))
+            .unwrap_or_else(|| panic!("dungeon_spawns.csv missing `{name}` column"))
     };
-    let (id_col, min_col, max_col, weight_col, aggr_col, group_col) = (
-        col("id"),
-        col("dungeonMinDepth"),
-        col("dungeonMaxDepth"),
-        col("dungeonWeight"),
-        col("dungeonAggressive"),
-        col("dungeonGroup"),
+    let (group_col, id_col, min_col, max_col, weight_col, aggr_col) = (
+        col("group"),
+        col("monster"),
+        col("minDepth"),
+        col("maxDepth"),
+        col("weight"),
+        col("aggressive"),
     );
 
     for line in lines {
@@ -558,26 +561,23 @@ fn build_spawn_tables(csv: &str) -> HashMap<String, Vec<Vec<SpawnEntry>>> {
         }
         let fields: Vec<&str> = line.split(',').collect();
         let field = |i: usize| fields.get(i).map(|s| s.trim()).unwrap_or("");
-        // Only rows with a min depth are dungeon spawns; the boss is placed
-        // separately (see `roll_spawns`) and leaves these columns blank.
-        let Ok(min) = field(min_col).parse::<u8>() else {
-            continue;
-        };
+        let min = field(min_col)
+            .parse::<u8>()
+            .unwrap_or_else(|_| panic!("dungeon_spawns.csv: bad minDepth in `{line}`"));
         // Blank (or anything past the deepest floor) means "down to the
-        // bottom"; values above MAX_DEPTH clamp rather than extend it.
+        // bottom"; values above MAX_FLOORS clamp rather than extend it.
         let max = field(max_col)
             .parse::<u8>()
-            .unwrap_or(MAX_DEPTH)
-            .min(MAX_DEPTH);
-        let weight = field(weight_col).parse::<u32>().unwrap_or(1).max(1);
+            .unwrap_or(MAX_FLOORS)
+            .min(MAX_FLOORS);
         let entry = SpawnEntry {
             monster_type: field(id_col).to_string(),
-            weight,
+            weight: field(weight_col).parse::<u32>().unwrap_or(1).max(1),
             aggressive: field(aggr_col) == "true",
         };
         let tables = groups
             .entry(field(group_col).to_string())
-            .or_insert_with(|| vec![Vec::new(); MAX_DEPTH as usize + 1]);
+            .or_insert_with(|| vec![Vec::new(); MAX_FLOORS as usize + 1]);
         for depth in min..=max {
             tables[depth as usize].push(entry.clone());
         }
@@ -594,12 +594,12 @@ pub fn spawn_table_for(group: &str, depth: u8) -> &'static [SpawnEntry] {
         .unwrap_or(&[])
 }
 
-/// Depth bonuses cap at 20 without lowering a monster's base level.
+/// Depth bonuses cap at 25 without lowering a monster's base level.
 pub fn monster_level_for_depth(def_level: u8, depth: u8) -> u8 {
     if depth <= 4 {
         def_level
     } else {
-        ((def_level as u32 + (depth as u32 - 4) / 2).min(20) as u8).max(def_level)
+        ((def_level as u32 + (depth as u32 - 4) / 2).min(25) as u8).max(def_level)
     }
 }
 

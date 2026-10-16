@@ -82,6 +82,7 @@ data/npc_token
 data/bgm.json
 data/debuffs.json
 data/dungeons.json
+data/dungeon_spawns.json
 data/estate_storage.json
 data/items.json
 data/weapon_animations.json

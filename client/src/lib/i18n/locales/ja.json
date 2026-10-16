@@ -351,6 +351,8 @@
   "title.sturgeon_angler": "黄金チョウザメを釣り上げし者",
   "title.skeleton_slayer": "骸骨の騎士を討ちし者",
   "title.skeleton_slayer_solo": "独りで骸骨の騎士を討ちし者",
+  "title.barkan_slayer": "バルカンを討ちし者",
+  "title.barkan_slayer_solo": "独りでバルカンを討ちし者",
   "server.insufficientGold": "ゴールドが足りません",
   "server.tooHeavy": "重すぎて持てません",
   "server.lootReserved": "宝箱の戦利品は30秒間、宝箱を開けた人だけが拾えます。",

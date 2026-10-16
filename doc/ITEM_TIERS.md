@@ -12,7 +12,7 @@
 | 2 | Orc Warrens | 가죽 세트 완성 (몸통·장갑·부츠) + 체인 세트 일부 (철 부츠·철 투구) + iron_sword | 운영 중 |
 | 3 | Ogre Stronghold (15층, ogre_boss) | 체인 세트 완성 (체인 메일·건틀릿) + 판금 세트 일부 (부츠·그리브) + 기본 망토 + steel_longsword | 운영 중 |
 | 4 | Skeleton Crypt (20층, skeleton_knight) | 판금 세트 완성 (흉갑·투구·건틀릿) + great_sword | 구현 완료·운영 배포 대기 |
-| 5 | [신규 던전·필드 레이드 연계 설계](TIER5_FIELD_RAID.md) | ring_of_protection + rune_blade + 대지의 아뮬렛 (가칭) | 던전 미구현 |
+| 5 | Sundered Bastion (25층, barkan) · [필드 레이드 연계 설계](TIER5_FIELD_RAID.md) | ring_of_protection + rune_blade + 대지의 아뮬렛 (가칭) | 던전 본체 구현, 아뮬렛·rune_blade 미구현 |
 
 특수 망토(투명·보호 등)·셔츠·amulet_of_life_saving·ring_of_regeneration은 던전 풀에 넣지 않는다 — **월드 드랍 전용 희소템**으로 유저 간 거래의 축을 만든다 (아래 참조).
 

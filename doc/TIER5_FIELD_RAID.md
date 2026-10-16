@@ -68,8 +68,7 @@
 | 6–10 | Lizardfolk 1 · Cyclops(L15) 1 · Skeleton(L16) 1 |
 | 11–15 | Cyclops 2 · Skeleton 2 · Skeleton Warrior(L20) 1 |
 | 16–20 | Cyclops 1 · Skeleton 1 · Skeleton Warrior 2 |
-| 21–24 | Stone Golem 1 · Cyclops 1 · Skeleton Warrior 2 |
-| 25 | 바르칸 한 마리 |
+| 21–25 | Stone Golem 1 · Cyclops 1 · Skeleton Warrior 2. 25층에는 바르칸이 함께 있다 |
 
 깊이 보정의 레벨 상한(`monster_level_for_depth`)을 20에서 25로 올려, 25층 근처는 Stone Golem L20·Cyclops L25·Skeleton Warrior L25가 된다. 상한은 모든 던전이 공유하므로 티어 4의 Skeleton(15층 L21)·Skeleton Warrior(20층 L25)도 강해지며, 이를 감수한다. 티어 1–3은 영향이 없다. 상한 변경은 티어 5와 함께 배포한다. 장소 명중 보너스는 25층에서 +60이다. 레벨 10 미만(Troll 이하)과 기존 던전 보스(Orc·Ogre Boss, Skeleton Knight)는 넣지 않는다. 보스를 일반 몬스터로 반복 배치하면 처치 칭호가 흔해지기 때문이다.
 
