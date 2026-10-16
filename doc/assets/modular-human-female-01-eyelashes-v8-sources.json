@@ -1456,14 +1456,10 @@
       "sha256": "b6bd046c031e34795711e63e9840f3f2053e3f20400e615a13a46d27109ab0b3"
     },
     {
-      "path": "assets/modular_human_female_01/eyelashes_v8/review.py",
-      "bytes": 2374,
-      "sha256": "da939c9fee3dda5bad3f3929bd15c5179b246054c2e629cadf71306995e1679e"
-    },
-    {
       "path": "assets/modular_human_female_01/eyelashes_v8/validation.json",
       "bytes": 31201,
       "sha256": "16c72bf4f2ad85e0008e8c343e4e44f063802f1c5a46ac5823c01821cc9fce40"
     }
-  ]
+  ],
+  "file_inventory_note": "Unused eyelash analysis and review files were removed on 2026-10-16. The standalone validation JSON is retained as an input to the production scripts."
 }

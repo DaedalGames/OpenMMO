@@ -16,6 +16,8 @@
 - [프롬프트](../../assets/items/female_barbarian_boots/concept_v1/prompt.txt),
   [참조·분리 영역·해시 기록](../../assets/items/female_barbarian_boots/concept_v1/sources.json).
   앞·옆·뒤 입력은 같은 배율의 800×800 흰 정사각형으로 분리했다.
+  2026-10-16 원화 폴더의 앞·옆·뒤 중복 사본 3개는 삭제하고, 동일한 입력 이미지는 `tripo_v1/inputs/`에 보존했다.
+  원화 시트·참조 이미지·프롬프트·출처 기록과 시점별 분리 좌표는 유지한다.
 - Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR,
   입력 조명 제거, 한 짝 목표 1,500 triangles, seed 101502.
   [API 문서](https://developers.tripo3d.ai/en/docs/generation-multiview-to-model/p),
@@ -132,29 +134,8 @@
 `clearance_m`에는 변환한 값을 기록한다. 새 연결끈은 기존 Tripo 텍스처를 쓰는 직접 제작 메시로
 원본과 같은 출처·라이선스를 따른다.
 
-![현재 피팅](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/strip.png)
-
-![발목 고리 조정 전·후](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/ankle-comparison.png)
-
-![왼쪽 발목 앞쪽 추가 조정 전·후](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/front-ring-comparison.png)
-
-![뒤 연결끈 겹침 수정 전·후](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/connector-layer-comparison.png)
-
-![가운데 고리 내·외면 겹침 수정 전·후](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/middle-ring-wall-comparison.png)
-
-![뒤 연결끈 접촉 피팅 전·후](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/connector-attachment-comparison.png)
-
-![뒤꿈치 양옆 끈 조정: 왼쪽 이전, 오른쪽 현재](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/heel-straps-comparison.png)
-
-![아래 링 뒤쪽 폭 조정: 왼쪽 이전, 오른쪽 현재](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/rear-ring-width-comparison.png)
-
-![아래 링 뒷면 겹침 수정: 왼쪽 이전, 오른쪽 현재](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/lower-ring-wall-comparison.png)
-
-![앞쪽 끈 겹침 수정: 왼쪽 이전, 오른쪽 현재](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/front-strap-wall-comparison.png)
-
-![앞쪽 끈 옆면 겹침 수정: 왼쪽 이전, 오른쪽 현재](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/front-strap-side-comparison.png)
-
-![오른발 바깥 면 자체 겹침 수정: 왼쪽 이전, 오른쪽 현재](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/right-front-panel-comparison.png)
+2026-10-16 검토 이미지 12개(현재 피팅 스트립 1개·수정 전후 비교 11개)와 `fitted_v3/review/` 폴더를 삭제했다.
+현재 부츠 모델·Blender·피팅 입력·마스크와 수정 수치·검증 기록은 유지한다.
 
 | 현재 파일 | 경로 |
 | --- | --- |
@@ -175,106 +156,106 @@
   14동작 × 61시점. 65본 bind 일치, 정규화 웨이트, 반대쪽 다리 영향 없음,
   피부 가림 복원, 원래 발가락 애니메이션 유지, 발 자세 누적 없음, 굽 접지 검사를 통과했다.
   접지 평면은 굽 끝과 Foot에 고정된 발볼로 검사해 움직이는 앞끝을 제외한다.
-- [브라우저 기록](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-review.json):
+- 브라우저 기록:
   오류 없음, 착탈 반복 시 24,611 ↔ 28,144 triangles로 복원됨을 확인했다.
-- [오른쪽 발목 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/ankle-validation.json),
-  [왼쪽 발목 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/ankle-left-validation.json):
+- 오른쪽 발목 검사,
+  왼쪽 발목 검사:
   각 **855시점**(정지 + 14동작 × 61시점)에서 고리·버클·뒤 연결끈을 검사해 통과했다.
   기존 허용오차는 0.0002 source unit(0.36mm)이며, 최저 발목 거리는 오른쪽 −0.12mm,
   왼쪽 +2.63mm다. 발목 목표 여유는 모든 동작의 실제 최단 거리와 같지는 않다.
   아래 링 뒷면 수정 후 양발 855시점을 다시 검사했다.
-- [오른쪽 연결끈 겹침 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/connector-layer-right-validation.json),
-  [왼쪽 연결끈 겹침 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/connector-layer-left-validation.json):
+- 오른쪽 연결끈 겹침 검사,
+  왼쪽 연결끈 겹침 검사:
   접촉 피팅 후 양발 각 855시점에서 **노출된 바깥 면**과 고리·버클의 모서리→면 교차를
   양방향으로 검사해 **0건**을 확인했다. 바깥 면의 최단 표본 거리는 오른쪽 **0.82mm**, 왼쪽 **1.86mm**다.
   안쪽 면은 접합을 위해 의도적으로 묻으므로 전체 연결끈의 무교차를 요구하지 않는다.
   오른쪽 25개·왼쪽 27개 접점을 대응하는 실제 포즈의 고리 삼각형과 비교했다.
   정지 접점 거리는 0.36mm이고, 전체 동작의 최대 거리는 오른쪽 **2.70mm**, 왼쪽 **1.31mm**다.
-  [접촉 피팅 보존 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/connector-attachment-preservation.json)에서
+  접촉 피팅 보존 검사에서
   당시 기존 신발의 모든 정점 속성과 피부 가림이 일치함을 확인했다.
   아래 링 뒷면 수정 후에도 연결끈 겹침 검사를 양발 855시점에서 다시 실행했다.
-  앞선 [연결끈 보존 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/connector-preservation-validation.json)는
+  앞선 연결끈 보존 검사는
   연결끈만 조정한 이전 시점의 기록이다. 이 검사는 고리 자체의 내·외면 겹침을 확인하지 않아
   가운데 고리의 남은 깜빡임을 잡지 못했다.
-- [오른쪽 가운데 고리 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/ring-wall-right-validation.json),
-  [왼쪽 가운데 고리 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/ring-wall-left-validation.json):
+- 오른쪽 가운데 고리 검사,
+  왼쪽 가운데 고리 검사:
   양발 각 **855시점**에서 내·외면의 양방향 모서리→면 교차 **0건**을 확인했다.
   최단 표본 거리는 오른쪽 **1.86mm**, 왼쪽 **0.84mm**다. 수정 전 왼발은 비교한 29시점 모두 교차했다.
-  [브라우저 표시 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-ring-wall-review.json)에서는
+  브라우저 표시 검사에서는
   표시 구간의 바깥 면 4곳 × 인접 각도 5개 × 대기 시점 3개를 추적했다.
   안쪽 면이 먼저 보이던 표본이 수정 전 **30/60 → 수정 후 0/60**으로 줄었다.
-  [가운데 고리 보존 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/ring-wall-preservation-validation.json)는
+  가운데 고리 보존 검사는
   가운데 고리를 수정한 이전 시점의 기록이다. 이후 접촉 피팅에서 기존 고리의 정점 속성이
   모두 같음을 확인하고 내·외면 검사 결과를 재사용했다.
   이번 양옆 끈 수정에서도 검사에 참여하는 고리 정점 속성과 토폴로지가 정확히 같아
   내·외면 검사 결과를 재사용했다. 브라우저의 60개 표본 검사는 양옆 끈 수정 전 기록이다.
   이후 아래 링 폭 수정에서는 공유되는 가장자리 정점이 바뀌어 양발 855시점을 다시 검사했다.
   다른 고리·금속 장식의 모든 자체 교차나 연속 시점 전체의 무관통을 보장하는 검사는 아니다.
-- [오른쪽 발등 스트랩 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/instep-idle-validation.json):
+- 오른쪽 발등 스트랩 검사:
   정지 자세와 대기 동작의 전체 61시점에서 스트랩의 정점·면 중심·모서리 중간 지점을 검사했다.
-- [오른쪽 앞끈 내·외면 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-wall-right-validation.json),
-  [왼쪽 앞끈 내·외면 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-wall-left-validation.json):
+- 오른쪽 앞끈 내·외면 검사,
+  왼쪽 앞끈 내·외면 검사:
   양발 각 **855시점**에서 양방향 모서리→면 교차가 **0건**이다. 수정 전 비교한 양발 29시점은 모두 교차했다.
   두 면이 붙는 공통 가장자리의 정점·모서리는 간격 표본에서 제외했다. 그 밖의 최단 표본 거리는
   오른쪽 **0.52mm**, 왼쪽 **0.64mm**이고 검사 하한은 **0.09mm**다. 고리처럼 완전히 분리된 두 벽과 달리
   가장자리가 이어져 있으므로 경계에서 간격이 줄어든다.
-  [브라우저 표시 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-front-strap-wall-review.json)는
+  브라우저 표시 검사는
   양발의 앞쪽 인접 각도 5개와 대기 동작의 시작·중간·끝에서 바깥 면 중심을 추적했다.
   윗면 수정 당시 안쪽 면이 먼저 보이는 표본이 **1,233건 → 0건**으로 줄었다. 이 브라우저 기록은 옆면 수정 전이다.
-  [보존 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-preservation-validation.json)에서
+  보존 검사에서
   끈의 가로 위치·안쪽 면·UV·토폴로지·피부 가림과 나머지 정점 속성이 정확히 같으며,
   양발 각 UV 이음새 62그룹의 위치·웨이트가 일치함을 확인했다.
-  [피부 관통 비교](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-skin-regression.json)에서는
+  피부 관통 비교에서는
   정지·대기 62시점은 양발 모두 통과했지만, 전체 동작 피부 간격은 미완료다.
   각 171시점의 관통 프레임 수는 오른쪽 **82→82**, 왼쪽 **79→77**이며 새로 관통하는 시점은 없다.
   이미 관통하던 일부 시점은 최대 오른쪽 **1.87mm**, 왼쪽 **1.24mm** 깊어져 추가 피팅이 필요하다.
 - 앞끈 양옆 검사는 각 옆면·양발의 **855시점**에서 면 교차 **0건**을 확인했다.
   현재 한쪽 옆면의 최단 표본 거리는 오른발 **1.02mm**, 왼발 **1.62mm**이고,
   반대쪽은 오른발 **2.03mm**, 왼발 **1.21mm**다. 윗면 검사도 양발 855시점을 통과했다.
-  [옆면 브라우저 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-front-strap-side-review.json)에서
+  옆면 브라우저 검사에서
   양발의 좌우 시점·인접 각도 5개·대기 시작/중간/끝을 비교했다. 안쪽 면 노출 표본은 **135건 → 0건**이다.
-  [옆면 보존 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-side-preservation.json)는
+  옆면 보존 검사는
   원래 높이·안쪽 면·UV·토폴로지·피부 가림과 다른 부위의 정점 속성을 확인했다.
   UV 이음새는 양발 각 66그룹의 위치·웨이트가 일치하며, 기존 정점 중 64개의 bind 위치가 바뀌었다.
-  [피부 비교](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-side-skin-regression.json)에서
+  피부 비교에서
   양발 정지·대기 62시점은 통과했다. 전체 171시점은 기존 관통이 남아 있으나 새로 관통하는 시점은 없으며,
   기존 관통 깊이 증가는 오른발 0mm, 왼발 최대 **0.11mm**다.
-- 오른발 자체 겹침 수정 후 [바깥 면 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/right-panel-self-validation.json)는
+- 오른발 자체 겹침 수정 후 바깥 면 검사는
   **855시점**에서 양의 면적을 가진 근접 겹침과 면 교차가 모두 **0건**이다.
-  [실제 오른발 브라우저 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-right-panel-review.json)는
+  실제 오른발 브라우저 검사는
   사용자 시점 쪽 인접 각도 3개·대기 시작/중간/끝에서 총 126표본을 비교했다.
   모든 렌더 면 중 첫 두 교차점이 **0.09mm**보다 가까운 표본은 **48→0건**이다.
   오른발 윗면과 양옆 내·외면 검사도 각 855시점에서 교차 0건이며,
-  왼발 기록은 [전체 속성·면 연결 일치 증명](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/right-panel-preservation.json)에 따라 재사용했다.
-  정지·대기 62시점은 통과했다. [피부 관통 비교](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/right-panel-skin-regression.json)의
+  왼발 기록은 전체 속성·면 연결 일치 증명에 따라 재사용했다.
+  정지·대기 62시점은 통과했다. 피부 관통 비교의
   전체 171시점에는 기존 관통 **82→82시점**이 남아 있고, 새 관통 시점은 없다.
   이미 관통하던 일부 시점의 깊이는 최대 **1.55mm** 증가해 별도 피팅이 필요하다.
-- [오른쪽 아래 링 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/lower-ring-wall-right-validation.json),
-  [왼쪽 아래 링 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/lower-ring-wall-left-validation.json):
+- 오른쪽 아래 링 검사,
+  왼쪽 아래 링 검사:
   뒷부분 내·외면을 양방향 모서리→면 교차로 검사해 양발 각 **855시점 모두 0건**을 확인했다.
   최단 표본 거리는 오른쪽 **2.55mm**, 왼쪽 **2.44mm**다.
   수정 전에는 양발 모두 비교한 29시점에서 교차했다. 기존 가운데 링 검사는 이 부분을 포함하지 않았다.
-  [브라우저 표시 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-lower-ring-wall-review.json)는
+  브라우저 표시 검사는
   양발의 뒤쪽 두 방향, 인접 각도 5개와 대기 시점 3개에서 정면을 향한 바깥 면 중심을 추적했다.
   안쪽 면이 먼저 보이는 표본은 **수정 전 75건 → 수정 후 0건**이다.
-  [보존 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/lower-ring-wall-preservation.json)에서
+  보존 검사에서
   기존 정점의 높이·안쪽 면 위치·UV·토폴로지·피부 가림을 유지하고, 양발 각각 UV 이음새
   25그룹의 위치와 웨이트가 일치함을 확인했다. 다른 부위의 자체 교차까지 보장하는 검사는 아니다.
-- [뒤꿈치 양옆 끈 비교 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/heel-straps-regression-validation.json):
+- 뒤꿈치 양옆 끈 비교 검사:
   양발 각 855시점을 수정 전과 비교했다. 양발 정지·대기 62시점은 통과했고,
   오른발 전체 855시점의 최저 거리는 **+0.10mm**다.
   왼발은 기존 관통이 있던 **73시점이 그대로 남았으며**, 새로 관통하는 시점은 없다.
   왼발 전체 최저 거리는 수정 전후 모두 **−2.90mm**다. 이미 관통하던 시점에서는
   최소 거리 기준 최대 **0.078mm**, 관통 표본 수 최대 24개의 증가가 있어 전체 동작 통과로 보지 않는다.
-  [보존 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/heel-straps-preservation-validation.json)에서
+  보존 검사에서
   양발 각각 위치가 바뀐 58정점 외 형상과 모든 UV·본·웨이트, 피부 가림을 확인했다.
-- [아래 링 폭 보존 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/rear-ring-preservation-validation.json):
+- 아래 링 폭 보존 검사:
   양발 각각 아래 링 뒤쪽 215정점의 높이와 노멀을 조정하고, 세로 연결끈을 다시 피팅했다.
   기존 신발에서 그 밖의 모든 정점 속성, 전체 UV·본·웨이트·토폴로지와 피부 가림은 정확히 같다.
-  [동작 비교 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/rear-ring-regression-validation.json)에서
+  동작 비교 검사에서
   양발 각 855시점을 비교했다. 기존 왼발 뒤꿈치 끈 관통 73시점은 남았으며 새로 관통하는 시점은 없다.
-- [오른발 끈 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/clearance-validation.json),
-  [왼발 끈 검사](../../assets/items/female_barbarian_boots/tripo_v1/fitted_v3/clearance-left-validation.json):
+- 오른발 끈 검사,
+  왼발 끈 검사:
   각 171시점에서 발목·뒤 연결끈은 허용오차 내이지만 **앞끈은 미완료**다.
   오른발은 공격·달리기, 왼발은 걷기·횃불 달리기에서 피부 관통 표본이 남았다.
   아래 링 뒷면 수정 후 발목·뒤 연결끈·뒤꿈치 끈을 다시 검사했다. 앞끈은 검사 참여 정점의
@@ -288,14 +269,19 @@
 
 ## 이전 후보와 정리
 
+2026-10-16 사용자 요청으로 상세 브라우저·관통·보존·수정 전후 검사 기록 54개를 삭제했다.
+아래 과거 정리 시점의 보관 설명과 달리, 현재 `fitted_v3/`에는 부츠 GLB·Blender·fit-data·피부 가림 정보·
+하이힐 동작 보정값·검토 스크립트가 읽는 `runtime-validation.json` 6개만 남긴다.
+위 검사 수치와 남은 관통 문제는 요약 기록이며, 삭제한 프레임별 상세 결과 전체를 포함하지 않는다.
+
 - **[미사용] v1**: 정면 축 기준 피팅, 3,328 triangles. 발목 고리 방향 계산과 뒤 연결끈 누락이 남았다.
   [피팅 기록](modular-female-barbarian-boots-fitting-v1.json)을 보존한다.
 - **[미사용] v2**: 고리·연결끈과 접지를 보정했지만 발가락 자세 고정을 사용했다.
   사용자 지시에 따라 v3에서 이를 제거했다. [피팅 기록](modular-female-barbarian-boots-fitting-v2.json)을 보존한다.
 - **[미사용] 앞 밑창 전체 ToeBase 전사 시도**: 밑창 모양과 늘어남이 악화되어 채택하지 않았다.
 - v1/v2 피팅 바이너리, 중간 Blender, ARAP 캐시, 임시 몸체 GLB, 개별 렌더와 브라우저 비교 이미지는 삭제했다.
-  현재 v3 GLB·Blender·후속 검사용 fit-data, 원화·입력·생성 원본·출처와 검증 기록,
-  이 문서에서 사용하는 원본/현재 검토 스트립은 보존했다.
+  현재 v3 GLB·Blender·후속 검사용 fit-data, 원화·입력·생성 원본·출처와 검증 기록은 보존했다.
+  원본 검토 스트립은 유지하며 현재 피팅 스트립과 비교 이미지는 2026-10-16 추가 정리했다.
 - 이번 중간 저장에서는 추가 피팅의 비교 이미지·후보 백업·임시 스크립트와 로그
   **251개(약 300MiB)**를 정리하고 현재 피팅과 원본·검증 기록을 보존했다.
 

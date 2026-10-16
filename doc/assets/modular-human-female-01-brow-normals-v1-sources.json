@@ -80,13 +80,8 @@
       "path": "assets/modular_human_female_01/brow_normals_v1/base-brow-normals-v1.glb",
       "bytes": 24247048,
       "sha256": "88cf89fe24e6aa6e7020d212a0c3181de9cb4b678cbf04809201929c8cbd920c"
-    },
-    {
-      "path": "assets/modular_human_female_01/brow_normals_v1/validation.json",
-      "bytes": 612,
-      "sha256": "c3c7ee89782513f5b7a776469c08757b5021375bffc068a075a89f44a7f8d95f"
     }
   ],
   "cleanup_record": "doc/assets/modular-human-female-01-detail-cleanup.json",
-  "file_inventory_note": "File hashes record the reviewed outputs before cleanup. Intermediate binaries and all preview images listed in the cleanup record were removed; final ear_normals_v2 GLB/Blender, the eye_normals_v1 rebuild input, scripts and small validation records are retained."
+  "file_inventory_note": "File hashes record the reviewed binaries before cleanup. The duplicate standalone validation JSON was removed on 2026-10-16; its full results remain in the validation field above."
 }

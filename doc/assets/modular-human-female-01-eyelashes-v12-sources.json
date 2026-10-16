@@ -104,13 +104,8 @@
       "path": "assets/modular_human_female_01/eyelashes_v12/preview-top.png",
       "bytes": 372529,
       "sha256": "fbab0b296a3b08ee02432824bb8e33e37a8447eccb5e3bfaf79ea60f6b0af4fe"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyelashes_v12/validation.json",
-      "bytes": 1303,
-      "sha256": "530dac800c278bf5c1e9752ab25e6920cde00b97c30ccee9f3681e3af89c20b4"
     }
   ],
   "cleanup_record": "doc/assets/modular-human-female-01-detail-cleanup.json",
-  "file_inventory_note": "File hashes record the reviewed outputs before cleanup. Intermediate binaries and all preview images listed in the cleanup record were removed; final ear_normals_v2 GLB/Blender, the eye_normals_v1 rebuild input, scripts and small validation records are retained."
+  "file_inventory_note": "File hashes record the reviewed outputs before cleanup. Intermediate binaries and all preview images listed in the cleanup record were removed; final ear_normals_v2 GLB/Blender, the eye_normals_v1 rebuild input, scripts and small validation records are retained. Unused eyelash analysis and review files were removed on 2026-10-16. The duplicate standalone validation JSON was removed; its full results remain in the validation field above."
 }

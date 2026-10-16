@@ -71,26 +71,6 @@
     "disposition": "Generated source candidate requiring rear geometry correction and fitting before game use. No regeneration or runtime replacement performed."
   },
   "inspection_method": "Blender glTF import; four Cycles renders. Topology counts are computed on a temporary welded BMesh; source mesh is unchanged.",
-  "artifacts": {
-    "assets/modular_human_female_01/hair/tripo_knight_v1/source.blend": {
-      "bytes": 10891747,
-      "sha256": "835a3368b18a8c2dc0784667a9dd27198c99ef1af175fc80942c89d9016f059b"
-    },
-    "assets/modular_human_female_01/hair/tripo_knight_v1/review/angle.png": {
-      "bytes": 551348,
-      "sha256": "57dfcfcfa7225dfa02aac7ea2071a03a024eeb45387284e1f79d58ca0d550547"
-    },
-    "assets/modular_human_female_01/hair/tripo_knight_v1/review/back.png": {
-      "bytes": 526063,
-      "sha256": "9d912d342391d24835736024a15c0d710aa4a6488e8a85611192d0aa620d4edb"
-    },
-    "assets/modular_human_female_01/hair/tripo_knight_v1/review/front.png": {
-      "bytes": 532480,
-      "sha256": "6b1921629b6864f51fc2b869f344cc45da883ad7019d7752cbb7919acfeaec4c"
-    },
-    "assets/modular_human_female_01/hair/tripo_knight_v1/review/side.png": {
-      "bytes": 516089,
-      "sha256": "0e7c3912f3b62c81e5c6be6c96eee3199afdd195a4c73a6f02fb443ad044abeb"
-    }
-  }
+  "artifacts": {},
+  "cleanup_note": "2026-10-16: Removed four source review renders, the unused source review script and the duplicate source Blender file. Retained the original GLB, repaired and fitted assets, and inspection results."
 }

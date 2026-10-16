@@ -108,11 +108,6 @@
       "sha256": "2b258bcd199465bd9e555d62dfa784751578bc69aec5687067bf27f8288b3865"
     },
     {
-      "path": "assets/modular_human_female_01/tripo_api_v3/comparison/geometry.json",
-      "bytes": 1211,
-      "sha256": "f3fc140fa4007e4637e03964394fefbebb4ea655e6c3223112e937ff4a909e00"
-    },
-    {
       "path": "assets/modular_human_female_01/tripo_api_v3/comparison/hand-top.png",
       "bytes": 438863,
       "sha256": "11774f7c905be908910d6db0de1cbca2380a4e7feefeab00c48540008aac24f3"

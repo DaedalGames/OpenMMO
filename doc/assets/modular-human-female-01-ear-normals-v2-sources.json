@@ -90,13 +90,8 @@
       "path": "assets/modular_human_female_01/ear_normals_v2/preview-side-ear.png",
       "bytes": 249928,
       "sha256": "7d2e2a7610fa29071d7280c91decaf01d1861415098455cf8785494b68a86ea2"
-    },
-    {
-      "path": "assets/modular_human_female_01/ear_normals_v2/validation.json",
-      "bytes": 934,
-      "sha256": "0a7aef02c9b9e134526aa8a21142afae0828cc22f0b22ef8c74a3118b6073de3"
     }
   ],
   "cleanup_record": "doc/assets/modular-human-female-01-detail-cleanup.json",
-  "file_inventory_note": "File hashes record the reviewed outputs before cleanup. Intermediate binaries and all preview images listed in the cleanup record were removed; final ear_normals_v2 GLB/Blender, the eye_normals_v1 rebuild input, scripts and small validation records are retained."
+  "file_inventory_note": "File hashes record the reviewed outputs before cleanup. Intermediate binaries and all preview images listed in the cleanup record were removed; final ear_normals_v2 GLB/Blender, the eye_normals_v1 rebuild input and scripts are retained. The duplicate standalone validation JSON was removed on 2026-10-16; its full results remain in the validation field above."
 }

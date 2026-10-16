@@ -54,4 +54,4 @@ node tools/validate-female-preview.mjs
 - 초기 파생본 검증에서 accessor 순서를 그대로 비교한 진단이 과도한 메모리를 사용해 프로세스가 종료됐다.
   저장 과정의 accessor 재정렬을 허용하는 데이터 지문 비교로 바꾸고 파생본 생성을 완료했다.
 
-[경량본 얼굴 검수](../../assets/modular_human_female_01/preview/optimized-face.png).
+2026-10-16 과거 얼굴 검수 이미지는 삭제했다. 미리보기에 사용하는 모델·동작·manifest는 유지한다.

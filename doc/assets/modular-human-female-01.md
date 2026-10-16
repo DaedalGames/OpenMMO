@@ -125,6 +125,20 @@ node tools/validate-female-rig.mjs
 blender -b -t 4 --python tools/blender-scripts/save_female_rig.py
 ```
 
+## 눈 텍스처 제작 기록 정리 — 2026-10-16
+
+`eyes_v1`부터 `v6`까지 과거 투영·검토 스크립트 9개, 중복 검증 JSON 5개, 투영 설정 JSON 1개와 중복 프롬프트 2개를 삭제했다.
+검증 결과와 생성 프롬프트는 각 단계의 출처 문서에 보존한다. 입력 이미지는 V3의 `face-albedo-edited.png` 하나만 남겼다.
+V2의 이전 시안과 V3와 동일한 V6 사본은 삭제했고, V6 보정 스크립트는 V3 이미지를 직접 읽는다.
+V2 재현에는 당시 입력 이미지 복원이 필요하다. 비어 있는 V1·V2·V4·V5·V6 폴더는 제거했다.
+
+## 속눈썹 제작 기록 정리 — 2026-10-16
+
+`eyelashes_v1`부터 `v14`까지 중복 검증 JSON 11개, 분석 JSON 7개와 과거 검토용 `review.py` 10개를 삭제했다.
+검증 결과와 출처는 각 단계의 `doc/assets/modular-human-female-01-eyelashes-v*-sources.json`에 보존한다.
+제작 입력으로 사용하는 V10 GLB, V1의 `selected-faces.json`, V1·V2·V8의 `validation.json`은 유지한다.
+파일이 남지 않은 버전 폴더는 제거했다. 아래 과거 단계의 파일 목록은 당시 제작 이력이다.
+
 ## 현재 보관본과 중간 생성물 정리 — 2026-10-11
 
 이 정리 단계의 미리보기는 `assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.glb`와 같은 폴더의 `.blend`였다. 속눈썹 뿌리 두께·콧구멍 음영과 오른쪽 눈 노멀 보정을 포함한다. 재현 입력인 eyelashes v10 GLB 하나만 보존하고, 나머지 중간 모델과 검토 이미지는 삭제했다. **22,175삼각형**이며 눈 텍스처와 속눈썹 뿌리 보정을 포함한다. 현재 후속 편집 기준은 위 리깅본이다.
@@ -176,7 +190,7 @@ blender -b -t 4 --python tools/blender-scripts/save_female_rig.py
 ## Tripo 생성 메시 검토 — 2026-10-11
 
 - 사용자 제공: `/mnt/y/web_downloads/fitness+model+3d+model.glb`.
-- 보관 원본: `assets/modular_human_female_01/tripo_base_v1/source.glb`. 원본과 바이트 일치를 확인했다.
+- **[미사용 · 삭제]** 당시 원본과 바이트 일치를 확인했다. 2026-10-16 사용자 요청으로 초기 후보 GLB와 `tripo_base_v1/` 폴더를 삭제했으며 출처·해시·검사 기록은 보존한다.
 - 실측 **11,493 triangles**, 메시 오브젝트 1개, 재질 1개, 리그·애니메이션 없음.
 - 논의한 목표는 6,000쿼드였으나 실제 제출 설정과 원래 쿼드 수는 미확인이다.
 - 헤어는 별도 오브젝트로 제공되지 않았다. 분리된 연결 성분은 있어 전부 용접된 단일 표면으로 단정하지 않는다.
@@ -189,7 +203,7 @@ blender -b -t 4 --python tools/blender-scripts/save_female_rig.py
 ## Meshy 생성 메시 비교 — 2026-10-11
 
 - 사용자 제공: `/mnt/y/web_downloads/Meshy_AI_Bald_Female_Figure_1011075003_texture.glb`.
-- 보관 원본: `assets/modular_human_female_01/meshy_base_v1/source.glb`. 첨부 경로 원본과 바이트 일치를 확인했다.
+- 당시 원본은 첨부 경로와 바이트 일치를 확인했다. 2026-10-16 사용자 요청으로 미사용 모델과 `meshy_base_v1/` 폴더를 삭제했으며 출처·해시·검사 기록은 보존한다.
 - 실측 **12,282 triangles**, 메시·재질 각 1개, 리그·애니메이션 없음. 기존 Tripo보다 약 6.9% 많다.
 - Meshy는 base-color·metallic/roughness·normal 각 2048², Tripo는 base-color 2048² 한 장이다.
 - 동일 조명·카메라에서 전체 높이를 1로 정규화해 비교했다. Tripo 높이는 헤어를 포함한다. 중립 재질로 텍스처·노멀맵을 제거한 얼굴도 확인했다.
@@ -197,7 +211,7 @@ blender -b -t 4 --python tools/blender-scripts/save_female_rig.py
 - Meshy의 엄지·손끝은 뾰족하게 찌그러진 부분이 있다. Tripo의 손은 상대적으로 매끄럽지만 손가락 분리 확인은 여전히 필요하다.
 - Meshy의 발은 이전 Tripo보다 평평한 자세에 가깝다. 발가락 변형과 정확한 접지는 보정이 필요하다.
 - 두 생성기의 입력 원화와 설정이 달라 이번 결과만으로 서비스 전체의 품질 우열을 판단하지 않는다.
-- Meshy 원본은 보정 후보로 보관하며 확정 몸체·리깅 입력으로 채택하지 않았다.
+- **[미사용 · 삭제]** 확정 몸체·리깅 입력으로 채택하지 않은 Meshy 후보는 정리했다.
 - 출처: Meshy AI 사용자 생성물. 정확한 생성일·등급·이용 조건·생성 설정은 미확인이다. 검토 렌더는 Blender이며 원본 이용 조건을 따른다.
 - [해시·기하 진단·비교 조건·이미지 경로](modular-human-female-01-meshy-sources.json).
 
@@ -209,10 +223,9 @@ blender -b -t 4 --python tools/blender-scripts/save_female_rig.py
 - 4종의 4096² 텍스처가 포함됐다. GLB에는 base-color·normal·metallic/roughness 결합 맵을 보존했다.
 - 대머리 두피와 평평한 발 자세가 반영됐고, 손 확대에서 다섯 손가락 분리를 확인했다.
 - Meshy 후보보다 얼굴 형상과 엄지가 매끄럽다. 눈꼬리·입 주변 텍스처와 겨드랑이·의상 가장자리는 보정이 필요하다.
-- 원본 FBX: `assets/modular_human_female_01/tripo_api_v1/model_url.fbx`.
-- 원본 편집용: 같은 폴더의 `source.blend`, 원본 축 변환본 `source.glb`.
-- 확인용: `base-review.glb`. 정면을 맞추고 높이를 1로 정규화했으며 실제 캐릭터 키나 리그를 확정한 파일은 아니다.
-- 비교 렌더: 같은 폴더 `comparison/`의 정면·측면·후면·얼굴·손·발. 원본 형상은 수정하지 않았다.
+- **[미사용 · 삭제]** 2026-10-16 초기 V1 원본 FBX와 검토 스크립트를 삭제하고 빈 `tripo_api_v1/` 폴더를 제거했다.
+- 이전에 정리한 파생 GLB·Blender·비교 렌더를 포함한 경로와 해시는 제작 이력으로만 남긴다. 당시 원본 형상은 수정하지 않았다.
+- 초기 V1 변환·눈 보정을 재현하려면 삭제한 입력 파일을 복원해야 한다. 현재 여성 몸체·리깅·헤어·의상은 유지한다.
 - 출처: 유료 Tripo API, 2026-10-11. [Tripo 이용 조건](https://developers.tripo3d.ai/en/terms) 적용. 입력 원화 출처는 기존 기록을 따른다.
 - [생성 설정](modular-human-female-01-tripo-api-v1-build.json), [작업 ID·비용·다운로드 해시](modular-human-female-01-tripo-api-v1-sources.json), [검토·파생 파일 기록](modular-human-female-01-tripo-api-v1-review.json).
 
@@ -417,6 +430,9 @@ UV가 여러 조각으로 나뉘어 있어 정면 무조명 색상 투영을 Ima
 - 정면·눈 확대·위쪽 시점으로 이전 버전과 비교했고 브라우저 오류는 없었다.
 - 기존 출처·이용 조건을 따르며 새 이미지 생성이나 Tripo 크레딧 사용은 없다.
 - [변경·검증·파일 해시](modular-human-female-01-eyelashes-v11-sources.json).
+
+2026-10-16 `nose_v1`부터 `nose_v11`까지 중복 검증 JSON 11개와 빈 버전 폴더를 삭제했다.
+전체 검증 결과는 각 버전의 출처 문서에 보존하며, 아래 경로는 당시 제작 이력이다.
 
 ## 콧구멍 텍스처 정렬 v1 — 2026-10-11
 

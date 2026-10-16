@@ -1291,16 +1291,7 @@
       "path": "assets/modular_human_female_01/eyelashes_v6/head-right.png",
       "bytes": 509367,
       "sha256": "56f2dd3823793dbf2613955c3b7bfe1909479633097cb3f8ca77ac1d09baeb6e"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyelashes_v6/review.py",
-      "bytes": 2161,
-      "sha256": "ab6e84ab4e0eed295b9664e56e1b2774501575568ddb3fd549a71df84c2b4b75"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyelashes_v6/validation.json",
-      "bytes": 25532,
-      "sha256": "0d076f7641fc0a10511b732728a0bc56e69fe06d3264bf5b201921a1cd784f8a"
     }
-  ]
+  ],
+  "file_inventory_note": "Unused eyelash analysis and review files were removed on 2026-10-16. The duplicate standalone validation JSON was removed; its full results remain in the validation field above."
 }

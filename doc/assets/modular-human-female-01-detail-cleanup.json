@@ -3,8 +3,7 @@
   "reason": "User requested removal of intermediate results and comparison screenshots before committing the accepted face and eyelash refinements.",
   "retained_final": [
     "assets/modular_human_female_01/ear_normals_v2/base-ear-normals-v2.glb",
-    "assets/modular_human_female_01/ear_normals_v2/base-ear-normals-v2.blend",
-    "assets/modular_human_female_01/ear_normals_v2/validation.json"
+    "assets/modular_human_female_01/ear_normals_v2/base-ear-normals-v2.blend"
   ],
   "retained_rebuild_input": "assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.glb",
   "removed_file_count": 29,

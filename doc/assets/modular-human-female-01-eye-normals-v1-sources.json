@@ -151,13 +151,8 @@
       "path": "assets/modular_human_female_01/eye_normals_v1/diagnosis-uniform-gloss.png",
       "bytes": 281859,
       "sha256": "3e4250a0fa7cb8fd46033ce7862ccbd3d87e59bbe332467aa5abeeb2646a918a"
-    },
-    {
-      "path": "assets/modular_human_female_01/eye_normals_v1/validation.json",
-      "bytes": 1541,
-      "sha256": "a8bd48e175b5980d543d5b5258a847aa69e7f58ae28afbb3690aa3caaa62d22c"
     }
   ],
   "cleanup_record": "doc/assets/modular-human-female-01-final-cleanup.json",
-  "file_inventory_note": "File hashes describe the reviewed outputs before cleanup. Intermediate binaries and all review images listed in the cleanup record were intentionally removed; final GLB/Blender and small validation records are retained."
+  "file_inventory_note": "File hashes describe the reviewed outputs before cleanup. Intermediate binaries and all review images listed in the cleanup record were intentionally removed; the eye_normals_v1 GLB/Blender are retained. The duplicate standalone validation JSON was removed on 2026-10-16; its full results remain in the validation field above."
 }

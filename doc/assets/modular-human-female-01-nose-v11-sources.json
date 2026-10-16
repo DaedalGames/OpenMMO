@@ -286,13 +286,8 @@
       "path": "assets/modular_human_female_01/nose_v11/orm-nose-v11.png",
       "bytes": 6910685,
       "sha256": "5cdfbbd489ac90dbcc5fb057529a44156ae9cd69668c8922340eb2cc2b85c298"
-    },
-    {
-      "path": "assets/modular_human_female_01/nose_v11/validation.json",
-      "bytes": 3140,
-      "sha256": "df2cd98d21a44c8c771849968ed2532233528c5ef02dd41661d44585769fb9d5"
     }
   ],
   "cleanup_record": "doc/assets/modular-human-female-01-final-cleanup.json",
-  "file_inventory_note": "File hashes describe the reviewed outputs before cleanup. Intermediate binaries and all review images listed in the cleanup record were intentionally removed; final GLB/Blender and small validation records are retained."
+  "file_inventory_note": "File hashes describe the reviewed outputs before cleanup. Intermediate binaries and all review images listed in the cleanup record were intentionally removed; final GLB/Blender and small validation records are retained. The duplicate standalone validation JSON and its empty nose directory were removed on 2026-10-16; full results remain in the validation field above."
 }

@@ -24,7 +24,6 @@
     "color": "assets/modular_human_female_01/eyes_v1/base-color-eyes-v1.png",
     "normal": "assets/modular_human_female_01/eyes_v1/normal-eyes-v1.png"
   },
-  "validation": "assets/modular_human_female_01/eyes_v1/validation.json",
   "script": "tools/blender-scripts/correct_female_eye_texture.py",
   "review": [
     "Front and both oblique views inspected.",
@@ -48,10 +47,6 @@
     "tools/blender-scripts/correct_female_eye_texture.py": {
       "sha256": "b0fa28fdf34096007876bd42a421dd49d79eaf919d4b7c0bf52d73c37cf7592f",
       "bytes": 10294
-    },
-    "assets/modular_human_female_01/eyes_v1/validation.json": {
-      "sha256": "ccb6463d6b67fc66eca51c428f178fa671030df1cfd43d0c079be38aa56822c4",
-      "bytes": 464
     },
     "assets/modular_human_female_01/eyes_v1/base-eyes-v1.glb": {
       "sha256": "70856fbc36f84b1920b40f1b2461462ab8a3bcba6b9e5caa17e6f048d1b75a80",
@@ -89,5 +84,6 @@
       "changed_pixels": 24126,
       "outside_mask_max_difference": 0
     }
-  }
+  },
+  "file_inventory_note": "Unused eye projection/review scripts and duplicate standalone records were removed on 2026-10-16. Validation results and generation prompts remain in this source record. Only eyes_v3/face-albedo-edited.png is retained: the earlier V2 image and identical V6 copy were removed; V6 now reads the V3 image directly. V2 reproduction requires restoring its historical input image."
 }

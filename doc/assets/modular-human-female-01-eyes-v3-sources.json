@@ -177,26 +177,7 @@
       "path": "assets/modular_human_female_01/eyes_v3/normal-eyes-v3.png",
       "bytes": 3753826,
       "sha256": "1b67cf2d4878b533c3c62ae8054b9e90d13bb13fc72b326a40ad04882ea6dee0"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyes_v3/prompt.txt",
-      "bytes": 1681,
-      "sha256": "c797c4067531f42076bebc2678c2a115346ebf8004c03656cc5d3d67ea4985a1"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyes_v3/render-reference.py",
-      "bytes": 2666,
-      "sha256": "320923eeb8e349fe947d3ee4ab5f98a63e1027261ee97f3431daa6f191fe79de"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyes_v3/review.py",
-      "bytes": 2146,
-      "sha256": "b2cb4929fb5ddfd414c609584d8f999f60373250f994b800ca37b8a180eb6adf"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyes_v3/validation.json",
-      "bytes": 580,
-      "sha256": "0d42f4ceb84ea7c4ef5b137c2b9938e7de42c445b5462595746942bd608a3744"
     }
-  ]
+  ],
+  "file_inventory_note": "Unused eye projection/review scripts and duplicate standalone records were removed on 2026-10-16. Validation results and generation prompts remain in this source record. Only eyes_v3/face-albedo-edited.png is retained: the earlier V2 image and identical V6 copy were removed; V6 now reads the V3 image directly. V2 reproduction requires restoring its historical input image."
 }

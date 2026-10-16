@@ -109,11 +109,6 @@
       "sha256": "b0ec6f6bb023c2f82a6f65e4912da7a6ca1d86d6859705f6321a3810a8c49a5a"
     },
     {
-      "path": "assets/modular_human_female_01/eyes_v6/face-albedo-edited.png",
-      "bytes": 1193299,
-      "sha256": "2cf24cb9ba4616da17843485830e05cfc081de00fc65b208dfcdcc3318c92991"
-    },
-    {
       "path": "assets/modular_human_female_01/eyes_v6/full.png",
       "bytes": 470197,
       "sha256": "c3ef2be30d4627e00a4f22d1719dde6010a64fc6b6ccfcb1585163529224a465"
@@ -147,16 +142,7 @@
       "path": "assets/modular_human_female_01/eyes_v6/normal-eyes-v6.png",
       "bytes": 3757453,
       "sha256": "5fab50049db22d8c0afa022078ddcc8de0871f1730b2452c91556aa12b74b120"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyes_v6/review.py",
-      "bytes": 2146,
-      "sha256": "0aa52c8146d3335019d9562229fd762e8839e78988bcdbc14e0a0171c571f5c7"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyes_v6/validation.json",
-      "bytes": 895,
-      "sha256": "8615039ba0ca24bebc74d82b3ecab5563996fc133945b343d7c453b3b0a39bf3"
     }
-  ]
+  ],
+  "file_inventory_note": "Unused eye projection/review scripts and duplicate standalone records were removed on 2026-10-16. Validation results and generation prompts remain in this source record. Only eyes_v3/face-albedo-edited.png is retained: the earlier V2 image and identical V6 copy were removed; V6 now reads the V3 image directly. V2 reproduction requires restoring its historical input image."
 }

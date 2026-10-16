@@ -162,11 +162,6 @@
       "path": "assets/modular_human_female_01/hair/tripo_knight_v1/model_url.glb",
       "bytes": 10795496,
       "sha256": "70fa1340f73c89b2f880e3758fa5c28a1a8c6b8aa8af5a22896d9e1fe1f6b20d"
-    },
-    "rendered_image_url": {
-      "path": "assets/modular_human_female_01/hair/tripo_knight_v1/rendered_image_url.png",
-      "bytes": 155458,
-      "sha256": "df9d85c70605e9bad7689fe973049e25c2571fbd66093676d3b181ad4bb2a3ec"
     }
   }
 }

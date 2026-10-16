@@ -143,21 +143,7 @@
       "path": "assets/modular_human_female_01/eyes_v5/normal-eyes-v5.png",
       "bytes": 3753798,
       "sha256": "e744b27571db151dd9e724b7ed81996c4603057e7d2fe746f5994cea0bce7723"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyes_v5/render-reference.py",
-      "bytes": 1880,
-      "sha256": "2269258b01a503152798901f31fa4851275da31f99349120c9c3315c370e45ae"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyes_v5/review.py",
-      "bytes": 2146,
-      "sha256": "01e0f7745e08ff458ce617d6320b38a17645dca8867cbb9a00d47776d8acf371"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyes_v5/validation.json",
-      "bytes": 704,
-      "sha256": "3640ee04807537f4e6db5e271002f8a2b2e69f9b04783417dc122aa9ad1c7aac"
     }
-  ]
+  ],
+  "file_inventory_note": "Unused eye projection/review scripts and duplicate standalone records were removed on 2026-10-16. Validation results and generation prompts remain in this source record. Only eyes_v3/face-albedo-edited.png is retained: the earlier V2 image and identical V6 copy were removed; V6 now reads the V3 image directly. V2 reproduction requires restoring its historical input image."
 }

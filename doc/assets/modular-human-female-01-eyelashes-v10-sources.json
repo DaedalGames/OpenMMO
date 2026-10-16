@@ -1404,18 +1404,9 @@
       "path": "assets/modular_human_female_01/eyelashes_v10/eye-top.png",
       "bytes": 514692,
       "sha256": "c5c0ca60ea6abc5e73ac3b8cd5940e8e16e25ec9051394b6966a720454c2bbd3"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyelashes_v10/review.py",
-      "bytes": 2514,
-      "sha256": "4485a01bf038a627e61e1e42f73acf710cdcf0fcb4669e1f7305bca9732a5d4f"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyelashes_v10/validation.json",
-      "bytes": 29355,
-      "sha256": "d658621a23fd1d392bc989a0de7f060fcfe99c9ae17c6e1d57318378f69f40fd"
     }
   ],
   "cleanup_record": "doc/assets/modular-human-female-01-cleanup.json",
-  "rebuild_note": "Historical step command; its v9 intermediate input was removed at user request. Continue editing the retained v10 .blend. Earlier scripts and validation records are retained as process history."
+  "rebuild_note": "Historical step command; its v9 intermediate input was removed at user request. Continue editing the retained v10 .blend. Earlier scripts and validation records are retained as process history.",
+  "file_inventory_note": "Unused eyelash analysis and review files were removed on 2026-10-16. The duplicate standalone validation JSON was removed; its full results remain in the validation field above."
 }

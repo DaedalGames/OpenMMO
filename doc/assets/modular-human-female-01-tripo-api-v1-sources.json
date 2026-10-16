@@ -111,5 +111,6 @@
       "bytes": 86791,
       "sha256": "11213827be754409d3d5331fd0f7ececc6ce65a742a75bd4742832e2da6925e0"
     }
-  }
+  },
+  "cleanup_note": "2026-10-16: Deleted the unused Tripo V1 source FBX and review script, then removed the empty tripo_api_v1 directory. File paths and hashes are retained as historical provenance, not a current inventory. Reproducing the early V1 conversion and eye correction requires restoring these inputs."
 }

@@ -1,6 +1,6 @@
 {
   "asset": "modular_human_female_01",
-  "status": "raw_mesh_reviewed_not_fitted_or_rigged",
+  "status": "[미사용 · 삭제] Earlier Tripo body candidate removed at user request; source metadata and inspection results retained.",
   "supplied_date": "2026-10-11",
   "generation_date": null,
   "tool": "Tripo (user-provided; GLB generator confirms Tripo)",
@@ -69,5 +69,6 @@
       "Separate hair and underwear into interchangeable parts; preserve body coverage under garments.",
       "Correct foot posture and inspect fingers before rigging."
     ]
-  }
+  },
+  "cleanup_note": "2026-10-16: Deleted the unused source GLB and empty tripo_base_v1 directory. Source paths, hashes and image paths describe historical files; geometry and review findings are preserved."
 }

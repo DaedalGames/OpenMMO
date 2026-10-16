@@ -99,8 +99,6 @@
       "sole_plane_reference": "Heel tip and rigid Foot-weighted ball contact; flexing toe tip excluded."
     },
     "strap_clearance": {
-      "right": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/clearance-validation.json",
-      "left": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/clearance-left-validation.json",
       "status": "171 poses per foot recomputed: ankle and rear connector pass; existing front intersections remain (right slash1, left torch_run)."
     },
     "frontend": {
@@ -110,16 +108,12 @@
     },
     "knight_boots_regression": "passed",
     "browser": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-review.json",
       "status": "passed: rest, idle, walk, run, jump, combat, slash and sit views, plus repeated equip/unequip; no browser errors"
     },
     "instep_rest_and_idle": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/instep-idle-validation.json",
       "status": "passed: rest + all 61 idle1 frames; exact front participant equality and recomputed ankle/connector/heel samples"
     },
     "ankle_clearance": {
-      "right": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/ankle-validation.json",
-      "left": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/ankle-left-validation.json",
       "status": "passed: 855 poses per foot reused after exact participant attribute equality",
       "penetration_tolerance_source_units": 0.0002,
       "minimum_signed_ankle_distance_m": {
@@ -128,12 +122,9 @@
       }
     },
     "front_ring_preservation": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-ring-refinement-validation.json",
       "status": "Historical: preceding front-ring adjustment before connector layering."
     },
     "connector_layering": {
-      "right": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/connector-layer-right-validation.json",
-      "left": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/connector-layer-left-validation.json",
       "status": "passed: 855 poses per foot reused after exact participant attribute equality",
       "minimum_distance_m": {
         "right": 0.0008165223142653069,
@@ -145,12 +136,9 @@
       }
     },
     "connector_preservation": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/connector-preservation-validation.json",
       "status": "Historical: preceding connector-layering adjustment before middle-ring wall repair."
     },
     "middle_ring_walls": {
-      "right": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/ring-wall-right-validation.json",
-      "left": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/ring-wall-left-validation.json",
       "status": "passed: 855 poses per foot reused after exact participant attribute equality",
       "minimum_sampled_wall_distance_m": {
         "right": 0.0018625927254164363,
@@ -158,73 +146,48 @@
       }
     },
     "marked_browser_patch": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-ring-wall-review.json",
       "status": "Historical browser patch check before heel-side straightening; middle-ring wall attributes remain exactly unchanged."
     },
     "middle_ring_preservation": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/ring-wall-preservation-validation.json",
       "status": "Historical: middle-ring wall repair before connector attachment."
     },
     "preservation": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/right-panel-preservation.json",
       "status": "passed: right panel only; entire left mesh and other region participant attributes/indices exactly preserved"
     },
     "heel_side_straps": {
-      "right": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/heel-straps-right-validation.json",
-      "left": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/heel-straps-left-validation.json",
-      "status": "Rest/idle passed on both feet. Full 855 poses recomputed: right passed; existing left heel-side penetrating frames remain, with no newly penetrating frames.",
-      "comparison": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/lower-ring-wall-regression.json"
+      "status": "Rest/idle passed on both feet. Full 855 poses recomputed: right passed; existing left heel-side penetrating frames remain, with no newly penetrating frames."
     },
     "heel_side_preservation": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/heel-straps-preservation-validation.json",
       "status": "Historical: heel-side straightening before lower-ring width refinement."
     },
     "lower_ring_walls": {
-      "right": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/lower-ring-wall-right-validation.json",
-      "left": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/lower-ring-wall-left-validation.json",
       "status": "passed: 855 poses per foot reused after exact participant attribute equality"
     },
     "lower_ring_browser_patch": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-lower-ring-wall-review.json",
       "status": "Historical: lower-ring browser visibility check before front-strap repair."
     },
     "front_strap_walls": {
-      "right": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-wall-right-validation.json",
-      "left": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-wall-left-validation.json",
       "status": "passed: right 855 poses recomputed; left 855 poses reused after complete mesh equality"
     },
     "front_strap_browser": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-front-strap-wall-review.json",
       "status": "Historical: top-shell visibility check before lateral toe-strap repair."
     },
     "front_strap_idle_skin": {
-      "right": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-idle-right.json",
-      "left": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-idle-left.json",
       "status": "passed: rest + 61 idle1 poses per foot"
     },
     "front_strap_motion_skin": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/right-panel-skin-regression.json",
       "status": "Existing right motion skin intersections remain; 171 poses checked, no additional penetrating frames. Left mesh is identical to baseline."
     },
     "front_strap_side_browser": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-front-strap-side-review.json",
       "status": "Historical: earlier inner/outer visibility check; right outer/outer overlap required the subsequent marked-panel repair."
     },
     "front_strap_side_walls": {
-      "paths": [
-        "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-side-0-wall-right-validation.json",
-        "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-side-1-wall-right-validation.json",
-        "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-side-0-wall-left-validation.json",
-        "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-side-1-wall-left-validation.json"
-      ],
       "status": "passed: both right panels x 855 poses recomputed; left reports reused after complete mesh equality"
     },
     "right_panel_self_overlap": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/right-panel-self-validation.json",
       "status": "passed: 855 right-foot poses, zero positive-area near-coplanar or crossing outer/outer overlaps"
     },
     "right_panel_browser": {
-      "path": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/browser-right-panel-review.json",
       "status": "passed: actual right mesh, 3 nearby camera angles x 3 idle fractions x 14 outer face centers. Closest two rendered hits within 0.09 mm: 48 before / 0 after, no browser errors."
     }
   },
@@ -299,7 +262,6 @@
     "maximum_vertical_lift_m": 0.0072,
     "maximum_skin_normal_offset_m": 0.0018,
     "taper": "Smooth transition into sole attachments",
-    "validation": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/instep-idle-validation.json",
     "frames": 62,
     "minimum_sampled_front_distance_m": 7.836982179417443e-05,
     "scope": "Sandal vertices, face centers and edge midpoints against exact posed skin triangles after the reversible sole mask."
@@ -321,7 +283,6 @@
     "target_clearance_m": 0.0054,
     "target_gap_reduction_fraction": 0.5384615384615384,
     "method": "Fit both ankles at the smaller radial clearance. Keep separate ring and front-strap margins on the left. Correct ring vertices, face samples and UV seam duplicates against each ankle surface.",
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/ankle-comparison.png",
     "body_and_shared_animation_unchanged": true
   },
   "left_front_ring_clearance_m": 0.0036000000000000003,
@@ -335,7 +296,6 @@
     "right_shoe_unchanged": true,
     "left_footbed_instep_and_heel_unchanged": true,
     "body_mask_unchanged": true,
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/front-ring-comparison.png",
     "rejected_attempt": "Per-vertex radial refit and a ring-only inset distorted the lower band. Applied a shared fore-aft inset with angular taper, including the lower rim."
   },
   "connector_layer_refinement": {
@@ -346,8 +306,7 @@
     "baseline_left_frames_with_crossings": 29,
     "current_frames_per_foot": 855,
     "current_frames_with_crossings": 0,
-    "scope": "Added rear connector only; rings, buckles, instep, footbed, heels and original skin weights preserved.",
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/connector-layer-comparison.png"
+    "scope": "Added rear connector only; rings, buckles, instep, footbed, heels and original skin weights preserved."
   },
   "ring_wall_minimum_thickness_m": {
     "right": 0.0054,
@@ -370,8 +329,7 @@
       "Clamping replacement alone did not remove the visible patch.",
       "Repairing all rings affected unrelated hardware; restricted repair to the marked middle band.",
       "Geometry-only correction left jump-time wall crossings; transferred outer weights from inner triangles and retained additional right-wall thickness."
-    ],
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/middle-ring-wall-comparison.png"
+    ]
   },
   "connector_attachment_embed_m": 0.00036,
   "connector_thickness_m": 0.0027,
@@ -388,7 +346,6 @@
     "exposed_outer_clearance_target_m": 0.00216,
     "method": "Fit inner corners to actual ring hits and transfer barycentric ring weights; interpolate across gaps. Fit only the exposed wall against exact projected triangle intersections.",
     "validation_scope": "Exposed-face separation and corresponding attachment-point drift; hidden inner-face overlap is intentional.",
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/connector-attachment-comparison.png",
     "original_shoe_attributes_and_body_mask_unchanged": true
   },
   "heel_strap_maximum_adjustment_m": {
@@ -434,9 +391,6 @@
       ]
     },
     "rejected_attempt": "Full straightening of all four boundaries caused skin intersections. Retained additional curvature on the front boundary and original weights.",
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/heel-straps-comparison.png",
-    "preservation": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/heel-straps-preservation-validation.json",
-    "regression": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/heel-straps-regression-validation.json",
     "known_remaining": "Existing left heel-side skin crossings in 73 of 855 poses remain. No additional penetrating frames; existing failing frames gain at most 0.0772 mm in minimum depth and 24 sampled contacts."
   },
   "rear_ring_width_reduction": 0.16,
@@ -448,10 +402,7 @@
     "date": "2026-10-15",
     "previous_output_sha256": "5256e418c3373ab945d4718611040af021cfa8c3309338816b23916672cf7dfd",
     "maximum_width_reduction_fraction": 0.16,
-    "scope": "Lower ring rear segment only, vertical compression about its center; smooth fore-aft taper. Original horizontal fit, UVs, joints and weights unchanged. Rear connector reattached.",
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/rear-ring-width-comparison.png",
-    "preservation": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/rear-ring-preservation-validation.json",
-    "motion_regression": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/rear-ring-regression-validation.json"
+    "scope": "Lower ring rear segment only, vertical compression about its center; smooth fore-aft taper. Original horizontal fit, UVs, joints and weights unchanged. Rear connector reattached."
   },
   "lower_ring_wall_thickness_m": 0.0036000000000000003,
   "lower_ring_wall_maximum_adjustment_m": {
@@ -463,8 +414,6 @@
     "previous_output_sha256": "c1d56440032fec111130c77c21c6d113bead3870825929512d1fd07f2d3d3f29",
     "rest_thickness_target_m": 0.0036000000000000003,
     "scope": "23 rear outer faces per foot and 61 welded vertices. Horizontal separation preserves the previously narrowed vertical profile and inner surface. Transfer inner-surface weights to all seam aliases. Refit the rear connector.",
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/lower-ring-wall-comparison.png",
-    "preservation": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/lower-ring-wall-preservation.json",
     "rejected_attempt": "Unrestricted displacement changed the vertical profile. Constrain corrections horizontally, exclude front faces and bevel end caps, and weld seam weights."
   },
   "front_strap_thickness_target_m": 0.0027,
@@ -479,9 +428,6 @@
     "inner_faces": 13,
     "target_vertices_per_foot": 172,
     "shared_seam_gap": "Tapers to zero at the fixed joined boundary; shared seam vertices and edges omitted from gap probes. Sampled non-seam gap threshold is 0.09 mm.",
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/front-strap-wall-comparison.png",
-    "preservation": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-preservation-validation.json",
-    "skin_regression": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-skin-regression.json",
     "known_remaining": "Existing motion skin intersections remain. No additional penetrating poses among 171 per foot; some already failing poses deepen by up to 1.87 mm right / 1.24 mm left."
   },
   "front_side_maximum_adjustment_m": {
@@ -500,9 +446,6 @@
       4
     ],
     "scope": "Both lateral toe-strap panels. Preserve inner surfaces and all original heights. Separate along each shoe lateral direction, transfer seam weights, then verify the top shell again.",
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/front-strap-side-comparison.png",
-    "preservation": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-side-preservation.json",
-    "skin_regression": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/front-strap-side-skin-regression.json",
     "target_vertices_per_foot": 181,
     "changed_canonical_positions_per_foot": 64
   },
@@ -539,9 +482,6 @@
     "dependency": "Shapely 2.1.2",
     "left_mesh_all_attributes_and_indices_identical": true,
     "total_triangles_unchanged": 3624,
-    "review": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/review/right-front-panel-comparison.png",
-    "preservation": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/right-panel-preservation.json",
-    "skin_regression": "assets/items/female_barbarian_boots/tripo_v1/fitted_v3/right-panel-skin-regression.json",
     "cleanup": {
       "reason": "Reproducible pose buffers, ARAP exchange files and individual render frames removed after validation; current GLB, editable Blender source, reports, strip and comparison images retained.",
       "removed": [
@@ -682,5 +622,82 @@
     "revision": "813d761eb3c2a83b302540f1cf2b6ff8ed631c28",
     "changed_files": 72,
     "remote_hash_verification": "All changed files downloaded from the pinned revision and SHA-256 verified before updating assets.lock. Unrelated remote paths and lock entries preserved."
+  },
+  "review_image_cleanup": {
+    "date": "2026-10-16",
+    "removed_count": 12,
+    "removed_bytes": 4595169,
+    "reason": "Remove review-only images and their directory at user request.",
+    "retained": "Current GLB, editable Blender, fit data, generation sources, masks and validation reports. Earlier cleanup notes describe the files retained at those historical stages."
+  },
+  "validation_report_cleanup": {
+    "date": "2026-10-16",
+    "removed_count": 54,
+    "removed_bytes": 4487480,
+    "removed_files": [
+      "ankle-left-validation.json",
+      "ankle-validation.json",
+      "browser-front-strap-side-review.json",
+      "browser-front-strap-wall-review.json",
+      "browser-lower-ring-wall-review.json",
+      "browser-review.json",
+      "browser-right-panel-review.json",
+      "browser-ring-wall-review.json",
+      "clearance-left-validation.json",
+      "clearance-validation.json",
+      "connector-attachment-preservation.json",
+      "connector-layer-left-validation.json",
+      "connector-layer-right-validation.json",
+      "connector-preservation-validation.json",
+      "front-ring-refinement-validation.json",
+      "front-strap-idle-left.json",
+      "front-strap-idle-right.json",
+      "front-strap-preservation-validation.json",
+      "front-strap-side-0-wall-left-validation.json",
+      "front-strap-side-0-wall-right-validation.json",
+      "front-strap-side-1-wall-left-validation.json",
+      "front-strap-side-1-wall-right-validation.json",
+      "front-strap-side-preservation.json",
+      "front-strap-side-skin-regression.json",
+      "front-strap-skin-regression.json",
+      "front-strap-wall-left-before.json",
+      "front-strap-wall-left-validation.json",
+      "front-strap-wall-right-before.json",
+      "front-strap-wall-right-validation.json",
+      "heel-straps-idle-left.json",
+      "heel-straps-idle-right.json",
+      "heel-straps-left-validation.json",
+      "heel-straps-preservation-validation.json",
+      "heel-straps-regression-validation.json",
+      "heel-straps-right-validation.json",
+      "instep-idle-validation.json",
+      "lower-ring-left-clearance.json",
+      "lower-ring-right-clearance.json",
+      "lower-ring-wall-left-before.json",
+      "lower-ring-wall-left-validation.json",
+      "lower-ring-wall-preservation.json",
+      "lower-ring-wall-regression.json",
+      "lower-ring-wall-right-before.json",
+      "lower-ring-wall-right-validation.json",
+      "rear-ring-left-validation.json",
+      "rear-ring-preservation-validation.json",
+      "rear-ring-regression-validation.json",
+      "rear-ring-right-validation.json",
+      "right-panel-preservation.json",
+      "right-panel-self-validation.json",
+      "right-panel-skin-regression.json",
+      "ring-wall-left-validation.json",
+      "ring-wall-preservation-validation.json",
+      "ring-wall-right-validation.json"
+    ],
+    "retained_files": [
+      "boots_female_barbarian.glb",
+      "female-barbarian-boots-fitted.blend",
+      "fit-data.npz",
+      "body-occlusion.json",
+      "heel-animation-offsets.json",
+      "runtime-validation.json"
+    ],
+    "reason": "User requested deletion of detailed browser, clearance, preservation and regression reports. Numerical summaries and unresolved fitting issues remain in the asset documentation. Earlier retention notes describe their historical cleanup stages."
   }
 }

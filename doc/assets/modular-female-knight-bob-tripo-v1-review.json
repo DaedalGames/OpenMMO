@@ -704,10 +704,6 @@
   "date": "2026-10-12",
   "tool": "Blender 5.2.0 LTS local source review",
   "source_geometry_modified": false,
-  "blender": {
-    "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/source.blend",
-    "sha256": "7a0a23bbacc1ea34c45ad4dbe05717106d51c17c94c503ea1c8c328868a7b1f5"
-  },
   "visual_review": {
     "views": [
       "front",

@@ -567,11 +567,6 @@
       "sha256": "688779006c3fd4db203835cc2a3b5a59dc7e975bcba092ca5412498a634fc9da"
     },
     {
-      "path": "assets/modular_human_female_01/eyelashes_v1/components.json",
-      "bytes": 263472,
-      "sha256": "a22b3ddc4e0a38f42f601e050a27079bdae1074ba42320b2d73ee6cd84827700"
-    },
-    {
       "path": "assets/modular_human_female_01/eyelashes_v1/eye-above.png",
       "bytes": 837823,
       "sha256": "e9fa1ea55ba410b666609ad2ae792e7ac1fe34834408b046c1092526fe6e12d9"
@@ -587,19 +582,9 @@
       "sha256": "d3c40333308089f98fa48118322a538b1dde0370b5295e65f73774ce347411d5"
     },
     {
-      "path": "assets/modular_human_female_01/eyelashes_v1/eye-faces.json",
-      "bytes": 340643,
-      "sha256": "b144193aa5b06bfd5957b9a9bd24ab8cca37732765984bc8b5a3c7d4c908910d"
-    },
-    {
       "path": "assets/modular_human_female_01/eyelashes_v1/eye-front.png",
       "bytes": 854334,
       "sha256": "a686245fa0bb3c87cfcbd47c486bce7dde3f59cefd8452857d39d826d44284f2"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyelashes_v1/eye-patches.json",
-      "bytes": 5866,
-      "sha256": "facec3816ca3d802a622c7c1e0462dcf5096fab246a121e0a1c8eda6e051505d"
     },
     {
       "path": "assets/modular_human_female_01/eyelashes_v1/eyelash-fringe.png",
@@ -627,31 +612,6 @@
       "sha256": "be828bc28617d5acaaa90b465016077d09a631ed141e0510f215fb9950fefe3b"
     },
     {
-      "path": "assets/modular_human_female_01/eyelashes_v1/patch-2-boundary.json",
-      "bytes": 6742,
-      "sha256": "e44d6e54ccf2da5859baa545f236e63e2a78a242d691521890d5b9f03a75b3ad"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyelashes_v1/patch-3-boundary.json",
-      "bytes": 4202,
-      "sha256": "8d7f47db027d6d4d257315d351e6e7bdd6b41ec8f89697f59fac7087a9621473"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyelashes_v1/patch-4-boundary.json",
-      "bytes": 3732,
-      "sha256": "516ad1a17a834070537cd042d509f969c66849d30bcb355d14ed75a52bd3b419"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyelashes_v1/patch-groups.json",
-      "bytes": 11584,
-      "sha256": "e16d43cf44d10152ec4a1292bb4deb206ce95fb371f8fafeb8e93d61e27b3e17"
-    },
-    {
-      "path": "assets/modular_human_female_01/eyelashes_v1/review.py",
-      "bytes": 1950,
-      "sha256": "1b6db5bc50eb2ae507ae2987e4603c9766f7d9cffce82225c7087947ee962b87"
-    },
-    {
       "path": "assets/modular_human_female_01/eyelashes_v1/selected-faces.json",
       "bytes": 1437,
       "sha256": "e6bd0f6075f3840d997e7f885604f669f5f560e013dc62d83a5f30612f9d5377"
@@ -661,5 +621,6 @@
       "bytes": 11531,
       "sha256": "e6f524f89a45bc7600c253216c60fe54cf7c3be108213c1c307e0f72804e5c62"
     }
-  ]
+  ],
+  "file_inventory_note": "Unused eyelash analysis and review files were removed on 2026-10-16. The standalone validation JSON is retained as an input to the production scripts."
 }

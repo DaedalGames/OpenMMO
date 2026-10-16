@@ -71,13 +71,8 @@
       "path": "assets/modular_human_female_01/lips_v1/base-lips-v1.glb",
       "bytes": 24260104,
       "sha256": "124901d903d59139e7c20677a40d70954acf3278f9a65c54d92e5ea431ce3225"
-    },
-    {
-      "path": "assets/modular_human_female_01/lips_v1/validation.json",
-      "bytes": 756,
-      "sha256": "dc942c4d7be06811f9101511838a9647dbcffa6353e9bb0752c229b0f810207d"
     }
   ],
   "cleanup_record": "doc/assets/modular-human-female-01-detail-cleanup.json",
-  "file_inventory_note": "File hashes record the reviewed outputs before cleanup. Intermediate binaries and all preview images listed in the cleanup record were removed; final ear_normals_v2 GLB/Blender, the eye_normals_v1 rebuild input, scripts and small validation records are retained."
+  "file_inventory_note": "File hashes record the reviewed outputs before cleanup. Intermediate binaries and all preview images listed in the cleanup record were removed; final ear_normals_v2 GLB/Blender, the eye_normals_v1 rebuild input, scripts and small validation records are retained. The duplicate standalone lip validation JSON and its empty directory were removed on 2026-10-16; full validation results remain in the validation field above."
 }

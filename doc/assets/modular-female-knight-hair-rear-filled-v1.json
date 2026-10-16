@@ -38,7 +38,7 @@
   "reference": "doc/images/characters/modular_human_female_01/parts/knight/hair_female_knight-back-v1.png",
   "reference_sha256": "eab66942b949171daf73cc710a6162b30d051899042cc4d8de3c6f262e1ae471",
   "method": "Add curved rear crown and continuous hair curtain with shallow lock relief, projected rear concept UVs, with a double-sided hair surface and baked fine-strand tangent normals. Original meshes unchanged.",
-  "status": "Local repair candidate; not fitted or rigged",
+  "status": "[미사용] Archived repair candidate; user dissatisfied with the rear fill and fitted appearance; retained at user request.",
   "extra_api_credits": 0,
   "validation": {
     "export_reimport_passed": true,
@@ -66,18 +66,6 @@
     "Accepted smooth rear profile, continuous interior UV region and baked strand normals."
   ],
   "artifacts": {
-    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/angle.png": {
-      "bytes": 523161,
-      "sha256": "f9843e72d2cfc7686df8ee510ce37c5c7fa63f6b2900c12a5535db124f6c0227"
-    },
-    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/back.png": {
-      "bytes": 498202,
-      "sha256": "8d06ada940af615171556e1b5adb4d4954db38ac66c32122923aa4465e1bcf86"
-    },
-    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/front.png": {
-      "bytes": 540323,
-      "sha256": "7606eb8f99013d1575f631cfe61562b498183b0f4a9a1fd07f0d3d95054968c7"
-    },
     "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/hair_female_knight-rear-filled-v1.blend": {
       "bytes": 13979055,
       "sha256": "aabbc0d38b13d2e75f4b061b8a8a07e39dde9fab9a2f3817c2e4f4d57881160a"
@@ -89,14 +77,7 @@
     "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/rear-strand-normal.png": {
       "bytes": 1101265,
       "sha256": "d88530900c499054c6c2daff04e5661ef6fb3caf4c4d08eaab9cb77d8b1180af"
-    },
-    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/side.png": {
-      "bytes": 533887,
-      "sha256": "4455555bfa8c460811723b8ffa3b3cf1d277c74bad057d018919b05c378bed43"
-    },
-    "assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/top.png": {
-      "bytes": 471281,
-      "sha256": "cebd5552d4742dafb016f81f41731d9a2a41df7c6c81dd8f6191b297f2f09c9e"
     }
-  }
+  },
+  "cleanup_note": "2026-10-16: Removed five review renders. Retained the repaired GLB, editable Blender file, normal-map texture and fitted models. Earlier acceptance notes describe the historical iteration review."
 }

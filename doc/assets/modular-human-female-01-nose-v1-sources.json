@@ -89,13 +89,8 @@
       "path": "assets/modular_human_female_01/nose_v1/nose-support-mask.png",
       "bytes": 247184,
       "sha256": "f8e145603a1fe1f84b83c5ff560cba8c97a1e0277cbe59f665e8efdb1120ea19"
-    },
-    {
-      "path": "assets/modular_human_female_01/nose_v1/validation.json",
-      "bytes": 617,
-      "sha256": "b3251f9eb061157811a73ded8be22fe832e8edce8490a1a5a3df2ad6b4db7622"
     }
   ],
   "cleanup_record": "doc/assets/modular-human-female-01-final-cleanup.json",
-  "file_inventory_note": "File hashes describe the reviewed outputs before cleanup. Intermediate binaries and all review images listed in the cleanup record were intentionally removed; final GLB/Blender and small validation records are retained."
+  "file_inventory_note": "File hashes describe the reviewed outputs before cleanup. Intermediate binaries and all review images listed in the cleanup record were intentionally removed; final GLB/Blender and small validation records are retained. The duplicate standalone validation JSON and its empty nose directory were removed on 2026-10-16; full results remain in the validation field above."
 }

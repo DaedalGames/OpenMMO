@@ -1,6 +1,6 @@
 {
   "asset": "modular_human_female_01",
-  "status": "raw_candidate_reviewed_not_ready_for_rigging",
+  "status": "[미사용] Rejected candidate removed at user request; source metadata and comparison results retained as historical records.",
   "supplied_date": "2026-10-11",
   "generation_date": null,
   "tool": "Meshy AI (user-reported)",
@@ -98,5 +98,6 @@
     "assets/modular_human_female_01/meshy_base_v1/comparison/head-clay.png",
     "assets/modular_human_female_01/meshy_base_v1/comparison/hand.png",
     "assets/modular_human_female_01/meshy_base_v1/comparison/feet-side.png"
-  ]
+  ],
+  "cleanup_note": "2026-10-16: Deleted the unused Meshy source GLB and empty meshy_base_v1 directory. Source paths, hashes and image paths describe historical files; geometry diagnostics and comparison results are preserved."
 }

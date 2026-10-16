@@ -148,7 +148,9 @@ def project_eyes(body):
     else:
         links.new(v, uv.inputs['Y'])
     edited = nodes.new('ShaderNodeTexImage')
-    edited.image = bpy.data.images.load(str(OUT / ('face-albedo-front.png' if VERSION in ('v4', 'v5') else 'face-albedo-edited.png')))
+    image_path = (ROOT / 'assets/modular_human_female_01/eyes_v3/face-albedo-edited.png'
+                  if VERSION == 'v6' else OUT / ('face-albedo-front.png' if VERSION in ('v4', 'v5') else 'face-albedo-edited.png'))
+    edited.image = bpy.data.images.load(str(image_path))
     edited.extension = 'EXTEND'
     links.new(uv.outputs[0], edited.inputs['Vector'])
     source = nodes.new('ShaderNodeTexImage')
@@ -240,6 +242,8 @@ def main():
     parser.add_argument('--version', choices=['v1', 'v2', 'v3', 'v4', 'v5', 'v6'], default='v1')
     args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
     VERSION = args.version
+    if VERSION == 'v2':
+        parser.error('V2 input image was removed; use v3 or v6 with the retained image.')
     if VERSION in ('v2', 'v3', 'v4', 'v5', 'v6'):
         OUT = ROOT / f'assets/modular_human_female_01/eyes_{VERSION}'
         SOURCE = ROOT / 'assets/modular_human_female_01/eyelashes_v5/base-eyelashes-v5.glb'
@@ -257,6 +261,7 @@ def main():
         NORMAL_ATTENUATION = 0
     if VERSION == 'v6':
         EYE_RADIUS = (235 / 2048, 150 / 2048)
+    OUT.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=str(SOURCE))
     body = next(o for o in bpy.context.scene.objects if o.type == 'MESH')

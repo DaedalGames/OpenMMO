@@ -1,7 +1,7 @@
 {
   "asset": "modular_human_female_01",
   "date": "2026-10-11",
-  "status": "generated_candidate_reviewed_not_fitted_or_rigged",
+  "status": "[미사용 · 삭제] Earlier Tripo V1 candidate removed at user request; inspection results retained.",
   "task_id": "5acba197-8120-45d0-bf58-31486ae80d58",
   "generation_record": "doc/assets/modular-human-female-01-tripo-api-v1-sources.json",
   "geometry": {
@@ -171,5 +171,6 @@
     "credits_consumed": 120,
     "balance_remaining": 880,
     "tasks_submitted": 1
-  }
+  },
+  "cleanup_note": "2026-10-16: Deleted the unused Tripo V1 source FBX and review script, then removed the empty tripo_api_v1 directory. File paths and hashes are retained as historical provenance, not a current inventory. Reproducing the early V1 conversion and eye correction requires restoring these inputs."
 }

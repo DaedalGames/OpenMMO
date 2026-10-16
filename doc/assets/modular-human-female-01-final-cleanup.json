@@ -3,8 +3,7 @@
   "reason": "User requested removal of intermediate models, screenshots and comparison images before committing the accepted female model.",
   "retained_final": [
     "assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.glb",
-    "assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.blend",
-    "assets/modular_human_female_01/eye_normals_v1/validation.json"
+    "assets/modular_human_female_01/eye_normals_v1/base-eye-normals-v1.blend"
   ],
   "retained_rebuild_input": "assets/modular_human_female_01/eyelashes_v10/base-eyelashes-v10.glb",
   "removed_file_count": 140,

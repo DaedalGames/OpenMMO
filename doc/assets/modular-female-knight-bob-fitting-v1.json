@@ -108,5 +108,49 @@
       "walk"
     ],
     "bones": 65
+  },
+  "cleanup": {
+    "date": "2026-10-16",
+    "reason": "Remove review images and regenerable motion samples; retain production models and editable Blender source.",
+    "retained_files": [
+      "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb",
+      "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/female-knight-bob-fitted.blend",
+      "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair-fitted-unskinned.glb"
+    ],
+    "removed_files": [
+      {
+        "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/fit-front.png",
+        "bytes": 593924,
+        "sha256": "8c17524f6566f8e8ac43d8cc3e57e7b81b5d651f13c107e415909bb0304f1e5f"
+      },
+      {
+        "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/fit-side.png",
+        "bytes": 585208,
+        "sha256": "5e0205617b64f427734c2e4e1bd08cef19485e8bd4e6138a6272c524c5b9a042"
+      },
+      {
+        "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/fit-back.png",
+        "bytes": 582010,
+        "sha256": "c850f7f8a86a762d12fe7342736d8d06b14709afaafe9a877a3956a4b8558ee9"
+      },
+      {
+        "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/parting-idle-0.5.png",
+        "bytes": 335089,
+        "sha256": "2fbdda09fbde5b310f8d2fe29b17c8b19f4e702d493f140d4774ce8c72751a75"
+      },
+      {
+        "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/rear-back-idle-0.5.png",
+        "bytes": 370548,
+        "sha256": "1e30bab92ad177ea7faa05e310e541e52c7333c8789cb0afea57128d347fca26"
+      },
+      {
+        "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/animation-snapshots.json",
+        "bytes": 399,
+        "sha256": "64f65398cccd8aee39941a698085edeeddf58d19f8d1ee915c35c432681996e3"
+      }
+    ],
+    "gltf_validation_record": "doc/assets/modular-female-knight-bob-gltf-validation-v1.json",
+    "animation_snapshots_regeneration": "node tools/validate-female-knight-bob.mjs",
+    "review_order": "Regenerate animation snapshots before running tools/blender-scripts/review_female_knight_bob.py."
   }
 }

@@ -31,8 +31,8 @@ OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**로 2026-10-12 보정했다.
 - 입력은 [Tripo 다중 시점 API](https://developers.tripo3d.ai/en/docs/generation-multiview-to-model/p)의 `front`/`right`/`back` 슬롯으로 전달했다.
 - 상태: 생성 성공, **120크레딧 사용**, 잔액 **520크레딧**, 보류 **0크레딧**.
 
-[원본 GLB](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/model_url.glb)와
-[텍스처 내장 Blender 편집본](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/source.blend)을 저장했다.
+[원본 GLB](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/model_url.glb)를 보관한다.
+2026-10-16 원본 GLB를 불러와 저장한 중복 Blender 파일은 삭제했다. 현재 편집본은 아래 `fitted_v1/`에 유지한다.
 최종 **2,491삼각형**, 메시 1개, 임시 용접 진단 기준 연결 성분 1개,
 4K 컬러·노멀·ORM 텍스처다. 원본 메시를 수정하거나 감축하지 않았다.
 
@@ -40,7 +40,6 @@ OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**로 2026-10-12 보정했다.
 회전·확대, 정면/측면/후면/정수리 전환, 자동 회전과 와이어프레임을 사용할 수 있다.
 여성 캐릭터 화면의 `새 단발 헤어 단독 보기` 링크로도 이동한다. 이 화면은 피팅 전 원본을 보여준다.
 
-- [정면](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/review/front.png) · [측면](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/review/side.png) · [후면](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/review/back.png) · [상단](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/review/top.png).
 - [기하·후면 검사 기록](modular-female-knight-bob-tripo-v1-review.json).
 - 정수리와 후면 중앙이 채워졌다. 중앙 후면 광선 63/63개가 후면 절반의 표면과 만났다.
   이는 중앙 영역의 덮임 검사이며, 모든 구멍이나 밀폐 상태를 보장하는 검사는 아니다.
@@ -61,7 +60,6 @@ OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**로 2026-10-12 보정했다.
 - [리깅 GLB](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb)
 - [몸체·텍스처·9개 동작을 포함한 Blender 편집본](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/female-knight-bob-fitted.blend)
 - [단발 착용 미리보기](https://localhost:10004/modular-character-preview.html?character=female&hair=bob&camera=face&motion=idle1)
-- [정면](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/fit-front.png) · [측면](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/fit-side.png) · [후면](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/fit-back.png)
 - [피팅·리깅·해시](modular-female-knight-bob-fitting-v1.json), [애니메이션 검사](modular-female-knight-bob-animation-v1.json), [브라우저 검사](modular-female-knight-bob-browser-v1.json).
 
 여성 리그 `human_female_01_local_v1`의 **65개 본 순서·계층·inverse bind 행렬을 그대로 복사**했다.
@@ -70,7 +68,7 @@ OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**로 2026-10-12 보정했다.
 모서리 길이 보존을 확인했다. 걷기·달리기·점프·베기·쓰러지기·앉기 앞뒤 렌더와
 브라우저의 9개 동작 및 헤어 착탈을 검수했다. 이 검사는 모든 프레임의 충돌 부재를 보장하지 않는다.
 노멀맵용 탄젠트를 내보냈고, 길이 0인 탄젠트 1개는 법선에 직교하는 단위 벡터로 보정했다.
-[최종 glTF 검사](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/gltf-validation.json)는 오류·경고 0개다.
+[최종 glTF 검사](modular-female-knight-bob-gltf-validation-v1.json)는 오류·경고 0개다.
 미리보기 코드의 `npm run check`와 `npm run lint`도 통과했다.
 
 몸체·헤어 조립 합계는 **22,175 + 2,436 = 24,611삼각형**이다. 몸체를 잘라내거나 숨기는
@@ -81,7 +79,7 @@ OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**로 2026-10-12 보정했다.
 
 여성 미리보기의 기본 헤어를 `금발 단발`로 설정했다. `없음`과 `긴 금발 (보관본)`도 선택할 수 있다.
 원본 단독 미리보기에는 피팅한 착용 화면으로 가는 링크를 추가했다. 게임 캐릭터 등록·배포는 미진행이다.
-원본 GLB·원본 Blender 파일과 긴 헤어 보관본을 보존했다. 출처·라이선스·요금제는 위 Tripo API와
+원본 GLB와 긴 헤어 보관본을 보존했다. 출처·라이선스·요금제는 위 Tripo API와
 ChatGPT Pro 20x 원화 기록을 따르며, 이번 피팅은 로컬 Blender 작업으로 **추가 API 비용 0크레딧**이다.
 
 초기 균일 높이 축소는 앞머리 위치를 바꿔 채택하지 않았다. 최종본은 아래 끝에만 부드러운 높이 보정을
@@ -92,13 +90,11 @@ ChatGPT Pro 20x 원화 기록을 따르며, 이번 피팅은 로컬 Blender 작�
 높이 +0.0035, 전방 +0.002를 적용했다(최초 피팅 기준, 모델 좌표 단위).
 이전 국소 보정보다 앞머리를 낮추고 기존 형태를 복원했으며, 삼각형 수·UV·리깅 가중치는 유지했다.
 브라우저에서 대기 동작의 0·25·50·75·100% 시점을 확인했다.
-[가르마 보정 후 대기 화면](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/parting-idle-0.5.png).
 
 후면 두피 관통도 사용자 지적에 따라 보정했다. 넓은 헤어 삼각형의 내부가 두피와 겹쳐,
 후면을 최대 0.0035만큼 뒤로 띄우고 옆면·아래쪽으로 부드럽게 줄였다. 앞머리 위치와 높이는 유지했다.
 정점뿐 아니라 후면 삼각형 내부를 포함한 기본 자세 3,390개 지점에서 두피 밖 간격을 확인했다
 (최소 약 0.00135, 모델 좌표 단위). 대기 5시점의 후면·좌우 사선 근접 화면도 확인했다.
-[후면 보정 화면](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/rear-back-idle-0.5.png).
 
 ### 오른쪽 앞머리 회전 시안
 
@@ -113,18 +109,17 @@ Blender 수직축 기준 피벗은 `(0, -0.015, 0)`이며, 가르마·정수리�
 549시점 리깅 검사 및 glTF 오류·경고 0개를 확인했다. 텍스처 좌표를 유지해도 형태 변화에
 따른 국소적인 늘어남은 있으므로, 외형은 사용자 확인을 거친다.
 
-- [수정 전 상단](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/right_trim_v1/before-top.png) · [수정 후 상단](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/right_trim_v1/after-top.png)
-- [수정 전 사선](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/right_trim_v1/before-left-angle.png) · [수정 후 사선](../../assets/modular_human_female_01/hair/tripo_knight_bob_v1/right_trim_v1/after-left-angle.png)
 - [변경 범위·보존 검증·해시](modular-female-knight-bob-right-turn-v1.json)
 
-원복용 GLB 2개, Blender 편집본, 피팅 스크립트·기록은
-`assets/modular_human_female_01/hair/tripo_knight_bob_v1/right_trim_v1/before/`에 보관했다.
-이 보관본은 커밋 `5f208bda`의 상태다. 원복 시 각 파일을 원래 경로에 복사하고
-`node tools/validate-female-knight-bob.mjs`, `node tools/build-female-preview.mjs bob`으로
-검증 기록과 미리보기 파생본을 갱신한다.
+2026-10-16 사용자 요청으로 회전 전 상태의 원복용 백업 5개와 `before/` 폴더를 삭제했다.
+현재 사용하는 `fitted_v1/`의 헤어 GLB·Blender 편집본·리깅 입력 GLB는 유지한다.
 
 현재 여성 착용 미리보기는 [로딩 최적화 파생본](modular-female-preview.md)을 사용한다.
 피팅 원본의 메시·리깅을 유지한 2K 컬러/1K 노멀·ORM 버전이며, 원본이 바뀌면 자동 재생성된다.
+
+2026-10-16 검토 이미지 5개와 재생성 가능한 `animation-snapshots.json`을 정리하고 glTF 검사 결과를
+위 문서 경로로 옮겼다. `fitted_v1/`에는 최종 헤어 GLB, Blender 편집본과 리깅 입력 GLB를 유지한다.
+동작 검토 렌더를 다시 만들 때에는 아래 검증 명령으로 동작 목록을 생성한 뒤 검토 스크립트를 실행한다.
 
 재현 순서:
 
@@ -167,8 +162,8 @@ Tripo 제작용 **헤어만** 분리했다. 기존 머리 모델을 사용하므
 - [다중 시점 API 문서](https://developers.tripo3d.ai/en/docs/generation-multiview-to-model/p), [Tripo 이용 조건](https://developers.tripo3d.ai/en/terms).
 
 생성 성공. **120크레딧 사용**, 잔액 **640크레딧**, 보류 **0크레딧**을 확인했다.
-원본은 [GLB](../../assets/modular_human_female_01/hair/tripo_knight_v1/model_url.glb),
-텍스처를 내장한 편집본은 [Blender 파일](../../assets/modular_human_female_01/hair/tripo_knight_v1/source.blend)이다.
+원본은 [GLB](../../assets/modular_human_female_01/hair/tripo_knight_v1/model_url.glb)로 보관한다.
+2026-10-16 원본 GLB를 불러와 저장한 중복 Blender 파일은 삭제했다. 후면 보정·피팅 Blender 편집본은 유지한다.
 정점이나 면을 수정하거나 감축하지 않았다.
 
 검수 결과 **2,819삼각형**, 메시 오브젝트 1개, 4K 컬러·노멀·ORM 텍스처를 확인했다.
@@ -179,12 +174,12 @@ Tripo 제작용 **헤어만** 분리했다. 기존 머리 모델을 사용하므
 후면에서 안쪽 면과 각진 패치가 노출된다. 완성된 후면 원화와 일치하지 않으므로
 게임 적용 전 후면 메시 보정과 기존 두상 피팅이 필요하다. 리깅·게임 적용은 하지 않았다.
 
-- [정면 렌더](../../assets/modular_human_female_01/hair/tripo_knight_v1/review/front.png)
-- [측면 렌더](../../assets/modular_human_female_01/hair/tripo_knight_v1/review/side.png)
-- [후면 렌더](../../assets/modular_human_female_01/hair/tripo_knight_v1/review/back.png)
-- [사선 렌더](../../assets/modular_human_female_01/hair/tripo_knight_v1/review/angle.png)
+2026-10-16 원본 검토 이미지 4개와 `review/` 폴더를 삭제했다. 원본 모델과 검수 기록은 보존한다.
 
 ## 뒷머리 보정본 (2026-10-12)
+
+**[미사용 · 보관] 2026-10-16:** 사용자는 후면 보정과 피팅 외형에 불만족하지만 모델은 당분간 유지하기로 했다.
+검토 이미지 5개를 삭제하고 보정 GLB·Blender·노멀맵과 `fitted_v1/` 제작 파일은 보존했다.
 
 사용자 요청으로 Blender에서 뒷머리 곡면과 연속된 머리카락 면을 추가했다.
 기존 앞머리·옆머리의 메시와 UV를 유지하고, 후면 원화의 머릿결을 새 면에 투영했다.
@@ -193,7 +188,6 @@ Tripo 제작용 **헤어만** 분리했다. 기존 머리 모델을 사용하므
 
 - [보정 GLB](../../assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/hair_female_knight-rear-filled-v1.glb)
 - [텍스처 내장 Blender 편집본](../../assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/hair_female_knight-rear-filled-v1.blend)
-- [후면](../../assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/back.png) · [측면](../../assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/side.png) · [정면](../../assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/front.png) · [사선](../../assets/modular_human_female_01/hair/tripo_knight_v1/rear_filled_v1/angle.png)
 - [보정·검수·해시 기록](modular-female-knight-hair-rear-filled-v1.json)
 - 재생성: `blender -b -t 6 --python-exit-code 1 --python tools/blender-scripts/fill_female_knight_hair.py`
 
@@ -217,7 +211,6 @@ Tripo 제작용 **헤어만** 분리했다. 기존 머리 모델을 사용하므
 - [리깅 GLB](../../assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/hair_female_knight.glb)
 - [몸체·텍스처·9개 동작을 포함한 Blender 편집본](../../assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/female-knight-hair-fitted.blend)
 - [로컬 보관본 미리보기](https://localhost:10004/modular-character-preview.html?character=female&camera=full&motion=walk&hair=knight): 헤어 선택에서 착탈, 동작·시점 변경 가능.
-- [정면](../../assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/fit-front.png) · [측면](../../assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/fit-side.png) · [후면](../../assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/fit-back.png)
 - [피팅·리깅·해시](modular-female-knight-hair-fitting-v1.json), [애니메이션 검사](modular-female-knight-hair-animation-v1.json), [브라우저 검사](modular-female-knight-hair-browser-v1.json).
 
 여성 리그의 **65개 본 순서·계층·inverse bind 행렬을 그대로 사용**한다.
@@ -243,6 +236,11 @@ Tripo 제작용 **헤어만** 분리했다. 기존 머리 모델을 사용하므
 
 도구는 로컬 Blender 5.2.0 및 Python/Three.js다. 추가 API 비용은 0크레딧이다.
 출처·이용 조건은 위 Tripo/원화 기록과 [여성 몸체 기록](modular-human-female-01.md)을 따른다.
+
+2026-10-16 검토 이미지 4개와 재생성 가능한 `animation-snapshots.json`을 삭제했다.
+`fitted_v1/`에는 헤어 GLB·Blender 편집본·리깅 입력 GLB를 유지한다.
+동작 검토 렌더를 다시 만들 때에는 아래 검증 명령으로 동작 표본을 생성한 뒤 검토 스크립트를 실행한다.
+
 재생성 순서:
 
 ```bash
