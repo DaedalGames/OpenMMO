@@ -2,10 +2,10 @@ import * as THREE from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import type { ArmorEquipment } from '../network/networkTypes'
+import { getItemDef } from '../data/itemDefs'
 import { loadGLB } from './gltfCache'
 import { MODULAR_FEMALE_DIRECTORY } from './modelPaths'
 import { bindModularPart, skinnedParts } from './modularCharacter'
-import { modularOutfitForArmor } from './modularEquipment'
 import { femaleOutfitMask } from './female-outfit-mask'
 
 const slots = ['top', 'bottom', 'boots', 'gloves', 'helmet'] as const
@@ -227,8 +227,14 @@ function installBootsSwitch(scene: THREE.Object3D, state: FemaleState) {
   return () => refreshes.forEach((refresh) => refresh())
 }
 
-const femaleStyle = (style: string): Style | null =>
-  style === 'none' ? null : style === 'barbarian' ? 'barbarian' : 'plate'
+const femaleStyle = (itemId: string | null | undefined): Style | null => {
+  if (!itemId) return null
+  const item = getItemDef(itemId)
+  return item?.material === 'leather' ||
+    item?.worldModel?.startsWith('armor/barbarian_')
+    ? 'barbarian'
+    : 'plate'
+}
 
 export function applyFemaleArmor(
   root: THREE.Object3D,
@@ -236,13 +242,12 @@ export function applyFemaleArmor(
 ): boolean {
   const scene = femaleScene(root)
   if (!scene) return false
-  const outfit = modularOutfitForArmor(armor)
   const equipped: Outfit = {
-    top: femaleStyle(outfit.top),
-    bottom: femaleStyle(outfit.pants),
-    boots: femaleStyle(outfit.boots),
-    gloves: femaleStyle(outfit.gloves),
-    helmet: femaleStyle(outfit.helmet),
+    top: femaleStyle(armor?.chest),
+    bottom: femaleStyle(armor?.pants),
+    boots: femaleStyle(armor?.boots),
+    gloves: femaleStyle(armor?.hands),
+    helmet: femaleStyle(armor?.head),
   }
   let state = states.get(scene)
   if (

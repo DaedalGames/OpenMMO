@@ -20,6 +20,8 @@ import { FEMALE_BOOTS_PARTS, FEMALE_BOOTS_PROPERTY } from './femaleCharacter'
 import { poseMainHandProp } from './handProps'
 import { updatePeltPhysics } from '../effects/pelt-rig'
 import { robeBaseSkeleton } from '../effects/robe-rig'
+import itemDefs from '../data/itemDefs'
+import type { ArmorEquipment } from '../network/networkTypes'
 
 vi.mock('./gltfCache', async (importOriginal) => {
   const original = await importOriginal<typeof import('./gltfCache')>()
@@ -124,22 +126,43 @@ describe('female modular starter outfits', () => {
     }
   )
   it.skipIf(!hasAssets)(
-    'shows plate for armor without a female outfit of its own',
+    'uses barbarian parts for leather and plate for other substitute armor',
     async () => {
       const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
-      const { modelRoot: plate } = createCharacterModelRoot(source.scene)
-      const { modelRoot: leather } = createCharacterModelRoot(source.scene)
-      await applyCharacterArmor(plate, armor)
-      await applyCharacterArmor(leather, {
-        head: 'leather_helmet',
-        chest: 'worn_rogue_top',
-        pants: 'leather_pants',
-        boots: 'leather_boots',
-        hands: 'leather_gloves',
-      })
-      expect(count(leather)).toBe(count(plate))
-      disposeCharacterSkeletons(plate)
-      disposeCharacterSkeletons(leather)
+      const { modelRoot } = createCharacterModelRoot(source.scene)
+      const parts = {
+        head: 'helmet',
+        chest: 'top',
+        pants: 'bottom',
+        boots: 'boots',
+        hands: 'gloves',
+      } as const
+      for (const [id, item] of Object.entries(itemDefs)) {
+        const slot = item.equipSlot as keyof typeof parts
+        if (!(slot in parts)) continue
+        const part = parts[slot]
+        const barbarianStyle =
+          item.material === 'leather' || id.startsWith('worn_barbarian_')
+        const [shown, hidden] = barbarianStyle
+          ? [`barbarian_${part}`, part]
+          : [part, `barbarian_${part}`]
+        await applyCharacterArmor(modelRoot, { [slot]: id } as ArmorEquipment)
+        expect(count(modelRoot, shown), id).toBeGreaterThan(0)
+        expect(count(modelRoot, hidden), id).toBe(0)
+        if (slot === 'head') {
+          expect(count(modelRoot, 'barbarian_hair') > 0, id).toBe(
+            barbarianStyle
+          )
+          expect(count(modelRoot, 'hair'), id).toBe(0)
+        }
+      }
+      await applyCharacterArmor(modelRoot, {})
+      for (const part of Object.values(parts)) {
+        expect(count(modelRoot, part)).toBe(0)
+        expect(count(modelRoot, `barbarian_${part}`)).toBe(0)
+      }
+      expect(count(modelRoot, 'hair')).toBeGreaterThan(0)
+      disposeCharacterSkeletons(modelRoot)
     }
   )
   it.skipIf(!hasAssets)(
