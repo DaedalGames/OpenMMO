@@ -1198,6 +1198,57 @@ fn surface_entrance_is_walkable_but_not_leaky() {
     }
 }
 
+#[test]
+fn ogre_entrance_path_keeps_landing_before_mid_stair_goal() {
+    use crate::pathfinding::{find_path, is_movement_blocked, PathWaypoint};
+
+    let def = entrance("ogre_stronghold").unwrap();
+    let floors = generate_dungeon_for(&def.id);
+    let cache = PassabilityCache::from([(
+        dungeon_cache_key(&def.id),
+        dungeon_passability(&def.position(), &floors),
+    )]);
+    let landing = cell_center(&def.position(), 0, floors[0].up_shaft.entry_cell());
+    for (sx, sz) in [(-1787.8306, 5072.3657), (-1787.5, 5072.5)] {
+        for step in 1..SHAFT_LEN - 1 {
+            let goal = cell_center(&def.position(), 0, floors[0].up_shaft.step_cell(step, 0));
+            for search in [find_path, find_and_smooth_path] {
+                let result = search(sx, sz, 0, goal.x, goal.z, 0, &cache, DUNGEON_PATH_MAX_NODES);
+                assert!(result.found);
+                assert!(
+                    result.waypoints.contains(&PathWaypoint {
+                        x: landing.x,
+                        z: landing.z,
+                        floor: 0,
+                    }),
+                    "missing entrance landing: {:?}",
+                    result.waypoints
+                );
+                assert_eq!(
+                    result.waypoints.last(),
+                    Some(&PathWaypoint {
+                        x: goal.x,
+                        z: goal.z,
+                        floor: 0,
+                    })
+                );
+                let (mut x, mut z) = (sx, sz);
+                for wp in result.waypoints {
+                    for sample in 1..=20 {
+                        let t = sample as f32 / 20.0;
+                        let (nx, nz) = (x + (wp.x - x) * t, z + (wp.z - z) * t);
+                        assert!(
+                            !is_movement_blocked(&cache, x, z, nx, nz, 0, None),
+                            "blocked step ({x},{z}) -> ({nx},{nz})"
+                        );
+                    }
+                    (x, z) = (wp.x, wp.z);
+                }
+            }
+        }
+    }
+}
+
 /// Mid-shaft, the A* endpoint floor must be the shaft's *shallower* connected
 /// floor even though the mover is nearer the deeper one: the stairwell model
 /// keys intermediate steps there, and a search under the other key can only

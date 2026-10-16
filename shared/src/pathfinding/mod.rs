@@ -966,6 +966,52 @@ mod tests {
         );
     }
 
+    #[test]
+    fn mid_stairwell_start_reaches_mid_stairwell_goal() {
+        let (id, rp) = make_two_floor_stairwell();
+        let cache = PassabilityCache::from([(id, rp)]);
+
+        for (start_z, goal_z) in [(1.5, 2.3), (2.5, 1.7)] {
+            for search in [find_path, find_and_smooth_path] {
+                let result = search(0.5, start_z, 0, 0.5, goal_z, 0, &cache, 500);
+                assert!(result.found);
+                assert_eq!(
+                    result.waypoints,
+                    vec![PathWaypoint {
+                        x: 0.5,
+                        z: goal_z,
+                        floor: 0,
+                    }]
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn partial_mid_stairwell_path_keeps_landing_and_endpoint() {
+        let (id, rp) = make_two_floor_stairwell();
+        let cache = PassabilityCache::from([(id, rp)]);
+
+        for search in [find_path, find_and_smooth_path] {
+            let result = search(2.5, 0.5, 0, 0.5, 2.3, 0, &cache, 3);
+            assert!(!result.found);
+            assert_eq!(result.termination, PathTermination::NodeLimit);
+            assert!(result.waypoints.contains(&PathWaypoint {
+                x: 0.5,
+                z: 0.5,
+                floor: 0,
+            }));
+            assert_eq!(
+                result.waypoints.last(),
+                Some(&PathWaypoint {
+                    x: 0.5,
+                    z: 1.5,
+                    floor: 0,
+                })
+            );
+        }
+    }
+
     /// Reproduces the dungeon entrance-shaft bug: a player standing on an
     /// *intermediate* stairwell cell clicks a cell on the connected floor.
     /// The shaft's intermediate cells are keyed to the lower floor (0), so the

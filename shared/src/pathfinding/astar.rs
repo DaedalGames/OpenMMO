@@ -426,11 +426,14 @@ fn reconstruct_path_vf(
 
     while key != start {
         let (cx, cz, fk) = key;
-        // Only emit waypoints at regular floor levels (entry/exit landings).
-        // Intermediate stairwell cells are skipped — the client interpolates
-        // between the entry and exit landings, and GameSceneHousingLayer
-        // handles the Y offset based on stairwell position.
-        if is_regular_key(fk) {
+        // Stair steps are interpolated client-side; keep only landings and the endpoint.
+        if key == end {
+            path.push(PathWaypoint {
+                x: final_x,
+                z: final_z,
+                floor: key_to_floor(fk),
+            });
+        } else if is_regular_key(fk) {
             path.push(PathWaypoint {
                 x: cx as f32 + 0.5,
                 z: cz as f32 + 0.5,
@@ -445,11 +448,5 @@ fn reconstruct_path_vf(
     }
 
     path.reverse();
-
-    if let Some(last) = path.last_mut() {
-        last.x = final_x;
-        last.z = final_z;
-    }
-
     path
 }
