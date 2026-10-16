@@ -17,6 +17,7 @@
   import { T, useLoader, useThrelte } from '@threlte/core'
   import TextLabel from './TextLabel.svelte'
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+  import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
   import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js'
   import * as THREE from 'three'
   import { get } from 'svelte/store'
@@ -86,7 +87,9 @@
   const initialModel = initialDef?.model ?? 'monsters/scp939.glb'
   const initialScale = initialDef?.scale ?? 1
   const isBoss = initialDef?.boss === true
-  const gltf = useLoader(GLTFLoader).load(`/models/${initialModel}`)
+  const gltf = useLoader(GLTFLoader, {
+    extend: (loader) => loader.setMeshoptDecoder(MeshoptDecoder),
+  }).load(`/models/${initialModel}`)
 
   // Monsters rigged on the character skeleton borrow the player's animation
   // packs, which every client already has cached, instead of shipping clips.

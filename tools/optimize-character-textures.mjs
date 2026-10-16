@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { gzipSync } from "node:zlib";
-import { NodeIO } from "@gltf-transform/core";
+import { NodeIO, PropertyType } from "@gltf-transform/core";
+import { prune } from "@gltf-transform/functions";
 import {
   ALL_EXTENSIONS,
   EXTMeshoptCompression,
@@ -9,17 +10,31 @@ import {
 import { MeshoptDecoder, MeshoptEncoder } from "meshoptimizer";
 import sharp from "sharp";
 
-const [source, output, sizeArg] = process.argv.slice(2);
+const [source, output, sizeArg, ...flags] = process.argv.slice(2);
 const size = Number(sizeArg);
+const resizeAll = flags.includes("--all-textures");
+const animationFlag = flags.find((flag) =>
+  flag.startsWith("--keep-animations="),
+);
+const animationNames = animationFlag
+  ?.slice("--keep-animations=".length)
+  .split(",");
 if (
   !source ||
   !output ||
-  process.argv.length !== 5 ||
+  flags.some(
+    (flag) =>
+      flag !== "--lossless-png" &&
+      flag !== "--all-textures" &&
+      flag !== animationFlag,
+  ) ||
+  new Set(flags).size !== flags.length ||
+  animationNames?.some((name) => !name) ||
   !Number.isSafeInteger(size) ||
   size <= 0
 ) {
   console.error(
-    "Usage: node tools/optimize-character-textures.mjs SOURCE.glb OUTPUT.glb BASE_MAX_SIZE",
+    "Usage: node tools/optimize-character-textures.mjs SOURCE.glb OUTPUT.glb BASE_MAX_SIZE [--lossless-png] [--all-textures] [--keep-animations=NAME,...]",
   );
   process.exit(1);
 }
@@ -41,6 +56,23 @@ if (
 ) {
   throw new Error(
     "Use the uncompressed source to avoid repeated texture compression.",
+  );
+}
+if (animationNames) {
+  const animations = document.getRoot().listAnimations();
+  for (const name of animationNames) {
+    if (!animations.some((animation) => animation.getName() === name)) {
+      throw new Error(`Missing requested animation: ${name}`);
+    }
+  }
+  for (const animation of animations) {
+    if (animationNames.includes(animation.getName())) continue;
+    for (const channel of animation.listChannels()) channel.dispose();
+    for (const sampler of animation.listSamplers()) sampler.dispose();
+    animation.dispose();
+  }
+  await document.transform(
+    prune({ propertyTypes: [PropertyType.ACCESSOR], keepAttributes: true }),
   );
 }
 const textures = new Set(
@@ -71,7 +103,40 @@ for (const texture of textures) {
     )
     .setMimeType("image/webp");
 }
-if (textures.size) document.createExtension(EXTTextureWebP).setRequired(true);
+if (flags.includes("--lossless-png") || resizeAll) {
+  for (const texture of document.getRoot().listTextures()) {
+    if (
+      textures.has(texture) ||
+      (!resizeAll && texture.getMimeType() !== "image/png")
+    )
+      continue;
+    const image = texture.getImage();
+    if (!image) throw new Error("An embedded texture is required.");
+    const input = sharp(image);
+    if (resizeAll) {
+      input.resize({
+        width: size,
+        height: size,
+        fit: "inside",
+        withoutEnlargement: true,
+      });
+    }
+    const compressed = await input
+      .webp({ lossless: true, effort: 6 })
+      .toBuffer();
+    if (resizeAll || compressed.length < image.length) {
+      texture.setImage(compressed).setMimeType("image/webp");
+    }
+  }
+}
+if (
+  document
+    .getRoot()
+    .listTextures()
+    .some((texture) => texture.getMimeType() === "image/webp")
+) {
+  document.createExtension(EXTTextureWebP).setRequired(true);
+}
 document
   .createExtension(EXTMeshoptCompression)
   .setRequired(true)

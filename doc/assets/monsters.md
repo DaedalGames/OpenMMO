@@ -80,6 +80,30 @@
     [대검 출처](items.md). 정예 일반 몬스터의 임시 능력치는 레벨 25·체력 350·guard 32·피해 6d12.
     던전 출현 설정은 비워 두어 관리자가 배치한다.
 - SCP939 https://sketchfab.com/3d-models/scp939-79a749a5073b453d9d85875797bf45d7
+  - 전송량 최적화 (2026-10-16): `scp939.edf348b1.glb`를 **5,776,536 → 1,395,636바이트(75.84% 감소)**로 줄였다.
+    gzip level 6 예상 전송량은 **4,032,324 → 994,918바이트(75.33% 감소)**이며 다음 빌드 파일명은 `scp939.79bd676e.glb`다.
+    텍스처 5장을 모두 **1024² → 512²**로 축소했다. 몸체·가시 색상맵은 WebP q90·effort 6,
+    노멀·metallicRoughness·발광 맵은 축소 결과를 무손실 WebP로 저장해 추가 압축 손실이 없음을 확인했다.
+    발광 강도 1.5와 재질 설정을 유지하고 meshopt 압축을 적용했다.
+  - `monsters.csv`와 런타임의 `anim*` 참조를 기준으로 19개 중 6개 클립만 남겼다:
+    `939_Idle`, `939_Walking`, `939_Running`, `939_Attack1`, `939_AddStagger1`, `939_DieProne`.
+    미사용 `939_AddStagger2`, `939_AddStagger3`, `939_Attack2`, `939_Attack3`, `939_Dead`, `939_Die`,
+    `939_FullStagger`, `939_HearSound`, `939_IdleAction1`, `939_Sleeping`, `939_TPose`, `939_VentLeap`, `939_Vocalize`는
+    게임 파일에서 제거했다. 남긴 클립의 키프레임 시간·값·보간 방식과 채널 대상을 유지한다.
+  - 2개 메시의 10,368 triangles·5,902정점 속성, 삼각형 순서·방향, 131본 계층·역바인드 행렬을 유지한다.
+    GLB 작성기의 항등 회전 생략에 따른 노드 변환 성분 차이는 최대 0.00000287이다.
+    실제 Three.js 로더에서 6개 클립을 각각 12개 시점으로 비교했고 스키닝 정점 좌표 차이는 최대 0.00000345m다.
+    같은 조명·자세에서 원본 1024²와 최종 512²의 전신·작은 표시 크기·사망 마지막 자세를 비교했다.
+    일반 표시 크기에서 차이가 작으며 근접 시 피부의 미세한 질감이 부드러워진다. 브라우저 오류·경고 0,
+    최적화 파일의 Khronos glTF Validator 오류 0·스킨 메시 부모 경고 2개를 확인했다.
+    몬스터 컴포넌트의 Threlte GLTFLoader에도 MeshoptDecoder를 연결했다.
+  - 최적화 전 게임 파일은 `assets/monsters/scp939/scp939-before-optimization.glb`에 보존한다.
+    기존 Sketchfab 출처·이용 조건을 유지하며 새 생성·유료 호출은 없다.
+    최적화 파일과 보존 원본을 HF에 게시하고 원격 SHA-256을 확인했으며 `assets.lock`에 고정했다.
+    운영 배포는 수행하지 않았다.
+    최적화 파일 SHA-256: `7dcf2046a61897fd1e88f4e631bf4ac4c6171e001477898fe130d2b4e92c4499`.
+    보존 원본 SHA-256: `0082435d28e9da83c31d5c42dbe6757fd729ba213953f084d8e4c579a029a64d`.
+    재현: `node tools/optimize-character-textures.mjs assets/monsters/scp939/scp939-before-optimization.glb client/public/models/monsters/scp939.glb 512 --all-textures --keep-animations=939_Idle,939_Walking,939_Running,939_Attack1,939_AddStagger1,939_DieProne`.
   - `939_DieProne` (2026-08-24): 원본 클립 중 죽음이 `939_Die`(상체를 들었다 웅크림)·`939_Dead`뿐이고 모두 살아
     있어 보여서 새로 구웠다: `939_Attack1` 45~63프레임(뒷다리로 크게 일어서는 구간)을 앞에 깔고, 그 정점 포즈를
     고정한 채 18~34프레임에 걸쳐 루트를 엉덩이 기준으로 넘어뜨려 척추가 수평이 되는 각도에 40°를 더 돌리면서(살짝 뒤로
