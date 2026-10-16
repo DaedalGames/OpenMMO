@@ -229,6 +229,34 @@ GLB 작성기가 항등 회전에 가까운 본 쿼터니언 성분을 생략하
 node tools/optimize-character-textures.mjs assets/npcs/pink_maid/pink_maid-before-textures-1024.glb client/public/models/characters/pink_maid.glb 1024
 ```
 
+### Miriel 게임용 텍스처 최적화 — 2026-10-16
+
+`maid.7c4751ec.glb`의 색상맵을 **2048² JPEG → 1024² WebP q90·effort 6**으로
+줄이고 meshopt 압축을 적용했다. 노멀·metallicRoughness JPEG 바이트는 유지한다.
+파일은 **2,365,852 → 900,980바이트(61.92% 감소)**,
+gzip level 6 예상 전송량은 **2,160,114 → 850,759바이트(60.62% 감소)**다.
+다음 빌드 파일명은 `maid.3354d725.glb`다.
+
+10,045 triangles·7,886정점의 모든 속성, 스킨 가중치·65본 계층·역바인드 행렬과
+삼각형 순서·방향을 유지한다. GLB 작성기의 항등 회전 생략에 따른 본 변환 성분 차이는
+최대 0.00000602다. 실제 게임 로더와 리타게팅으로 `idle1`·`walk`·`run`·`sit_idle`을
+각각 12개 시점에서 검사했고 스키닝 정점 좌표 차이는 최대 0.000000003m다.
+동일한 조명·자세의 전신·작은 표시 크기·얼굴 확대를 비교했다. 일반 캐릭터 표시 크기에서
+차이가 작으며 확대 시 머리카락·레이스의 미세한 질감은 부드러워진다.
+브라우저 오류·경고 0, Khronos glTF Validator 오류 0·기존 경고 2개·meshopt 미지원 안내 1개다.
+관련 테스트 42개를 통과했다.
+
+최적화 전 게임 파일은 `assets/npcs/maid/maid-before-textures-1024.glb`에 보존한다.
+아래 NPC 출처의 Meshy 유료 등급·Mixamo 라이선스를 유지하며 새 생성·유료 호출은 없다.
+최적화 파일과 보존 원본을 HF에 게시하고 원격 SHA-256을 확인했으며 `assets.lock`에 고정했다.
+운영 배포는 수행하지 않았다.
+최적화 파일 SHA-256: `dd20bd809c14b269122c30680ac049587a31d8fe61ce63909b5b9ce36d90433d`.
+보존 원본 SHA-256: `216adc611db38348958611f4f385cff67bf661c98793f79684262fb70adbc6e2`.
+
+```sh
+node tools/optimize-character-textures.mjs assets/npcs/maid/maid-before-textures-1024.glb client/public/models/characters/maid.glb 1024
+```
+
 ### NPC 출처
 
 - guard — 경비병 NPC Karl (`guard.glb`, CharacterClass::Guard); 원화 `../images/characters/karl-concept.png`, 3D는 Meshy.ai (라이센스는 위 License 표 참조); 거래 창 초상화 `../images/characters/karl-portrait.png` (ChatGPT, 2026-06-12, `doc/assets/ui.md` 참조)
