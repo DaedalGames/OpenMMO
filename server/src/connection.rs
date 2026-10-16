@@ -19,8 +19,9 @@ use onlinerpg_shared::deserialize_client_msg;
 use onlinerpg_shared::furniture_shop::{FurnitureTip, SHOP};
 use onlinerpg_shared::inventory::EquipSlot;
 use onlinerpg_shared::VisibleEquipment;
+use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{Arc, LazyLock, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 use tokio::net::TcpStream;
 use tokio::sync::{broadcast, mpsc, watch};
@@ -92,8 +93,9 @@ const UNAUTH_MAX_MESSAGES: u32 = 30;
 const INSTRUMENT_BATCHES_PER_SEC: f32 = 4.0;
 const INSTRUMENT_BATCH_BURST: f32 = 4.0;
 
-/// Log the first event and summarize repeats every minute.
-const REFUSAL_LOG_WINDOW: Duration = Duration::from_secs(60);
+/// Log each IP's first event and summarize its repeats every minute.
+pub const REFUSAL_LOG_WINDOW: Duration = Duration::from_secs(60);
+const MAX_REFUSAL_LOG_IPS: usize = 4096;
 
 struct LogWindow {
     started: Instant,
@@ -131,40 +133,102 @@ impl InstrumentBatchLimiter {
 }
 
 /// Separate refusal reasons keep unrelated first events visible.
-struct LogThrottle(Mutex<Option<LogWindow>>);
+struct LogThrottle {
+    label: &'static str,
+    windows: Mutex<LogWindows>,
+}
+
+#[derive(Default)]
+struct LogWindows {
+    by_ip: HashMap<IpAddr, LogWindow>,
+    untracked: u32,
+}
 
 impl LogThrottle {
-    const fn new() -> Self {
-        Self(Mutex::new(None))
+    fn new(label: &'static str) -> Self {
+        Self {
+            label,
+            windows: Mutex::default(),
+        }
     }
 
     /// Return the repeat summary, or None inside an open window.
-    fn claim(&self) -> Option<String> {
-        let now = Instant::now();
-        let mut guard = self.0.lock().unwrap_or_else(|e| e.into_inner());
-        match &mut *guard {
-            Some(window) if now.duration_since(window.started) < REFUSAL_LOG_WINDOW => {
+    fn claim(&self, ip: IpAddr) -> Option<String> {
+        self.claim_at(ip, Instant::now())
+    }
+
+    fn claim_at(&self, ip: IpAddr, now: Instant) -> Option<String> {
+        let mut guard = self.windows.lock().unwrap_or_else(|e| e.into_inner());
+        let windows = &mut *guard;
+        if let Some(window) = windows.by_ip.get_mut(&ip) {
+            if now.duration_since(window.started) < REFUSAL_LOG_WINDOW {
                 window.suppressed += 1;
-                None
+                return None;
             }
-            slot => {
-                let suppressed = slot.as_ref().map_or(0, |w| w.suppressed);
-                *slot = Some(LogWindow {
+        } else if windows.by_ip.len() >= MAX_REFUSAL_LOG_IPS {
+            // Fail closed: under an address-rotating flood, logging every new IP is the worse failure.
+            windows.untracked += 1;
+            return None;
+        }
+        let suppressed = windows
+            .by_ip
+            .insert(
+                ip,
+                LogWindow {
                     started: now,
                     suppressed: 0,
-                });
-                Some(match suppressed {
-                    0 => String::new(),
-                    n => format!(" [+{n} more in the last {}s]", REFUSAL_LOG_WINDOW.as_secs()),
-                })
+                },
+            )
+            .map_or(0, |window| window.suppressed);
+        Some(match suppressed {
+            0 => String::new(),
+            n => format!(" [+{n} more in the last {}s]", REFUSAL_LOG_WINDOW.as_secs()),
+        })
+    }
+
+    /// Drop expired windows, returning the repeats no later claim reported.
+    fn sweep_at(&self, now: Instant) -> Vec<String> {
+        let mut guard = self.windows.lock().unwrap_or_else(|e| e.into_inner());
+        let windows = &mut *guard;
+        let secs = REFUSAL_LOG_WINDOW.as_secs();
+        let mut lines = Vec::new();
+        windows.by_ip.retain(|ip, window| {
+            let open = now.duration_since(window.started) < REFUSAL_LOG_WINDOW;
+            if !open && window.suppressed > 0 {
+                lines.push(format!(
+                    "{} from {ip}: +{} more within {secs}s of the last report",
+                    self.label, window.suppressed
+                ));
             }
+            open
+        });
+        if windows.untracked > 0 {
+            lines.push(format!(
+                "{}: +{} more in the last {secs}s from IPs past the {MAX_REFUSAL_LOG_IPS}-IP log table",
+                self.label,
+                std::mem::take(&mut windows.untracked)
+            ));
         }
+        lines
     }
 }
 
-static PROTOCOL_REFUSAL_LOG: LogThrottle = LogThrottle::new();
-static EARLY_MESSAGE_LOG: LogThrottle = LogThrottle::new();
-static RATE_LIMIT_LOG: LogThrottle = LogThrottle::new();
+static PROTOCOL_REFUSAL_LOG: LazyLock<LogThrottle> =
+    LazyLock::new(|| LogThrottle::new("Protocol refusals"));
+static EARLY_MESSAGE_LOG: LazyLock<LogThrottle> =
+    LazyLock::new(|| LogThrottle::new("Pre-ClientInfo refusals"));
+static RATE_LIMIT_LOG: LazyLock<LogThrottle> =
+    LazyLock::new(|| LogThrottle::new("Rate-limited connections"));
+
+/// Runs every `REFUSAL_LOG_WINDOW` so quiet IPs' repeat counts still reach the log.
+pub fn flush_refusal_logs() {
+    let now = Instant::now();
+    for throttle in [&PROTOCOL_REFUSAL_LOG, &EARLY_MESSAGE_LOG, &RATE_LIMIT_LOG] {
+        for line in throttle.sweep_at(now) {
+            warn!("{line}");
+        }
+    }
+}
 
 fn close_frame(code: u16, reason: &'static str) -> Message {
     Message::Close(Some(CloseFrame {
@@ -401,7 +465,7 @@ pub async fn handle_connection(
     // useless, and this is the first point where the real one is known.
     // Connections that skipped nginx were already charged in the accept loop.
     if peer.ip().is_loopback() && !connect_limiter.allow(client_ip) {
-        if let Some(tail) = RATE_LIMIT_LOG.claim() {
+        if let Some(tail) = RATE_LIMIT_LOG.claim(client_ip) {
             warn!("Rate-limiting client {client_ip}: too many connections{tail}");
         }
         let _ = ws_sender
@@ -788,7 +852,7 @@ fn handle_handshake(
             return Some(vec![]);
         }
         if *protocol_version != onlinerpg_shared::PROTOCOL_VERSION {
-            if let Some(tail) = PROTOCOL_REFUSAL_LOG.claim() {
+            if let Some(tail) = PROTOCOL_REFUSAL_LOG.claim(state.client_ip) {
                 warn!(
                     "Refusing client: protocol v{} (server speaks v{}) ip={} kind={client_kind} version={client_version}{tail}",
                     protocol_version,
@@ -808,7 +872,7 @@ fn handle_handshake(
         // Same refusal path, for the break the protocol version cannot see:
         // a stale dungeon generator (see `LAYOUT_VERSION`).
         if !onlinerpg_shared::layout_version_matches(client_version) {
-            if let Some(tail) = PROTOCOL_REFUSAL_LOG.claim() {
+            if let Some(tail) = PROTOCOL_REFUSAL_LOG.claim(state.client_ip) {
                 warn!(
                     "Refusing client: dungeon layout {} (server built {}) ip={} kind={client_kind} version={client_version}{tail}",
                     onlinerpg_shared::layout_version_of(client_version).unwrap_or("unstamped"),
@@ -835,7 +899,7 @@ fn handle_handshake(
     }
 
     if state.client_kind.is_none() {
-        if let Some(tail) = EARLY_MESSAGE_LOG.claim() {
+        if let Some(tail) = EARLY_MESSAGE_LOG.claim(state.client_ip) {
             let ip = state.client_ip;
             warn!("Refusing client {ip}: message arrived before ClientInfo{tail}");
         }
@@ -2952,12 +3016,82 @@ mod tests {
     }
 
     #[test]
-    fn refusal_logging_folds_repeats_into_one_line() {
-        let throttle = LogThrottle::new();
-        assert_eq!(throttle.claim(), Some(String::new()));
+    fn refusal_logging_tracks_each_ip_and_repeat_count_independently() {
+        let throttle = LogThrottle::new("Test refusals");
+        let start = Instant::now();
+        let first = "203.0.113.1".parse().unwrap();
+        let second = "2001:db8::2".parse().unwrap();
+        assert_eq!(throttle.claim_at(first, start), Some(String::new()));
         for _ in 0..5 {
-            assert_eq!(throttle.claim(), None);
+            assert_eq!(throttle.claim_at(first, start), None);
         }
+        assert_eq!(throttle.claim_at(second, start), Some(String::new()));
+        assert_eq!(throttle.claim_at(second, start), None);
+        assert_eq!(
+            throttle.claim_at(first, start + REFUSAL_LOG_WINDOW - Duration::from_nanos(1)),
+            None
+        );
+        let next = start + REFUSAL_LOG_WINDOW;
+        assert_eq!(
+            throttle.claim_at(first, next),
+            Some(" [+6 more in the last 60s]".into())
+        );
+        assert_eq!(
+            throttle.claim_at(second, next),
+            Some(" [+1 more in the last 60s]".into())
+        );
+        assert_eq!(throttle.claim_at(first, next), None);
+        assert_eq!(throttle.claim_at(second, next), None);
+    }
+
+    #[test]
+    fn refusal_logging_sweep_reports_repeats_of_quiet_ips() {
+        let throttle = LogThrottle::new("Test refusals");
+        let start = Instant::now();
+        let noisy = "203.0.113.1".parse().unwrap();
+        let quiet = "203.0.113.2".parse().unwrap();
+        for _ in 0..3 {
+            throttle.claim_at(noisy, start);
+        }
+        throttle.claim_at(quiet, start);
+        assert!(throttle
+            .sweep_at(start + REFUSAL_LOG_WINDOW - Duration::from_nanos(1))
+            .is_empty());
+        assert_eq!(
+            throttle.sweep_at(start + REFUSAL_LOG_WINDOW),
+            ["Test refusals from 203.0.113.1: +2 more within 60s of the last report"]
+        );
+        assert!(throttle.windows.lock().unwrap().by_ip.is_empty());
+        assert_eq!(
+            throttle.claim_at(noisy, start + REFUSAL_LOG_WINDOW),
+            Some(String::new())
+        );
+    }
+
+    #[test]
+    fn refusal_logging_counts_ips_past_the_table_until_the_next_sweep() {
+        let throttle = LogThrottle::new("Test refusals");
+        let start = Instant::now();
+        let ip = |n: u32| IpAddr::V4(Ipv4Addr::from(n));
+        let max = MAX_REFUSAL_LOG_IPS as u32;
+        for n in 0..max {
+            assert_eq!(throttle.claim_at(ip(n), start), Some(String::new()));
+        }
+        assert_eq!(
+            throttle.claim_at(ip(max), start + Duration::from_secs(1)),
+            None
+        );
+        assert_eq!(
+            throttle.windows.lock().unwrap().by_ip.len(),
+            MAX_REFUSAL_LOG_IPS
+        );
+        let latest = start + REFUSAL_LOG_WINDOW;
+        assert_eq!(
+            throttle.sweep_at(latest),
+            ["Test refusals: +1 more in the last 60s from IPs past the 4096-IP log table"]
+        );
+        assert!(throttle.windows.lock().unwrap().by_ip.is_empty());
+        assert_eq!(throttle.claim_at(ip(max), latest), Some(String::new()));
     }
 
     #[test]

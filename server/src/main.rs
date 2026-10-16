@@ -717,6 +717,15 @@ async fn main() -> ExitCode {
         },
     ));
 
+    background.spawn(run_ticks(
+        "refusal_log_flush",
+        connection::REFUSAL_LOG_WINDOW,
+        drain_shutdown.clone(),
+        &health,
+        health::Deadline::FromPeriod,
+        || async { connection::flush_refusal_logs() },
+    ));
+
     // Dungeon spawn-slot refill tick (respawns on occupied floors)
     let game_state_for_dungeons = Arc::clone(&game_state);
     background.spawn(run_ticks(
