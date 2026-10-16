@@ -8,6 +8,14 @@ const worldDelta = (from, to) => ((to - from + 49152) % 32768) - 16384;
 const regionName = (value) =>
   `${value < 0 ? "-" : "+"}${Math.abs(value).toString().padStart(2, "0")}`;
 
+// Mirrors server/src/land_grades.rs: [inner, outer] rings per anchor kind.
+const RINGS = {
+  capital: [180, 400],
+  city: [120, 320],
+  town: [80, 250],
+  entrance: [60, 150],
+};
+
 function readCsv(file) {
   const [header, ...lines] = fs.readFileSync(file, "utf8").trim().split("\n");
   const fields = header.split(",");
@@ -16,7 +24,47 @@ function readCsv(file) {
   );
 }
 
-export function planReservation(terrainDir, dungeon, plots) {
+export function loadAnchors() {
+  const labels = JSON.parse(
+    fs.readFileSync(path.join(repo, "data/map_labels.json"), "utf8"),
+  );
+  const entrances = readCsv(path.join(repo, "data-src/dungeons.csv")).map(
+    (row) => ({ kind: "entrance", x: Number(row.x), z: Number(row.z) }),
+  );
+  return [...Object.values(labels), ...entrances]
+    .filter((anchor) => RINGS[anchor.kind])
+    .map(({ kind, x, z }) => ({
+      x,
+      z,
+      inner: RINGS[kind][0],
+      outer: RINGS[kind][1],
+    }));
+}
+
+// The grades the server serves for a region without an edited file.
+export function defaultGrades(anchors, rx, rz) {
+  const grades = Buffer.alloc(1024, 1);
+  for (let index = 0; index < 1024; index++) {
+    const tile = Math.floor(index / 4);
+    const q = index % 4;
+    const cx = (rx * 16 + (tile % 16)) * 64 - 16 + (q % 2) * 32;
+    const cz =
+      (rz * 16 + Math.floor(tile / 16)) * 64 - 16 + Math.floor(q / 2) * 32;
+    for (const anchor of anchors) {
+      const distance = Math.hypot(worldDelta(anchor.x, cx), cz - anchor.z);
+      if (distance < anchor.inner) {
+        grades[index] = 0;
+        break;
+      }
+      if (distance <= anchor.outer) grades[index] = 2;
+    }
+  }
+  return grades;
+}
+
+// `anchors` is set only for sites missing from the registry: the defaults
+// omit them, so their regions get a grade file seeded from the defaults.
+export function planReservation(terrainDir, dungeon, plots, anchors = null) {
   const x = Number(dungeon.x);
   const z = Number(dungeon.z);
   if (!Number.isFinite(x) || !Number.isFinite(z))
@@ -51,8 +99,11 @@ export function planReservation(terrainDir, dungeon, plots) {
         "land-grades",
         `r${regionName(canonicalRx)}_${regionName(rz)}.bin`,
       );
-      if (!fs.existsSync(file)) continue;
-      const before = fs.readFileSync(file);
+      const exists = fs.existsSync(file);
+      if (!exists && !anchors) continue;
+      const before = exists
+        ? fs.readFileSync(file)
+        : defaultGrades(anchors, canonicalRx, rz);
       if (before.length !== 1024 || before.some((grade) => grade > 2))
         throw new Error(`Invalid land grades: ${file}`);
       const after = Buffer.from(before);
@@ -71,7 +122,7 @@ export function planReservation(terrainDir, dungeon, plots) {
           count++;
         }
       }
-      if (count) changes.push({ file, before, after, count });
+      if (count) changes.push({ file, before, after, count, exists });
     }
   }
   return changes;
@@ -81,27 +132,46 @@ function main() {
   const { values } = parseArgs({
     options: {
       dungeon: { type: "string" },
+      x: { type: "string" },
+      z: { type: "string" },
+      label: { type: "string" },
       ownership: { type: "string" },
       terrain: { type: "string", default: path.join(repo, "data/terrain") },
       apply: { type: "boolean", default: false },
     },
   });
-  if (!values.dungeon || !values.ownership)
+  const byCoords = values.x !== undefined || values.z !== undefined;
+  if (
+    !values.ownership ||
+    (values.dungeon ? byCoords : !(values.x && values.z && values.label))
+  )
     throw new Error(
-      "Use --dungeon ID --ownership owned-plots.json [--terrain DIR] [--apply]",
+      "Use --dungeon ID or --x X --z Z --label NAME, with --ownership owned-plots.json [--terrain DIR] [--apply]",
     );
-  const dungeon = readCsv(path.join(repo, "data-src/dungeons.csv")).find(
-    (row) => row.id === values.dungeon,
-  );
+  const dungeon = byCoords
+    ? { id: values.label, x: values.x, z: values.z }
+    : readCsv(path.join(repo, "data-src/dungeons.csv")).find(
+        (row) => row.id === values.dungeon,
+      );
   if (!dungeon) throw new Error(`Unknown dungeon: ${values.dungeon}`);
   const plots = JSON.parse(fs.readFileSync(values.ownership, "utf8"));
   if (!Array.isArray(plots)) throw new Error("Ownership must be a JSON array");
-  const changes = planReservation(values.terrain, dungeon, plots);
+  const changes = planReservation(
+    values.terrain,
+    dungeon,
+    plots,
+    byCoords ? loadAnchors() : null,
+  );
   for (const change of changes) {
     console.log(
-      `${values.apply ? "Apply" : "Preview"} ${change.file}: ${change.count} plots`,
+      `${values.apply ? "Apply" : "Preview"} ${change.file}: ${change.count} plots${change.exists ? "" : " (new file from defaults)"}`,
     );
     if (!values.apply) continue;
+    if (!change.exists) {
+      fs.mkdirSync(path.dirname(change.file), { recursive: true });
+      fs.writeFileSync(change.file, change.after, { flag: "wx" });
+      continue;
+    }
     if (!fs.readFileSync(change.file).equals(change.before))
       throw new Error(`Land grades changed: ${change.file}`);
     fs.copyFileSync(
@@ -117,9 +187,10 @@ function main() {
       fs.rmSync(temporary, { force: true });
     }
   }
-  console.log(
-    "Regions without edited grade files use the dungeon registry defaults.",
-  );
+  if (!byCoords)
+    console.log(
+      "Regions without edited grade files use the dungeon registry defaults.",
+    );
 }
 
 if (

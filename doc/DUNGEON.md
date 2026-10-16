@@ -22,6 +22,8 @@
 node tools/reserve-dungeon-land.mjs --dungeon skeleton_crypt --ownership /tmp/owned-plots.json --apply
 ```
 
+`dungeons.csv`에 아직 없는 장소는 `--dungeon` 대신 `--x=X --z=Z --label NAME`으로 같은 규칙을 적용한다(음수 좌표 때문에 `=`로 붙인다). 등록 전이라 기본값에 링이 없으므로, 등급 파일이 없는 지역은 서버 기본값(지도 라벨·던전 입구 링)으로 새 파일을 만든 뒤 예약을 더한다. 파일이 생기면 그 지역은 이후 기본값 변경을 따르지 않으니, 나중에 입구 좌표가 바뀌면 `--dungeon`으로 다시 실행한다.
+
 ## 리셋과 재접속
 
 - 게임 내 일몰마다 접속 중인 던전 참가자는 경고 후 해당 던전의 지상 입구로 이동한다.
