@@ -33,7 +33,12 @@ const io = new NodeIO()
   });
 const original = await readFile(source);
 const document = await io.readBinary(original);
-if (document.hasExtension("EXT_meshopt_compression")) {
+if (
+  document
+    .getRoot()
+    .listExtensionsUsed()
+    .some((extension) => extension.extensionName === "EXT_meshopt_compression")
+) {
   throw new Error(
     "Use the uncompressed source to avoid repeated texture compression.",
   );

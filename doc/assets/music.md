@@ -117,7 +117,7 @@ seamless loop, game BGM
   Blood and Bronze (1)은 2026-09-28 앞 88마디(0.14–132.14 s)만 남긴 132 s 루프다.
   끝은 인트로 첫 타격과 같은 구조(타격 뒤 조용한 3 s)가 다시 시작되기 직전이다.
   끝 3 s 페이드아웃(`afade curve=qua`, 시작은 10 ms 페이드인), libmp3lame `-q:a 2`로 재인코딩했다. 원본(6분 15초, 9.1 MB)은
-  `~/assets_original/bgm/`에 있고, `Blood and Bronze (Full)`이라는 이름으로 Field BGM에서 재생된다.
+  `~/assets_original/bgm/`에 있다. `Blood and Bronze (Full)`이라는 이름으로 Field BGM에서 재생되다가 2026-10-16 목록에서 뺐다 **[미사용]**.
 
 ### Google Flow Music BGM (.m4a)
 

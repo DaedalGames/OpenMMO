@@ -291,10 +291,38 @@ blender -b --python-exit-code 1 -P tools/blender-scripts/export_character.py -- 
 - Mixamo 업로드 후 **텍스처 정상 표시를 사용자 확인**(2026-09-21). ZIP 루트의 OBJ·MTL·베이스컬러와 재질 참조를 맞춘 구성이며, 이후 캐릭터에도 같은 [업로드 준비 방식](creation-guidelines.md#mixamo-upload-preparation)을 사용한다.
 - 리깅 전 GLB·FBX·OBJ는 메시 1개·10,370 triangles·UV 1개·2048² 텍스처·본 0개로 검증했다. 검사 결과와 삭제 파일 기록은 [generation.json](../../assets/npcs/tobin/generation.json)의 `validation`·`cleanup`에 보존한다.
 - 리깅 원본: 사용자 제공 `/mnt/y/web_downloads/Idle (6).fbx` → [tobin_mixamo.fbx](../../assets/npcs/tobin/tobin_mixamo.fbx). Mixamo(Adobe), 2026-09-21, 무료 서비스; 아래 Mixamo 라이선스 참조. 포함된 Idle 애니메이션은 제거하고 기존 게임 애니메이션 팩을 사용한다.
-- 게임 모델: [tobin.glb](../../client/public/models/characters/tobin.glb) — **10,370 triangles, 33본**, 키 1.90m, 발밑 원점, WebP q90. 베이스컬러 2048², 노멀·metallicRoughness 1024². 양손에 검지 체인만 있는 간소화된 리그로, 엄지·중지·약지·소지를 각각 제어할 수는 없다.
+- 게임 모델: [tobin.glb](../../client/public/models/characters/tobin.glb) — **10,370 triangles, 33본**, 키 1.90m, 발밑 원점, WebP q90. 베이스컬러 1024², 노멀·metallicRoughness 1024², meshopt 압축(2026-10-16). 양손에 검지 체인만 있는 간소화된 리그로, 엄지·중지·약지·소지를 각각 제어할 수는 없다.
 - Blender 5.2.0 LTS에서 공용 `tools/blender-scripts/export_character.py`로 원본 재질을 이식했다. 면 단위 UV 최대 오차 0, `mixamorig:` 접두·본 scale 오차 제거. 텍스처를 내장한 [Blender 작업 파일](../../assets/npcs/tobin/tobin_rigged.blend), 재현: `.venv/bin/python assets/npcs/tobin/export_rig.py`.
-- 실제 클라이언트 리타게팅으로 `idle1`·`walk`·`run`·`fishing_cast`·`fishing_idle`을 각각 12개 시점에서 검사하고 동작 렌더를 검토했다. 검증 JSON 3개는 [generation.json](../../assets/npcs/tobin/generation.json)의 `rigging.export_report`·`rigging.validation`·`npc_placement.verification`에 통합하고 동작 미리보기는 삭제했다. README 통합 후 폴더에는 원본·스크립트·기록 10개를 유지한다. 클라이언트 모델 경로를 NPC 이름 `Tobin`에 연결했다.
+- 실제 클라이언트 리타게팅으로 `idle1`·`walk`·`run`·`fishing_cast`·`fishing_idle`을 각각 12개 시점에서 검사하고 동작 렌더를 검토했다. 검증 JSON 3개는 [generation.json](../../assets/npcs/tobin/generation.json)의 `rigging.export_report`·`rigging.validation`·`npc_placement.verification`에 통합하고 동작 미리보기는 삭제했다. 클라이언트 모델 경로를 NPC 이름 `Tobin`에 연결했다.
 - NPC 레지스트리 `tobin` / `Tobin`, 한국어 별칭 `토빈`. **world(-1499.9, 0.6, 4728.4), 방향 -89.0°**, tile(-23, 74), cell(4, 24)의 강가에 배치. `fishing_rod`를 작업 장비로 장착하고 캐스팅·입질 대응·실제 물고기 획득을 반복한다. 찌·바깥 낚싯줄은 실제 낚시 중에만 표시하며, 매 시도 사이에는 잠시 쉰다. [일정](../../agent-client/data/npcs/tobin/schedule.json), [낚시 연출과 구현 범위](../FISHING.md#토빈-배치-2026-09-21-구현). 상점에서 낚싯대를 기본 가격 3실버에 판매하며, 6m 이내에서 캐스팅부터 포획까지 관찰하면 낚시 스킬을 영구 습득한다.
+
+#### Tobin 게임용 전송량 최적화 — 2026-10-16
+
+`tobin.f95c763a.glb`의 색상맵을 **2048² → 1024² WebP q90·effort 6**으로
+줄이고 meshopt 메시 압축을 적용했다. 노멀·metallicRoughness 텍스처는 바이트까지 유지한다.
+파일은 **2,537,656 → 1,195,204바이트(52.90% 감소)**,
+gzip level 6 예상 전송량은 **2,127,232 → 1,118,090바이트(47.44% 감소)**다.
+다음 빌드 파일명은 `tobin.e1c88b64.glb`다.
+
+게임에서 얼굴을 크게 확대하지 않는다는 사용자 확인에 따라 1024²를 선택했다.
+품질은 실제 게임의 캐릭터 표시 크기를 기준으로 판단한다. 전신에서는 차이가 작다.
+정점 속성·스킨 가중치·역바인드 행렬·본 계층과 10,370개 삼각형의 순서·방향을 유지한다.
+GLB 작성기의 항등 회전 생략에 따른 본 변환 성분 차이는 최대 0.00000246이다.
+실제 게임 로더로 전후 모델의 텍스처와 5개 동작을 각각 12개 시점에서 검사했다.
+스키닝 정점 좌표 차이는 최대 0.000000008m이고 브라우저 오류·경고는 없다.
+Khronos glTF Validator 오류 0, 기존 경고 2개와 meshopt 미지원 안내 1개가 있다.
+관련 테스트 42개와 압축된 입력의 재압축 거부를 확인했다.
+
+최적화 전 게임 파일은 `assets/npcs/tobin/tobin-before-textures-1024.glb`에 보존한다.
+기존 Meshy Premium·Mixamo 출처와 라이선스를 유지하며 새 생성이나 유료 호출은 없다.
+최적화 파일 SHA-256: `e47ced7d5e80e21983cca1d80d35bf4d2a03207e2bc32679e31f61d30101321c`.
+보존 원본 SHA-256: `825769cf4fc01356c8566300ec3b420ce0eed55f2fcfddf915d5b007370da683`.
+최적화 파일과 보존 원본은 HF에 게시하고 원격 SHA-256을 확인했으며 `assets.lock`에 고정했다.
+운영 배포는 수행하지 않았다.
+
+```sh
+node tools/optimize-character-textures.mjs assets/npcs/tobin/tobin-before-textures-1024.glb client/public/models/characters/tobin.glb 1024
+```
 
 ## 텍스처 재패킹 (2026-08-06)
 

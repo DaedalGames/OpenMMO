@@ -641,23 +641,20 @@ export function playPerformance(
   }
   applyPerformanceVolume()
   if (offsetSecs > 0) {
-    // A late listener should hear the tune now, and a blob only plays once
-    // the whole file is down: stream it and seek instead.
+    // Seek once the whole file is in, past the download time too.
     el.addEventListener(
       'loadedmetadata',
       () => {
+        if (performanceAudio !== el) return
         // Past the end just clamps and fires `ended` — a stale performance
         // cleans itself up.
-        el.currentTime = offsetSecs
+        el.currentTime = performanceElapsedSecs()
+        if (audible) startPerformanceFadeIn(el)
       },
       { once: true }
     )
-    el.src = bgmSrc(file)
-    if (audible) startPerformanceFadeIn(el)
-    el.play().catch(() => {})
-  } else {
-    void attachTrack(el, file, () => performanceAudio === el)
   }
+  void attachTrack(el, file, () => performanceAudio === el)
 
   // Whoever was playing lost the floor — tell them, so a performer whose track
   // was cut short leaves the emote instead of strumming in silence.

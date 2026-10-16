@@ -9,6 +9,7 @@ class FakeAudio {
   loop = false
   muted = false
   volume = 1
+  currentTime = 0
   paused = true
   ended = false
   dataset: Record<string, string> = {}
@@ -237,6 +238,22 @@ describe('bgmManager fetches tracks whole and plays them from a blob', () => {
     ended()
     expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:test/1')
     expect(el.removeAttribute).toHaveBeenCalledWith('src')
+  })
+
+  it('joins a performance mid-track from a blob, seeking past the download', async () => {
+    vi.spyOn(performance, 'now').mockReturnValue(1000)
+    bgm.playPerformance(BGM_TRACKS[0], undefined, 30)
+    await flush()
+    const el = FakeAudio.created[0]
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(el.src).toBe('blob:test/1')
+
+    vi.spyOn(performance, 'now').mockReturnValue(3000)
+    const metadata = el.addEventListener.mock.calls.find(
+      (c) => c[0] === 'loadedmetadata'
+    )![1]
+    metadata()
+    expect(el.currentTime).toBe(32)
   })
 
   it('disposes playlist, battle, and performance audio before module replacement', async () => {
