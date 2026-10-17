@@ -3,9 +3,10 @@ import { translate } from '../i18n'
 import { dungeon_layout } from '../wasm/onlinerpg_shared'
 import {
   dungeonCellCenter,
+  dungeonFloorLanding,
   type DungeonFloorLayout,
 } from '../managers/dungeonManager'
-import { DUNGEON_ENTRANCES } from '../data/dungeonDefs'
+import { DUNGEON_ENTRANCES, type DungeonEntranceDef } from '../data/dungeonDefs'
 import { MAP_LABELS, type MapLabelKind } from '../data/mapLabels'
 import worldJson from '../../../../data-src/world.json'
 
@@ -98,4 +99,14 @@ export function tpDestinations(): TpDestination[] {
 
   cached = out
   return out
+}
+
+/** The landing of `entrance`'s floor `depth`; null when it has no such floor. */
+export function dungeonFloorDestination(
+  entrance: DungeonEntranceDef,
+  depth: number
+) {
+  const layouts = dungeon_layout(entrance.id) as DungeonFloorLayout[]
+  const floor = layouts.find((l) => l.depth === depth)
+  return floor ? dungeonFloorLanding(entrance, floor) : null
 }

@@ -23,3 +23,15 @@ export function resolveTpDestination<T extends { name: string }>(
   const lower = trimmed.toLowerCase()
   return destinations.find((d) => d.name.toLowerCase() === lower) ?? null
 }
+
+/** Dungeons a `/tp <dungeon> <floor>` token names: an exact id, else every
+ *  dungeon with the token as one `_` part of its id ("skeleton" → skeleton_crypt). */
+export function matchDungeons<T extends { id: string }>(
+  token: string,
+  dungeons: T[]
+): T[] {
+  const lower = token.toLowerCase()
+  const exact = dungeons.filter((d) => d.id === lower)
+  if (exact.length > 0) return exact
+  return dungeons.filter((d) => d.id.split('_').includes(lower))
+}

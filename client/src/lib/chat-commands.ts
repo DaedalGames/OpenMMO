@@ -21,8 +21,16 @@ import {
 import { COLLAR_BIAS_LIMIT } from './effects/cape-rig'
 import { computeGrassPlacement, regenerateVegMeta } from './utils/grass-data'
 import { teleportLocalPlayer } from './utils/teleport'
-import { parseTpArgs, resolveTpDestination } from './utils/tp-args'
-import { tpDestinations } from './utils/tp-destinations'
+import {
+  matchDungeons,
+  parseTpArgs,
+  resolveTpDestination,
+} from './utils/tp-args'
+import {
+  dungeonFloorDestination,
+  tpDestinations,
+} from './utils/tp-destinations'
+import { DUNGEON_ENTRANCES } from './data/dungeonDefs'
 
 import { dungeonManager } from './managers/dungeonManager'
 import { chatChannel } from './stores/chatChannelStore'
@@ -269,6 +277,34 @@ const COMMANDS: Record<string, Command> = {
         return
       }
 
+      const [first, second, ...rest] = trimmed.split(/\s+/)
+      if (rest.length === 0 && Number.isNaN(Number(first))) {
+        const matches = matchDungeons(first, DUNGEON_ENTRANCES)
+        if (matches.length !== 1) {
+          addChatMessage({
+            text: translate('command.tpDungeonUnknown', {
+              name: first,
+              dungeons: DUNGEON_ENTRANCES.map((e) => e.id).join(', '),
+            }),
+            sender: 'system',
+          })
+          return
+        }
+        const dest = dungeonFloorDestination(matches[0], Number(second))
+        if (!dest) {
+          addChatMessage({
+            text: translate('command.tpNoFloor', {
+              dungeon: matches[0].id,
+              floor: second,
+            }),
+            sender: 'system',
+          })
+          return
+        }
+        teleportTo(dest.x, dest.y, dest.z)
+        return
+      }
+
       const parsed = parseTpArgs(trimmed)
       if (!parsed) {
         addChatMessage({
@@ -392,10 +428,7 @@ const COMMANDS: Record<string, Command> = {
         })
         return
       }
-      const target = dungeonManager.cellCenter(
-        depth,
-        dungeonManager.shaftExitCell(layout.upShaft)
-      )
+      const target = dungeonManager.floorLanding(layout)
       dungeonManager.setDepth(depth)
       networkManager.sendDebugTeleport(target)
       addChatMessage({

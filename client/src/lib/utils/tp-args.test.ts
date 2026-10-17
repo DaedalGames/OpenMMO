@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseTpArgs, resolveTpDestination } from './tp-args'
+import { matchDungeons, parseTpArgs, resolveTpDestination } from './tp-args'
 
 describe('parseTpArgs', () => {
   it('parses x z with y defaulting to 0', () => {
@@ -63,5 +63,27 @@ describe('resolveTpDestination', () => {
     expect(resolveTpDestination('nowhere', dests)).toBeNull()
     expect(resolveTpDestination('0', dests)).toBeNull()
     expect(resolveTpDestination('4', dests)).toBeNull()
+  })
+})
+
+describe('matchDungeons', () => {
+  const dungeons = [
+    { id: 'old_crypt' },
+    { id: 'orc_warrens' },
+    { id: 'skeleton_crypt' },
+  ]
+  const ids = (token: string) => matchDungeons(token, dungeons).map((d) => d.id)
+
+  it('prefers an exact id', () => {
+    expect(ids('Skeleton_Crypt')).toEqual(['skeleton_crypt'])
+  })
+
+  it('matches one id part', () => {
+    expect(ids('skeleton')).toEqual(['skeleton_crypt'])
+    expect(ids('orc')).toEqual(['orc_warrens'])
+  })
+
+  it('returns every dungeon a shared part names', () => {
+    expect(ids('crypt')).toEqual(['old_crypt', 'skeleton_crypt'])
   })
 })

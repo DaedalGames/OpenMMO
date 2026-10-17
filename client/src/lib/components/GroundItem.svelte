@@ -90,12 +90,18 @@
   let groundParentRef: THREE.Group | undefined = $state()
   let terrainAlignedRef: THREE.Group | undefined = $state()
 
-  // Lay handheld models flat before measuring their ground clearance.
-  const flatRestRotX = $derived.by(() => {
-    if (def?.category === 'fishing_rod') return -Math.PI / 4
-    if (def?.category === 'timekeeper') return -Math.PI / 2
+  // Lay handheld models flat before measuring their ground clearance. The
+  // talisman is a thin tablet that sinks out of sight in grass, so it floats.
+  const FLAT_REST: Record<string, { rotX: number; lift?: number }> = {
+    fishing_rod: { rotX: -Math.PI / 4 },
+    timekeeper: { rotX: -Math.PI / 2 },
+    phoenix_talisman: { rotX: -Math.PI / 2, lift: 0.04 },
+  }
+  const flatRest = $derived.by(() => {
+    const byCategory = def?.category ? FLAT_REST[def.category] : undefined
+    if (byCategory) return byCategory
     if (def?.equipSlot === 'off_hand' && def?.category === 'armor')
-      return Math.PI / 2
+      return { rotX: Math.PI / 2 }
     return null
   })
   let restPose = $state<{ rotX: number; y: number } | null>(null)
@@ -243,10 +249,10 @@
         bindClipOnce(measureSource, clip, true)
       }
       const box = new THREE.Box3()
-      if (flatRestRotX != null) {
-        measureSource.rotation.set(flatRestRotX, 0, 0)
+      if (flatRest) {
+        measureSource.rotation.set(flatRest.rotX, 0, 0)
         box.setFromObject(measureSource, true)
-        restPose = { rotX: flatRestRotX, y: -box.min.y }
+        restPose = { rotX: flatRest.rotX, y: -box.min.y + (flatRest.lift ?? 0) }
         applyRestPose(measureSource, restPose)
         box.translate(new THREE.Vector3(0, restPose.y, 0))
       } else {

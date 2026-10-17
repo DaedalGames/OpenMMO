@@ -208,6 +208,22 @@ export function dungeonCellCenter(
   }
 }
 
+/** Grid cell of a shaft's exit landing (deeper floor). */
+function shaftExitCell(shaft: DungeonShaft): { x: number; z: number } {
+  const run = shaft.reversed ? 0 : constants().shaftLen - 1
+  return shaft.alongZ
+    ? { x: shaft.x, z: shaft.z + run }
+    : { x: shaft.x + run, z: shaft.z }
+}
+
+/** Where a player arriving on a floor stands: its up-shaft's deep landing. */
+export function dungeonFloorLanding(
+  e: { x: number; y: number; z: number },
+  layout: DungeonFloorLayout
+) {
+  return dungeonCellCenter(e, layout.depth, shaftExitCell(layout.upShaft))
+}
+
 /** Registry entrance whose grid footprint covers the position (shared
  *  `footprint_contains`: the server decides underground-ness by this test). */
 export function entranceCovering(
@@ -776,17 +792,9 @@ class DungeonManager {
       : { x: shaft.x + run, z: shaft.z }
   }
 
-  /** Grid cell of a shaft's exit landing (deeper floor). */
-  shaftExitCell(shaft: DungeonShaft): { x: number; z: number } {
-    const run = shaft.reversed ? 0 : constants().shaftLen - 1
-    return shaft.alongZ
-      ? { x: shaft.x, z: shaft.z + run }
-      : { x: shaft.x + run, z: shaft.z }
-  }
-
-  /** World-space center of a grid cell at a given depth's floor Y. */
-  cellCenter(depth: number, cell: { x: number; z: number }) {
-    return dungeonCellCenter(this.entrance!, depth, cell)
+  /** Where a player arriving on `layout`'s floor of this dungeon stands. */
+  floorLanding(layout: DungeonFloorLayout) {
+    return dungeonFloorLanding(this.entrance!, layout)
   }
 
   /**
