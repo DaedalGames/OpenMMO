@@ -1706,6 +1706,7 @@ pub enum ServerMessage {
     EffectiveStatsUpdated {
         guard: i32,
         cha: i32,
+        int: i32,
     },
     /// Direct message: the receiving player gained loose currency from a
     /// pickup. `amount` is in the smallest unit (copper).

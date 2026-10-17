@@ -15,7 +15,7 @@ pub enum ItemEffect {
     /// CHA bonus, added to the base attribute wherever CHA is read
     /// (haggling bands, doc/ITEM_TIERS.md).
     Cha(i32),
-    /// INT bonus. No rule reads INT yet; the tooltip shows it.
+    /// INT bonus. No rule reads INT yet; the stats panel shows it.
     Int(i32),
     /// Lights the wearer's surroundings; drawn by clients only.
     Light,
@@ -271,16 +271,8 @@ pub enum UseEffect {
 }
 
 impl ItemDefinition {
-    pub fn cha_bonus(&self) -> Option<i32> {
-        Some(
-            self.effects
-                .iter()
-                .filter_map(|e| match e {
-                    ItemEffect::Cha(amount) => Some(*amount),
-                    _ => None,
-                })
-                .sum(),
-        )
+    pub fn effects(&self) -> &[ItemEffect] {
+        &self.effects
     }
 
     pub fn has_sustenance(&self) -> bool {

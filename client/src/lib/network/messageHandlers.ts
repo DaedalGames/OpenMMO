@@ -2271,6 +2271,7 @@ export function handleServerMessage(
       playerEffectiveStats.set({
         guard: Number(data.guard),
         cha: Number(data.cha),
+        int: Number(data.int),
       })
       break
 

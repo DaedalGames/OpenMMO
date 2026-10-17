@@ -699,3 +699,20 @@ async fn a_shield_equip_is_refused_under_a_two_hander() {
     );
     assert!(inv.bag.iter().any(|i| i.item_def_id == "wooden_shield"));
 }
+
+#[tokio::test]
+async fn helm_of_brilliance_raises_reported_int() {
+    let game = make_test_game_state("helm_int");
+    let id = pid("scholar");
+    game.add_player(make_player("scholar", 0.0, 0.0)).await;
+    game.register_player_character(&id, 42, 0, attrs_with_cha(10), 0, None)
+        .await;
+    game.inventories.write().await.insert(
+        id,
+        PlayerInventory {
+            equipped: [(EquipSlot::Head, bag_item(1, "helm_of_brilliance", 1))].into(),
+            ..Default::default()
+        },
+    );
+    assert_eq!(game.effective_stats(&id).await.int, 11);
+}

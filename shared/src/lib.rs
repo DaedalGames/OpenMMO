@@ -210,7 +210,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v118: server-driven player auto-attacks.
 /// v119: transient global announcements via `/announce`.
 /// v120: per-IP operator notices that stay until confirmed.
-pub const PROTOCOL_VERSION: u32 = 120;
+/// v121: effective INT in EffectiveStatsUpdated.
+pub const PROTOCOL_VERSION: u32 = 121;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from

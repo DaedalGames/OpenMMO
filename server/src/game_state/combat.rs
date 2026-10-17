@@ -1,10 +1,12 @@
 use super::combat_audit::PlayerAttackWindow;
 use crate::game::{character_hp, combat};
+use crate::item_defs::ItemEffect;
 
 #[derive(Debug, Clone, Copy)]
 pub struct EffectiveStats {
     pub guard: i32,
     pub cha: i32,
+    pub int: i32,
 }
 
 impl From<EffectiveStats> for ServerMessage {
@@ -12,6 +14,7 @@ impl From<EffectiveStats> for ServerMessage {
         ServerMessage::EffectiveStatsUpdated {
             guard: s.guard,
             cha: s.cha,
+            int: s.int,
         }
     }
 }
@@ -302,15 +305,6 @@ impl super::GameState {
         self.equipped_pairs(inv).map(|(_, def)| def)
     }
 
-    /// Sum of one def stat over every equipped item.
-    pub(super) fn equipped_bonus(
-        &self,
-        inv: &PlayerInventory,
-        stat: fn(&crate::item_defs::ItemDefinition) -> Option<i32>,
-    ) -> i32 {
-        self.equipped_defs(inv).filter_map(stat).sum()
-    }
-
     /// Equipped `guard` plus worn-armor enchant levels. A weapon's enchant
     /// stays on attack and damage rolls and never protects.
     pub(super) fn equipped_guard(&self, inv: &PlayerInventory) -> i32 {
@@ -326,33 +320,33 @@ impl super::GameState {
     /// attacker must beat; CHA drives haggling bands. Reported to the client
     /// so it never recomputes the formula itself.
     pub async fn effective_stats(&self, player_id: &PlayerId) -> EffectiveStats {
-        let (guard, cha) = {
+        let mut stats = {
             let chars = self.player_characters.read().await;
             chars
                 .get(player_id)
-                .map(|(_, _, a)| (i32::from(a.guard), i32::from(a.cha)))
-                .unwrap_or((10, 10))
+                .map(|(_, _, a)| EffectiveStats {
+                    guard: i32::from(a.guard),
+                    cha: i32::from(a.cha),
+                    int: i32::from(a.int),
+                })
+                .unwrap_or(EffectiveStats {
+                    guard: 10,
+                    cha: 10,
+                    int: 10,
+                })
         };
-        let inventories = self.inventories.read().await;
-        let (guard_bonus, cha_bonus) = inventories
-            .get(player_id)
-            .map(|inv| {
-                (
-                    self.equipped_guard(inv),
-                    self.equipped_bonus(inv, |d| d.cha_bonus()),
-                )
-            })
-            .unwrap_or((0, 0));
-        drop(inventories);
-        let guard = self
-            .abilities
-            .read()
-            .await
-            .guard(player_id, guard + guard_bonus);
-        EffectiveStats {
-            guard,
-            cha: cha + cha_bonus,
+        if let Some(inv) = self.inventories.read().await.get(player_id) {
+            stats.guard += self.equipped_guard(inv);
+            for effect in self.equipped_defs(inv).flat_map(|d| d.effects()) {
+                match effect {
+                    ItemEffect::Cha(amount) => stats.cha += amount,
+                    ItemEffect::Int(amount) => stats.int += amount,
+                    ItemEffect::Light | ItemEffect::Sustenance => {}
+                }
+            }
         }
+        stats.guard = self.abilities.read().await.guard(player_id, stats.guard);
+        stats
     }
 
     pub async fn effective_guard(&self, player_id: &PlayerId) -> i32 {

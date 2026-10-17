@@ -11,7 +11,7 @@
     playerEffectiveStats,
     wornAmmoStack,
   } from '../stores/inventoryStore'
-  import type { EquipSlot } from '../stores/inventoryStore'
+  import type { EffectiveStatKey, EquipSlot } from '../stores/inventoryStore'
   import { getItemDef, isRangedWeapon, isTwoHanded } from '../data/itemDefs'
   import { networkManager } from '../network/socket'
   import type {
@@ -76,7 +76,7 @@
   )
 
   // Use base stats until the first server update.
-  function withBonus(key: 'guard' | 'cha'): string {
+  function withBonus(key: EffectiveStatKey): string {
     const base = attributes[key]
     const eff = $playerEffectiveStats?.[key] ?? base
     return eff > base ? `${eff} (+${eff - base})` : `${eff}`
@@ -264,7 +264,7 @@
             </div>
             <div class="stat-row">
               <span class="stat-label">{$t('stat.int')}</span>
-              <span class="stat-value">{attributes.int}</span>
+              <span class="stat-value">{withBonus('int')}</span>
             </div>
             <div class="stat-row">
               <span class="stat-label">{$t('stat.wis')}</span>
