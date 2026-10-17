@@ -305,6 +305,25 @@ Both were generated and processed exactly like the monster cries above.
   44.1 kHz 스테레오 Ogg Vorbis q5. 원본과 정확한 ffmpeg 필터 체인은
   `~/assets_original/sfx/level-up_take1_2026-10-17.mp3` 및 같은 이름의 `.json`에 보관.
 
+- coin-jackpot.ogg — 잭팟 코인 더미(5,000동 이상)를 주운 본인에게만 재생.
+  [ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects) API로 2026-10-17 직접 생성.
+  Starter 유료 플랜,
+  [유료 플랜 상업 이용 라이선스](https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform) 적용.
+  2초, `prompt_influence=0.6`. 네 프롬프트로 14개 후보 생성(총 200크레딧) 후
+  `tools/gen-death-sfx.py`의 `jackpot_tada` take 3 사용 (두 박자 "타-다"; 한 번만 치는
+  `jackpot_fanfare`와 나머지는 미채택).
+  1.4초로 자르고 끝 300 ms 페이드, 피크 −3 dB, 44.1 kHz 스테레오 Ogg Vorbis q5.
+  원본과 필터 체인은 `~/assets_original/sfx/coin-jackpot_tada-take3_2026-10-17.mp3` 및 같은 이름의 `.json`에 보관.
+
+- key-drop.ogg — 던전 열쇠가 루트로 떨어질 때 근처 플레이어에게 재생 (플레이어가 버린 열쇠는 제외).
+  [ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects) API로 2026-10-17 직접 생성.
+  Starter 유료 플랜,
+  [유료 플랜 상업 이용 라이선스](https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform) 적용.
+  2초, `prompt_influence=0.5`. 두 프롬프트로 6개 후보 생성 후
+  `tools/gen-death-sfx.py`의 `key_drop_arcane` take 2 사용 (`key_drop_mystery`는 미채택).
+  1.8초로 자르고 끝 300 ms 페이드, 피크 −3 dB, 44.1 kHz 스테레오 Ogg Vorbis q5.
+  원본과 필터 체인은 `~/assets_original/sfx/key-drop_take2_2026-10-17.mp3` 및 같은 이름의 `.json`에 보관.
+
 ## Props
 
 - crate-break.ogg — sword hitting a wooden crate, generated with

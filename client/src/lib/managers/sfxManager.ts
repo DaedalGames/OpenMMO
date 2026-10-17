@@ -40,6 +40,8 @@ const PROP_SOUNDS = {
   break: { url: '/sounds/crate-break.ogg', volume: 0.4, pool: 2 },
   chestOpen: { url: '/sounds/chest-open.ogg', volume: 0.5, pool: 2 },
   coinSpill: { url: '/sounds/coin-spill.ogg', volume: 0.5, pool: 2 },
+  coinJackpot: { url: '/sounds/coin-jackpot.ogg', volume: 0.5, pool: 1 },
+  keyDrop: { url: '/sounds/key-drop.ogg', volume: 0.5, pool: 1 },
 } as const
 export type PropSound = keyof typeof PROP_SOUNDS
 
@@ -292,7 +294,8 @@ export function preloadPropSounds() {
 
 /** `break`: barrel/crate shatter, timed by the caller to the slash contact
  *  frame. `chestOpen`: lid swing on the open broadcast. `coinSpill`: the
- *  pile's pour clip starting. */
+ *  pile's pour clip starting. `coinJackpot`: the picker's jackpot coin pile.
+ *  `keyDrop`: a dungeon key falling as loot. */
 export function playPropSound(kind: PropSound) {
   playSound(PROP_SOUNDS[kind])
 }

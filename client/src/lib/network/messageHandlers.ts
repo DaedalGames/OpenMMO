@@ -4,6 +4,7 @@ import {
   showOperatorNotice,
 } from '../stores/announcementStore'
 import { translate, type MessageKey } from '../i18n'
+import { isCoinPileJackpot } from './coinPileJackpot'
 import {
   playTeleportEffect,
   finishTeleportArrival,
@@ -1076,6 +1077,7 @@ export function handleServerMessage(
       break
 
     case 'SystemMessage':
+      if (isCoinPileJackpot(data.localization)) playPropSound('coinJackpot')
       addChatMessage({
         text: data.message,
         localization: data.localization,
@@ -2174,6 +2176,12 @@ export function handleServerMessage(
     case 'GroundItemSpawned': {
       const item = data.item as ServerGroundItem
       groundItemManager.spawn(item, { animateSpawn: true })
+      if (
+        item.dropped_by == null &&
+        getItemDef(item.item_def_id)?.category === 'dungeon_key'
+      ) {
+        playPropSound('keyDrop')
+      }
       // Only what a hand put down: loot announces itself by landing.
       announceGroundItem(
         item.dropped_by,

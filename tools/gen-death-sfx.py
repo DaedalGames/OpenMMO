@@ -82,6 +82,46 @@ PROMPTS = {
         "gently into glittering sparkles. Uplifting, celebratory, clean and "
         "polished game UI feedback. No voice, no drums, no bass boom, no explosion."
     ),
+    "jackpot_fanfare": (
+        "Short triumphant fantasy RPG jackpot fanfare: a bright brass and bell "
+        "'ta-da, ba-bam' four-note flourish ending on a confident major chord, with "
+        "a few sparkling coin jingles on top. Cheerful, punchy game reward sting, "
+        "under two seconds. No voice, no drums, no bass boom, no explosion."
+    ),
+    "jackpot_babam": (
+        "Two-hit brass fanfare sting, 'ba-BAM!': a short staccato trumpet stab, "
+        "a tiny gap, then a bigger held major chord hit with bright bells and a "
+        "sparkle of gold coins ringing out. Exactly two distinct accents, the "
+        "second louder and longer. Triumphant game jackpot reward, under two "
+        "seconds. No voice, no drums, no bass boom, no explosion, no third hit."
+    ),
+    "jackpot_tada": (
+        "Classic 'ta-daa!' victory sting: two quick ascending orchestral brass "
+        "notes, a short pickup note then a strong sustained high note with "
+        "cymbal-free bell shimmer and jingling coins. Clear two-note rhythm, "
+        "cheerful fantasy game jackpot, under two seconds. No voice, no drums, "
+        "no bass, no explosion."
+    ),
+    "jackpot_chime": (
+        "Bright magical treasure-found chime: a quick sparkling 'tee-ree-ring' "
+        "glockenspiel and celesta flourish rising to a shining bell note, layered "
+        "with a shimmering shower of gold coins. Joyful game UI reward sound, "
+        "under two seconds. No voice, no drums, no bass, no whoosh."
+    ),
+    "key_drop_mystery": (
+        "A mysterious magical item appearing in a dark dungeon: a soft eerie "
+        "'dee-ree-ring' music-box and celesta phrase in a minor key, with a "
+        "faint crystalline shimmer and a light metallic key tinkle at the end. "
+        "Enchanted, curious and slightly ominous, short game discovery sting. "
+        "No voice, no drums, no bass boom, no whoosh."
+    ),
+    "key_drop_arcane": (
+        "Secret discovered in an ancient crypt: a short ghostly glassy chime "
+        "arpeggio with an unresolved mystical interval, wrapped in a quiet "
+        "shimmering reverb tail, and one small iron key clinking onto stone. "
+        "Mysterious, magical, attention-grabbing but subtle game sound. No "
+        "voice, no drums, no bass, no horror scream."
+    ),
 }
 
 API = "https://api.elevenlabs.io/v1/sound-generation"
