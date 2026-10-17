@@ -1,5 +1,6 @@
 /** Named admin destinations, including generated dungeon and city locations. */
 import { translate } from '../i18n'
+import { dungeonAlias, dungeonShortNames } from './tp-args'
 import { dungeon_layout } from '../wasm/onlinerpg_shared'
 import {
   dungeonCellCenter,
@@ -12,6 +13,7 @@ import worldJson from '../../../../data-src/world.json'
 
 export interface TpDestination {
   name: string
+  alias?: string
   label: string
   x: number
   y: number
@@ -49,10 +51,13 @@ export function tpDestinations(): TpDestination[] {
 
   const out = [...STATIC_DESTINATIONS]
 
-  for (const e of DUNGEON_ENTRANCES) {
-    const short = e.id.split('_').pop() ?? e.id
+  const shortNames = dungeonShortNames(DUNGEON_ENTRANCES.map((e) => e.id))
+  for (const [i, e] of DUNGEON_ENTRANCES.entries()) {
+    const short = shortNames[i]
+    const alias = dungeonAlias(i)
     out.push({
       name: short,
+      alias,
       get label() {
         return translate('command.tpEntrance', { name: e.name })
       },
@@ -68,6 +73,7 @@ export function tpDestinations(): TpDestination[] {
     const depth = last.depth
     out.push({
       name: `${short}-boss`,
+      alias: `${alias}-boss`,
       get label() {
         return translate('command.tpBoss', { name: e.name, depth })
       },

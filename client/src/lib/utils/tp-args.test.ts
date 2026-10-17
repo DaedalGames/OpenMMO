@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { matchDungeons, parseTpArgs, resolveTpDestination } from './tp-args'
+import {
+  dungeonShortNames,
+  matchDungeons,
+  parseTpArgs,
+  resolveTpDestination,
+} from './tp-args'
 
 describe('parseTpArgs', () => {
   it('parses x z with y defaulting to 0', () => {
@@ -45,12 +50,13 @@ describe('parseTpArgs', () => {
 describe('resolveTpDestination', () => {
   const dests = [
     { name: 'spawn', x: 0 },
-    { name: 'crypt-boss', x: 1 },
+    { name: 'crypt-boss', alias: 'd1-boss', x: 1 },
     { name: 'Snowpeak', x: 2 },
   ]
 
   it('resolves by case-insensitive name', () => {
     expect(resolveTpDestination('crypt-boss', dests)?.x).toBe(1)
+    expect(resolveTpDestination('D1-boss', dests)?.x).toBe(1)
     expect(resolveTpDestination('SNOWPEAK', dests)?.x).toBe(2)
   })
 
@@ -74,6 +80,11 @@ describe('matchDungeons', () => {
   ]
   const ids = (token: string) => matchDungeons(token, dungeons).map((d) => d.id)
 
+  it('takes a dN alias by list order', () => {
+    expect(ids('D3')).toEqual(['skeleton_crypt'])
+    expect(ids('d4')).toEqual([])
+  })
+
   it('prefers an exact id', () => {
     expect(ids('Skeleton_Crypt')).toEqual(['skeleton_crypt'])
   })
@@ -85,5 +96,16 @@ describe('matchDungeons', () => {
 
   it('returns every dungeon a shared part names', () => {
     expect(ids('crypt')).toEqual(['old_crypt', 'skeleton_crypt'])
+  })
+})
+
+describe('dungeonShortNames', () => {
+  it('uses the first word only where last words collide', () => {
+    const names = dungeonShortNames([
+      'old_crypt',
+      'orc_warrens',
+      'skeleton_crypt',
+    ])
+    expect(names).toEqual(['old', 'warrens', 'skeleton'])
   })
 })

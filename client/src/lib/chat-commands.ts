@@ -257,7 +257,7 @@ const COMMANDS: Record<string, Command> = {
         })
         for (const [i, d] of tpDestinations().entries()) {
           addChatMessage({
-            text: `${i + 1}. ${d.name} — ${d.label}`,
+            text: `${i + 1}. ${[d.name, d.alias].filter(Boolean).join('/')} — ${d.label}`,
             sender: 'system',
           })
         }

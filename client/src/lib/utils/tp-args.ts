@@ -11,27 +11,46 @@ export function parseTpArgs(
 }
 
 /** Resolve a single-token `/tp` argument against the destination list:
- *  a 1-based list index, or a case-insensitive destination name. */
-export function resolveTpDestination<T extends { name: string }>(
-  token: string,
-  destinations: T[]
-): T | null {
+ *  a 1-based list index, or a case-insensitive name or alias. */
+export function resolveTpDestination<
+  T extends { name: string; alias?: string },
+>(token: string, destinations: T[]): T | null {
   const trimmed = token.trim()
   if (/^\d+$/.test(trimmed)) {
     return destinations[parseInt(trimmed, 10) - 1] ?? null
   }
   const lower = trimmed.toLowerCase()
-  return destinations.find((d) => d.name.toLowerCase() === lower) ?? null
+  return (
+    destinations.find(
+      (d) => d.name.toLowerCase() === lower || d.alias === lower
+    ) ?? null
+  )
 }
 
-/** Dungeons a `/tp <dungeon> <floor>` token names: an exact id, else every
- *  dungeon with the token as one `_` part of its id ("skeleton" → skeleton_crypt). */
+/** `d1`, `d2`, … for the dungeons in list (CSV) order. */
+export const dungeonAlias = (index: number) => `d${index + 1}`
+
+/** Dungeons a `/tp <dungeon> <floor>` token names: a `dN` alias or an exact
+ *  id, else every dungeon with the token as one `_` part of its id
+ *  ("skeleton" → skeleton_crypt). */
 export function matchDungeons<T extends { id: string }>(
   token: string,
   dungeons: T[]
 ): T[] {
   const lower = token.toLowerCase()
+  const aliased = dungeons.find((_, i) => dungeonAlias(i) === lower)
+  if (aliased) return [aliased]
   const exact = dungeons.filter((d) => d.id === lower)
   if (exact.length > 0) return exact
   return dungeons.filter((d) => d.id.split('_').includes(lower))
+}
+
+/** `/tp` name of each dungeon id, in order: its last word, or its first where
+ *  two ids share a last word (old_crypt → old, skeleton_crypt → skeleton). */
+export function dungeonShortNames(ids: string[]): string[] {
+  const words = ids.map((id) => id.split('_'))
+  const lasts = words.map((w) => w[w.length - 1])
+  return words.map((w, i) =>
+    lasts.indexOf(lasts[i]) !== lasts.lastIndexOf(lasts[i]) ? w[0] : lasts[i]
+  )
 }
