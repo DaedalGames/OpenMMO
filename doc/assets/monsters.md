@@ -97,7 +97,16 @@
   - Tripo가 발 뒤에 만든 가늘고 긴 가시는 `heel_fill.py`로 고쳤고, 결과는 `heel_fixed.glb`다. 정점을 뒤꿈치 뒤 한 점으로 모았다
     (원본 높이 1m 기준 4.5cm, 게임 크기로 약 11cm). 또 가시와 뒤꿈치 사이 아랫면 중 아래를 향한 정점만 바닥으로 내려 빈 공간을 메웠다.
     윗선은 발목에서 끝까지 곧게 내려온다.
-  - 날개 위쪽에 흰 덩어리가 남아 있다. 스케일·리깅·텍스처 축소·게임 적용은 아직 하지 않았다.
+  - 날개의 회색 배경 면은 `wing_holes.glb`에서 실제 구멍으로 잘랐다(2026-10-18).
+    앞뒤 회색 윤곽을 합친 18개 기둥으로 날개 면을 관통 절단하고, 교차점에 정점과 보간된 UV·노멀을 넣었다.
+    날개 끝 갈고리 안쪽과 날개막의 찢어진 틈을 함께 열었다. 날개 삼각형 169개를 수정했고 전체는 11,551 → 12,086 triangles다.
+    뒤꿈치 보정본을 입력으로 쓰며 몸체의 기존 삼각형 위치·UV와 원본 WebP 텍스처 바이트를 유지한다.
+    `assets/monsters/barkan/tripo_v2/wing_holes.blend`에는 결과 메시와 숨긴 절단용 기둥을 저장했다.
+    [절단 윤곽](barkan-wing-hole-cutters.json), [검증 기록](barkan-wing-holes-validation.json).
+    재실행: `blender -b --python tools/blender-scripts/cut_barkan_wing_holes.py -- assets/monsters/barkan/tripo_v2/heel_fixed.glb assets/monsters/barkan/tripo_v2/wing_holes.glb`.
+    원본에 겹친 면·열린 경계가 있어 폐체적 Boolean 대신 각 삼각형의 기둥 내부를 제거한다.
+    Python 보조 도구는 프로젝트 `.venv`의 NumPy·Shapely를 사용한다.
+    스케일·리깅·텍스처 축소·게임 적용은 아직 하지 않았다.
 - SCP939 https://sketchfab.com/3d-models/scp939-79a749a5073b453d9d85875797bf45d7
   - 전송량 최적화 (2026-10-16): `scp939.edf348b1.glb`를 **5,776,536 → 1,395,636바이트(75.84% 감소)**로 줄였다.
     gzip level 6 예상 전송량은 **4,032,324 → 994,918바이트(75.33% 감소)**이며 다음 빌드 파일명은 `scp939.79bd676e.glb`다.

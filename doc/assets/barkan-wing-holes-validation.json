@@ -1,0 +1,78 @@
+{
+  "source": "assets/monsters/barkan/tripo_v2/heel_fixed.glb",
+  "source_sha256": "6ea68b394d53dfcb765a36ede2cf55fef9183612a9fe2d2554933595f4485ca5",
+  "output": "assets/monsters/barkan/tripo_v2/wing_holes.glb",
+  "output_sha256": "451e91bfdf41538374b1201965c320672f2085bb811d0d051ad34df204df2761",
+  "method": "Surface difference with extruded front/back contours, intersection vertices interpolated on original triangles",
+  "changed_source_faces": 169,
+  "cutters": 18,
+  "triangles_before": 11551,
+  "triangles_after": 12086,
+  "textures": "Original embedded WebP bytes preserved without re-encoding",
+  "boundary_edges": 1312,
+  "non_manifold_edges": 2323,
+  "loose_vertices": 0,
+  "date": "2026-10-18",
+  "protected_source_triangles_verified": 10577,
+  "protected_geometry_precision_decimals": 5,
+  "protected_uv_max_error": 0.0,
+  "protected_normal_max_vector_error": 0.00022304851501874024,
+  "normal_error_reason": "Blender custom normal encoding round trip",
+  "ray_checks": {
+    "heel_fixed": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "wing_holes": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "visual_review": [
+    "front",
+    "back",
+    "three-quarter"
+  ],
+  "source_topology_after_position_weld": {
+    "boundary_edges": 721,
+    "non_manifold_edges": 1742
+  },
+  "topology_note": "Source has open and overlapping surfaces; output retains surface mesh representation. Counts use a temporary position weld at 1e-6 without modifying the deliverable.",
+  "preserved_texture_sha256": {
+    "NormalGL_835984dc-7a92-446c-900d-465a14bddf12": "3d812649e819ebf30afda953d3c393d2550d7a64510944e5aa11173ab60c757a",
+    "Color_835984dc-7a92-446c-900d-465a14bddf12": "23901966b64b6b73146fb5a3a5759786d36511723d7095598947d581ca93f482",
+    "ORM_835984dc-7a92-446c-900d-465a14bddf12": "22696e757a1b3327a60b651f5a08f7e44f1ba697079c38da5873ea023273cc42"
+  }
+}
