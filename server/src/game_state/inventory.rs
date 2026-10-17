@@ -1,4 +1,4 @@
-use super::localization::localized;
+use super::localization::{format_copper, localized};
 use crate::auth::{AuthService, ItemRow};
 use crate::item_defs::{AuthenticatedUseAction, UseEffect};
 use crate::types::{PlayerId, ServerMessage};
@@ -1335,10 +1335,10 @@ impl super::GameState {
                 None => return,
             }
         };
-        let copper = crate::game::combat::roll_dice(dice);
+        let copper = i64::from(crate::game::combat::roll_dice(dice));
         self.consume_one_and_sync(player_id, instance_id).await;
-        self.award_copper(player_id, i64::from(copper)).await;
-        self.record_gold_source(crate::metrics::GoldSource::CoinPouch, 1, i64::from(copper))
+        self.award_copper(player_id, copper).await;
+        self.record_gold_source(crate::metrics::GoldSource::CoinPouch, 1, copper)
             .await;
         info!(
             "Player {} opened a coin pouch: +{} copper",
@@ -1347,7 +1347,11 @@ impl super::GameState {
         );
         self.send_system_message(
             player_id,
-            format!("You open the {name} — {copper} copper spills out."),
+            localized(
+                "server.coinPouchOpened",
+                format!("You open the {name} and find {}.", format_copper(copper)),
+            )
+            .with_param("amount", copper.to_string()),
         )
         .await;
     }
@@ -2553,7 +2557,7 @@ impl super::GameState {
             player_id,
             localized(
                 "server.goldPickedUp",
-                format!("You picked up {copper} copper."),
+                format!("You picked up {}.", format_copper(copper)),
             )
             .with_param("amount", copper.to_string()),
         )

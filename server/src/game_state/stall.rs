@@ -14,7 +14,8 @@ use tracing::{error, info};
 
 use super::combat::reachable_dist_sq;
 use super::inventory::{serialize_inventory, stack_into_bag, BagInsert};
-use super::player_trade::{format_copper, take_from_bag};
+use super::localization::format_copper;
+use super::player_trade::take_from_bag;
 use super::trading::MAX_TRADE_DISTANCE;
 use super::{auth_db, GameState};
 use crate::auth::{AuthService, TradeLedgerEntry};

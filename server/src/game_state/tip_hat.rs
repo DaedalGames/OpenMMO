@@ -4,6 +4,7 @@
 use onlinerpg_shared::tip_hat::TipHat;
 use onlinerpg_shared::{PlayerId, ServerMessage};
 
+use super::localization::format_copper;
 use super::GameState;
 
 /// Keep the hat close to the performer, clear of nearby windows.
@@ -178,17 +179,18 @@ impl GameState {
         }
 
         let owner_name = hat.owner_name;
+        let amount = format_copper(amount);
         let request_note = track.map_or_else(String::new, |track| {
             format!(" Requested \"{track}\". Songs are played in request order.")
         });
         self.send_system_message(
             player_id,
-            format!("You drop {amount} copper into {owner_name}'s tip hat.{request_note}"),
+            format!("You drop {amount} into {owner_name}'s tip hat.{request_note}"),
         )
         .await;
         self.send_system_message(
             &hat.owner,
-            format!("{tipper_name} drops {amount} copper into your tip hat."),
+            format!("{tipper_name} drops {amount} into your tip hat."),
         )
         .await;
     }

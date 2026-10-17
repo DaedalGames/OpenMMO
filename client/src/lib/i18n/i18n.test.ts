@@ -326,10 +326,11 @@ describe('message rendering', () => {
     languagePreference.set('ko')
     expect(
       translateServerMessage({
-        message: 'You picked up 12 copper.',
+        message: 'You picked up 12c.',
         localization: { code: 'server.goldPickedUp', params: { amount: '12' } },
       })
-    ).toBe('동화 12개를 주웠습니다.')
+    ).toBe('12c를 주웠습니다.')
+    expect(translate('currency.copperGained', { amount: 500 })).toBe('+5s')
     expect(translate('system.playerRevived', { name: '<b>A&B</b>' })).toBe(
       '<b>A&B</b> 님이 부활했습니다.'
     )

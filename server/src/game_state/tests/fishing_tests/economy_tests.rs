@@ -53,10 +53,11 @@ async fn opening_a_coin_pouch_pays_its_copper_and_spends_it() {
     assert!(
         msgs.iter().any(|m| matches!(
             m,
-            ServerMessage::SystemMessage { message, .. }
-                if message.contains(&format!("{paid} copper"))
+            ServerMessage::SystemMessage { localization: Some(l), .. }
+                if l.code == "server.coinPouchOpened"
+                    && l.params.get("amount") == Some(&paid.to_string())
         )),
-        "the combat log must say how much spilled out"
+        "the combat log must report the pouch's copper"
     );
     let inv = game_state.get_player_inventory(&id).await.unwrap();
     assert!(

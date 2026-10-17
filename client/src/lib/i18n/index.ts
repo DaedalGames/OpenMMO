@@ -7,6 +7,7 @@ import zhHans from './locales/zh-Hans.json'
 import zhHant from './locales/zh-Hant.json'
 import { locale, type Locale } from './locale'
 import { resolveKoreanParticles } from './koreanParticles'
+import { formatGold } from '../utils/currency'
 
 export { languages, languagePreference, locale } from './locale'
 export type { Locale, LanguagePreference } from './locale'
@@ -29,6 +30,8 @@ void i18n.init({
     'zh-Hant': { translation: zhHant },
   },
 })
+// `{{amount, copper}}` renders a copper count as g/s/c.
+i18n.services.formatter!.add('copper', (value) => formatGold(Number(value)))
 
 export function translate(
   key: MessageKey,

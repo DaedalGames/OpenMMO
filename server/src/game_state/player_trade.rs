@@ -5,6 +5,7 @@
 use super::combat::reachable_dist_sq;
 use super::consent::{answer_consent, PendingConsent};
 use super::inventory::{serialize_inventory, stack_into_bag, BagInsert};
+use super::localization::format_copper;
 use super::party::MAX_TARGET_NAME_CHARS;
 use super::player::build_save_data;
 use super::trading::MAX_TRADE_DISTANCE;
@@ -257,23 +258,6 @@ fn offer_weight(
         .iter()
         .map(|item| item_defs.weight_with(&item.item_def_id, armor_mult) * item.quantity as f32)
         .sum()
-}
-
-/// 1g = 100s = 10,000c, matching the client's display split.
-pub(super) fn format_copper(copper: i64) -> String {
-    let (gold, rest) = (copper / 10_000, copper % 10_000);
-    let (silver, copper) = (rest / 100, rest % 100);
-    let mut parts = Vec::new();
-    if gold > 0 {
-        parts.push(format!("{gold}g"));
-    }
-    if silver > 0 {
-        parts.push(format!("{silver}s"));
-    }
-    if copper > 0 || parts.is_empty() {
-        parts.push(format!("{copper}c"));
-    }
-    parts.join(" ")
 }
 
 /// Ledger form: `(def, qty, ench)` only. `instance_id` is minted per session
