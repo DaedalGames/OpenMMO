@@ -29,10 +29,10 @@ def match_cuff_leather(doc, binary, matrices):
     coords = np.rint(samples * [pixels.shape[1] - 1, pixels.shape[0] - 1]).astype(int)
     rgb = pixels[coords[:, :, 1], coords[:, :, 0]].astype(float)
     dark = (rgb.mean(2) < 90) & ((rgb[:, :, 0] - rgb[:, :, 2]) < 23)
-    selected = (points[faces][:, :, 1].min(1) > .36) & (dark.mean(1) > .65)
+    selected = (points[faces][:, :, 1].min(1) > .648) & (dark.mean(1) > .65)
     assert selected.sum() == 106, 'Review cuff material selection after source changes'
     leather = next(i for i, value in enumerate(doc['materials']) if value['name'] == 'concept_knee_leather')
-    projection = np.column_stack([.465 + points[:, 2] * .65, .255 + (.49 - points[:, 1]) * 1.05])
+    projection = np.column_stack([.465 + points[:, 2] * .3611111111111111, .255 + (.882 - points[:, 1]) * .5833333333333334])
     for mesh in doc['meshes']:
         original = mesh['primitives'][0]
         replacement = copy.deepcopy(original)

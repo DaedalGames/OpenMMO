@@ -34,11 +34,10 @@ export async function femaleSeated(root, { server, load }) {
   const source = await load('client/public/models/characters/modular_male/animations/social.glb')
   const donor = await load('assets/modular_human_male_01/fitted/base.glb')
   const chair = (await load(`client/public/models/${femaleSeat.chair.model}`)).scene
-  chair.scale.setScalar(1 / femaleSeat.characterHeight)
   chair.updateMatrixWorld(true)
-  const ray = new THREE.Raycaster(new THREE.Vector3(0, 2, .04), new THREE.Vector3(0, -1, 0))
+  const ray = new THREE.Raycaster(new THREE.Vector3(0, 3.6, .072), new THREE.Vector3(0, -1, 0))
   const seatY = ray.intersectObject(chair, true)[0].point.y - femaleSeatOffset
-  const seatContactY = seatY - femaleSeat.seatCompression / femaleSeat.characterHeight
+  const seatContactY = seatY - femaleSeat.seatCompression
   const clip = source.animations.find(c => c.name === 'sit_idle').clone()
   const ratio = root.getObjectByName('Hips').position.y / donor.scene.getObjectByName('Hips').position.y
   for (const track of clip.tracks) {
@@ -56,8 +55,8 @@ export async function femaleSeated(root, { server, load }) {
   const body = meshes[0], attributes = body.geometry.attributes
   const used = [...new Set(body.geometry.index.array)]
   const restPoint = i => new THREE.Vector3().fromBufferAttribute(attributes.position, i)
-  const butt = used.filter(i => { const p = restPoint(i); return p.y > .46 && p.y < .57 && p.z < -.045 && Math.abs(p.x) > .025 })
-  const legVertices = new Set(used.filter(i => { const p = restPoint(i); return p.y < .56 && Math.abs(p.x) < .18 }))
+  const butt = used.filter(i => { const p = restPoint(i); return p.y > .828 && p.y < 1.026 && p.z < -.081 && Math.abs(p.x) > .045 })
+  const legVertices = new Set(used.filter(i => { const p = restPoint(i); return p.y < 1.008 && Math.abs(p.x) < .324 }))
   const legFaces = []
   const indices = body.geometry.index.array
   for (let i = 0; i < indices.length; i += 3) {
@@ -71,7 +70,7 @@ export async function femaleSeated(root, { server, load }) {
     arm: root.getObjectByName(`${side}Arm`), forearm: root.getObjectByName(`${side}ForeArm`), hand: root.getObjectByName(`${side}Hand`),
     handVertices: used.filter(i => Array.from({ length: 4 }, (_, k) => k).some(k =>
       attributes.skinWeight.array[i * 4 + k] > .25 && body.skeleton.bones[attributes.skinIndex.array[i * 4 + k]].name.startsWith(`${side}Hand`))),
-    footVertices: used.filter(i => { const p = restPoint(i); return p.y < .065 && p.x * (index === 0 ? 1 : -1) > 0 }),
+    footVertices: used.filter(i => { const p = restPoint(i); return p.y < .117 && p.x * (index === 0 ? 1 : -1) > 0 }),
   }))
   const hip = root.getObjectByName('Hips')
   const spine = root.getObjectByName('Spine')
@@ -105,7 +104,7 @@ export async function femaleSeated(root, { server, load }) {
       bone.updateMatrixWorld(true)
     }
     const targets = sides.map(s => ({
-      ankle: new THREE.Vector3(s.sign * .105, position(s.foot).y - Math.min(...s.footVertices.map(i => skin(i).y)) - femaleSeatOffset, .255),
+      ankle: new THREE.Vector3(s.sign * .189, position(s.foot).y - Math.min(...s.footVertices.map(i => skin(i).y)) - femaleSeatOffset, .459),
       footRotation: s.foot.getWorldQuaternion(new THREE.Quaternion()),
       handRotation: s.hand.getWorldQuaternion(new THREE.Quaternion()),
     }))
@@ -114,17 +113,17 @@ export async function femaleSeated(root, { server, load }) {
         new THREE.Vector3(0, 0, 1), THREE.MathUtils.degToRad(-s.sign * 29))
       s.shoulder.quaternion.premultiply(drop)
     }
-    hip.position.set(0, seatY + .055, -.005)
+    hip.position.set(0, seatY + .099, -.009)
     for (let iteration = 0; iteration < 4; iteration++) {
       update()
       sides.forEach((s, i) => solveLimb(s.thigh, s.shin, s.foot, targets[i].ankle,
-        new THREE.Vector3(s.sign * .11, .3, .6), targets[i].footRotation))
+        new THREE.Vector3(s.sign * .198, .54, 1.08), targets[i].footRotation))
       update()
       hip.position.y += seatContactY - Math.min(...butt.map(i => skin(i).y))
     }
     update()
     sides.forEach((s, i) => solveLimb(s.thigh, s.shin, s.foot, targets[i].ankle,
-      new THREE.Vector3(s.sign * .11, .3, .6), targets[i].footRotation))
+      new THREE.Vector3(s.sign * .198, .54, 1.08), targets[i].footRotation))
     update()
     const surface = new Map([...legVertices].map(i => [i, skin(i)]))
     const triangles = legFaces.map(face => {
@@ -137,7 +136,7 @@ export async function femaleSeated(root, { server, load }) {
       for (const { a, b, c, minX, maxX, minZ, maxZ } of triangles) {
         if (point.x < minX || point.x > maxX || point.z < minZ || point.z > maxZ) continue
         const denominator = (b.z - c.z) * (a.x - c.x) + (c.x - b.x) * (a.z - c.z)
-        if (Math.abs(denominator) < 1e-10) continue
+        if (Math.abs(denominator) < 3.24e-10) continue
         const u = ((b.z - c.z) * (point.x - c.x) + (c.x - b.x) * (point.z - c.z)) / denominator
         const v = ((c.z - a.z) * (point.x - c.x) + (a.x - c.x) * (point.z - c.z)) / denominator
         if (u >= 0 && v >= 0 && u + v <= 1) height = Math.max(height, u * a.y + v * b.y + (1 - u - v) * c.y)
@@ -146,15 +145,15 @@ export async function femaleSeated(root, { server, load }) {
     }
     sides.forEach((s, i) => {
       const knee = position(s.shin)
-      const target = new THREE.Vector3(knee.x, knee.y + .12, knee.z - .09)
+      const target = new THREE.Vector3(knee.x, knee.y + .216, knee.z - .162)
       const shoulder = position(s.arm)
-      const pole = new THREE.Vector3(s.sign * .105, shoulder.y - .14, shoulder.z - .045)
+      const pole = new THREE.Vector3(s.sign * .189, shoulder.y - .252, shoulder.z - .081)
       for (let iteration = 0; iteration < 3; iteration++) {
         solveLimb(s.arm, s.forearm, s.hand, target, pole, targets[i].handRotation)
         update()
         const clearance = Math.min(...s.handVertices.map(index => { const p = skin(index); return p.y - top(p) }))
         assert.ok(Number.isFinite(clearance), `${s.side} hand misses the knee`)
-        target.y += .0015 - clearance
+        target.y += .0027 - clearance
       }
     })
     update()

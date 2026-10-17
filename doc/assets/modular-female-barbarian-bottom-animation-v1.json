@@ -3,11 +3,11 @@
   "source": {
     "base": {
       "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
-      "sha256": "9564457e8b23275aaf8cd0ff74c318baa4bbfa6b1c8afe608037cf7f40cf0982"
+      "sha256": "3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5"
     },
     "bottom": {
       "path": "assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/bottom_female_barbarian.glb",
-      "sha256": "e6259943201a9778efc4204b689f1001550bdc0947058524a21403719fc3cb39"
+      "sha256": "a8aa8141cc237cdd12ed8840a7197d002bb474e7e1b380b7a03b6f4d2e5fdb80"
     },
     "triangles": 3340,
     "vertices": 4999,
@@ -22,11 +22,11 @@
   "runtime": {
     "base": {
       "path": "client/public/models/characters/modular_female/base.glb",
-      "sha256": "32a0f977374a9b5092b926143ec546b422ab7bb5ee25f3f2c8a79d5a04291b1f"
+      "sha256": "628216b190a027eb69e39b43ff3e26bd57a3cabae5e0e38b8134f28f5fb3bb4c"
     },
     "bottom": {
       "path": "client/public/models/characters/modular_female/barbarian_bottom.glb",
-      "sha256": "f3318e209342463c91acfcf46e1db38f9261d3ff1618b94883a7829800e9a623"
+      "sha256": "329d30457eea7b6e21ab0b48c145ccfec81f2cb13debe6f4290bdcc576f50ad2"
     },
     "robe_panels": 4,
     "shared_robe_skeleton": true,

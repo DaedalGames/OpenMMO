@@ -97,14 +97,14 @@ bf = accessor(base, base_raw, bp['indices']).reshape(-1, 3)
 body_joints = accessor(base, base_raw, bp['attributes']['JOINTS_0'])
 body_weights = accessor(base, base_raw, bp['attributes']['WEIGHTS_0'])
 posed_body = np.einsum('nkij,nj,nk->ni', heel_matrices[body_joints], np.column_stack([bv, np.ones(len(bv))]), body_weights)[:, :3]
-posed_toe_floor = float(posed_body[bv[:, 1] < .08, 1].min())
-foot_shift = posed_toe_floor - .003 + .00550714823
+posed_toe_floor = float(posed_body[bv[:, 1] < .144, 1].min())
+foot_shift = posed_toe_floor - .0054 + .009912866814
 pose_config['foot_geometry_vertical_shift'] = foot_shift
 pose_config['body_toe_floor_before_root_lift'] = posed_toe_floor
 pose_config['body_sha256'] = hashlib.sha256(BODY.read_bytes()).hexdigest()
-right_skin = bv[bf[(bv[bf, 0] < 0).all(1) & (bv[bf, 1] < .53).all(1)]]
-height_curve = PchipInterpolator([-.5, -.31, .075, .145, .28, .5], [-.0056, .078, .287, .322, .39, .49])
-heights = np.linspace(.075, .50, 150)
+right_skin = bv[bf[(bv[bf, 0] < 0).all(1) & (bv[bf, 1] < .954).all(1)]]
+height_curve = PchipInterpolator([-.5, -.31, .075, .145, .28, .5], [-.01008, .1404, .5166, .5796, .702, .882])
+heights = np.linspace(.135, .9, 150)
 body_centers = []
 body_extents = []
 for y in heights:
@@ -154,7 +154,6 @@ for low, high in [(.06, .30), (-.33, -.23)]:
     primitives.append({'material': liner_material})
 
 
-CHARACTER_HEIGHT_M = 1.8
 CLEARANCE_M = .001
 CUFF_EXTRA_CLEARANCE_M = .014
 CUFF_INNER_CLEARANCE_M = .004
@@ -163,15 +162,15 @@ CUFF_INNER_CLEARANCE_M = .004
 def base_fit(points):
     y = points[:, 1]
     h = height_curve(y)
-    front = (.080 - points[:, 0]) * .44 - .022
-    lateral = (points[:, 2] + .0095) * .44 - .132
+    front = (.080 - points[:, 0]) * .792 - .0396
+    lateral = (points[:, 2] + .0095) * .792 - .2376
     foot = np.column_stack([lateral, h + foot_shift, front])
     center = np.column_stack([np.interp(h, heights, body_centers[:, k]) for k in range(3)])
     center[:, 1] = h
     sx = np.interp(y, source_heights, source_centers[:, 0])
     sz = np.interp(y, source_heights, source_centers[:, 2])
-    radius_x = np.interp(h, heights, body_extents[:, 0]) + CLEARANCE_M / CHARACTER_HEIGHT_M
-    radius_z = np.interp(h, heights, body_extents[:, 2]) + CLEARANCE_M / CHARACTER_HEIGHT_M
+    radius_x = np.interp(h, heights, body_extents[:, 0]) + CLEARANCE_M
+    radius_z = np.interp(h, heights, body_extents[:, 2]) + CLEARANCE_M
     scale_x = radius_x / np.interp(y, source_heights, source_extents[:, 2])
     scale_z = radius_z / np.interp(y, source_heights, source_extents[:, 0])
     shaft = center.copy()
@@ -181,14 +180,14 @@ def base_fit(points):
     return foot * (1 - amount[:, None]) + shaft * amount[:, None]
 
 
-allowance_heights = np.linspace(.12, .48, 121)
+allowance_heights = np.linspace(.216, .864, 121)
 allowance_scales = np.ones((len(allowance_heights), 4))
 
 
 def fit(points, cuff_clearance=CUFF_EXTRA_CLEARANCE_M):
     result = base_fit(points)
     height = result[:, 1]
-    blend = smooth((height - .09) / .05)
+    blend = smooth((height - .162) / .09)
     for axis, positive, negative in [(0, 0, 2), (2, 3, 1)]:
         center = np.interp(height, heights, body_centers[:, axis])
         delta = result[:, axis] - center
@@ -200,11 +199,11 @@ def fit(points, cuff_clearance=CUFF_EXTRA_CLEARANCE_M):
     radial = result[:, [0, 2]] - center
     radius = np.linalg.norm(radial, axis=1, keepdims=True)
     back = smooth(-radial[:, 1] / np.maximum(radius[:, 0], 1e-12))
-    allowance = cuff_clearance / CHARACTER_HEIGHT_M * (.5 + .5 * back) * smooth((height - .34) / .06)
+    allowance = cuff_clearance * (.5 + .5 * back) * smooth((height - .612) / .108)
     inner_back = smooth(radial[:, 0] / np.maximum(radius[:, 0], 1e-12)) * back
-    cuff_band = smooth((height - .40) / .025) * (1 - smooth((height - .46) / .03))
+    cuff_band = smooth((height - .72) / .045) * (1 - smooth((height - .828) / .054))
     if cuff_clearance:
-        allowance += CUFF_INNER_CLEARANCE_M / CHARACTER_HEIGHT_M * inner_back * cuff_band
+        allowance += CUFF_INNER_CLEARANCE_M * inner_back * cuff_band
     result[:, [0, 2]] += radial / np.maximum(radius, 1e-12) * allowance[:, None]
     return result
 
@@ -218,7 +217,7 @@ for _ in range(3):
         shell_radius = radii(outer, center, np.array([0., 1., 0.]), samples=4)
         valid = np.isfinite(skin_radius) & np.isfinite(shell_radius)
         factor = np.full(4, np.nan)
-        factor[valid] = np.clip((skin_radius[valid] + CLEARANCE_M / CHARACTER_HEIGHT_M) / shell_radius[valid], 1, 1.8)
+        factor[valid] = np.clip((skin_radius[valid] + CLEARANCE_M) / shell_radius[valid], 1, 1.8)
         factors.append(factor)
     factors = np.array(factors)
     for axis in range(4):
@@ -305,9 +304,9 @@ binary = plate.compact(doc, binary)
 write_glb(OUTPUT / 'boots_female_knight.glb', doc, binary)
 assert [view_bytes(doc, binary, im['bufferView']) for im in doc['images']] == [view_bytes(base_doc, raw, im['bufferView']) for base_doc in [read_glb(SOURCE)[0]] for im in base_doc['images']]
 rim_angles = np.linspace(0, 2 * np.pi, 128, endpoint=False)
-rim_heights = np.full(128, .405)
+rim_heights = np.full(128, .729)
 outer_thigh = fitted[0][source_faces[0]]
-for y in np.linspace(.40, .495, 160):
+for y in np.linspace(.72, .891, 160):
     center = np.array([np.interp(y, heights, body_centers[:, k]) for k in range(3)])
     hits = radii(outer_thigh, center, np.array([0., 1., 0.]), samples=128)
     rim_heights[np.isfinite(hits)] = y
@@ -315,25 +314,24 @@ body_right = bv.copy()
 body_right[:, 0] = -abs(body_right[:, 0])
 body_center = np.column_stack([np.interp(bv[:, 1], heights, body_centers[:, k]) for k in range(3)])
 body_angle = np.arctan2(-(body_right[:, 2] - body_center[:, 2]), body_right[:, 0] - body_center[:, 0]) % (2 * np.pi)
-cut_height = np.interp(body_angle, np.r_[rim_angles, 2 * np.pi], np.r_[rim_heights, rim_heights[0]]) - .010
+cut_height = np.interp(body_angle, np.r_[rim_angles, 2 * np.pi], np.r_[rim_heights, rim_heights[0]]) - .018
 hide = np.flatnonzero((bv[bf, 1] < cut_height[bf]).all(1)).tolist()
 mask = {'mesh_index': 0, 'primitive_index': 0, 'primitive_triangles': len(bf), 'hide_triangle_indices': hide,
         'source_sha256': hashlib.sha256(BODY.read_bytes()).hexdigest(),
-        'description': 'Covered legs and feet; angular cuff boundary with 0.010 overlap; restored when boots are removed or unavailable.',
+        'description': 'Covered legs and feet; angular cuff boundary with 0.018 m overlap; restored when boots are removed or unavailable.',
         'cuff_angles': rim_angles.tolist(), 'cuff_heights': rim_heights.tolist()}
 (OUTPUT / 'body-occlusion.json').write_text(json.dumps(mask, indent=2) + '\n')
 (OUTPUT / 'heel-pose.json').write_text(json.dumps(pose_config, indent=2) + '\n')
 triangles = np.concatenate([v[f] for v, f in zip(fitted, source_faces)])
 plate_triangles = np.concatenate([v[f] for v, f in zip(fitted[:17], source_faces[:17])])
 measurements = []
-for y in [.12, .18, .24, .28, .32, .36, .40, .435]:
+for y in [.216, .324, .432, .504, .576, .648, .72, .783]:
     center = np.array([np.interp(y, heights, body_centers[:, k]) for k in range(3)])
     measurement = clearance(plate_triangles, right_skin, center, np.array([0., 1., 0.]), samples=96)
-    measurement['minimum_clearance_m'] *= CHARACTER_HEIGHT_M
     outer = radii(plate_triangles, center, np.array([0., 1., 0.]), samples=256)
     inner = radii(right_skin, center, np.array([0., 1., 0.]), samples=256)
     common = np.isfinite(outer) & np.isfinite(inner)
-    gap = (outer - inner) * CHARACTER_HEIGHT_M
+    gap = outer - inner
     measurement['median_clearance_m'] = float(np.median(gap[common]))
     measurement['cardinal_clearance_m'] = {name: float(gap[index]) if common[index] else None for name, index in [('inner', 0), ('back', 64), ('outer', 128), ('front', 192)]}
     measurements.append({'height': y, **measurement})
@@ -344,10 +342,10 @@ report = {'date': '2026-10-13', 'source': {'path': str(SOURCE.relative_to(ROOT))
           'triangles': sum(len(f) for f in source_faces) * 2, 'removed_upper_cap_faces_per_boot': int(cap.sum()), 'hidden_body_triangles': len(hide),
           'posed_floor_offset': float(-triangles[:, :, 1].min()), 'section_clearances': measurements,
           'heel_pose': pose_config, 'geometry_space': 'Inverse-skinned from equipped heel pose into the unchanged canonical bind pose',
-          'clearance_target_m': CLEARANCE_M, 'character_height_m': CHARACTER_HEIGHT_M,
-          'cuff_extra_clearance_m': CUFF_EXTRA_CLEARANCE_M, 'cuff_clearance_height_ramp': [.34, .40],
+          'clearance_target_m': CLEARANCE_M,
+          'cuff_extra_clearance_m': CUFF_EXTRA_CLEARANCE_M, 'cuff_clearance_height_ramp': [.612, .72],
           'cuff_clearance_profile': 'Half allowance at front and sides, smoothly increasing to full allowance at the back',
-          'cuff_inner_back_extra_m': CUFF_INNER_CLEARANCE_M, 'cuff_inner_back_height_band': [.40, .425, .46, .49],
+          'cuff_inner_back_extra_m': CUFF_INNER_CLEARANCE_M, 'cuff_inner_back_height_band': [.72, .765, .828, .882],
           'clearance_method': 'Smooth anatomical cross-sections with four directional clearance correction; retain plate profiles, target one-millimetre allowance and taper to unchanged ankle and foot',
           'status': 'Fitting candidate; motion review follows; no production registration'}
 (OUTPUT / 'fitting.json').write_text(json.dumps(report, indent=2) + '\n')

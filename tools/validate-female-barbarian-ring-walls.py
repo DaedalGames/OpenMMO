@@ -36,11 +36,11 @@ def crossings(points, segments, mesh):
     origins = points[segments[:, 0]]
     delta = points[segments[:, 1]] - origins
     lengths = np.linalg.norm(delta, axis=1)
-    valid = lengths > 1e-8
+    valid = lengths > 1.8e-8
     origins, delta, lengths = origins[valid], delta[valid], lengths[valid]
     locations, rays, _ = mesh.ray.intersects_location(origins, delta / lengths[:, None])
     distance = np.linalg.norm(locations - origins[rays], axis=1)
-    return int(((distance > 1e-7) & (distance < lengths[rays] - 1e-7)).sum())
+    return int(((distance > 1.8e-7) & (distance < lengths[rays] - 1.8e-7)).sum())
 
 
 inner_edges, outer_edges = edges(inner_faces), edges(outer_faces)
@@ -68,10 +68,10 @@ for frame in range(0, len(poses), args.stride):
     if frame % 61 == 0:
         print(json.dumps({'frame': frame, 'minimum': minimum, 'crossings': hits}), flush=True)
 
-minimum_gap = .00005 if args.ring.startswith('front') else .0002
+minimum_gap = .00009 if args.ring.startswith('front') else .00036
 label = f'Front strap side {args.panel}' if args.ring == 'front-side' else 'Front toe strap' if args.ring == 'front' else f'{args.ring.capitalize()} ankle ring'
-report = {'required_minimum_source_units': minimum_gap, 'source_sha256': source_hash, 'side': args.side, 'ring': args.ring, 'frame_count': len(frames), 'stride': args.stride,
-          'meters_per_source_unit': 1.8, 'minimum': minimum, 'frames_with_crossings': sum(
+report = {'required_minimum_m': minimum_gap, 'source_sha256': source_hash, 'side': args.side, 'ring': args.ring, 'frame_count': len(frames), 'stride': args.stride,
+          'minimum': minimum, 'frames_with_crossings': sum(
               entry['edge_surface_crossings'] > 0 for entry in frames), 'frames': frames,
           'scope': f'{label} outer-wall vertices, face centers and edge midpoints against its inner wall; '
                    'segment-to-surface intersection rays in both directions. Excludes other regions; front probes omit shared seam vertices/edges.'}

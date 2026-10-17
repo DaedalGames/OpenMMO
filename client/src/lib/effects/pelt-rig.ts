@@ -6,7 +6,7 @@ import type { WindSample } from '../shaders/grass-material'
 
 export interface PeltPhysics {
   kind: 'plate' | 'strap' | 'fur'
-  /** Metres per authored unit; scales the rig's built-in distances and forces. */
+  /** Scales the rig's built-in distances and forces; the female fur skirt was tuned on a 1/1.8-size rig. */
   unit?: number
   bone: string
   pivot: [number, number, number]

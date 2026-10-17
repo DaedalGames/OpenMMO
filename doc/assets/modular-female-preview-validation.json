@@ -15,22 +15,22 @@
     {
       "name": "base",
       "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
-      "sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732"
+      "sha256": "3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5"
     },
     {
       "name": "bob",
       "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb",
-      "sha256": "2ecb64f5217e559bf8ca8d440d02226892c087b5acacc32f6f69a3d22fa02f75"
+      "sha256": "3b2e466b0d7123cf91248c9508cc5adf6c8525850b69def1747b7849178d6373"
     },
     {
       "name": "knight",
       "path": "assets/modular_human_female_01/hair/tripo_knight_v1/fitted_v1/hair_female_knight.glb",
-      "sha256": "2f8d3f21d7218039c24ae06b69a16c325260ebe3dc7b917a6eec245f3173653b"
+      "sha256": "3998b611d0444f6851fb09b8d47e0aa25101900853bf0ff072b5a5d5a78863c1"
     },
     {
       "name": "animations",
       "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
-      "sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732"
+      "sha256": "3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5"
     }
   ]
 }

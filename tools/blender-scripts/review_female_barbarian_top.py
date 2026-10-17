@@ -59,21 +59,21 @@ scene.world = bpy.data.worlds.new('Studio')
 scene.world.use_nodes = True
 scene.world.node_tree.nodes['Background'].inputs[0].default_value = (.12, .14, .16, 1)
 scene.world.node_tree.nodes['Background'].inputs[1].default_value = .6
-center = Vector((0, 0, .77))
-for offset, power in [((1.5, -2, 1.5), 60), ((-2, -1, 1), 35), ((0, 2.5, 1.5), 45)]:
+center = Vector((0, 0, 1.386))
+for offset, power in [((2.7, -3.6, 2.7), 194.4), ((-3.6, -1.8, 1.8), 113.4), ((0, 4.5, 2.7), 145.8)]:
     bpy.ops.object.light_add(type='AREA', location=center + Vector(offset))
     light = bpy.context.object
     light.data.energy = power
-    light.data.size = 2
+    light.data.size = 3.6
     light.rotation_euler = (center - light.location).to_track_quat('-Z', 'Y').to_euler()
 bpy.ops.object.camera_add()
 camera = bpy.context.object
 camera.data.type = 'ORTHO'
-camera.data.ortho_scale = .34
+camera.data.ortho_scale = .612
 scene.camera = camera
 scene.render.resolution_x = scene.render.resolution_y = 800
 scene.view_settings.view_transform = 'AgX'
-for view, offset in [('front', (0, -1, 0)), ('left', (1, 0, 0)), ('back', (0, 1, 0)), ('angle', (-.7, -.7, .15))]:
+for view, offset in [('front', (0, -1.8, 0)), ('left', (1.8, 0, 0)), ('back', (0, 1.8, 0)), ('angle', (-1.26, -1.26, .27))]:
     camera.location = center + Vector(offset)
     camera.rotation_euler = (center - camera.location).to_track_quat('-Z', 'Y').to_euler()
     scene.render.filepath = str(OUTPUT / f'{view}.png')

@@ -1,5 +1,10 @@
 # 여성 기사 판금 부츠
 
+2026-10-17: 부츠 v4·v5 GLB와 `heel-pose.json`·`fitting.json`·`heel-animation-offsets.json`의 좌표를 미터로 바꿨다.
+`fit-female-knight-boots.py`·`shape-female-knight-boots.py`도 미터 기준이며, 전환된 리그로 다시 실행하면 v4·v5 위치가 1.2e-7m 이내로 같다.
+`body-occlusion.json`의 `cuff_heights`는 제작 단위 기록값으로 남는다. 아래의 단위 없는 좌표 수치는 당시 제작 단위다.
+[전환 기록](female-knight-runtime.md#원본-미터-단위-전환--2026-10-17).
+
 2026-10-13. 현재 착용 검토본은 `fitted_v5`다. 한쪽 판금 부츠를 좌우 대칭 제작하고
 여성 기준 몸체의 65본 리그에 연결했다. 허벅지·종아리는 1mm 여유를 기준으로 피팅하며,
 허벅지 입구는 피부 돌출을 막도록 추가 여유를 둔다. 착용 중에는 발목·발가락과 접지를
@@ -149,7 +154,7 @@ SHA-256 `cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732`,
 리그는 `human_female_01_local_v1`이다. 승인된 한쪽 원본 `sole_v3/boot_right.glb`의
 SHA-256은 `aa05a6d1b6ec8b73e1265e1fc64d460ae75800068557c211c6f6c067b02d6af2`다.
 
-몸체 높이 1.0과 실제 키 1.8m를 대응시켜 1mm를 제작 좌표 0.000556으로 환산했다.
+당시 몸체는 높이 1.0의 제작 좌표라 1mm를 0.000556으로 환산했다. 2026-10-17부터 원본과 피팅 도구는 미터 단위다.
 여성 다리의 단면·무릎·발목 위치로 피팅하고 X 대칭, 왼쪽 면 방향 반전,
 Left/Right UpLeg·Leg·Foot·ToeBase 대응을 적용했다. 본 순서·계층·inverse bind는 몸체와 같다.
 관절 경계에서 면을 분리하고 판금은 구역별 단일 본 또는 일정한 50:50 무릎 가중치로 연결했다.

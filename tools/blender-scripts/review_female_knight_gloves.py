@@ -79,11 +79,11 @@ scene.world = bpy.data.worlds.new('Studio')
 scene.world.use_nodes = True
 scene.world.node_tree.nodes['Background'].inputs[0].default_value = (.20, .20, .20, 1)
 scene.world.node_tree.nodes['Background'].inputs[1].default_value = .8
-for position, power in [((2, -3, 3), 260), ((-2, -1, 2), 220), ((0, 3, 2), 300)]:
+for position, power in [((3.6, -5.4, 5.4), 842.4), ((-3.6, -1.8, 3.6), 712.8), ((0, 5.4, 3.6), 972)]:
     bpy.ops.object.light_add(type='AREA', location=position)
     light = bpy.context.object
-    light.data.energy, light.data.size = power, 3
-    light.rotation_euler = (Vector((0, 0, .65)) - light.location).to_track_quat('-Z', 'Y').to_euler()
+    light.data.energy, light.data.size = power, 5.4
+    light.rotation_euler = (Vector((0, 0, 1.17)) - light.location).to_track_quat('-Z', 'Y').to_euler()
 bpy.ops.object.camera_add()
 camera = bpy.context.object
 camera.data.type = 'ORTHO'
@@ -102,9 +102,9 @@ def render(name, center, offset, span):
     bpy.ops.render.render(write_still=True)
 
 
-render('rest-front', (0, 0, .67), (0, -2, .05), .79)
-render('right-outer', (-.25, 0, .61), (-1, -.5, .65), .30)
-render('right-inner', (-.25, 0, .61), (1, .5, -.3), .30)
+render('rest-front', (0, 0, 1.206), (0, -3.6, .09), 1.422)
+render('right-outer', (-.45, 0, 1.098), (-1.8, -.9, 1.17), .54)
+render('right-inner', (-.45, 0, 1.098), (1.8, .9, -.54), .54)
 for name in ['combat_idle', 'idle_armed', 'run', 'slash1', 'sit_idle']:
     action = next(action for action in bpy.data.actions if action.name == name)
     rig.animation_data.action = action
@@ -112,7 +112,7 @@ for name in ['combat_idle', 'idle_armed', 'run', 'slash1', 'sit_idle']:
     scene.frame_set(int(sum(action.frame_range) / 2))
     bpy.context.view_layer.update()
     center = (rig.matrix_world @ rig.pose.bones['RightForeArm'].head + rig.matrix_world @ rig.pose.bones['RightHandMiddle2'].head) / 2
-    render(name, center, (-1, -1, .7), .37)
+    render(name, center, (-1.8, -1.8, 1.26), .666)
 
 a=next(a for a in bpy.data.actions if a.name=='combat_idle')
 rig.animation_data.action=a;rig.animation_data.action_slot=a.slots[0]
@@ -121,5 +121,5 @@ for side in ['Right','Left']:
   bpy.context.scene.frame_set(int(a.frame_range[0]+(a.frame_range[1]-a.frame_range[0])*fraction));bpy.context.view_layer.update()
   center=rig.matrix_world@rig.pose.bones[side+'ForeArm'].head
   for angle in ['front','back']:
-   offset=(1 if side=='Left' else -1,-1 if angle=='front' else 1,.3)
-   render(f'combat-{side}-{fraction}-{angle}',center,offset,.26)
+   offset=(1.8 if side=='Left' else -1.8,-1.8 if angle=='front' else 1.8,.54)
+   render(f'combat-{side}-{fraction}-{angle}',center,offset,.468)

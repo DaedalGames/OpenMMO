@@ -23,7 +23,7 @@ try {
     const points = [], roots = [], edges = []
     for (let i = 0; i < position.count; i++) {
       const point = mesh.getVertexPosition(i, new THREE.Vector3())
-      assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1e-6)
+      assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1.8e-6)
       points.push(point)
       assert.ok(Math.abs(weights.getX(i) + weights.getY(i) + weights.getZ(i) + weights.getW(i) - 1) < 1e-6)
       {
@@ -37,7 +37,7 @@ try {
       for (let j = 0; j < 3; j++) {
         const a = index.getX(i + j), b = index.getX(i + (j + 1) % 3)
         const length = points[a].distanceTo(points[b])
-        if (length > .002) edges.push({ a, b, length })
+        if (length > .0036) edges.push({ a, b, length })
       }
     return { points, roots, edges }
   })
@@ -61,7 +61,7 @@ try {
       if (frame === 24)
         snapshots.push({ clip: clip.name, time })
     }
-    assert.ok(rootError < 1e-5, `${clip.name}: detached hair root`)
+    assert.ok(rootError < 1.8e-5, `${clip.name}: detached hair root`)
     assert.ok(Math.abs(maximumStretch - 1) < 1e-5, `${clip.name}: excessive stretching ${maximumStretch}`)
     clips.push({ name: clip.name, samples: 61, maximum_root_error: rootError, maximum_edge_stretch: maximumStretch, maximum_motion: maximumMotion })
   }

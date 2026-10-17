@@ -26,7 +26,7 @@ def main():
     OUT.mkdir(exist_ok=True)
     source = DIRECTORY / 'source/model_url.glb'
     assert digest(source) == '7de873e925d7b1eda0c2aa0c50cab6c8a0b7ff57d44408c4824bfbdbb5e6d73a'
-    assert digest(BODY) == '9564457e8b23275aaf8cd0ff74c318baa4bbfa6b1c8afe608037cf7f40cf0982'
+    assert digest(BODY) == '3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5'
     base, base_raw = read_glb(BODY)
     doc, source_raw = read_glb(source)
     source_images = [view_bytes(doc, source_raw, im['bufferView']) for im in doc['images']]
@@ -36,7 +36,7 @@ def main():
     points = accessor(doc, raw, attrs['POSITION'])
     uv = accessor(doc, raw, attrs['TEXCOORD_0'])
     faces = accessor(doc, raw, primitive['indices']).reshape(-1, 3)
-    scale, offset = [.18, .18, .155], [0, .966, -.002]
+    scale, offset = [.324, .324, .279], [0, 1.7388, -.0036]
     fitted = np.column_stack([-points[:, 2], points[:, 1], points[:, 0]]) * scale + offset
     skin = base['skins'][0]
     ids = skin['joints']

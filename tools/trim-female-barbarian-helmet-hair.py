@@ -20,14 +20,14 @@ HELMET = DIRECTORY / 'helmet_female_barbarian.glb'
 HAIR = ROOT / 'assets/modular_human_female_01/hair'
 SOURCES = {'bob': HAIR / 'tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb',
            'knight': HAIR / 'tripo_knight_v1/fitted_v1/hair_female_knight.glb'}
-CENTER = np.array([0., .94, -.004])
-MARGIN = .0012
+CENTER = np.array([0., 1.692, -.0072])
+MARGIN = .00216
 SECTORS = 180
-CHEEK_TOP = .941
-CHEEK_BACK = -.022
-EAR_RESTORE_FRONT = .025
-TIP_RESTORE_FRONT = .04
-TIP_RESTORE_TOP = .887
+CHEEK_TOP = 1.6938
+CHEEK_BACK = -.0396
+EAR_RESTORE_FRONT = .045
+TIP_RESTORE_FRONT = .072
+TIP_RESTORE_TOP = 1.5966
 spec = importlib.util.spec_from_file_location('plate_io', ROOT / 'tools/fit-modular-plate.py')
 io = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(io)
@@ -59,10 +59,10 @@ def opening(cheeks=True):
         for edge in range(3):
             a, b = triangles[:, edge], triangles[:, (edge + 1) % 3]
             va, vb = values[:, edge], values[:, (edge + 1) % 3]
-            valid = (va * vb <= 0) & (abs(va - vb) > 1e-12)
+            valid = (va * vb <= 0) & (abs(va - vb) > 1.8e-12)
             hit = a[valid] + (b - a)[valid] * (va[valid] / (va - vb)[valid])[:, None]
             radius = hit @ radial
-            candidates.extend((hit[radius > .015, 1] / radius[radius > .015]).tolist())
+            candidates.extend((hit[radius > .027, 1] / radius[radius > .027]).tolist())
         if not candidates:
             raise ValueError('Helmet opening has an uncovered radial sector')
         ratios.append(min(candidates))
@@ -79,7 +79,7 @@ def clip(polygon, values):
     result = []
     for i, point in enumerate(polygon):
         j = (i + 1) % len(polygon)
-        if values[i] >= -1e-12:
+        if values[i] >= -1.8e-12:
             result.append(point)
         if (values[i] >= 0) != (values[j] >= 0):
             result.append(point + (polygon[j] - point) * values[i] / (values[i] - values[j]))
@@ -93,42 +93,42 @@ def fit_behind_cheeks(points, faces, normals, tangents=None):
     helmet_faces = accessor(doc, raw, primitive['indices']).reshape(-1, 3)
     before = points.copy()
     for side in [-1, 1]:
-        guard = helmet_faces[((helmet[helmet_faces, 0] * side > .02).all(1))
-                             & (helmet[helmet_faces, 1].mean(1) < CHEEK_TOP + .003)
+        guard = helmet_faces[((helmet[helmet_faces, 0] * side > .036).all(1))
+                             & (helmet[helmet_faces, 1].mean(1) < CHEEK_TOP + .0054)
                              & (helmet[helmet_faces, 2].mean(1) > CHEEK_BACK)]
         triangles = helmet[guard].astype(float)
         polygons = [Polygon(triangle[:, 1:]) for triangle in triangles]
-        valid = [i for i, polygon in enumerate(polygons) if polygon.area > 1e-12]
+        valid = [i for i, polygon in enumerate(polygons) if polygon.area > 3.24e-12]
         triangles = triangles[valid]
         polygons = [polygons[i] for i in valid]
         tree = STRtree(polygons)
-        low = np.floor((triangles[:, :, 1:].min((0, 1)) - .016) / .008) * .008
-        size = np.ceil((triangles[:, :, 1:].max((0, 1)) + .016 - low) / .008).astype(int) + 1
+        low = np.floor((triangles[:, :, 1:].min((0, 1)) - .0288) / .0144) * .0144
+        size = np.ceil((triangles[:, :, 1:].max((0, 1)) + .0288 - low) / .0144).astype(int) + 1
         lookup = np.full(tuple(size), -1, dtype=int)
         lookup[1:-1, 1:-1] = np.arange(np.prod(size - 2)).reshape(tuple(size - 2))
-        coordinates = (points[:, 1:] - low) / .008
+        coordinates = (points[:, 1:] - low) / .0144
         cells = np.floor(coordinates).astype(int)
         fraction = coordinates - cells
         basis = np.zeros((len(points), int(np.prod(size - 2))))
         for dy, dz in [(0, 0), (1, 0), (0, 1), (1, 1)]:
             nodes = cells + [dy, dz]
-            inside = ((nodes >= 0) & (nodes < size)).all(1) & (points[:, 0] * side > .001)
+            inside = ((nodes >= 0) & (nodes < size)).all(1) & (points[:, 0] * side > .0018)
             ids = np.flatnonzero(inside)
             variables = lookup[nodes[ids, 0], nodes[ids, 1]]
             keep = variables >= 0
             share = np.prod(np.where(np.array([dy, dz]), fraction[ids], 1 - fraction[ids]), axis=1)
             basis[ids[keep], variables[keep]] = share[keep]
         rows, deficits = [], []
-        candidates = faces[(points[faces, 0] * side > .001).all(1)]
+        candidates = faces[(points[faces, 0] * side > .0018).all(1)]
         for face in candidates:
             triangle = points[face].astype(float)
             matrix = (triangle[1:, 1:] - triangle[0, 1:]).T
-            if abs(np.linalg.det(matrix)) < 1e-12:
+            if abs(np.linalg.det(matrix)) < 3.24e-12:
                 continue
             polygon = Polygon(triangle[:, 1:])
             for index in tree.query(polygon, predicate='intersects'):
                 overlap = polygon.intersection(polygons[index])
-                if overlap.area < 1e-12:
+                if overlap.area < 3.24e-12:
                     continue
                 xy = np.array(overlap.exterior.coords)[:-1]
                 uv = np.linalg.solve(matrix, (xy - triangle[0, 1:]).T).T
@@ -147,10 +147,10 @@ def fit_behind_cheeks(points, faces, normals, tangents=None):
         result = minimize(lambda value: .5 * value @ value, initial.x, jac=lambda value: value,
                           constraints=LinearConstraint(matrix, deficit, np.inf), bounds=[(0, .75)] * basis.shape[1],
                           method='SLSQP', options={'ftol': 1e-9, 'maxiter': 300})
-        if not result.success or (matrix @ result.x - deficit).min() < -1e-5:
+        if not result.success or (matrix @ result.x - deficit).min() < -1.8e-5:
             raise ValueError('Cheek guard fit did not converge')
         points[:, 0] *= 1 - basis @ result.x
-    moved = np.linalg.norm(points - before, axis=1) > 1e-8
+    moved = np.linalg.norm(points - before, axis=1) > 1.8e-8
     if moved.any():
         geometric = trimesh.Trimesh(points, faces, process=False).vertex_normals
         normals[moved] = geometric[moved]
@@ -229,7 +229,7 @@ def trim(source, output, radial, slopes, cheek_slopes):
                         if np.linalg.det(bary[1:, 1:] - bary[0, 1:]) < 0:
                             bary = bary[::-1]
                         xyz = bary @ points[face]
-                        if np.linalg.norm(np.cross(xyz[1] - xyz[0], xyz[2] - xyz[0])) > 1e-12:
+                        if np.linalg.norm(np.cross(xyz[1] - xyz[0], xyz[2] - xyz[0])) > 3.24e-12:
                             result.append([vertex(face, row) for row in bary])
             bary = np.array(bary_rows)
             parents = np.array(source_rows)
@@ -267,7 +267,7 @@ def trim(source, output, radial, slopes, cheek_slopes):
 def main():
     radial, cheek_slopes = opening()
     _, slopes = opening(cheeks=False)
-    report = {'helmet_sha256': digest(HELMET), 'center': CENTER.tolist(), 'margin_source_units': MARGIN,
+    report = {'helmet_sha256': digest(HELMET), 'center': CENTER.tolist(), 'margin_m': MARGIN,
               'sectors': SECTORS, 'ear_restoration': {'cheek_top_y': CHEEK_TOP, 'cheek_back_z': CHEEK_BACK,
               'restore_front_z': EAR_RESTORE_FRONT, 'tip_restore_front_z': TIP_RESTORE_FRONT,
               'tip_restore_top_y': TIP_RESTORE_TOP, 'lateral_fit_margin': MARGIN},

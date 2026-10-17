@@ -51,7 +51,7 @@ for frame in range(0, len(poses), args.stride):
         normals = mesh.face_normals[triangles]
         signed = np.einsum('ij,ij->i', probes - closest, normals)
         depth = float(signed.min())
-        result[name] = {'minimum_distance': depth, 'penetrating_samples': int((signed < -.0002).sum())}
+        result[name] = {'minimum_distance': depth, 'penetrating_samples': int((signed < -.00036).sum())}
         if depth < minimum[name]['distance']:
             minimum[name] = {'distance': depth, **manifest['poses'][frame]}
     frames.append(result)
@@ -62,10 +62,10 @@ if not frames:
 
 report = {'source_sha256': source_hash, 'side': args.side, 'selected_motions': args.motions,
           'selected_regions': list(regions),
-          'meters_per_source_unit': 1.8, 'frame_count': len(frames), 'stride': args.stride, 'minimum': minimum, 'frames': frames,
+          'frame_count': len(frames), 'stride': args.stride, 'minimum': minimum, 'frames': frames,
           'scope': 'Sandal vertices, face centers and edge midpoints against exact posed skin triangles after the reversible sole mask.'}
 (directory / (args.output or f'{prefix}-validation.json')).write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps({'frames': len(frames), 'minimum': minimum}), flush=True)
 
-if any(value['distance'] < -.0002 for value in minimum.values()):
+if any(value['distance'] < -.00036 for value in minimum.values()):
     raise SystemExit('Sandal intersects visible skin; see clearance report')

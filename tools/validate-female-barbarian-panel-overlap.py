@@ -34,7 +34,7 @@ for frame in range(0, len(poses), args.stride):
     for a in range(len(faces)):
         for b in range(a):
             overlap = polygons[a].intersection(polygons[b])
-            if overlap.area < 1e-11:
+            if overlap.area < 3.24e-11:
                 continue
             if overlap.geom_type != 'Polygon':
                 raise ValueError('Unexpected panel intersection geometry')
@@ -47,9 +47,9 @@ for frame in range(0, len(poses), args.stride):
                 heights.append(triangle[0, 2] + uv @ (triangle[1:, 2] - triangle[0, 2]))
             gap = heights[0] - heights[1]
             pair = [int(face_ids[a]), int(face_ids[b])]
-            if np.abs(gap).max() < .00005:
+            if np.abs(gap).max() < .00009:
                 near.append(pair)
-            if gap.min() < -1e-7 and gap.max() > 1e-7:
+            if gap.min() < -1.8e-7 and gap.max() > 1.8e-7:
                 crossing.append(pair)
     frames.append({**manifest['poses'][frame], 'near_coplanar_pairs': near, 'crossing_pairs': crossing})
 report = {'source_sha256': sha, 'mesh': 'boots_female_barbarian_right', 'frame_count': len(frames),
@@ -58,7 +58,7 @@ report = {'source_sha256': sha, 'mesh': 'boots_female_barbarian_right', 'frame_c
           'frames_with_crossings': sum(bool(f['crossing_pairs']) for f in frames), 'frames': frames,
           'scope': 'Right marked outer panel, including outer/outer overlap. Intersect triangle projections in a fitted '
                    'panel frame; compare exact affine depth over the overlap polygon. Shared edges alone are excluded '
-                   'by the positive-area threshold. Near-coplanar threshold 0.09 mm; overlap area 1e-11 source units squared.'}
+                   'by the positive-area threshold. Near-coplanar threshold 0.09 mm; overlap area 3.24e-11 m².'}
 (directory / 'right-panel-self-validation.json').write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps({k: report[k] for k in ['frame_count', 'frames_with_near_coplanar_overlap', 'frames_with_crossings']}))
 if report['frames_with_near_coplanar_overlap'] or report['frames_with_crossings']:

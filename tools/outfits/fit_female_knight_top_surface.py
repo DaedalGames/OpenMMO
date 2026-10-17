@@ -18,7 +18,7 @@ a, b = edges.T
 valid = a != b
 a, b = a[valid], b[valid]
 length = np.linalg.norm(p[a] - p[b], axis=1)
-w = 1 / np.maximum(length, .002)
+w = 1 / np.maximum(length, .0036)
 color = data['colors'][first].max(1)
 stiffness = np.where(color > .25, 3.0, .5)
 w *= np.sqrt(stiffness[a] * stiffness[b])
@@ -55,7 +55,7 @@ for iteration in range(60):
         q[free, axis] = solve(value[:, axis])
     q[locked] = targets[locked]
     errors.append(float(np.linalg.norm(q - previous, axis=1).max()))
-    if errors[-1] < 1e-6:
+    if errors[-1] < 1.8e-6:
         break
 assert np.isfinite(q).all()
 np.savez(source.with_name('arap-result.npz'), points=q[inverse], rotations=R[inverse], iterations=len(errors), residual=errors[-1])

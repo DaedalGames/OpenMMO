@@ -8,8 +8,7 @@ await ensureFemalePreview('animations')
 const directory = 'assets/items/female_barbarian_bracers/tripo_v1/fitted_v1'
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
 const partPath = `${directory}/gloves_female_barbarian.glb`
-const METERS = 1.8
-const TOLERANCE = 0.0003
+const TOLERANCE = 0.00054
 const RAYS = [
   new THREE.Vector3(0.31, 0.52, 0.79).normalize(),
   new THREE.Vector3(-0.67, 0.2, -0.71).normalize(),
@@ -156,7 +155,7 @@ try {
       body.getVertexPosition(i, point)
       sides.forEach(({ side, inside }, s) => {
         const depth = inside(point.clone().applyMatrix4(local[s]))
-        if (depth) hits.push({ vertex: i, bracer: side, bone: region(i), depth_m: depth * METERS })
+        if (depth) hits.push({ vertex: i, bracer: side, bone: region(i), depth_m: depth })
       })
     }
     return hits
@@ -190,7 +189,7 @@ try {
     bracers_sha256: hash(partPath),
     occlusion_sha256: hash(`${directory}/body-occlusion.json`),
     probe_vertices: probe.length,
-    tolerance_m: TOLERANCE * METERS,
+    tolerance_m: TOLERANCE,
     method:
       'Bind with the runtime bindModularPart, apply the body mask, then test every visible body vertex against each rigid bracer solid (two-ray parity in ForeArm rest space) over 33 samples per preview clip.',
     clips,

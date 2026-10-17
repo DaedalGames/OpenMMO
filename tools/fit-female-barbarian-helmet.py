@@ -21,12 +21,11 @@ REPORT = ROOT / 'doc/assets/modular-female-barbarian-helmet-fitting-v1.json'
 spec = importlib.util.spec_from_file_location('io', ROOT / 'tools/fit-modular-plate.py')
 io = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(io)
-METERS_PER_UNIT = 1.8
-CENTER = np.array([0, .94, -.004])
-CLEARANCE = .0017
-BROW_PEAK_Y = .951
-COARSE = (np.arange(.15, .2001, .01), np.arange(-.012, .0121, .004))
-FINE_STEPS = (.0025, .002)
+CENTER = np.array([0, 1.692, -.0072])
+CLEARANCE = .00306
+BROW_PEAK_Y = 1.7118
+COARSE = (np.arange(.27, .3602, .018), np.arange(-.0216, .0218, .0072))
+FINE_STEPS = (.0045, .0036)
 
 
 def digest(path):
@@ -64,7 +63,7 @@ def place(points, scale, offset):
 def main():
     OUT.mkdir(exist_ok=True)
     assert digest(SOURCE) == '7e1f9be83b2519e5f3e8a266a8dcb94029a8d8634aaf58945a08388f4af7da9f'
-    assert digest(BODY) == '9564457e8b23275aaf8cd0ff74c318baa4bbfa6b1c8afe608037cf7f40cf0982'
+    assert digest(BODY) == '3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5'
     base, base_raw = read_glb(BODY)
     names = [base['nodes'][i]['name'] for i in base['skins'][0]['joints']]
     body = base['meshes'][0]['primitives'][0]
@@ -166,8 +165,7 @@ def main():
               'rig_id': rig_id, 'triangles': len(faces), 'source_axis_mapping': '[-z, y, x]',
               'scale_xyz': best['scale'].tolist(), 'offset_xyz': best['offset'].tolist(),
               'brow_peak_y': BROW_PEAK_Y, 'radial_center': CENTER.tolist(), 'rays': len(rays), 'rays_hitting_shell': int(best['valid'].sum()),
-              'clearance_m': {'required': CLEARANCE * METERS_PER_UNIT, 'minimum': float(gap.min() * METERS_PER_UNIT),
-                              'median': float(np.median(gap) * METERS_PER_UNIT)},
+              'clearance_m': {'required': CLEARANCE, 'minimum': float(gap.min()), 'median': float(np.median(gap))},
               'method': 'Rotate the source +X front to +Z. Search per-axis scales (ratio within 1.12) and depth offset; the brow peak '
                         'sits at BROW_PEAK_Y. Keep the smallest helmet whose inner shell clears the head and neck skin by CLEARANCE '
                         'along every ray from the head center that meets the shell.',

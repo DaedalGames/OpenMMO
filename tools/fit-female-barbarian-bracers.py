@@ -20,12 +20,11 @@ REPORT = ROOT / 'doc/assets/modular-female-barbarian-bracers-fitting-v1.json'
 spec = importlib.util.spec_from_file_location('plate_io', ROOT / 'tools/fit-modular-plate.py')
 io = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(io)
-METERS_PER_UNIT = 1.8
-WRIST_OFFSET = .0065
-LENGTH = .085
-CLEARANCE = .0022
-SOFTNESS = .0008
-HIDE_MARGIN = .004
+WRIST_OFFSET = .0117
+LENGTH = .153
+CLEARANCE = .00396
+SOFTNESS = .00144
+HIDE_MARGIN = .0072
 # Tripo's plate faces +X; the wrist is at -Y.
 SOURCE_BASIS = np.array([[0, 0, -1], [1, 0, 0]], dtype=float)
 
@@ -96,10 +95,10 @@ def fit_side(points, faces, body_points, body_faces, arm_faces, bones, side):
     fitted += (center + radius[:, None] * np.column_stack([np.cos(angles), np.sin(angles)])) @ basis
     skin_radius = sample(radii, rows, heights)
     return fitted, dict(wrist=wrist.tolist(), axis=axis.tolist(), basis=basis.tolist(), scale=float(scale),
-        axial_interval_m=[float(heights.min() * METERS_PER_UNIT), float(heights.max() * METERS_PER_UNIT)],
-        forearm_length_m=float(np.linalg.norm(bones[side + 'ForeArm'] - wrist) * METERS_PER_UNIT),
-        minimum_offset_m=float(offset.min() * METERS_PER_UNIT), maximum_offset_m=float(offset.max() * METERS_PER_UNIT),
-        rest_skin_gap_min_m=float((radius - skin_radius).min() * METERS_PER_UNIT))
+        axial_interval_m=[float(heights.min()), float(heights.max())],
+        forearm_length_m=float(np.linalg.norm(bones[side + 'ForeArm'] - wrist)),
+        minimum_offset_m=float(offset.min()), maximum_offset_m=float(offset.max()),
+        rest_skin_gap_min_m=float((radius - skin_radius).min()))
 
 
 def hidden_skin(body_points, body_faces, arm_vertices, bones, side, interval):
@@ -136,7 +135,7 @@ def attach_rig(doc, raw, base, base_raw, sides):
 def main():
     OUTPUT.mkdir(exist_ok=True)
     assert digest(SOURCE) == '458824b20bf340b427e781622894f34abcb96f270622b3a71d50109dd6ce5a9d'
-    assert digest(BODY) == '9564457e8b23275aaf8cd0ff74c318baa4bbfa6b1c8afe608037cf7f40cf0982'
+    assert digest(BODY) == '3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5'
     base, base_raw, names, bones, body_points, body_faces, dense = setup_body()
     doc, source_raw = read_glb(SOURCE)
     images = [view_bytes(doc, source_raw, image['bufferView']) for image in doc['images']]
@@ -160,7 +159,7 @@ def main():
         doc['meshes'].append({'name': f'gloves_female_barbarian_{side.lower()}', 'primitives': [{
             'attributes': attrs, 'material': primitive['material'],
             'indices': add_accessor(doc, raw, triangles.reshape(-1, 1).astype(np.uint32), 'SCALAR', 5125)}]})
-        interval = np.array(record['axial_interval_m']) / METERS_PER_UNIT
+        interval = np.array(record['axial_interval_m'])
         side_hide = hidden_skin(body_points, body_faces, arm > .99, bones, side, interval)
         hide |= side_hide
         records[side] = {**record, 'triangles': len(triangles), 'vertices': len(fitted), 'hidden_body_triangles': int(side_hide.sum())}
@@ -171,14 +170,14 @@ def main():
     write_glb(target, doc, raw)
     mask = {'body': str(BODY.relative_to(ROOT)), 'body_sha256': digest(BODY), 'mesh_index': 0, 'primitive_index': 0,
             'primitive_triangles': len(body_faces), 'hide_triangle_indices': np.flatnonzero(hide).tolist(),
-            'scope': f'Forearm skin fully inside each bracer, {HIDE_MARGIN * METERS_PER_UNIT * 1000:.1f} mm in from both openings; hands stay visible.'}
+            'scope': f'Forearm skin fully inside each bracer, {HIDE_MARGIN * 1000:.1f} mm in from both openings; hands stay visible.'}
     (OUTPUT / 'body-occlusion.json').write_text(json.dumps(mask, indent=2) + '\n')
     report = {'date': '2026-10-15', 'source': {'path': str(SOURCE.relative_to(ROOT)), 'sha256': digest(SOURCE)},
               'body': {'path': str(BODY.relative_to(ROOT)), 'sha256': digest(BODY)},
               'output': {'path': str(target.relative_to(ROOT)), 'sha256': digest(target)},
-              'rig_id': 'human_female_01_local_v1', 'meters_per_source_unit': METERS_PER_UNIT,
-              'wrist_offset_m': WRIST_OFFSET * METERS_PER_UNIT, 'length_m': LENGTH * METERS_PER_UNIT,
-              'clearance_m': CLEARANCE * METERS_PER_UNIT, 'sides': records, 'hidden_body_triangles': int(hide.sum()),
+              'rig_id': 'human_female_01_local_v1',
+              'wrist_offset_m': WRIST_OFFSET, 'length_m': LENGTH,
+              'clearance_m': CLEARANCE, 'sides': records, 'hidden_body_triangles': int(hide.sum()),
               'method': 'Map the source inner wall per height and angle onto 48 actual forearm sections plus clearance, keeping '
                         'relief above the inner wall at the uniform length scale. The source flare toward the elbow follows the forearm. '
                         'Left uses the mirrored frame on its own bones with reversed winding. Each bracer follows its ForeArm rigidly.',

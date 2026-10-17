@@ -94,7 +94,7 @@ function fitRightHandGrip(root, clip) {
     }
     const across = position('RightHandIndex1').sub(position('RightHandPinky1')).normalize()
     const contact = position('RightHandIndex1').lerp(position('RightHandIndex2'), .2)
-      .addScaledVector(across, .006)
+      .addScaledVector(across, .0108)
     for (let iteration = 0; iteration < 48; iteration++) {
       for (let i = thumbs.length - 1; i >= 0; i--) {
         const bone = thumbs[i].bone
@@ -160,7 +160,7 @@ function fitIdleHandle(root, clip) {
   }
   const thumb = [1, 2, 3, 4].map(i => root.getObjectByName(`RightHandThumb${i}`))
   const origin = position(thumb[0].name)
-  const end = hand.localToWorld(new THREE.Vector3(.024, .056, .027))
+  const end = hand.localToWorld(new THREE.Vector3(.0432, .1008, .0486))
   const upperLength = position(thumb[1].name).distanceTo(origin)
   const lowerLength = position(thumb[2].name).distanceTo(position(thumb[1].name))
   const distance = origin.distanceTo(end)
@@ -173,7 +173,7 @@ function fitIdleHandle(root, clip) {
     .addScaledVector(outward, Math.sqrt(upperLength ** 2 - along ** 2))
   setDirection(thumb[0], elbow.sub(origin).normalize())
   setDirection(thumb[1], end.sub(position(thumb[1].name)).normalize())
-  const tip = hand.localToWorld(new THREE.Vector3(.014, .061, .026))
+  const tip = hand.localToWorld(new THREE.Vector3(.0252, .1098, .0468))
   setDirection(thumb[2], tip.sub(position(thumb[2].name)).normalize())
   for (const { bone, rest } of states) {
     const track = clip.tracks.find(t => t.name === `${bone.name}.quaternion`)
@@ -308,7 +308,7 @@ try {
   writeFileSync(new URL('../' + output + 'clips.json', import.meta.url), JSON.stringify({
     method: 'Existing local rotation tracks applied to the fitted bone axes; right index segments follow the middle finger grip directions with rest-axis compensation and the thumb closes onto the side of the proximal index phalanx for the six weapon-ready clips; separate unarmed idle preserving the original left-hand tracks and mirroring their hand-local rotation deltas onto the right-hand rest axes; walking defaults to the accepted unarmed right-hand pose; the preview layers either accepted hand pose over the shared idle or walk body motion; armed idle closes all four fingers around the steel longsword handle with an opposed thumb; both idle variants lift neck/head by 1.5/6.5 degrees; the final female catwalk replaces the intermediate walk; rest-offset translation scaling; 60 Hz floor matching to the source silhouette with per-clip sole offset removed, preserving airborne motion.',
     walk_method: 'Existing walk_cat retargeted to the female skeleton, ankle paths narrowed to 28% about the pelvis with world foot orientation preserved, closed in-place loop and 60 Hz sole grounding; accepted relaxed fingers preserved.',
-    seated_method: 'Fit pelvis to the game Chair with 0.03-unit seat compression, plant feet with the catalog interaction offset, lower clavicles by 29 degrees, relax elbows and level gaze, solve knees and hands against the female surface at 60 Hz; use a 1.8-unit review height.',
+    seated_method: 'Fit pelvis to the game Chair with 0.03 m seat compression, plant feet with the catalog interaction offset, lower clavicles by 29 degrees, relax elbows and level gaze, solve knees and hands against the female surface at 60 Hz.',
     sources: [...sources, catwalkSource].map(path => ({ path, sha256: hash(path) })), hip_ratio: ratio, clips: baked,
   }) + '\n')
 } finally { await server.close() }

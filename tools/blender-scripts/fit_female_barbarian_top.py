@@ -17,13 +17,13 @@ SOURCE = DIRECTORY / 'source/model_url.glb'
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
 OUTPUT = DIRECTORY / 'fitted_v1'
 OUTPUT.mkdir(exist_ok=True)
-SCALE = .21
-OFFSET = (-.028, .003, .779)
+SCALE = .378
+OFFSET = (-.0504, .0054, 1.4022)
 BUST_WIDTH = 1.18
 BUST_DEPTH = 1.27
-CLEARANCE = .006
-STRAP_CLEARANCE = .002
-JEWEL_CLEARANCE = .003
+CLEARANCE = .0108
+STRAP_CLEARANCE = .0036
+JEWEL_CLEARANCE = .0054
 SMOOTHING = 16
 PREVIEW = '--preview' in sys.argv
 PAULDRON_BONE = next((a.split('=')[1] for a in sys.argv if a.startswith('--pauldron=')), 'RightShoulder')
@@ -82,9 +82,9 @@ loop_vertices = np.array([loop.vertex_index for loop in mesh.loops])
 faces = np.array([polygon.vertices[:] for polygon in mesh.polygons])
 x, y, z = source.T
 
-pauldron = (x < -.062) & (z > .808)
-jewel = (np.abs(x) < .02) & (z < .742) & (y < -.035)
-bust = smooth((z - .695) / .03) * (1 - smooth((z - .80) / .03)) * smooth((.02 - y) / .03)
+pauldron = (x < -.1116) & (z > 1.4544)
+jewel = (np.abs(x) < .036) & (z < 1.3356) & (y < -.063)
+bust = smooth((z - 1.251) / .054) * (1 - smooth((z - 1.44) / .054)) * smooth((.036 - y) / .054)
 
 points = source.copy()
 points[:, 0] *= 1 + (BUST_WIDTH - 1) * bust
@@ -107,31 +107,31 @@ tree = KDTree(len(points))
 for i, p in enumerate(points):
     tree.insert(Vector(p), i)
 tree.balance()
-inner = np.array([min(depth[j] for _, j, _ in tree.find_range(Vector(p), .010)) for p in points])
+inner = np.array([min(depth[j] for _, j, _ in tree.find_range(Vector(p), .018)) for p in points])
 layer = depth - inner
-front = smooth((-.02 - points[:, 1]) / .02) * smooth((points[:, 2] - .70) / .02) * (1 - smooth((points[:, 2] - .79) / .015))
-front *= 1 - smooth((np.abs(points[:, 0]) - .025) / .015)
-straps = (points[:, 2] > .795) & ~pauldron
+front = smooth((-.036 - points[:, 1]) / .036) * smooth((points[:, 2] - 1.26) / .036) * (1 - smooth((points[:, 2] - 1.422) / .027))
+front *= 1 - smooth((np.abs(points[:, 0]) - .045) / .027)
+straps = (points[:, 2] > 1.431) & ~pauldron
 # The underbust band sits as close as the straps; its rim showed a dark gap from below.
-underband = 1 - smooth((points[:, 2] - .70) / .015)
+underband = 1 - smooth((points[:, 2] - 1.26) / .027)
 wanted = np.where(straps, STRAP_CLEARANCE, CLEARANCE - (CLEARANCE - STRAP_CLEARANCE) * underband) + layer
 # Only the cleavage bridge is kept off the skin; cups, straps and band are drawn onto it.
-wanted = np.where(front > .5, np.maximum(wanted, np.minimum(depth, CLEARANCE + layer + .02)), wanted)
+wanted = np.where(front > .5, np.maximum(wanted, np.minimum(depth, CLEARANCE + layer + .036)), wanted)
 targets = points + outward * (wanted - depth)[:, None]
 
 # The band spans the fold under the bust, so seen from below its lower edge hung 1-2 cm in front
 # of the sternum. Rest the lower edge near the centre on the ribs and let the strip tilt into the fold.
-band = (1 - smooth((source[:, 2] - .705) / .01)) * (1 - smooth((np.abs(points[:, 0]) - .03) / .015))
-band *= (points[:, 1] < -.02) & ~pauldron & ~jewel
+band = (1 - smooth((source[:, 2] - 1.269) / .018)) * (1 - smooth((np.abs(points[:, 0]) - .054) / .027))
+band *= (points[:, 1] < -.036) & ~pauldron & ~jewel
 back = np.array([0, 1, 0])
 for i in np.where(band > 0)[0]:
-    hit = surface.ray_cast(Vector(targets[i]), Vector(back), .05)
+    hit = surface.ray_cast(Vector(targets[i]), Vector(back), .09)
     if hit[0] is None:
         continue
     low, high = 0, max(hit[3] - wanted[i], 0) * band[i]
     for _ in range(12):
         mid = (low + high) / 2
-        low, high = (mid, high) if signed(targets[i] + mid * back)[0] >= .002 + layer[i] else (low, mid)
+        low, high = (mid, high) if signed(targets[i] + mid * back)[0] >= .0036 + layer[i] else (low, mid)
     targets[i] += low * back
 
 shoulder = joints['RightArm']
@@ -142,14 +142,14 @@ for step in range(80):
     clearance = min(signed(p)[0] for p in rigid)
     if clearance >= CLEARANCE:
         break
-    rigid += lift * .001
+    rigid += lift * .0018
 targets[pauldron] = rigid
-around = (np.linalg.norm(points[:, [0, 2]] - points[jewel][:, [0, 2]].mean(0), axis=1) < .035) & ~jewel
+around = (np.linalg.norm(points[:, [0, 2]] - points[jewel][:, [0, 2]].mean(0), axis=1) < .063) & ~jewel
 rigid = points[jewel] + (targets[around] - points[around]).mean(0)
 for step in range(40):
     if min(signed(p)[0] for p in rigid) >= JEWEL_CLEARANCE:
         break
-    rigid[:, 1] -= .0005
+    rigid[:, 1] -= .0009
 targets[jewel] = rigid
 
 
@@ -170,15 +170,15 @@ own = vertex_colors(next(node.image for node in top.active_material.node_tree.no
                          if node.type == 'TEX_IMAGE' and node.image.name.startswith('Color_')))
 saturation = 1 - own.min(1) / np.maximum(own.max(1), 1e-6)
 # The ring hinges where it threads the plate; swing it back so it rests on the band, not in mid-air.
-ring = jewel & (source[:, 2] < .716) & (saturation > .45)
+ring = jewel & (source[:, 2] < 1.2888) & (saturation > .45)
 rigid = targets[ring]
-pivot = rigid[rigid[:, 2] > rigid[:, 2].max() - .002].mean(0)
+pivot = rigid[rigid[:, 2] > rigid[:, 2].max() - .0036].mean(0)
 for degrees in range(45, 0, -1):
     tilted = (np.array(Matrix.Rotation(math.radians(degrees), 3, 'X')) @ (rigid - pivot).T).T + pivot
     if min(signed(p)[0] for p in tilted) >= JEWEL_CLEARANCE:
         targets[ring] = tilted
         break
-contact = (layer < .002) & ~pauldron & ~jewel
+contact = (layer < .0036) & ~pauldron & ~jewel
 fixed = contact | pauldron | jewel
 
 np.savez(OUTPUT / 'arap-input.npz', points=points, faces=faces, colors=colors, fixed=fixed, targets=targets)
@@ -188,8 +188,8 @@ arap = np.load(OUTPUT / 'arap-result.npz')
 points = arap['points'].copy()
 for i, point in enumerate(points):
     distance, normal = signed(point)
-    if distance < .001:
-        points[i] += normal * (.001 - distance)
+    if distance < .0018:
+        points[i] += normal * (.0018 - distance)
 final_depth = np.array([signed(p)[0] for p in points])
 
 normal_values = np.einsum('nij,nj->ni', arap['rotations'][loop_vertices], source_normals)
@@ -213,10 +213,10 @@ skin_tree.balance()
 weights = np.zeros((len(points), len(names)))
 for i, p in enumerate(points):
     neighbors = skin_tree.find_n(Vector(p), 8)
-    factors = np.array([1 / max(distance, .001) ** 2 for _, _, distance in neighbors])
+    factors = np.array([1 / max(distance, .0018) ** 2 for _, _, distance in neighbors])
     weights[i] = (body_weights[[j for _, j, _ in neighbors]] * factors[:, None]).sum(0) / factors.sum()
 
-cups = ((bust > .5) & (points[:, 1] < -.02) & ~pauldron) | jewel
+cups = ((bust > .5) & (points[:, 1] < -.036) & ~pauldron) | jewel
 # Cups follow the skin so they stay on the breasts when the arms move; the jewel and pauldron are hard shells.
 rigid_groups = [jewel, pauldron]
 weights[jewel] = 0
@@ -249,7 +249,7 @@ shells = KDTree(len(shell_points))
 for i, point in enumerate(shell_points):
     shells.insert(Vector(point), i)
 shells.balance()
-reach = smooth((np.array([shells.find(Vector(point))[2] for point in points]) - .005) / .025)[:, None]
+reach = smooth((np.array([shells.find(Vector(point))[2] for point in points]) - .009) / .045)[:, None]
 reach[cups & ~jewel] = 0
 weights = reach * weights + (1 - reach) * unique_weights[welded]
 for side, sign in [('Left', -1), ('Right', 1)]:
@@ -297,7 +297,7 @@ if PREVIEW:
     edit.from_mesh(body.data)
     edit.faces.ensure_lookup_table()
     bmesh.ops.delete(edit, geom=[f for f in edit.faces if labels[body_welded[f.verts[0].index]] != skin_label
-                                 and .64 < body_points[f.verts[0].index][2] < .86], context='FACES')
+                                 and 1.152 < body_points[f.verts[0].index][2] < 1.548], context='FACES')
     edit.to_mesh(body.data)
     print('preview hidden body faces', len(body_faces) - len(body.data.polygons), flush=True)
     scene = bpy.context.scene
@@ -308,10 +308,10 @@ if PREVIEW:
     bpy.ops.object.camera_add()
     camera = bpy.context.object
     camera.data.type = 'ORTHO'
-    camera.data.ortho_scale = .32
+    camera.data.ortho_scale = .576
     scene.camera = camera
-    center = Vector((0, 0, .78))
-    for view, offset in [('front', (0, -1, 0)), ('left', (1, 0, 0)), ('back', (0, 1, 0)), ('right', (-1, 0, 0))]:
+    center = Vector((0, 0, 1.404))
+    for view, offset in [('front', (0, -1.8, 0)), ('left', (1.8, 0, 0)), ('back', (0, 1.8, 0)), ('right', (-1.8, 0, 0))]:
         camera.location = center + Vector(offset)
         camera.rotation_euler = (center - camera.location).to_track_quat('-Z', 'Y').to_euler()
         scene.render.filepath = str(OUTPUT / 'preview' / f'{view}.png')

@@ -65,7 +65,7 @@ try {
       const point = mesh.getVertexPosition(i, new THREE.Vector3())
       assert.ok(
         point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) <
-          1e-6
+          1.8e-6
       )
       rest.push(point)
       let sum = 0
@@ -88,7 +88,7 @@ try {
         const a = index.getX(i + k),
           b = index.getX(i + ((k + 1) % 3))
         const length = rest[a].distanceTo(rest[b])
-        if (length < 0.002) continue
+        if (length < 0.0036) continue
         const rigid =
           skinWeight.getX(a) > 0.99999 &&
           skinWeight.getX(b) > 0.99999 &&
@@ -128,7 +128,7 @@ try {
       body.geometry.attributes.position,
       i
     )
-    if (p.y < 0.04 && p.z < -0.012) heelVertices.push(i)
+    if (p.y < 0.072 && p.z < -0.0216) heelVertices.push(i)
   }
   const meanHeel = () =>
     heelVertices.reduce(
@@ -142,7 +142,7 @@ try {
     readFileSync('assets/items/female_knight_boots/fitted_v5/fitting.json')
   ).posed_floor_offset
   assert.ok(
-    Math.abs(lift - referenceLift) < 1e-6,
+    Math.abs(lift - referenceLift) < 1.8e-6,
     'Sole edge lowered the shared heel ground'
   )
   for (const part of parts) {
@@ -150,7 +150,7 @@ try {
       edge[2] = part.mesh
         .getVertexPosition(edge[0], new THREE.Vector3())
         .distanceTo(part.mesh.getVertexPosition(edge[1], new THREE.Vector3()))
-    part.flexibleEdges = part.flexibleEdges.filter((edge) => edge[2] > 0.002)
+    part.flexibleEdges = part.flexibleEdges.filter((edge) => edge[2] > 0.0036)
   }
   const solePlanes = [-1, 1].map((side) => {
     const support = parts.flatMap(({ mesh }) =>
@@ -165,21 +165,21 @@ try {
         const { skinIndex, skinWeight } = mesh.geometry.attributes
         return (
           Math.sign(point.x) === side &&
-          point.y < -0.03026 &&
+          point.y < -0.054468 &&
           skinWeight.getX(index) > 0.99999 &&
           skeleton.bones[skinIndex.getX(index)].name.endsWith('Foot')
         )
       })
     )
     const rear = support.reduce((a, b) => (a.point.z < b.point.z ? a : b))
-    const front = support.filter(({ point }) => point.z > 0.015)
+    const front = support.filter(({ point }) => point.z > 0.027)
     const left = front.reduce((a, b) => (a.point.x < b.point.x ? a : b))
     const right = front.reduce((a, b) => (a.point.x > b.point.x ? a : b))
     assert.ok(
-      left.point.distanceTo(right.point) > 0.02,
+      left.point.distanceTo(right.point) > 0.036,
       `Sole support side ${side}: ${front.length} vertices, width ${left.point.distanceTo(right.point)}`
     )
-    assert.ok(rear.point.distanceTo(left.point) > 0.05)
+    assert.ok(rear.point.distanceTo(left.point) > 0.09)
     return [rear, left, right]
   })
   const standing = new Set([
@@ -195,7 +195,7 @@ try {
     THREE.MathUtils.radToDeg(bone.quaternion.angleTo(bareRotations[i]))
   )
   assert.ok(rotationAngles.every((angle) => Math.abs(angle - 30) < 0.001))
-  assert.ok(heelElevation > 0.03, `Heel elevation ${heelElevation}`)
+  assert.ok(heelElevation > 0.054, `Heel elevation ${heelElevation}`)
   for (let i = 0; i < 30; i++) ground.apply()
   ground.restore()
   for (let i = 0; i < footBones.length; i++)
@@ -318,7 +318,7 @@ try {
       maxRigidStretch < 0.001,
       `${clip.name} rigid stretch ${maxRigidStretch}`
     )
-    assert.ok(maxMotion < 2)
+    assert.ok(maxMotion < 3.6)
     assert.ok(
       maxFlexibleStretch < 3.5,
       `${clip.name} flexible stretch ${maxFlexibleStretch}`
@@ -349,7 +349,7 @@ try {
     exact_65_bone_bind_compatibility: true,
     four_normalized_influences: true,
     flexible_edge_reference:
-      'Equipped heel pose; edges longer than 0.002 source units',
+      'Equipped heel pose; edges longer than 3.6 mm',
     sole_plane_reference:
       'Heel tip and rigid Foot-weighted ball contact; flexing toe tip excluded',
     original_toe_animation_preserved: true,

@@ -53,7 +53,7 @@ body_weights = io.accessor(base, base_binary, body_attrs['WEIGHTS_0'])
 body_dense = np.zeros((len(body_points), len(names)))
 np.add.at(body_dense, (np.arange(len(body_points))[:, None], body_joints), body_weights)
 allowed = [names.index(name) for name in ['Hips', 'Spine', 'Spine1', 'Spine2']]
-eligible = (body_points[:, 1] > .55) & (body_points[:, 1] < .845) & (np.abs(body_points[:, 0]) < .10)
+eligible = (body_points[:, 1] > .99) & (body_points[:, 1] < 1.521) & (np.abs(body_points[:, 0]) < .18)
 body_dense[:, [i for i in range(len(names)) if i not in allowed]] = 0
 eligible &= body_dense.sum(1) > .5
 donor_points = body_points[eligible]
@@ -68,11 +68,11 @@ for index in part_nodes:
         attrs = primitive['attributes']
         points = io.accessor(doc, binary, attrs['POSITION'])
         distances, nearest = tree.query(points, k=128)
-        factors = np.exp(-(distances ** 2 - distances[:, :1] ** 2) / .04 ** 2)
+        factors = np.exp(-(distances ** 2 - distances[:, :1] ** 2) / .072 ** 2)
         factors /= factors.sum(1, keepdims=True)
         dense = (donor_weights[nearest] * factors[:, :, None]).sum(1)
-        head = smooth(.75, .895, points[:, 1])
-        neck = (1 - head) * .25 * smooth(.78, .86, points[:, 1])
+        head = smooth(1.35, 1.611, points[:, 1])
+        neck = (1 - head) * .25 * smooth(1.404, 1.548, points[:, 1])
         dense *= (1 - head[:, None] - neck[:, None])
         dense[:, names.index('Head')] += head
         dense[:, names.index('Neck')] += neck

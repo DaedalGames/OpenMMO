@@ -31,7 +31,6 @@ export function femaleBootGround(
   body: THREE.SkinnedMesh,
   boots: THREE.SkinnedMesh[],
   config: { local_quaternion_offsets: Record<string, number[]> },
-  metersPerSourceUnit = 1,
   stride = 1
 ) {
   const offsets = Object.entries(config.local_quaternion_offsets).map(
@@ -73,8 +72,8 @@ export function femaleBootGround(
       if (position.getY(i) < height) indices.push(i)
     return { mesh, indices }
   }
-  const feet = sample(body, 0.08 * metersPerSourceUnit)
-  const soles = boots.map((mesh) => sample(mesh, 0.18 * metersPerSourceUnit))
+  const feet = sample(body, 0.144)
+  const soles = boots.map((mesh) => sample(mesh, 0.324))
   const point = new THREE.Vector3()
   const aim = (bone: THREE.Bone, child: THREE.Bone, target: THREE.Vector3) => {
     const origin = bone.getWorldPosition(new THREE.Vector3())

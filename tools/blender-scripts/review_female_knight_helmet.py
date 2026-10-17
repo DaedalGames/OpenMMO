@@ -37,15 +37,15 @@ scene=bpy.context.scene;scene.render.engine='CYCLES';scene.cycles.samples=24;sce
 scene.world=bpy.data.worlds.new('Studio');scene.world.use_nodes=True
 scene.world.node_tree.nodes['Background'].inputs[0].default_value=(.20,.20,.20,1)
 scene.world.node_tree.nodes['Background'].inputs[1].default_value=.8
-for pos,power in [((2,-3,3),260),((-2,-1,2),220),((0,3,2),300)]:
-    bpy.ops.object.light_add(type='AREA',location=pos);light=bpy.context.object;light.data.energy=power;light.data.size=3;light.rotation_euler=(Vector((0,0,.95))-light.location).to_track_quat('-Z','Y').to_euler()
-bpy.ops.object.camera_add();camera=bpy.context.object;camera.data.type='ORTHO';camera.data.ortho_scale=.28;scene.camera=camera
+for pos,power in [((3.6,-5.4,5.4),842.4),((-3.6,-1.8,3.6),712.8),((0,5.4,3.6),972)]:
+    bpy.ops.object.light_add(type='AREA',location=pos);light=bpy.context.object;light.data.energy=power;light.data.size=5.4;light.rotation_euler=(Vector((0,0,1.71))-light.location).to_track_quat('-Z','Y').to_euler()
+bpy.ops.object.camera_add();camera=bpy.context.object;camera.data.type='ORTHO';camera.data.ortho_scale=.504;scene.camera=camera
 scene.render.resolution_x=scene.render.resolution_y=900;scene.view_settings.view_transform='AgX'
 review=OUT/'review';review.mkdir(exist_ok=True)
 for motion in ['rest','combat_idle','run','slash1','sit_idle','dying']:
     if motion!='rest':
         action=next(a for a in bpy.data.actions if a.name==motion);rig.animation_data.action=action;rig.animation_data.action_slot=action.slots[0];scene.frame_set(int(sum(action.frame_range)/2))
     bpy.context.view_layer.update()
-    head=rig.pose.bones['Head'];center=rig.matrix_world@head.head+Vector((0,0,.045))
-    for view,offset in [('front',(0,-2,.12)),('side',(2,0,.12)),('back',(0,2,.12))]:
+    head=rig.pose.bones['Head'];center=rig.matrix_world@head.head+Vector((0,0,.081))
+    for view,offset in [('front',(0,-3.6,.216)),('side',(3.6,0,.216)),('back',(0,3.6,.216))]:
         camera.location=center+Vector(offset);camera.rotation_euler=(center-camera.location).to_track_quat('-Z','Y').to_euler();scene.render.filepath=str(review/f'{motion}-{view}.png');bpy.ops.render.render(write_still=True)

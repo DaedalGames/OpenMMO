@@ -84,15 +84,15 @@ def fit_side(points, faces, names, bones, body, side):
     labels = finger_labels(points, faces)
     alignment = {}
     height = points[:, 1]
-    distance = (-.145 - height) * .31
-    distance += np.maximum(height - .32, 0) * .12
-    radius = np.interp(height, [-.15, .10, .22, .32], [.24, .25, .265, .265])
+    distance = (-.145 - height) * .558
+    distance += np.maximum(height - .32, 0) * .216
+    radius = np.interp(height, [-.15, .10, .22, .32], [.432, .45, .477, .477])
     mapped = wrist + distance[:, None] * axis
     mapped += points[:, 2, None] * radius[:, None] * width
     mapped += points[:, 0, None] * radius[:, None] * normal
-    palm = wrist + ((-.145-height)*.40)[:, None]*axis
-    palm += points[:, 2, None]*.29*width
-    palm += (points[:, 0]-.025-.40*points[:, 2])[:, None]*.23*normal
+    palm = wrist + ((-.145-height)*.72)[:, None]*axis
+    palm += points[:, 2, None]*.522*width
+    palm += (points[:, 0]-.025-.40*points[:, 2])[:, None]*.414*normal
     blend = smooth((-.13-height)/.055)
     mapped = mapped*(1-blend[:, None])+palm*blend[:, None]
     for i, finger in enumerate(FINGERS):
@@ -110,7 +110,7 @@ def fit_side(points, faces, names, bones, body, side):
             centers.append(center)
         centers = np.array(centers)
         target_centers = np.array([bones[f'{side}Hand{finger}{j}'] for j in range(1,5)])
-        target_centers[-1] += io.unit(target_centers[-1]-target_centers[-2])*.002
+        target_centers[-1] += io.unit(target_centers[-1]-target_centers[-2])*.0036
         alignment[finger] = {"source_sections":centers.tolist(), "target_sections":target_centers.tolist()}
         t = (own_points[:, 1]-y_root)/(y_tip-y_root)
         source_center = np.column_stack([np.interp(t, fractions, centers[:, j]) for j in range(3)])
@@ -121,13 +121,13 @@ def fit_side(points, faces, names, bones, body, side):
         if side == 'Left':
             target_normal = -target_normal
         cross = own_points-source_center
-        fitted = target_center+cross[:,2,None]*.23*target_width+cross[:,0,None]*.22*target_normal
+        fitted = target_center+cross[:,2,None]*.414*target_width+cross[:,0,None]*.396*target_normal
         amount = smooth((t+.08)/.35)
         mapped[rows] = mapped[rows]*(1-amount[:,None])+fitted*amount[:,None]
     own = np.array([name.startswith(side) and ('Hand' in name or 'Arm' in name) for name in names])
     own_faces = body[2][:, own].sum(1)[body[1]].mean(1) > .5
     surface = (body[0], body[1][own_faces], body[2])
-    rest_points = wrist + ((-.145-height)*.31)[:, None]*axis + points[:,2,None]*.31*width + points[:,0,None]*.31*normal
+    rest_points = wrist + ((-.145-height)*.558)[:, None]*axis + points[:,2,None]*.558*width + points[:,0,None]*.558*normal
     fixed = (height > -.175) | (height < -.37) | ((labels == 4) & (height < -.31))
     arap_path = OUT / f'arap-{side}.npz'
     np.savez(arap_path, points=rest_points, faces=faces, colors=np.zeros_like(points), fixed=fixed, targets=mapped)
@@ -146,7 +146,7 @@ def fit_side(points, faces, names, bones, body, side):
                 selected = (body[0], body[1][finger_faces], body[2])
             closest, outward, _ = surface_tools.nearest_surface(mapped[rows], selected)
             signed = np.sum((mapped[rows] - closest) * outward, axis=1)
-            clearance = np.where(points[rows, 1] > .19, .008, np.where(points[rows, 1] > -.14, .004, .0016))
+            clearance = np.where(points[rows, 1] > .19, .0144, np.where(points[rows, 1] > -.14, .0072, .00288))
             push = np.maximum(clearance - signed, 0)
             mapped[rows] += push[:, None] * outward
     dense = np.zeros((len(points), len(names)))
@@ -221,11 +221,11 @@ def elbow_lining(doc, raw, body, names, bones, side, material):
     along = offset @ axis
     radius = np.linalg.norm(offset - along[:, None] * axis, axis=1)
     ids = [names.index(side + suffix) for suffix in ['Arm', 'ForeArm']]
-    selected = (along > -.06) & (along < .035) & (radius < .055) & (dense[:, ids].sum(1) > .99)
+    selected = (along > -.108) & (along < .063) & (radius < .099) & (dense[:, ids].sum(1) > .99)
     triangles = faces[selected[faces].all(1)]
     used, indices = np.unique(triangles, return_inverse=True)
     normals = io.smooth_normals(points, faces)[used]
-    positions = points[used] + normals * .0008
+    positions = points[used] + normals * .00144
     weights = np.zeros_like(dense[used])
     weights[:, ids] = dense[used][:, ids]
     joints, weights = compact_weights(weights)
@@ -239,7 +239,7 @@ def main():
     args = parser.parse_args()
     OUT.mkdir(exist_ok=True)
     assert digest(SOURCE) == '8679c17277ec4fc73d683ffbbf07a00c970e550d537ed0514db80e5492815b57'
-    assert digest(BODY) == '9564457e8b23275aaf8cd0ff74c318baa4bbfa6b1c8afe608037cf7f40cf0982'
+    assert digest(BODY) == '3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5'
     base, base_raw, names, bones, body = setup_body()
     doc, source_raw = read_glb(SOURCE)
     source_images = [view_bytes(doc, source_raw, im['bufferView']) for im in doc['images']]
@@ -285,7 +285,7 @@ def main():
         along = (body[0] - elbow) @ axis
         radial = np.linalg.norm(body[0] - elbow - along[:, None] * axis, axis=1)
         sign = -1 if side == 'Right' else 1
-        covered = (along > -.004) & (radial < .072) & (body[0][:, 0] * sign > .13)
+        covered = (along > -.0072) & (radial < .1296) & (body[0][:, 0] * sign > .234)
         hide |= covered[body[1]].all(1)
     mask = {'body':str(BODY.relative_to(ROOT)), 'body_sha256':digest(BODY), 'mesh_index':0, 'primitive_index':0,
             'primitive_triangles':len(body[1]), 'source_triangles':sum(base['accessors'][pr['indices']]['count']//3 for pr in base['meshes'][0]['primitives']), 'hide_triangle_indices':np.flatnonzero(hide).tolist()}
@@ -302,7 +302,7 @@ def main():
         offset = top_points-elbow
         along = offset@axis
         radius = np.linalg.norm(offset-along[:,None]*axis, axis=1)
-        covered |= (along > -.025) & (radius < .07)
+        covered |= (along > -.045) & (radius < .126)
     sleeve_mask = {'source_sha256':digest(top_path), 'mesh_index':0, 'primitive_index':0, 'primitive_triangles':len(top_faces), 'hide_triangle_indices':np.flatnonzero(covered[top_faces].all(1)).tolist()}
     (OUT / 'top-occlusion.json').write_text(json.dumps(sleeve_mask, indent=2)+'\n')
     report = {'date':'2026-10-14', 'source_sha256':digest(SOURCE), 'body_sha256':digest(BODY), 'output_sha256':digest(target),

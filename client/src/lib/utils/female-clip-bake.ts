@@ -39,7 +39,6 @@ export function bakeFemaleClips(
       meshes.find((mesh) => mesh.userData.female_body)!,
       meshes.filter((mesh) => mesh.userData.female_part === part),
       scene.userData.female_parts[part].heel_pose,
-      scene.userData.meters_per_source_unit,
       LIFT_VERTEX_STRIDE
     )
   )

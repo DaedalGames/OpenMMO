@@ -46,8 +46,8 @@ try {
   const bp = body.geometry.attributes.position
   for (let i = 0; i < bp.count; i++)
     if (
-      (side === 'right' ? bp.getX(i) < -0.02 : bp.getX(i) > 0.02) &&
-      bp.getY(i) < 0.28
+      (side === 'right' ? bp.getX(i) < -0.036 : bp.getX(i) > 0.036) &&
+      bp.getY(i) < 0.504
     )
       indices.push(i)
   const remap = new Map(indices.map((v, i) => [v, i]))

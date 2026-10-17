@@ -24,10 +24,10 @@ try {
     const points = [], roots = [], edges = []
     for (let i = 0; i < position.count; i++) {
       const point = mesh.getVertexPosition(i, new THREE.Vector3())
-      assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1e-6)
+      assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1.8e-6)
       points.push(point)
       assert.ok(Math.abs(weights.getX(i) + weights.getY(i) + weights.getZ(i) + weights.getW(i) - 1) < 1e-6)
-      if (position.getY(i) >= .895) {
+      if (position.getY(i) >= 1.611) {
         assert.equal(weights.getX(i), 1)
         assert.equal(bones[joints.getX(i)].name, 'Head')
         roots.push({ i, local: point.clone().applyMatrix4(inverseHead) })
@@ -38,7 +38,7 @@ try {
       for (let j = 0; j < 3; j++) {
         const a = index.getX(i + j), b = index.getX(i + (j + 1) % 3)
         const length = points[a].distanceTo(points[b])
-        if (length > .002) edges.push({ a, b, length })
+        if (length > .0036) edges.push({ a, b, length })
       }
     return { points, roots, edges }
   })
@@ -62,7 +62,7 @@ try {
       if (frame === 24)
         snapshots.push({ clip: clip.name, time, matrices: Object.fromEntries(bones.map((bone, i) => [bone.name, bone.matrixWorld.clone().multiply(inverseRest[i]).toArray()])) })
     }
-    assert.ok(rootError < 1e-5, `${clip.name}: detached hair root`)
+    assert.ok(rootError < 1.8e-5, `${clip.name}: detached hair root`)
     assert.ok(maximumStretch < 3, `${clip.name}: excessive stretching ${maximumStretch}`)
     clips.push({ name: clip.name, samples: 61, maximum_root_error: rootError, maximum_edge_stretch: maximumStretch, stretch_review_required: maximumStretch >= 2, maximum_motion: maximumMotion })
   }

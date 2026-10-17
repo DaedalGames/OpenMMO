@@ -25,30 +25,29 @@ OUTPUT = DIRECTORY / 'fitted_v3'
 OUTPUT.mkdir(exist_ok=True)
 REPORT = ROOT / 'doc/assets/modular-female-barbarian-boots-fitting-v3.json'
 KNIGHT_FITTING = ROOT / 'assets/items/female_knight_boots/fitted_v5/fitting.json'
-CHARACTER_HEIGHT_M = 1.8
-SOLE_GAP = .0015
-RING_CLEARANCE = .003
-MAX_RING_THICKNESS = .006
-STRAP_CLEARANCE = .002
-TOE_MARGIN = .004
-HEEL_MARGIN = .003
+SOLE_GAP = .0027
+RING_CLEARANCE = .0054
+MAX_RING_THICKNESS = .0108
+STRAP_CLEARANCE = .0036
+TOE_MARGIN = .0072
+HEEL_MARGIN = .0054
 SHOE_YAW_ADJUSTMENT_DEGREES = -7
-LEFT_LATERAL_OFFSET = .0055
-LEFT_REARWARD_OFFSET = .003
-RIGHT_TOE_LIFT = .003
+LEFT_LATERAL_OFFSET = .0099
+LEFT_REARWARD_OFFSET = .0054
+RIGHT_TOE_LIFT = .0054
 RIGHT_TOE_FOLLOW = .45
-RIGHT_INSTEP_LIFT = .004
-RIGHT_INSTEP_CLEARANCE = .001
-LEFT_FRONT_RING_CLEARANCE = .002
-LEFT_FRONT_RING_INSET = .005
-CONNECTOR_EMBED = .0002
-CONNECTOR_THICKNESS = .0015
-CONNECTOR_OUTER_CLEARANCE = .0012
-RING_WALL_THICKNESS = .0015
-RIGHT_RING_WALL_THICKNESS = .003
+RIGHT_INSTEP_LIFT = .0072
+RIGHT_INSTEP_CLEARANCE = .0018
+LEFT_FRONT_RING_CLEARANCE = .0036
+LEFT_FRONT_RING_INSET = .009
+CONNECTOR_EMBED = .00036
+CONNECTOR_THICKNESS = .0027
+CONNECTOR_OUTER_CLEARANCE = .00216
+RING_WALL_THICKNESS = .0027
+RIGHT_RING_WALL_THICKNESS = .0054
 REAR_RING_WIDTH_REDUCTION = .16
-LOWER_RING_WALL_THICKNESS = .002
-FRONT_STRAP_THICKNESS = .0015
+LOWER_RING_WALL_THICKNESS = .0036
+FRONT_STRAP_THICKNESS = .0027
 HEEL_STRAP_STRAIGHTENING = {'Right': (1., 1., .85, .08), 'Left': (1., 1., 1., .6)}
 
 
@@ -57,7 +56,7 @@ def smooth(value):
     return t * t * (3 - 2 * t)
 
 
-def smooth_share(points, share, radius=.004):
+def smooth_share(points, share, radius=.0072):
     distance, neighbors = cKDTree(points).query(points, min(32, len(points)))
     kernel = np.exp(-(distance / radius) ** 2)
     for _ in range(2):
@@ -98,11 +97,11 @@ class Surface:
         normals = self.mesh.face_normals[triangles]
         return np.einsum('ij,ij->i', points - closest, normals), normals
 
-    def ray(self, origin, direction, limit=1.):
+    def ray(self, origin, direction, limit=1.8):
         e1, e2 = self.b - self.a, self.c - self.a
         h = np.cross(direction, e2)
         det = (e1 * h).sum(1)
-        valid = np.abs(det) > 1e-12
+        valid = np.abs(det) > 3.24e-12
         inv = np.where(valid, 1 / np.where(valid, det, 1), 0)
         s = origin - self.a
         u = (s * h).sum(1) * inv
@@ -127,7 +126,7 @@ def clear_surface(points, faces, surface, movable, clearance, welded, horizontal
         for sample, bary in enumerate(sample_weights):
             influence = movable_faces * bary
             divisor = (influence ** 2).sum(1)
-            bad = (deficit[:, sample] > .00001) & (divisor > 0)
+            bad = (deficit[:, sample] > .000018) & (divisor > 0)
             displacement = direction.reshape(-1, len(sample_weights), 3)[:, sample] * deficit[:, sample, None]
             for corner in range(3):
                 factor = np.divide(influence[:, corner], divisor, out=np.zeros(len(faces)), where=divisor > 0)
@@ -139,9 +138,9 @@ def clear_surface(points, faces, surface, movable, clearance, welded, horizontal
         np.add.at(welded_correction, welded, correction)
         np.add.at(welded_counts, welded, counts)
         step = welded_correction[welded] / np.maximum(welded_counts[welded, None], 1)
-        step *= np.minimum(1, .0005 / np.maximum(np.linalg.norm(step, axis=1), 1e-12))[:, None]
+        step *= np.minimum(1, .0009 / np.maximum(np.linalg.norm(step, axis=1), 1.8e-12))[:, None]
         points += step * .8
-        if np.linalg.norm(step, axis=1).max() < .00001:
+        if np.linalg.norm(step, axis=1).max() < .000018:
             break
 
 
@@ -175,7 +174,7 @@ def attach_connector(points, faces, bands, first_vertex, joints, weights, bone_c
     for inner, outer in [(0, 3), (1, 2)]:
         x = rows[:, [inner, outer], 0].mean(1)
         rows[:, inner, 0] = rows[:, outer, 0] = x
-        origins = np.column_stack([x, heights, np.full(len(rows), -.2)])
+        origins = np.column_stack([x, heights, np.full(len(rows), -.36)])
         locations, rays, triangles = mesh.ray.intersects_location(origins, np.tile([0., 0., 1.], (len(rows), 1)))
         depth = np.full(len(rows), np.nan)
         shares = np.zeros((len(rows), bone_count))
@@ -215,7 +214,7 @@ def attach_connector(points, faces, bands, first_vertex, joints, weights, bone_c
         near = ((triangles[:, :, :2].min(1) <= upper).all(1)
                 & (triangles[:, :, :2].max(1) >= lower).all(1))
         matrix = (triangle[1:, :2] - triangle[0, :2]).T
-        if abs(np.linalg.det(matrix)) < 1e-12:
+        if abs(np.linalg.det(matrix)) < 3.24e-12:
             continue
         for band in triangles[near]:
             polygon = clip_triangle_xy(band.copy(), triangle)
@@ -300,7 +299,7 @@ def separate_front_strap(points, faces, inner_ids, outer_ids, joints, weights, b
     for face in outer_faces:
         triangle = projected[face]
         matrix = (triangle[1:, :2] - triangle[0, :2]).T
-        if abs(np.linalg.det(matrix)) < 1e-12:
+        if abs(np.linalg.det(matrix)) < 3.24e-12:
             continue
         for inner in inner_triangles:
             polygon = clip_triangle_xy(inner.copy(), triangle)
@@ -319,13 +318,13 @@ def separate_front_strap(points, faces, inner_ids, outer_ids, joints, weights, b
                     deficits.append(deficit * 1000)
     matrix = np.array(constraints)
     deficit = np.array(deficits)
-    initial = linprog(np.ones(len(groups)), A_ub=-matrix, b_ub=-deficit, bounds=(0, 30), method='highs')
+    initial = linprog(np.ones(len(groups)), A_ub=-matrix, b_ub=-deficit, bounds=(0, 54), method='highs')
     if not initial.success:
         raise ValueError('Front strap separation is infeasible')
     result = minimize(lambda value: .5 * value @ value, initial.x, jac=lambda value: value,
-                      bounds=[(0, 30)] * len(groups), constraints=LinearConstraint(matrix, deficit, np.inf),
+                      bounds=[(0, 54)] * len(groups), constraints=LinearConstraint(matrix, deficit, np.inf),
                       method='SLSQP', options={'ftol': 1e-9, 'maxiter': 200})
-    if not result.success or (matrix @ result.x - deficit).min() < -1e-5:
+    if not result.success or (matrix @ result.x - deficit).min() < -1.8e-5:
         raise ValueError('Front strap separation did not converge')
     points[vertices] += (result.x[lookup[welded[vertices]]] / 1000)[:, None] * projection[:, 2]
     surface = trimesh.Trimesh(points.copy(), inner_faces, process=False)
@@ -403,10 +402,10 @@ posed_normals = np.einsum('nij,nj->ni', deform[:, :3, :3], bn)
 posed_normals /= np.linalg.norm(posed_normals, axis=1, keepdims=True)
 body_labels = islands(bv, bf)
 skin_label = np.bincount(body_labels).argmax()
-leg = bf[(body_labels[bf[:, 0]] == skin_label) & (posed[bf, 1] < .30).all(1) & (posed[bf, 0] < -.03).all(1)]
+leg = bf[(body_labels[bf[:, 0]] == skin_label) & (posed[bf, 1] < .54).all(1) & (posed[bf, 0] < -.054).all(1)]
 skin = Surface(posed, leg, posed_normals)
 foot = posed[np.unique(leg)]
-foot = foot[foot[:, 1] < .10]
+foot = foot[foot[:, 1] < .18]
 names = [base['nodes'][i]['name'] for i in base['skins'][0]['joints']]
 node_index = {node.get('name'): i for i, node in enumerate(base['nodes'])}
 toe_base = np.array(pose_config['posed_foot_positions_before_root_lift']['RightToeBase'])
@@ -458,7 +457,7 @@ heel_back = source[lower, 0].max()
 scale = foot_length / (heel_back - toe_tip)
 points_local = np.column_stack([source[:, 2], source[:, 1], -source[:, 0]]) * scale
 normals_local = np.column_stack([source_normals[:, 2], source_normals[:, 1], -source_normals[:, 0]])
-forefoot_local = foot_local[foot_local[:, 2] > toe_local[2] - .01]
+forefoot_local = foot_local[foot_local[:, 2] > toe_local[2] - .018]
 points_local += np.array([
     (forefoot_local[:, 0].min() + forefoot_local[:, 0].max()) / 2 - (points_local[sole, 0].min() + points_local[sole, 0].max()) / 2,
     foot_local[:, 1].min() - SOLE_GAP - points_local[sole & (source[:, 1] > -.47), 1].max(),
@@ -487,9 +486,9 @@ front_fixed_inner = np.unique(np.r_[front_inner, *[group[1] for group in front_s
 
 footbed = lower & (normals[:, 1] > .5) & (source[:, 1] < -.05) & ~toe_strap
 for i in np.flatnonzero(footbed):
-    hit = skin.ray(points[i] - up * .01, up, .06)
+    hit = skin.ray(points[i] - up * .018, up, .108)
     if hit is not None:
-        targets[i, 1] = points[i, 1] - .01 + hit - SOLE_GAP
+        targets[i, 1] = points[i, 1] - .018 + hit - SOLE_GAP
         fixed[i] = True
 ground = -json.loads(KNIGHT_FITTING.read_text())['posed_floor_offset']
 sole_bottom = lower & (normals[:, 1] < -.5) & (source[:, 1] < -.45) & (source[:, 0] < .1)
@@ -501,10 +500,10 @@ tip = post & (source[:, 1] < -.49)
 targets[tip, 1] = ground
 fixed |= tip
 
-section_heights = np.arange(-.02, .16, .002)
+section_heights = np.arange(-.036, .288, .0036)
 section_centers = []
 for height in section_heights:
-    section = skin.samples[np.abs(skin.samples[:, 1] - height) < .002]
+    section = skin.samples[np.abs(skin.samples[:, 1] - height) < .0036]
     section_centers.append((section.min(0) + section.max(0)) / 2)
 section_centers = np.array(section_centers)
 
@@ -527,9 +526,9 @@ for ring in rings:
     for k, i in enumerate(np.flatnonzero(ring)):
         ray = np.array([direction[k, 0], 0, direction[k, 1]])
         origin = axis_at(points[i, 1])
-        hit = skin.ray(origin + ray * .15, -ray, .15)
+        hit = skin.ray(origin + ray * .27, -ray, .27)
         if hit is not None:
-            targets[i] = origin + ray * (.15 - hit + RING_CLEARANCE + depth_over_inner[k])
+            targets[i] = origin + ray * (.27 - hit + RING_CLEARANCE + depth_over_inner[k])
     fixed |= ring
 for buckle in buckles:
     nearest = cKDTree(points[ring_any]).query(points[buckle].mean(0))[1]
@@ -540,7 +539,7 @@ for buckle in buckles:
     for _ in range(20):
         if skin.signed(moved)[0].min() >= RING_CLEARANCE:
             break
-        moved += away * .0005
+        moved += away * .0009
     targets[buckle] = moved
     fixed |= buckle
 
@@ -568,8 +567,8 @@ fitted_normals /= np.linalg.norm(fitted_normals, axis=1, keepdims=True)
 leg_bone, foot_bone, toe_bone = (names.index('Right' + name) for name in ['Leg', 'Foot', 'ToeBase'])
 heel_top = fitted[seat, 1].max()
 ring_bottom = fitted[ring_any, 1].min()
-shin = np.where(np.any(buckles, axis=0) | ring_any, 1, smooth((fitted[:, 1] - heel_top) / max(ring_bottom - heel_top, .01)))
-toe = (1 - shin) * .2 * smooth((fitted[:, 2] - (toe_base[2] - .008)) / .03) * smooth((fitted[:, 1] - ground - .002) / .01)
+shin = np.where(np.any(buckles, axis=0) | ring_any, 1, smooth((fitted[:, 1] - heel_top) / max(ring_bottom - heel_top, .018)))
+toe = (1 - shin) * .2 * smooth((fitted[:, 2] - (toe_base[2] - .0144)) / .054) * smooth((fitted[:, 1] - ground - .0036) / .018)
 weights = np.column_stack([shin, 1 - shin - toe, toe, np.zeros(len(fitted))])
 joints = np.tile([leg_bone, foot_bone, toe_bone, 0], (len(fitted), 1))
 ring_points = cKDTree(fitted[ring_any])
@@ -592,13 +591,13 @@ for ring in rings:
     weights[ring] = np.column_stack([1 - share, share, np.zeros((ring.sum(), 2))])
 strap &= ~toe_strap
 nearest = np.flatnonzero(ring_any)[ring_points.query(fitted[strap])[1]]
-blend = np.clip((fitted[strap, 1] - heel_top) / max(ring_bottom - heel_top, .01), 0, 1)[:, None]
+blend = np.clip((fitted[strap, 1] - heel_top) / max(ring_bottom - heel_top, .018), 0, 1)[:, None]
 weights[strap] = (1 - blend) * np.array([0, 1, 0, 0]) + blend * weights[nearest]
 for buckle in buckles:
     nearest = ring_points.query(fitted[buckle].mean(0), 20)[1]
     weights[buckle] = weights[np.flatnonzero(ring_any)[nearest]].mean(0)
 
-toe_share = .35 * smooth((fitted[:, 1] - ground - .004) / .02) * smooth((fitted[:, 2] - toe_base[2] + .015) / .04)
+toe_share = .35 * smooth((fitted[:, 1] - ground - .0072) / .036) * smooth((fitted[:, 2] - toe_base[2] + .027) / .072)
 weights[toe_strap, 0] = 0
 weights[toe_strap, 1] = 1 - toe_share[toe_strap]
 weights[toe_strap, 2] = toe_share[toe_strap]
@@ -607,19 +606,19 @@ weights[toe_strap, 3] = 0
 original_vertex_count = len(fitted)
 rear_sections = []
 for ring in rings:
-    rear = ring & (np.abs(fitted[:, 0] - axis_at(fitted[ring, 1].mean())[0]) < .012)
+    rear = ring & (np.abs(fitted[:, 0] - axis_at(fitted[ring, 1].mean())[0]) < .0216)
     rear_sections.append((fitted[ring, 1].mean(), fitted[rear, 2].min()))
 rear_sections.sort()
 rear_sections = np.array(rear_sections)
-heights = np.linspace(fitted[ring_any, 1].min() + .001, fitted[ring_any, 1].max() - .001, 19)
+heights = np.linspace(fitted[ring_any, 1].min() + .0018, fitted[ring_any, 1].max() - .0018, 19)
 connector = []
 for y in heights:
     center = axis_at(y)
     rear_z = np.interp(y, rear_sections[:, 0], rear_sections[:, 1])
-    for x_offset, thickness in [(-.005, 0), (.005, 0), (.005, .0015), (-.005, .0015)]:
+    for x_offset, thickness in [(-.009, 0), (.009, 0), (.009, .0027), (-.009, .0027)]:
         x = center[0] + x_offset
-        hit = skin.ray(np.array([x, y, -.2]), np.array([0., 0., 1.]))
-        z = min(-.2 + hit - .0035, rear_z - .0005) if hit is not None else rear_z - .0005
+        hit = skin.ray(np.array([x, y, -.36]), np.array([0., 0., 1.]))
+        z = min(-.36 + hit - .0063, rear_z - .0009) if hit is not None else rear_z - .0009
         connector.append([x, y, z - thickness])
 connector = np.array(connector)
 connector_faces = []
@@ -643,7 +642,7 @@ for corner in range(3):
                   barycentric[:, corner] * body_weights[vertex, influence])
 connector_weights = connector_weights[:, [leg_bone, foot_bone, toe_bone, 0]]
 connector_weights /= connector_weights.sum(1, keepdims=True)
-connector_share = smooth_share(connector, connector_weights[:, 1] + connector_weights[:, 2], .008)
+connector_share = smooth_share(connector, connector_weights[:, 1] + connector_weights[:, 2], .0144)
 connector_weights = np.column_stack([1 - connector_share, connector_share, np.zeros((len(connector), 2))])
 leather_faces = faces[(post[faces]).all(1)]
 uv_triangle = uv[leather_faces[np.argmax(trimesh.triangles.area(fitted[leather_faces]))]]
@@ -697,14 +696,14 @@ for side in ['Right', 'Left']:
     weights_side = weights.copy()
     uv_side = uv.copy()
     if side == 'Right':
-        strap_progress = np.clip((points_side[:, 1] - ground - .005) / .02, 0, 1)
+        strap_progress = np.clip((points_side[:, 1] - ground - .009) / .036, 0, 1)
         points_side[:, 1] += RIGHT_INSTEP_LIFT * smooth(strap_progress) * toe_strap
-        strap_slope = RIGHT_INSTEP_LIFT * 6 * strap_progress * (1 - strap_progress) / .02 * toe_strap
+        strap_slope = RIGHT_INSTEP_LIFT * 6 * strap_progress * (1 - strap_progress) / .036 * toe_strap
         normals_side[:, 1] /= 1 + strap_slope
         normals_side /= np.linalg.norm(normals_side, axis=1, keepdims=True)
         _, strap_direction = skin.signed(points_side)
         points_side += (RIGHT_INSTEP_CLEARANCE * smooth(strap_progress) * toe_strap)[:, None] * strap_direction
-        toe_start = toe_local[2] + .038
+        toe_start = toe_local[2] + .0684
         toe_span = (points_side @ forward).max() - toe_start
         toe_progress = np.clip((points_side @ forward - toe_start) / toe_span, 0, 1)
         ankle_progress = np.clip((points_side[:, 1] - heel_top) / (ring_bottom - heel_top), 0, 1)
@@ -719,7 +718,7 @@ for side in ['Right', 'Left']:
         for probe, share in zip(probes, probe_share):
             if share < .001:
                 continue
-            hit = skin.ray(probe, up, .04)
+            hit = skin.ray(probe, up, .072)
             if hit is not None:
                 clearance = min(SOLE_GAP * .2, hit * .2)
                 right_toe_lift = min(right_toe_lift, (hit - clearance) / share)
@@ -729,7 +728,7 @@ for side in ['Right', 'Left']:
         gradient[:, 1] = -right_toe_lift * toe_progress ** 2 * 6 * ankle_progress * (1 - ankle_progress) / (ring_bottom - heel_top)
         normals_side -= gradient * (normals_side[:, 1] / (1 + gradient[:, 1]))[:, None]
         normals_side /= np.linalg.norm(normals_side, axis=1, keepdims=True)
-        follow_start = toe_local[2] + .026
+        follow_start = toe_local[2] + .0468
         follow_span = (points_side @ forward).max() - follow_start
         follow_progress = np.clip((points_side @ forward - follow_start) / follow_span, 0, 1)
         toe_follow = RIGHT_TOE_FOLLOW * follow_progress ** 2 * ankle_share
@@ -750,12 +749,12 @@ for side in ['Right', 'Left']:
         normals_side /= np.linalg.norm(normals_side, axis=1, keepdims=True)
         for name in ['Leg', 'Foot', 'ToeBase']:
             joints_side[joints == names.index('Right' + name)] = names.index('Left' + name)
-        left_faces = bf[(body_labels[bf[:, 0]] == skin_label) & (posed[bf, 1] < .30).all(1)
-                        & (posed[bf, 0] > .03).all(1)]
+        left_faces = bf[(body_labels[bf[:, 0]] == skin_label) & (posed[bf, 1] < .54).all(1)
+                        & (posed[bf, 0] > .054).all(1)]
         left_skin = Surface(posed, left_faces, posed_normals)
         left_centers = []
         for height in section_heights:
-            section = left_skin.samples[np.abs(left_skin.samples[:, 1] - height) < .002]
+            section = left_skin.samples[np.abs(left_skin.samples[:, 1] - height) < .0036]
             left_centers.append((section.min(0) + section.max(0)) / 2)
         left_centers = np.array(left_centers)
         front_ring_area = ring_any.copy()
@@ -778,11 +777,11 @@ for side in ['Right', 'Left']:
         left_front_ring_inset = np.linalg.norm(ring_movement, axis=1).max()
         front_neighborhood = np.zeros(len(fitted), dtype=bool)
         front_neighborhood[np.unique(faces[toe_strap[faces].any(1)])] = True
-        front_neighborhood &= points_side[:, 1] > ground + .004
+        front_neighborhood &= points_side[:, 1] > ground + .0072
         adjustable = front_ring_area | front_neighborhood | (np.arange(len(fitted)) >= original_vertex_count)
         front_ring = np.linalg.norm(ring_movement, axis=1) > 0
         ring_clearance = np.where(front_ring, LEFT_FRONT_RING_CLEARANCE, RING_CLEARANCE)
-        clearance = np.where(front_ring_area, ring_clearance, STRAP_CLEARANCE + .0025)
+        clearance = np.where(front_ring_area, ring_clearance, STRAP_CLEARANCE + .0045)
         for _ in range(5):
             distance, direction = left_skin.signed(points_side)
             inside = adjustable & (distance < clearance)
@@ -810,7 +809,7 @@ for side in ['Right', 'Left']:
             weights_side[ring] = np.column_stack([1 - foot_share, foot_share, np.zeros((ring.sum(), 2))])
             joints_side[ring] = [*left_bones, 0]
         near = np.flatnonzero(ring_any)[cKDTree(points_side[ring_any]).query(points_side[strap])[1]]
-        left_blend = np.clip((points_side[strap, 1] - heel_top) / max(ring_bottom - heel_top, .01), 0, 1)[:, None]
+        left_blend = np.clip((points_side[strap, 1] - heel_top) / max(ring_bottom - heel_top, .018), 0, 1)[:, None]
         weights_side[strap] = (1 - left_blend) * np.array([0, 1, 0, 0]) + left_blend * weights_side[near]
         joints_side[strap] = [*left_bones, 0]
         for buckle in buckles:
@@ -940,19 +939,19 @@ write_glb(OUTPUT / 'boots_female_barbarian.glb', doc, binary)
 garment = Surface(np.vstack([right_fitted, left_fit['left_fitted']]), np.vstack([right_faces, faces[:, ::-1] + len(fitted)]),
                   np.vstack([fitted_normals, fitted_normals * [-1, 1, 1]]))
 covered = np.zeros(len(bv), dtype=bool)
-for i in np.flatnonzero((posed[:, 1] < .06) & (body_labels == skin_label) & (posed_normals[:, 1] < -.3)):
-    covered[i] = garment.ray(posed[i], posed_normals[i], .012) is not None
+for i in np.flatnonzero((posed[:, 1] < .108) & (body_labels == skin_label) & (posed_normals[:, 1] < -.3)):
+    covered[i] = garment.ray(posed[i], posed_normals[i], .0216) is not None
 skin_points = np.flatnonzero(body_labels == skin_label)
 near = cKDTree(posed[skin_points])
 for i in np.flatnonzero(covered):
-    if not covered[skin_points[near.query_ball_point(posed[i], .005)]].all():
+    if not covered[skin_points[near.query_ball_point(posed[i], .009)]].all():
         covered[i] = False
 hidden = covered[bf].all(1)
 mask = {'body': str(BODY.relative_to(ROOT)), 'body_sha256': pose_config['body_sha256'],
         'mesh_index': 0, 'primitive_index': 0, 'primitive_triangles': len(bf),
         'hide_triangle_indices': np.flatnonzero(hidden).tolist(), 'covered_skin_triangles': int(hidden.sum()),
         'scope': 'Reversible equipment mask on this exact body. Underside skin of the foot whose posed normal ray meets the '
-                 'footbed within 0.012 and lies 0.005 inside the covered area; everything else stays visible. Restore on unequip/load failure.'}
+                 'footbed within 0.0216 m and lies 0.009 m inside the covered area; everything else stays visible. Restore on unequip/load failure.'}
 (OUTPUT / 'body-occlusion.json').write_text(json.dumps(mask, indent=2) + '\n')
 
 np.savez(OUTPUT / 'fit-data.npz', source=source, start=start, fitted=right_fitted, faces=faces, fixed=fixed,
@@ -976,39 +975,33 @@ report = {'date': '2026-10-15',
           'heel_pose': {'pitch_degrees': pose_config['pitch_degrees'], 'shared_with': 'female_knight_boots', 'toe_animation_override': False},
           'shoe_yaw_degrees': {'right': float(np.rad2deg(np.arctan2(forward[0], forward[2]))), 'left': float(-np.rad2deg(np.arctan2(forward[0], forward[2])))},
           'shoe_yaw_adjustment_degrees': {'right': SHOE_YAW_ADJUSTMENT_DEGREES, 'left': -SHOE_YAW_ADJUSTMENT_DEGREES},
-          'lateral_offset_source_units': {'right': 0, 'left': LEFT_LATERAL_OFFSET},
-          'lateral_offset_m': {'right': 0, 'left': LEFT_LATERAL_OFFSET * CHARACTER_HEIGHT_M},
-          'rearward_offset_source_units': {'right': 0, 'left': LEFT_REARWARD_OFFSET},
-          'rearward_offset_m': {'right': 0, 'left': LEFT_REARWARD_OFFSET * CHARACTER_HEIGHT_M},
-          'toe_lift_source_units': {'right': float(right_toe_lift), 'left': 0},
-          'toe_lift_m': {'right': float(right_toe_lift * CHARACTER_HEIGHT_M), 'left': 0},
+          'lateral_offset_m': {'right': 0, 'left': LEFT_LATERAL_OFFSET},
+          'rearward_offset_m': {'right': 0, 'left': LEFT_REARWARD_OFFSET},
+          'toe_lift_m': {'right': float(right_toe_lift), 'left': 0},
           'toe_animation_follow': {'right': RIGHT_TOE_FOLLOW, 'left': 0},
           'toe_profile': 'Quadratic toe lift and animation blend for a continuous, gradually increasing curve.',
-          'instep_strap_lift_m': {'right': RIGHT_INSTEP_LIFT * CHARACTER_HEIGHT_M, 'left': 0},
-          'instep_surface_offset_m': {'right': RIGHT_INSTEP_CLEARANCE * CHARACTER_HEIGHT_M, 'left': 0},
+          'instep_strap_lift_m': {'right': RIGHT_INSTEP_LIFT, 'left': 0},
+          'instep_surface_offset_m': {'right': RIGHT_INSTEP_CLEARANCE, 'left': 0},
           'ground_source': str(KNIGHT_FITTING.relative_to(ROOT)),
-          'posed_ground': float(ground), 'heel_height_m': float((fitted[seat, 1].min() - ground) * CHARACTER_HEIGHT_M),
-          'meters_per_source_unit': CHARACTER_HEIGHT_M,
-          'clearance_source_units': {'sole': SOLE_GAP, 'rings': RING_CLEARANCE, 'straps': STRAP_CLEARANCE},
-          'clearance_m': {'sole': SOLE_GAP * CHARACTER_HEIGHT_M, 'rings': RING_CLEARANCE * CHARACTER_HEIGHT_M, 'straps': STRAP_CLEARANCE * CHARACTER_HEIGHT_M},
-          'left_front_ring_clearance_m': LEFT_FRONT_RING_CLEARANCE * CHARACTER_HEIGHT_M,
-          'left_front_ring_maximum_inset_m': float(left_front_ring_inset * CHARACTER_HEIGHT_M),
-          'connector_attachment_embed_m': CONNECTOR_EMBED * CHARACTER_HEIGHT_M,
-          'connector_thickness_m': CONNECTOR_THICKNESS * CHARACTER_HEIGHT_M,
-          'connector_outer_clearance_target_m': CONNECTOR_OUTER_CLEARANCE * CHARACTER_HEIGHT_M,
-          'heel_strap_maximum_adjustment_m': {side: value * CHARACTER_HEIGHT_M for side, value in heel_strap_adjustments.items()},
+          'posed_ground': float(ground), 'heel_height_m': float(fitted[seat, 1].min() - ground),
+          'clearance_m': {'sole': SOLE_GAP, 'rings': RING_CLEARANCE, 'straps': STRAP_CLEARANCE},
+          'left_front_ring_clearance_m': LEFT_FRONT_RING_CLEARANCE,
+          'left_front_ring_maximum_inset_m': float(left_front_ring_inset),
+          'connector_attachment_embed_m': CONNECTOR_EMBED,
+          'connector_thickness_m': CONNECTOR_THICKNESS,
+          'connector_outer_clearance_target_m': CONNECTOR_OUTER_CLEARANCE,
+          'heel_strap_maximum_adjustment_m': heel_strap_adjustments,
           'heel_strap_straightening_strength': HEEL_STRAP_STRAIGHTENING,
           'rear_ring_width_reduction': REAR_RING_WIDTH_REDUCTION,
           'right_side_panel_repair': right_panel,
-          'front_side_maximum_adjustment_m': {side: value * CHARACTER_HEIGHT_M for side, value in front_side_adjustments.items()},
-          'front_strap_thickness_target_m': FRONT_STRAP_THICKNESS * CHARACTER_HEIGHT_M,
-          'front_strap_maximum_lift_m': {side: value * CHARACTER_HEIGHT_M for side, value in front_wall_adjustments.items()},
-          'lower_ring_wall_thickness_m': LOWER_RING_WALL_THICKNESS * CHARACTER_HEIGHT_M,
-          'lower_ring_wall_maximum_adjustment_m': {side: value * CHARACTER_HEIGHT_M for side, value in lower_wall_adjustments.items()},
-          'rear_ring_maximum_adjustment_m': {side: value * CHARACTER_HEIGHT_M for side, value in rear_ring_adjustments.items()},
-          'ring_wall_minimum_thickness_m': {'right': RIGHT_RING_WALL_THICKNESS * CHARACTER_HEIGHT_M,
-                                            'left': RING_WALL_THICKNESS * CHARACTER_HEIGHT_M},
-          'connector_maximum_adjustment_m': {side: value * CHARACTER_HEIGHT_M for side, value in connector_adjustments.items()},
+          'front_side_maximum_adjustment_m': front_side_adjustments,
+          'front_strap_thickness_target_m': FRONT_STRAP_THICKNESS,
+          'front_strap_maximum_lift_m': front_wall_adjustments,
+          'lower_ring_wall_thickness_m': LOWER_RING_WALL_THICKNESS,
+          'lower_ring_wall_maximum_adjustment_m': lower_wall_adjustments,
+          'rear_ring_maximum_adjustment_m': rear_ring_adjustments,
+          'ring_wall_minimum_thickness_m': {'right': RIGHT_RING_WALL_THICKNESS, 'left': RING_WALL_THICKNESS},
+          'connector_maximum_adjustment_m': connector_adjustments,
           'rest_clearance': {'penetrating_vertices': int((final_depth < 0).sum()), 'minimum': float(final_depth.min())},
           'arap': {'iterations': int(arap['iterations']), 'fixed_vertices': int(fixed.sum())},
           'hidden_body_triangles': int(hidden.sum()),
@@ -1020,7 +1013,7 @@ report = {'date': '2026-10-15',
                     'sampled footbed-to-skin clearance while preserving the ball contact. Use quadratic toe lift and animation '
                     'blends for a gradual curve, and raise the right instep strap while tapering to its sole attachments. Inverse-skin both into the '
                     'canonical bind pose and store heel_pose in scene extras like the knight boots.',
-          'weights': 'Transfer ankle skin weights separately on both legs and smooth within 4 mm in source units. Buckles take the ring mean and the heel strap blends from Foot to the lower ring. The rear connector takes barycentric ring weights at its attachment points and interpolates them across gaps; paired inner/outer corners share weights. Toe strap influence ramps to 0.35. The right toe tip additionally blends up to 0.45 toward ToeBase to follow the original toe animation. Ball contact, heel and stiletto remain on Foot. Existing foot and toe animation evaluation is unchanged.',
+          'weights': 'Transfer ankle skin weights separately on both legs and smooth within 7.2 mm. Buckles take the ring mean and the heel strap blends from Foot to the lower ring. The rear connector takes barycentric ring weights at its attachment points and interpolates them across gaps; paired inner/outer corners share weights. Toe strap influence ramps to 0.35. The right toe tip additionally blends up to 0.45 toward ToeBase to follow the original toe animation. Ball contact, heel and stiletto remain on Foot. Existing foot and toe animation evaluation is unchanged.',
           'status': 'Candidate; validation pending'}
 REPORT.write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps({k: report[k] for k in ['scale', 'posed_ground', 'heel_height_m', 'rest_clearance', 'hidden_body_triangles', 'triangles']}))

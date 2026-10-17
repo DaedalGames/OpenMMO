@@ -40,7 +40,7 @@ try {
     const rest = []
     for (let i = 0; i < position.count; i++) {
       const point = mesh.getVertexPosition(i, new THREE.Vector3())
-      assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1e-6)
+      assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1.8e-6)
       rest.push(point)
       let sum = 0
       for (let k = 0; k < 4; k++) {
@@ -61,7 +61,7 @@ try {
       for (let k = 0; k < 3; k++) {
         const a = index.getX(i + k), b = index.getX(i + (k + 1) % 3)
         const length = rest[a].distanceTo(rest[b])
-        if (length < .002) continue
+        if (length < .0036) continue
         const rigid = skinWeight.getX(a) > .99999 && skinWeight.getX(b) > .99999 && skinIndex.getX(a) === skinIndex.getX(b)
         ;(rigid ? rigidEdges : flexibleEdges).push([a, b, length])
       }
@@ -82,7 +82,7 @@ try {
   const heelVertices = []
   for (let i = 0; i < body.geometry.attributes.position.count; i++) {
     const p = new THREE.Vector3().fromBufferAttribute(body.geometry.attributes.position, i)
-    if (p.y < .04 && p.z < -.012) heelVertices.push(i)
+    if (p.y < .072 && p.z < -.0216) heelVertices.push(i)
   }
   const meanHeel = () => heelVertices.reduce((sum, index) => sum + body.getVertexPosition(index, new THREE.Vector3()).y, 0) / heelVertices.length
   const bareHeel = meanHeel()
@@ -92,7 +92,7 @@ try {
     const pairs = []
     for (let i = 0; i < mesh.geometry.attributes.position.count; i++) {
       const point = mesh.getVertexPosition(i, new THREE.Vector3())
-      if (point.y >= .055 || point.z <= .065) continue
+      if (point.y >= .099 || point.z <= .117) continue
       const key = point.toArray().map(value => Math.round(value * 1e6)).join(',')
       const other = vertices.get(key)
       if (other === undefined) vertices.set(key, i)
@@ -106,7 +106,7 @@ try {
     const rows = new Map()
     for (let i = 0; i < mesh.geometry.attributes.position.count; i++) {
       const point = mesh.getVertexPosition(i, new THREE.Vector3())
-      if (point.y > -.015) continue
+      if (point.y > -.027) continue
       const key = [point.y, point.z].map(value => Math.round(value * 1e6)).join(',')
       const row = rows.get(key) ?? []
       row.push({ index: i, point })
@@ -116,7 +116,7 @@ try {
       row.sort((a, b) => a.point.x - b.point.x)
       const a = row[0], b = row.at(-1)
       const width = b.point.x - a.point.x
-      return width > .004 ? [[a.index, b.index, width]] : []
+      return width > .0072 ? [[a.index, b.index, width]] : []
     })
   })
   const transversePairCount = transversePairs.reduce((sum, pairs) => sum + pairs.length, 0)
@@ -124,20 +124,20 @@ try {
   const solePlanes = [-1, 1].map(side => {
     const support = parts.flatMap(({ mesh }) => Array.from({ length: mesh.geometry.attributes.position.count }, (_, index) => ({
       mesh, index, point: mesh.getVertexPosition(index, new THREE.Vector3()),
-    })).filter(({ point }) => Math.sign(point.x) === side && point.y < -.03026))
+    })).filter(({ point }) => Math.sign(point.x) === side && point.y < -.054468))
     const rear = support.reduce((a, b) => a.point.z < b.point.z ? a : b)
-    const front = support.filter(({ point }) => point.z > .04)
+    const front = support.filter(({ point }) => point.z > .072)
     const left = front.reduce((a, b) => a.point.x < b.point.x ? a : b)
     const right = front.reduce((a, b) => a.point.x > b.point.x ? a : b)
-    assert.ok(left.point.distanceTo(right.point) > .02)
-    assert.ok(rear.point.distanceTo(left.point) > .05)
+    assert.ok(left.point.distanceTo(right.point) > .036)
+    assert.ok(rear.point.distanceTo(left.point) > .09)
     return [rear, left, right]
   })
   const standing = new Set(['idle1', 'idle_armed', 'combat_idle', 'torch_idle1', 'torch_combat_idle', 'torch_sword_idle1'])
   const heelElevation = meanHeel() + lift - bareHeel
   const rotationAngles = footBones.map((bone, i) => THREE.MathUtils.radToDeg(bone.quaternion.angleTo(bareRotations[i])))
   assert.ok(rotationAngles.every(angle => Math.abs(angle - 30) < .001))
-  assert.ok(heelElevation > .03, `Heel elevation ${heelElevation}`)
+  assert.ok(heelElevation > .054, `Heel elevation ${heelElevation}`)
   for (let i = 0; i < 30; i++) ground.apply()
   ground.restore()
   for (let i = 0; i < footBones.length; i++) assert.ok(footBones[i].quaternion.angleTo(bareRotations[i]) < 1e-7)
@@ -187,9 +187,9 @@ try {
       ground.restore()
     }
     assert.ok(maxRigidStretch < .001, `${clip.name} rigid stretch ${maxRigidStretch}`)
-    assert.ok(maxMotion < 2)
+    assert.ok(maxMotion < 3.6)
     assert.ok(maxFlexibleStretch < 3.5, `${clip.name} flexible stretch ${maxFlexibleStretch}`)
-    assert.ok(maxForefootSeamGap < 1e-5, `${clip.name} forefoot seam gap ${maxForefootSeamGap}`)
+    assert.ok(maxForefootSeamGap < 1.8e-5, `${clip.name} forefoot seam gap ${maxForefootSeamGap}`)
     if (standing.has(clip.name)) {
       assert.ok(maxTransverseSlope < .0002, `${clip.name} sole transverse slope ${maxTransverseSlope}`)
       assert.ok(maxSoleTilt < .001, `${clip.name} sole plane tilt ${maxSoleTilt}`)

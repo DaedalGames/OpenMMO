@@ -8,9 +8,8 @@ await ensureFemalePreview('animations')
 const directory = 'assets/items/female_barbarian_helmet/tripo_v2/fitted_v1'
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
 const partPath = `${directory}/helmet_female_barbarian.glb`
-const METERS = 1.8
-const TOLERANCE = 0.0003
-const CENTER = new THREE.Vector3(0, 0.94, -0.004)
+const TOLERANCE = 0.00054
+const CENTER = new THREE.Vector3(0, 1.692, -0.0072)
 
 const { server, load } = await headlessThree()
 try {
@@ -52,7 +51,7 @@ try {
     )
     triangles.push({ triangle, normal: triangle.getNormal(new THREE.Vector3()) })
   }
-  const box = new THREE.Box3().setFromBufferAttribute(position).expandByScalar(0.004)
+  const box = new THREE.Box3().setFromBufferAttribute(position).expandByScalar(0.0072)
   const target = new THREE.Vector3()
   const depth = (point) => {
     if (!box.containsPoint(point)) return 0
@@ -66,7 +65,7 @@ try {
         sign = Math.sign(point.clone().sub(target).dot(normal))
       }
     }
-    return sign < 0 && best > TOLERANCE && best < 0.004 && crosses(point) ? best : 0
+    return sign < 0 && best > TOLERANCE && best < 0.0072 && crosses(point) ? best : 0
   }
   // Require a shell crossing because the bands are open.
   const ray = new THREE.Ray(),
@@ -110,7 +109,7 @@ try {
     for (const i of probe) {
       body.getVertexPosition(i, point).applyMatrix4(local)
       const d = depth(point)
-      if (d) hits.push({ vertex: i, bone: name(i), depth_m: d * METERS })
+      if (d) hits.push({ vertex: i, bone: name(i), depth_m: d })
     }
     return hits
   }
@@ -135,7 +134,7 @@ try {
     base_sha256: hash(basePath),
     helmet_sha256: hash(partPath),
     moving_probe_vertices: moving.length,
-    tolerance_m: TOLERANCE * METERS,
+    tolerance_m: TOLERANCE,
     method:
       'Bind with the runtime bindModularPart. In Head rest space, flag body vertices behind the nearest helmet face within 7.2 mm whose segment from the head center crosses the helmet. Rest checks every body vertex; clips check vertices not fully bound to Head, 33 samples per preview clip.',
     clips,

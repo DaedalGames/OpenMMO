@@ -85,7 +85,7 @@ try {
     for (const clip of base.animations)
       for (const { time } of sample(clip)) measure(clip.name, time);
     assert(
-      maximumRigidError < 2e-6,
+      maximumRigidError < 3.6e-6,
       "Rigid hair must follow the helmet Head space",
     );
     const prefix = `${directory}/hair-${name}-poses`;

@@ -195,7 +195,7 @@ describe('female modular starter outfits', () => {
     }
   )
   it.skipIf(!hasAssets)(
-    'scales the barbarian fur physics to game units',
+    'keeps the barbarian fur physics in meters at its tuned scale',
     async () => {
       const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
       const panels = skinnedParts(source.scene).filter(

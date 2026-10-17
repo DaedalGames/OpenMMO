@@ -2,11 +2,11 @@
   "date": "2026-10-12",
   "base": {
     "path": "assets/modular_human_female_01/rig_v1/female-base.glb",
-    "sha256": "cb6de19c87b3b0291e107834f17fca93a3f1a10e87b0fa041db6c3de98ec4732"
+    "sha256": "3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5"
   },
   "hair": {
     "path": "assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1/hair_female_knight_bob.glb",
-    "sha256": "2ecb64f5217e559bf8ca8d440d02226892c087b5acacc32f6f69a3d22fa02f75"
+    "sha256": "3b2e466b0d7123cf91248c9508cc5adf6c8525850b69def1747b7849178d6373"
   },
   "triangles": 2436,
   "bones": 65,
@@ -19,65 +19,65 @@
     {
       "name": "idle1",
       "samples": 61,
-      "maximum_root_error": 6.709052855117493e-16,
-      "maximum_edge_stretch": 1.0000000004429253,
-      "maximum_motion": 0.026294557496161147
+      "maximum_root_error": 8.921809491438631e-16,
+      "maximum_edge_stretch": 1.0000000004429124,
+      "maximum_motion": 0.04733019338458974
     },
     {
       "name": "idle_armed",
       "samples": 61,
-      "maximum_root_error": 6.709052855117493e-16,
-      "maximum_edge_stretch": 1.0000000004429253,
-      "maximum_motion": 0.026294557496161147
+      "maximum_root_error": 8.921809491438631e-16,
+      "maximum_edge_stretch": 1.0000000004429124,
+      "maximum_motion": 0.04733019338458974
     },
     {
       "name": "walk",
       "samples": 61,
-      "maximum_root_error": 4.632491266250653e-16,
-      "maximum_edge_stretch": 1.0000000000001157,
-      "maximum_motion": 0.03675792270009089
+      "maximum_root_error": 9.063162369069397e-16,
+      "maximum_edge_stretch": 1.0000000000001323,
+      "maximum_motion": 0.06616425254015636
     },
     {
       "name": "run",
       "samples": 61,
-      "maximum_root_error": 5.572324966150414e-16,
-      "maximum_edge_stretch": 1.0000000011136314,
-      "maximum_motion": 0.12477171610732159
+      "maximum_root_error": 8.95090418262362e-16,
+      "maximum_edge_stretch": 1.0000000011135983,
+      "maximum_motion": 0.22458909973611224
     },
     {
       "name": "jump",
       "samples": 61,
-      "maximum_root_error": 5.085906296751428e-16,
-      "maximum_edge_stretch": 1.0000000069533646,
-      "maximum_motion": 0.5149461774383043
+      "maximum_root_error": 1.062716010695555e-15,
+      "maximum_edge_stretch": 1.0000000069533344,
+      "maximum_motion": 0.9269031413594961
     },
     {
       "name": "combat_idle",
       "samples": 61,
-      "maximum_root_error": 4.927225452038536e-16,
-      "maximum_edge_stretch": 1.0000000128020365,
-      "maximum_motion": 0.15178542470792758
+      "maximum_root_error": 9.35593479949491e-16,
+      "maximum_edge_stretch": 1.0000000128020294,
+      "maximum_motion": 0.2732137837027987
     },
     {
       "name": "slash1",
       "samples": 61,
-      "maximum_root_error": 4.660953740672398e-16,
-      "maximum_edge_stretch": 1.000000018416025,
-      "maximum_motion": 0.5869848363090432
+      "maximum_root_error": 9.485749680535094e-16,
+      "maximum_edge_stretch": 1.000000018416015,
+      "maximum_motion": 1.0565727430281238
     },
     {
       "name": "dying",
       "samples": 61,
-      "maximum_root_error": 5.034405433428661e-16,
-      "maximum_edge_stretch": 1.0000000532124163,
-      "maximum_motion": 1.3550228478219217
+      "maximum_root_error": 9.057848289240456e-16,
+      "maximum_edge_stretch": 1.0000000532124131,
+      "maximum_motion": 2.439041053840753
     },
     {
       "name": "sit_idle",
       "samples": 61,
-      "maximum_root_error": 5.604016067269809e-16,
-      "maximum_edge_stretch": 1.0000000001345706,
-      "maximum_motion": 0.25646934830751694
+      "maximum_root_error": 8.951173136040325e-16,
+      "maximum_edge_stretch": 1.0000000001345604,
+      "maximum_motion": 0.46164484467003797
     }
   ],
   "scope": "Rest binding, finite deformation, root attachment and stretching. Body collision and appearance reviewed separately; no secondary hair physics."

@@ -97,11 +97,11 @@ scene.world = bpy.data.worlds.new('Review')
 scene.world.use_nodes = True
 scene.world.node_tree.nodes['Background'].inputs[0].default_value = (.3, .3, .3, 1)
 scene.world.node_tree.nodes['Background'].inputs[1].default_value = .8
-for location, power in [((2, -3, 3), 300), ((-2, -1, 2), 200), ((0, 3, 2), 250)]:
+for location, power in [((3.6, -5.4, 5.4), 972), ((-3.6, -1.8, 3.6), 648), ((0, 5.4, 3.6), 810)]:
     bpy.ops.object.light_add(type='AREA', location=location)
     light = bpy.context.object
-    light.data.energy, light.data.size = power, 3
-    light.rotation_euler = (Vector((0, 0, .4)) - light.location).to_track_quat('-Z', 'Y').to_euler()
+    light.data.energy, light.data.size = power, 5.4
+    light.rotation_euler = (Vector((0, 0, .72)) - light.location).to_track_quat('-Z', 'Y').to_euler()
 bpy.ops.object.camera_add()
 camera = bpy.context.object
 camera.data.type = 'ORTHO'
@@ -111,7 +111,7 @@ scene.render.resolution_y = 900
 scene.view_settings.view_transform = 'AgX'
 
 
-def render(name, offset, center=(0, 0, .255), scale=.64):
+def render(name, offset, center=(0, 0, .459), scale=1.152):
     center = Vector(center)
     camera.data.ortho_scale = scale
     camera.location = center + Vector(offset)
@@ -120,9 +120,9 @@ def render(name, offset, center=(0, 0, .255), scale=.64):
     bpy.ops.render.render(write_still=True)
 
 
-for name, offset in [('front', (0, -3, .1)), ('side', (3, 0, .1)), ('back', (0, 3, .1)), ('angle', (1.8, -3, .3))]:
+for name, offset in [('front', (0, -5.4, .18)), ('side', (5.4, 0, .18)), ('back', (0, 5.4, .18)), ('angle', (3.24, -5.4, .54))]:
     render('rest-' + name, offset)
-render('full', (1.4, -3, .2), (0, 0, .51), 1.14)
+render('full', (2.52, -5.4, .36), (0, 0, .918), 2.052)
 for name in ['walk', 'run', 'jump', 'sit_idle']:
     action = next((a for a in bpy.data.actions if a.name == name), None)
     if not action:
@@ -131,4 +131,4 @@ for name in ['walk', 'run', 'jump', 'sit_idle']:
     rig.animation_data.action_slot = action.slots[0]
     frame = action.frame_range[0] + .35 * (action.frame_range[1] - action.frame_range[0])
     scene.frame_set(int(frame), subframe=frame % 1)
-    render('pose-' + name, (1.8, -3, .25), (0, 0, .35), .85)
+    render('pose-' + name, (3.24, -5.4, .45), (0, 0, .63), 1.53)

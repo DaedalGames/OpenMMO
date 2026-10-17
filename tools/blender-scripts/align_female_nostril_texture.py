@@ -1,3 +1,4 @@
+# Archival: pre-2026-10-17 source units (rig height 1); reproduce with assets.lock @ 1e291c68.
 """Move nostril color down over the nose underside and bake into the original UVs."""
 import hashlib
 import argparse

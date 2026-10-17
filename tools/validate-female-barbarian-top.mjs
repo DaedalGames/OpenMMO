@@ -31,7 +31,7 @@ try {
   const signature = []
   for (let i = 0; i < position.count; i++) {
     const point = top.getVertexPosition(i, new THREE.Vector3())
-    assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1e-6)
+    assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1.8e-6)
     rest.push(point)
     assert.ok(Math.abs(weights.getX(i) + weights.getY(i) + weights.getZ(i) + weights.getW(i) - 1) < 1e-6)
     const influences = []
@@ -40,7 +40,7 @@ try {
       if (!weight) continue
       const name = bones[joints.getComponent(i, k)].name
       influences.push(`${name}:${weight.toFixed(4)}`)
-      if (Math.abs(point.x) < 1e-4) continue
+      if (Math.abs(point.x) < 1.8e-4) continue
       const side = point.x > 0 ? 'Right' : 'Left'
       assert.ok(!(name.startsWith(side) && /Shoulder|Arm/.test(name)), `opposite-side ${name}`)
     }
@@ -52,7 +52,7 @@ try {
   const named = { jewel: common(key => /Spine1/.test(key) && !/Shoulder|Arm/.test(key)), pauldron: common(key => /^Right(Shoulder|Arm):1.0000$/.test(key)) }
   assert.ok(named.jewel && named.pauldron, 'rigid shells not found')
   // Soft cups follow the skin; their edge change is reported, not bounded.
-  const cup = rest.map((point, i) => point.y > .70 && point.y < .80 && point.z > .03 && signature[i] !== named.jewel && signature[i] !== named.pauldron)
+  const cup = rest.map((point, i) => point.y > 1.26 && point.y < 1.44 && point.z > .054 && signature[i] !== named.jewel && signature[i] !== named.pauldron)
 
   const index = top.geometry.index
   const rigidEdges = Object.fromEntries(Object.keys(named).map(name => [name, []]))
@@ -61,10 +61,10 @@ try {
     for (let k = 0; k < 3; k++) {
       const a = index.getX(i + k), b = index.getX(i + (k + 1) % 3)
       const length = rest[a].distanceTo(rest[b])
-      if (length > .003) allEdges.push([a, b, length])
+      if (length > .0054) allEdges.push([a, b, length])
       for (const [name, key] of Object.entries(named))
-        if (length > .001 && signature[a] === key && signature[b] === key) rigidEdges[name].push([a, b, length])
-      if (length > .003 && cup[a] && cup[b]) cupEdges.push([a, b, length])
+        if (length > .0018 && signature[a] === key && signature[b] === key) rigidEdges[name].push([a, b, length])
+      if (length > .0054 && cup[a] && cup[b]) cupEdges.push([a, b, length])
     }
   for (const edges of Object.values(rigidEdges)) assert.ok(edges.length > 100)
 
@@ -125,7 +125,7 @@ try {
       const regions = { cups: 0, pauldron: 0, straps: 0 }
       values.forEach((value, i) => {
         const loss = restDepth[i] - value
-        if (value < -.002 && loss > .002) {
+        if (value < -.0036 && loss > .0036) {
           count++
           deepest = Math.max(deepest, -value)
           regions[cup[i] || signature[i] === named.jewel ? 'cups' : signature[i] === named.pauldron ? 'pauldron' : 'straps']++

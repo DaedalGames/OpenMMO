@@ -16,8 +16,8 @@ from lib.glb_accessors import accessor
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
 DIRECTORY = ROOT / 'assets/items/female_barbarian_top/tripo_v1/fitted_v1'
 TOP = DIRECTORY / 'top_female_barbarian.glb'
-REACH = .012
-INSET = .02
+REACH = .0216
+INSET = .036
 
 
 def mesh(path):
@@ -42,7 +42,7 @@ for label in np.unique(face_labels):
         continue
     mask = face_labels == label
     q = p[np.unique(f[mask])]
-    if q[:, 1].min() > .64 and q[:, 1].max() < .86:
+    if q[:, 1].min() > 1.152 and q[:, 1].max() < 1.548:
         underwear |= mask
 
 # Skin counts as covered when a ray along its normal meets the top within REACH.
@@ -53,12 +53,12 @@ _, nearest = cKDTree(np.c_[blender[:, 0], blender[:, 2], -blender[:, 1]]).query(
 cup_faces = top_faces[fit['cups'][nearest][top_faces].all(1)]
 a, b, c = (top_points[cup_faces[:, k]] for k in range(3))
 e1, e2 = b - a, c - a
-candidates = np.flatnonzero((p[:, 1] > .66) & (p[:, 1] < .88) & (labels[welded] == main))
+candidates = np.flatnonzero((p[:, 1] > 1.188) & (p[:, 1] < 1.584) & (labels[welded] == main))
 hit = np.zeros(len(p), dtype=bool)
 for i in candidates:
     h = np.cross(n[i], e2)
     det = (e1 * h).sum(1)
-    valid = np.abs(det) > 1e-12
+    valid = np.abs(det) > 3.24e-12
     inv = np.where(valid, 1 / np.where(valid, det, 1), 0)
     s = p[i] - a
     u = (s * h).sum(1) * inv

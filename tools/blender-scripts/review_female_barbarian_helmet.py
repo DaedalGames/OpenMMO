@@ -60,11 +60,11 @@ scene.world = bpy.data.worlds.new('Studio')
 scene.world.use_nodes = True
 scene.world.node_tree.nodes['Background'].inputs[0].default_value = (.20, .20, .20, 1)
 scene.world.node_tree.nodes['Background'].inputs[1].default_value = .8
-for position, power in [((2, -3, 3), 260), ((-2, -1, 2), 220), ((0, 3, 2), 300)]:
+for position, power in [((3.6, -5.4, 5.4), 842.4), ((-3.6, -1.8, 3.6), 712.8), ((0, 5.4, 3.6), 972)]:
     bpy.ops.object.light_add(type='AREA', location=position)
     light = bpy.context.object
-    light.data.energy, light.data.size = power, 3
-    light.rotation_euler = (Vector((0, 0, .65)) - light.location).to_track_quat('-Z', 'Y').to_euler()
+    light.data.energy, light.data.size = power, 5.4
+    light.rotation_euler = (Vector((0, 0, 1.17)) - light.location).to_track_quat('-Z', 'Y').to_euler()
 bpy.ops.object.camera_add()
 camera = bpy.context.object
 camera.data.type = 'ORTHO'
@@ -83,11 +83,11 @@ def render(name, center, offset, span):
     bpy.ops.render.render(write_still=True)
 
 
-render('rest-front', (0, 0, .67), (0, -2, .05), .79)
-render('head-front', (0, 0, .95), (0, -1, 0), .30)
-render('head-side', (0, 0, .95), (-1, 0, 0), .30)
-render('head-back', (0, 0, .95), (0, 1, 0), .30)
-render('head-angle', (0, 0, .95), (-.8, -.8, .4), .30)
+render('rest-front', (0, 0, 1.206), (0, -3.6, .09), 1.422)
+render('head-front', (0, 0, 1.71), (0, -1.8, 0), .54)
+render('head-side', (0, 0, 1.71), (-1.8, 0, 0), .54)
+render('head-back', (0, 0, 1.71), (0, 1.8, 0), .54)
+render('head-angle', (0, 0, 1.71), (-1.44, -1.44, .72), .54)
 for name in ['combat_idle', 'run', 'slash1', 'sit_idle', 'dying']:
     action = next(action for action in bpy.data.actions if action.name == name)
     rig.animation_data.action = action
@@ -95,4 +95,4 @@ for name in ['combat_idle', 'run', 'slash1', 'sit_idle', 'dying']:
     scene.frame_set(int(sum(action.frame_range) / 2))
     bpy.context.view_layer.update()
     center = rig.matrix_world @ rig.pose.bones['Head'].head
-    render(name, center, (-1, -1, .5), .55)
+    render(name, center, (-1.8, -1.8, .9), .99)

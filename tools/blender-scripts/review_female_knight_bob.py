@@ -8,7 +8,8 @@ from mathutils import Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUT = ROOT / 'assets/modular_human_female_01/hair/tripo_knight_bob_v1/fitted_v1'
-bpy.ops.wm.open_mainfile(filepath=str(ROOT / 'assets/modular_human_female_01/rig_v1/female-base.blend'))
+bpy.ops.wm.read_factory_settings(use_empty=True)
+bpy.ops.import_scene.gltf(filepath=str(ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'), bone_heuristic='TEMPERANCE')
 rig = next(obj for obj in bpy.data.objects if obj.type == 'ARMATURE')
 if rig.animation_data:
     rig.animation_data.action = None
@@ -48,15 +49,15 @@ scene.world = bpy.data.worlds.new('Review')
 scene.world.use_nodes = True
 scene.world.node_tree.nodes['Background'].inputs[0].default_value = (.18, .18, .18, 1)
 scene.world.node_tree.nodes['Background'].inputs[1].default_value = .7
-target = Vector((0, 0, .72))
-for location, energy in [((2, -3, 3), 220), ((-2, -1, 2), 150), ((0, 3, 2), 200)]:
+target = Vector((0, 0, 1.296))
+for location, energy in [((3.6, -5.4, 5.4), 712.8), ((-3.6, -1.8, 3.6), 486), ((0, 5.4, 3.6), 648)]:
     bpy.ops.object.light_add(type='AREA', location=location)
     light = bpy.context.object
-    light.data.energy, light.data.size = energy, 3
+    light.data.energy, light.data.size = energy, 5.4
     light.rotation_euler = (target - light.location).to_track_quat('-Z', 'Y').to_euler()
 bpy.ops.object.camera_add()
 camera = bpy.context.object
-camera.data.type, camera.data.ortho_scale = 'ORTHO', .34
+camera.data.type, camera.data.ortho_scale = 'ORTHO', .612
 scene.camera = camera
 scene.render.resolution_x, scene.render.resolution_y = 650, 850
 scene.render.resolution_percentage = 100
@@ -72,8 +73,8 @@ for snapshot in snapshots:
     scene.frame_set(int(snapshot['time'] * scene.render.fps / scene.render.fps_base), subframe=0)
     bpy.context.view_layer.update()
     head = rig.matrix_world @ rig.pose.bones['Head'].head
-    center = head + Vector((0, 0, .035))
-    for view, offset in [('front', (0, -3, .08)), ('back', (0, 3, .08))]:
+    center = head + Vector((0, 0, .063))
+    for view, offset in [('front', (0, -5.4, .144)), ('back', (0, 5.4, .144))]:
         camera.location = center + Vector(offset)
         camera.rotation_euler = (center - camera.location).to_track_quat('-Z', 'Y').to_euler()
         scene.render.filepath = str(OUTPUT / f'motion-{snapshot["clip"]}-{view}.png')

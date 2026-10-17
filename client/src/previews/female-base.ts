@@ -5,7 +5,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { femaleSeat, femaleSeatOffset } from './female-seat'
 import { femaleTorchMotions, mirroredSwordGrip } from './female-torch'
-import { poseOffHandProp } from '../lib/utils/handProps'
+import { FEMALE_HAND_FITS, poseOffHandProp } from '../lib/utils/handProps'
+import { MODULAR_FEMALE_MODEL_PATH } from '../lib/utils/modelPaths'
 import { bindModularPart } from '../lib/utils/modularCharacter'
 import { femaleOutfitMask } from '../lib/utils/female-outfit-mask'
 import { femaleBootGround } from '../lib/utils/female-boot-ground'
@@ -210,29 +211,23 @@ export async function showFemaleBase(
   const combatIdle = animations.find((clip) => clip.name === 'combat_idle')
   if (!swordGrip || !catwalk || !combatIdle)
     throw new Error('검을 쥐는 손 자세 또는 걷기 동작을 찾지 못했습니다.')
-  chair.scale.setScalar(1 / femaleSeat.characterHeight)
   chair.visible = false
   resources.push(chair)
   const hand = model.getObjectByName('RightHand')
   if (!hand) throw new Error('검을 장착할 오른손 본을 찾지 못했습니다.')
   weapon.name = 'femaleSteelLongsword'
-  weapon.scale.setScalar(1 / 1.8)
-  weapon.position.set(0.028, 0.064, 0.011)
-  weapon.rotation.z = 0.2
+  weapon.position.copy(FEMALE_HAND_FITS['weapons/sword.glb'].position)
+  weapon.rotation.copy(FEMALE_HAND_FITS['weapons/sword.glb'].rotation!)
   hand.add(weapon)
   const leftHand = model.getObjectByName('LeftHand')
   if (!leftHand) throw new Error('횃불을 장착할 왼손 본을 찾지 못했습니다.')
   torch.name = 'femaleTorch'
   torch.visible = false
-  torch.scale.setScalar(1 / femaleSeat.characterHeight)
-  torch.position.set(-0.004, 0.049, 0.009)
-  torch.rotation.set(0, Math.PI, 0.2)
+  poseOffHandProp(torch, 'weapons/torch.glb', MODULAR_FEMALE_MODEL_PATH)
   leftHand.add(torch)
   shield.name = 'femaleWoodenShield'
   shield.visible = false
-  shield.scale.setScalar(1 / femaleSeat.characterHeight)
-  poseOffHandProp(shield, 'armor/shield_wooden.glb')
-  shield.position.set(-0.004, 0.031, -0.008)
+  poseOffHandProp(shield, 'armor/shield_wooden.glb', MODULAR_FEMALE_MODEL_PATH)
   leftHand.add(shield)
   const shieldGrip = mirroredSwordGrip(model, swordGrip).map((track) => ({
     bone: model.getObjectByName(track.name.split('.')[0])!,
@@ -675,33 +670,33 @@ export async function showFemaleBase(
   fill.position.set(3, 3, -3)
   scene.add(key, fill)
   const floor = new THREE.Mesh(
-    new THREE.CircleGeometry(2, 64),
+    new THREE.CircleGeometry(3.6, 64),
     new THREE.MeshStandardMaterial({ color: '#273940', roughness: 1 })
   )
   floor.rotation.x = -Math.PI / 2
-  floor.position.y = -0.002
+  floor.position.y = -0.0036
   scene.add(floor)
-  const camera = new THREE.PerspectiveCamera(35, 1, 0.001, 20)
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.0018, 36)
   const controls = new OrbitControls(camera, renderer.domElement)
   controls.enableDamping = true
-  controls.minDistance = 0.08
-  controls.maxDistance = 5
+  controls.minDistance = 0.144
+  controls.maxDistance = 9
   cleanup.push(() => controls.dispose())
   const views: Record<string, { target: number[]; position: number[] }> = {
-    face: { target: [0, 0.916, 0], position: [0, 0.926, 0.36] },
-    upper: { target: [0, 0.76, 0], position: [0, 0.78, 0.8] },
-    lower: { target: [0, 0.52, 0], position: [0, 0.55, 0.8] },
-    full: { target: [0, 0.5, 0], position: [0, 0.55, 1.9] },
-    side: { target: [0, 0.5, 0], position: [1.9, 0.55, 0] },
-    back: { target: [0, 0.5, 0], position: [0, 0.55, -1.9] },
-    feet: { target: [0, 0.065, 0], position: [0.24, 0.16, 0.45] },
+    face: { target: [0, 1.6488, 0], position: [0, 1.6668, 0.648] },
+    upper: { target: [0, 1.368, 0], position: [0, 1.404, 1.44] },
+    lower: { target: [0, 0.936, 0], position: [0, 0.99, 1.44] },
+    full: { target: [0, 0.9, 0], position: [0, 0.99, 3.42] },
+    side: { target: [0, 0.9, 0], position: [3.42, 0.99, 0] },
+    back: { target: [0, 0.9, 0], position: [0, 0.99, -3.42] },
+    feet: { target: [0, 0.117, 0], position: [0.432, 0.288, 0.81] },
     'right-hand': {
-      target: [-0.12, 0.48, 0.015],
-      position: [-0.45, 0.49, 0.13],
+      target: [-0.216, 0.864, 0.027],
+      position: [-0.81, 0.882, 0.234],
     },
     'left-hand': {
-      target: [0.145, 0.48, -0.01],
-      position: [0.475, 0.49, 0.105],
+      target: [0.261, 0.864, -0.018],
+      position: [0.855, 0.882, 0.189],
     },
   }
   const select = document.getElementById('female-camera') as HTMLSelectElement
@@ -714,12 +709,12 @@ export async function showFemaleBase(
     controls.target.fromArray(view.target)
     camera.position.fromArray(view.position)
     if (select.value === 'face' && helmetEquipped) {
-      controls.target.set(0, 0.971, 0)
-      camera.position.set(0, 0.981, 0.48)
+      controls.target.set(0, 1.7478, 0)
+      camera.position.set(0, 1.7658, 0.864)
     }
     if (select.value === 'full' && torch.visible) {
-      controls.target.y = 0.6
-      camera.position.set(0, 0.65, 2.3)
+      controls.target.y = 1.08
+      camera.position.set(0, 1.17, 4.14)
     }
     camera.position
       .sub(controls.target)

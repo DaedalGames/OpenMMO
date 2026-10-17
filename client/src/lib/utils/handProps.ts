@@ -10,7 +10,7 @@ import {
 const HAND_GRIP_OFFSET = new THREE.Vector3(0, 0.08, 0)
 const MODULAR_TORCH_GRIP_OFFSET = new THREE.Vector3(0.025, 0.08, 0.012)
 
-const FEMALE_HAND_FITS: Record<
+export const FEMALE_HAND_FITS: Record<
   string,
   { position: THREE.Vector3; rotation?: THREE.Euler }
 > = {

@@ -31,11 +31,11 @@ try {
   const rest = []
   for (let i = 0; i < position.count; i++) {
     const point = top.getVertexPosition(i, new THREE.Vector3())
-    assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1e-6)
+    assert.ok(point.distanceTo(new THREE.Vector3().fromBufferAttribute(position, i)) < 1.8e-6)
     rest.push(point)
     assert.ok(Math.abs(weights.getX(i) + weights.getY(i) + weights.getZ(i) + weights.getW(i) - 1) < 1e-6)
     for (let k = 0; k < 4; k++) {
-      if (!weights.getComponent(i, k) || Math.abs(rest[i].x) < 1e-4) continue
+      if (!weights.getComponent(i, k) || Math.abs(rest[i].x) < 1.8e-4) continue
       const name = bones[joints.getComponent(i, k)].name
       const side = rest[i].x > 0 ? 'Right' : 'Left'
       assert.ok(!(name.startsWith(side) && /Shoulder|Arm/.test(name)), `opposite-side ${name}`)
@@ -59,8 +59,8 @@ try {
     for (let k = 0; k < 3; k++) {
       const a = index.getX(i + k), b = index.getX(i + (k + 1) % 3)
       const length = rest[a].distanceTo(rest[b])
-      if (length > .003) allEdges.push([a, b, length])
-      if (length > .001 && core(a) && core(b)) edges.push([a, b, length])
+      if (length > .0054) allEdges.push([a, b, length])
+      if (length > .0018 && core(a) && core(b)) edges.push([a, b, length])
     }
   assert.ok(edges.length > 100)
   const clips = []

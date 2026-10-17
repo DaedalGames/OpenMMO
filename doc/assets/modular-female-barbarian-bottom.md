@@ -1,5 +1,10 @@
 # 여성 바바리안 하의 — 2026-10-15
 
+2026-10-17: 하의 GLB와 `fit-data.npz`(`fitted`·`depth`)의 좌표를 미터로 바꿨다. 모피 4판의 `pelt_physics`는 미터 값과
+`unit: 1.8`(pelt-rig 내장 거리·힘을 튜닝 당시 크기로 유지)을 원본에 담고, 게임용 `robe_physics`는 전과 같다.
+수리 단계 폴더(`belt_*`, `panel_*` 등)와 그 도구는 제작 단위로 남는 보관용이다. 아래 높이 값은 당시 제작 단위다.
+[전환 기록](female-knight-runtime.md#원본-미터-단위-전환--2026-10-17).
+
 [여성 바바리안 원화](../../client/public/character_concepts/female_barbarian.webp)의 하의를
 모듈형 파츠용 앞뒤 원화로 옮기고 Tripo로 3D 원본을 생성해 여성 기준 몸체에 피팅했다.
 여성 미리보기에 연결했으며 장비 등록은 아직 하지 않았다.

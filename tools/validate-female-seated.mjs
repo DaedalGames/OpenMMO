@@ -8,17 +8,16 @@ try {
   const { femaleSeat, femaleSeatOffset } = await context.server.ssrLoadModule('/src/previews/female-seat.ts')
   const base = await context.load('assets/modular_human_female_01/rig_v1/female-base.glb')
   const chair = (await context.load(`client/public/models/${femaleSeat.chair.model}`)).scene
-  chair.scale.setScalar(1 / femaleSeat.characterHeight)
   chair.updateMatrixWorld(true)
-  const raycaster = new THREE.Raycaster(new THREE.Vector3(0, 2, .04), new THREE.Vector3(0, -1, 0))
+  const raycaster = new THREE.Raycaster(new THREE.Vector3(0, 3.6, .072), new THREE.Vector3(0, -1, 0))
   const seatY = raycaster.intersectObject(chair, true)[0].point.y - femaleSeatOffset
-  const expectedSeatGap = -femaleSeat.seatCompression / femaleSeat.characterHeight
+  const expectedSeatGap = -femaleSeat.seatCompression
   const meshes = []
   base.scene.traverse(node => { if (node.isSkinnedMesh) meshes.push(node) })
   const mesh = meshes[0], a = mesh.geometry.attributes, index = mesh.geometry.index.array
   const used = [...new Set(index)]
   const point = i => new THREE.Vector3().fromBufferAttribute(a.position, i)
-  const lower = new Set(used.filter(i => { const p = point(i); return p.y < .56 && Math.abs(p.x) < .18 }))
+  const lower = new Set(used.filter(i => { const p = point(i); return p.y < 1.008 && Math.abs(p.x) < .324 }))
   const triangles = []
   for (let i = 0; i < index.length; i += 3) {
     const face = Array.from(index.slice(i, i + 3))
@@ -26,7 +25,7 @@ try {
   }
   const hands = ['Left', 'Right'].map(side => used.filter(i => [0, 1, 2, 3].some(k =>
     a.skinWeight.array[i * 4 + k] > .25 && mesh.skeleton.bones[a.skinIndex.array[i * 4 + k]].name.startsWith(`${side}Hand`))))
-  const seat = used.filter(i => { const p = point(i); return p.y > .46 && p.y < .57 && p.z < -.045 && Math.abs(p.x) > .025 })
+  const seat = used.filter(i => { const p = point(i); return p.y > .828 && p.y < 1.026 && p.z < -.081 && Math.abs(p.x) > .045 })
   base.scene.updateMatrixWorld(true)
   const head = base.scene.getObjectByName('Head')
   const localForward = new THREE.Vector3(0, 0, 1)
@@ -41,7 +40,7 @@ try {
     maximumHeadPitch = Math.max(maximumHeadPitch, pitch)
     for (const side of ['Left', 'Right']) {
       const elbow = base.scene.getObjectByName(`${side}ForeArm`).getWorldPosition(new THREE.Vector3())
-      assert.ok(Math.abs(elbow.x) < .12, `Elbow is too far from the body: ${elbow.x}`)
+      assert.ok(Math.abs(elbow.x) < .216, `Elbow is too far from the body: ${elbow.x}`)
       maximumElbowOffset = Math.max(maximumElbowOffset, Math.abs(elbow.x))
     }
     mesh.skeleton.update()
@@ -55,7 +54,7 @@ try {
       let contact = Infinity
       for (const i of hand) {
         const p = positions.get(i)
-        ray.set(new THREE.Vector3(p.x, 2, p.z), new THREE.Vector3(0, -1, 0))
+        ray.set(new THREE.Vector3(p.x, 3.6, p.z), new THREE.Vector3(0, -1, 0))
         let top = -Infinity
         for (const { points, minX, maxX, minZ, maxZ } of faces) {
           if (p.x < minX || p.x > maxX || p.z < minZ || p.z > maxZ) continue
@@ -63,17 +62,16 @@ try {
         }
         contact = Math.min(contact, p.y - top)
       }
-      assert.ok(Number.isFinite(contact) && contact > .0005 && contact < .003, `Hand/knee clearance: ${contact}`)
+      assert.ok(Number.isFinite(contact) && contact > .0009 && contact < .0054, `Hand/knee clearance: ${contact}`)
       minimumHandGap = Math.min(minimumHandGap, contact)
       maximumContactGap = Math.max(maximumContactGap, contact)
     }
     const gap = Math.min(...seat.map(i => positions.get(i).y)) - seatY
-    assert.ok(Math.abs(gap - expectedSeatGap) < .0005, `Seat compression: ${gap}`)
+    assert.ok(Math.abs(gap - expectedSeatGap) < .0009, `Seat compression: ${gap}`)
     minimumSeatGap = Math.min(minimumSeatGap, gap)
     maximumSeatGap = Math.max(maximumSeatGap, gap)
   }
-  const report = { samples: 61, character_review_height: femaleSeat.characterHeight,
-    chair_model: femaleSeat.chair.model, interaction_offset: femaleSeat.chair.interactOffset,
+  const report = { samples: 61, chair_model: femaleSeat.chair.model, interaction_offset: femaleSeat.chair.interactOffset,
     seat_compression: femaleSeat.seatCompression,
     maximum_head_pitch_degrees: maximumHeadPitch, maximum_elbow_offset: maximumElbowOffset,
     minimum_hand_surface_gap: minimumHandGap, maximum_hand_contact_gap: maximumContactGap,

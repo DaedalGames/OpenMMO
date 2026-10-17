@@ -40,7 +40,7 @@ triangles = np.concatenate([
     posed(p)[accessor(doc, raw, p['indices']).reshape(-1, 3)]
     for p in doc['meshes'][0]['primitives']
 ])
-foot_triangles = triangles[triangles[:, :, 1].max(1) < .06]
+foot_triangles = triangles[triangles[:, :, 1].max(1) < .108]
 tip = float(foot_triangles[:, :, 2].max())
 
 
@@ -54,40 +54,40 @@ def section_bounds(mesh, coordinate, axis, component):
     return values.min(), values.max()
 
 
-foot_z = np.linspace(.025, tip - 1e-7, 800)
+foot_z = np.linspace(.045, tip - 1.8e-7, 800)
 foot_bounds = np.array([section_bounds(foot_triangles, z, 2, 1) for z in foot_z])
-shaft_y = np.linspace(.055, .32, 500)
+shaft_y = np.linspace(.099, .576, 500)
 shaft_bounds = np.array([section_bounds(triangles, y, 1, 2) for y in shaft_y])
-lateral_y = np.linspace(-.0302, .18, 300)
+lateral_y = np.linspace(-.05436, .324, 300)
 lateral_centers = np.array([np.mean(section_bounds(triangles, y, 1, 0)) for y in lateral_y])
-shin_y = np.linspace(.13, .24, 40)
+shin_y = np.linspace(.234, .432, 40)
 shin_centers = np.array([np.mean(section_bounds(triangles, y, 1, 0)) for y in shin_y])
 shin_axis = np.polyfit(shin_y, shin_centers, 1)
 front_delta = PchipInterpolator(
-    [.04, .055, .075, .10, .13, .17, .23, .29, .33],
-    [0, 0, .001, .012, .019, .018, .015, .001, 0],
+    [.072, .099, .135, .18, .234, .306, .414, .522, .594],
+    [0, 0, .0018, .0216, .0342, .0324, .027, .0018, 0],
 )
 rear_delta = PchipInterpolator(
-    [.04, .06, .085, .115, .14, .18, .23, .29, .33],
-    [0, 0, .006, .013, .010, .004, 0, 0, 0],
+    [.072, .108, .153, .207, .252, .324, .414, .522, .594],
+    [0, 0, .0108, .0234, .018, .0072, 0, 0, 0],
 )
-instep = PchipInterpolator([.025, .035, .045, .055, .065, .079], [.025, .015, .0055, -.0005, -.003, -.005])
-toe_profile = PchipInterpolator([.040, .050, .065, .080, .100], [.040, .050, .060, .069, .083])
+instep = PchipInterpolator([.045, .063, .081, .099, .117, .1422], [.045, .027, .0099, -.0009, -.0054, -.009])
+toe_profile = PchipInterpolator([.072, .09, .117, .144, .18], [.072, .09, .108, .1242, .1494])
 
 
 def toe_and_sole(points):
     result = points.copy()
     y, z = points[:, 1], points[:, 2]
-    toe = (z > .040) & (y < .045)
-    result[toe, 2] += (toe_profile(z[toe]) - z[toe]) * (1 - smooth((y[toe] - .015) / .030))
-    forefoot = smooth((z - .030) / .015) * (1 - smooth((y + .004) / .016))
-    result[:, 1] += .0015 * forefoot * smooth((y + .03027333) / .012)
-    arch = smooth((.047 - z) / .025) * smooth((z + .012) / .025)
-    arch *= smooth((y + .03027333) / .010) * (1 - smooth((y - .018) / .035))
-    result[:, 2] -= .0035 * arch
-    heel = smooth((y + .010) / .040) * (1 - smooth((y - .050) / .045))
-    heel *= 1 - smooth((z - .004) / .016)
-    result[:, 1] -= .48 * (z + .003) * heel
+    toe = (z > .072) & (y < .081)
+    result[toe, 2] += (toe_profile(z[toe]) - z[toe]) * (1 - smooth((y[toe] - .027) / .054))
+    forefoot = smooth((z - .054) / .027) * (1 - smooth((y + .0072) / .0288))
+    result[:, 1] += .0027 * forefoot * smooth((y + .054491994) / .0216)
+    arch = smooth((.0846 - z) / .045) * smooth((z + .0216) / .045)
+    arch *= smooth((y + .054491994) / .018) * (1 - smooth((y - .0324) / .063))
+    result[:, 2] -= .0063 * arch
+    heel = smooth((y + .018) / .072) * (1 - smooth((y - .09) / .081))
+    heel *= 1 - smooth((z - .0072) / .0288)
+    result[:, 1] -= .48 * (z + .0054) * heel
     return result
 
 
@@ -96,7 +96,7 @@ def align_front_ankle(points):
     y = points[:, 1]
     center = np.interp(y, lateral_y, lateral_centers)
     target = np.polyval(shin_axis, y)
-    result[:, 0] += (target - center) * (1 - smooth((y - .10) / .065))
+    result[:, 0] += (target - center) * (1 - smooth((y - .18) / .117))
     return result
 
 
@@ -106,34 +106,34 @@ def reshape(points):
     low = np.interp(y, shaft_y, shaft_bounds[:, 0])
     high = np.interp(y, shaft_y, shaft_bounds[:, 1])
     fraction = np.clip((z - low) / (high - low), 0, 1)
-    shaft = (y > .04) & (y < .33)
+    shaft = (y > .072) & (y < .594)
     result[shaft, 2] += (
         front_delta(y[shaft]) * fraction[shaft]
         + rear_delta(y[shaft]) * (1 - fraction[shaft])
     )
-    foot = (y < .055) & (z > .025)
+    foot = (y < .099) & (z > .045)
     fz, fy = z[foot], y[foot]
     bottom = np.interp(fz, foot_z, foot_bounds[:, 0])
     top = np.interp(fz, foot_z, foot_bounds[:, 1])
-    fraction = (fy - bottom) / np.maximum(top - bottom, 1e-9)
-    arc = np.sqrt(np.maximum(0, 1 - (np.clip((fz - .079) / (tip - .079), 0, 1)) ** 2))
-    new_top = np.where(fz < .079, instep(np.minimum(fz, .079)), -.017 + .012 * arc)
-    new_bottom = np.where(fz < .079, bottom, -.017 - .012 * arc)
+    fraction = (fy - bottom) / np.maximum(top - bottom, 1.8e-9)
+    arc = np.sqrt(np.maximum(0, 1 - (np.clip((fz - .1422) / (tip - .1422), 0, 1)) ** 2))
+    new_top = np.where(fz < .1422, instep(np.minimum(fz, .1422)), -.0306 + .0216 * arc)
+    new_bottom = np.where(fz < .1422, bottom, -.0306 - .0216 * arc)
     target = new_bottom + fraction * (new_top - new_bottom)
-    amount = smooth((fz - .025) / .022)
+    amount = smooth((fz - .045) / .0396)
     result[foot, 1] += (target - fy) * amount
     return align_front_ankle(toe_and_sole(result))
 
 
 sole_points = reshape(posed(doc['meshes'][0]['primitives'][0]))
 sole_faces = accessor(doc, raw, doc['meshes'][0]['primitives'][0]['indices']).reshape(-1, 3)
-sole_y = np.linspace(-.0302, .040, 500)
+sole_y = np.linspace(-.05436, .072, 500)
 sole_depth = PchipInterpolator(sole_y, np.array([
     section_bounds(sole_points[sole_faces], y, 1, 2) for y in sole_y
 ]), axis=0)
 arch_extension = CubicSpline(
-    [-.0302, -.026, -.020, -.010, 0, .010, .020, .030, .040],
-    [0, .0012, .0035, .0065, .007, .006, .0035, .001, 0],
+    [-.05436, -.0468, -.036, -.018, 0, .018, .036, .054, .072],
+    [0, .00216, .0063, .0117, .0126, .0108, .0063, .0018, 0],
     bc_type=((1, 0), (1, 0)),
 )
 
@@ -148,15 +148,15 @@ def fill_sole_arch(points):
     return result
 
 
-plate_y = np.linspace(0, .058, 500)
+plate_y = np.linspace(0, .1044, 500)
 plate_triangles = fill_sole_arch(sole_points)[sole_faces]
 plate_depth = PchipInterpolator(plate_y, np.array([
     section_bounds(plate_triangles, y, 1, 2)[0]
     for y in plate_y
 ]))
 plate_extension = PchipInterpolator(
-    [0, .008, .014, .026, .035, .047, .058],
-    [0, .0025, .004, .0048, .0045, .002, 0],
+    [0, .0144, .0252, .0468, .063, .0846, .1044],
+    [0, .0045, .0072, .00864, .0081, .0036, 0],
 )
 
 
@@ -164,8 +164,8 @@ def extend_plate_edge(points):
     result = points.copy()
     height = np.clip(points[:, 1], plate_y[0], plate_y[-1])
     distance = points[:, 2] - plate_depth(height)
-    weight = smooth((distance - .0005) / .006)
-    weight *= 1 - smooth((distance - .012) / .016)
+    weight = smooth((distance - .0009) / .0108)
+    weight *= 1 - smooth((distance - .0216) / .0288)
     result[:, 2] -= plate_extension(height) * weight
     return result
 
@@ -176,15 +176,15 @@ heel_primitive = next(
 )
 heel_points = reshape(posed(heel_primitive))
 heel_triangles = heel_points[accessor(doc, raw, heel_primitive['indices']).reshape(-1, 3)]
-heel_y = np.linspace(heel_points[:, 1].min() + 1e-7, .065, 300)
+heel_y = np.linspace(heel_points[:, 1].min() + 1.8e-7, .117, 300)
 heel_centers = PchipInterpolator(heel_y, np.array([
     [np.mean(section_bounds(heel_triangles, y, 1, axis)) for axis in [0, 2]]
     for y in heel_y
 ]), axis=0)
-heel_axis = np.array([heel_centers(.05)[0], heel_centers(-.02)[1]])
+heel_axis = np.array([heel_centers(.09)[0], heel_centers(-.036)[1]])
 heel_rear_delta = PchipInterpolator(
-    [.010, .016, .025, .032, .038, .045, .052, .060, .070, .080],
-    [0, 0, .004, .006, .002, -.0035, -.004, -.0025, 0, 0],
+    [.018, .0288, .045, .0576, .0684, .081, .0936, .108, .126, .144],
+    [0, 0, .0072, .0108, .0036, -.0063, -.0072, -.0045, 0, 0],
 )
 heel_depth = PchipInterpolator(heel_y, np.array([
     section_bounds(heel_triangles, y, 1, 2) for y in heel_y
@@ -194,11 +194,11 @@ heel_depth = PchipInterpolator(heel_y, np.array([
 def straighten_heel(points):
     result = points.copy()
     y = points[:, 1]
-    amount = 1 - smooth((y - .01) / .055)
+    amount = 1 - smooth((y - .018) / .099)
     result[:, [0, 2]] += (heel_axis - heel_centers(y)) * amount[:, None]
     rear, front = heel_depth(y).T
     rear_weight = smooth((front - points[:, 2]) / (front - rear))
-    result[:, 2] += heel_rear_delta(np.clip(y, .010, .080)) * rear_weight
+    result[:, 2] += heel_rear_delta(np.clip(y, .018, .144)) * rear_weight
     return result
 
 
@@ -208,8 +208,8 @@ rounded_depth = PchipInterpolator(heel_y, np.array([
     section_bounds(rounded_triangles, y, 1, 2) for y in heel_y
 ]), axis=0)
 smooth_heel_rear = CubicSpline(
-    [.010, .022, .033, .044, .052],
-    [rounded_depth(.010)[0], -.03775, -.0404, -.0457, rounded_depth(.052)[0]],
+    [.018, .0396, .0594, .0792, .0936],
+    [rounded_depth(.018)[0], -.06795, -.07272, -.08226, rounded_depth(.0936)[0]],
     bc_type=((1, -.10), (1, 0)),
 )
 
@@ -219,11 +219,11 @@ def smooth_heel(points):
     y = result[:, 1]
     rear, front = rounded_depth(y).T
     weight = smooth((front - result[:, 2]) / (front - rear))
-    weight *= smooth((y - .010) / .004) * (1 - smooth((y - .044) / .008))
-    result[:, 2] += (smooth_heel_rear(np.clip(y, .010, .052)) - rear) * weight
-    trim = smooth((y - .002) / .007) * (1 - smooth((y - .015) / .008))
+    weight *= smooth((y - .018) / .0072) * (1 - smooth((y - .0792) / .0144))
+    result[:, 2] += (smooth_heel_rear(np.clip(y, .018, .0936)) - rear) * weight
+    trim = smooth((y - .0036) / .0126) * (1 - smooth((y - .027) / .0144))
     trim *= smooth(((front - result[:, 2]) / (front - rear) - .5) * 2)
-    result[:, 2] += .00018 * trim
+    result[:, 2] += .000324 * trim
     return result
 
 
@@ -233,7 +233,7 @@ def subdivide(values, faces):
     for face in faces:
         for a, b in zip(face, np.roll(face, -1)):
             p, q = points[a], points[b]
-            if max(p[1], q[1]) < .06 and min(p[2], q[2]) > .035 and np.linalg.norm(p - q) > .006:
+            if max(p[1], q[1]) < .108 and min(p[2], q[2]) > .063 and np.linalg.norm(p - q) > .0108:
                 edges.add(tuple(sorted((int(a), int(b)))))
     output = list(values)
     midpoints = {}
@@ -278,7 +278,7 @@ for mesh in doc['meshes'][:1]:
         normals = np.linalg.solve(deform[:, :3, :3].transpose(0, 2, 1), normals[..., None])[..., 0]
         faces = accessor(doc, raw, primitive['indices']).reshape(-1, 3)
         # Subdivide only rigid foot surfaces; interpolated joints remain exact.
-        foot = (points[:, 1] < .06) & (points[:, 2] > .035)
+        foot = (points[:, 1] < .108) & (points[:, 2] > .063)
         if foot.any():
             assert np.all(joints[foot] == joints[foot][0])
             assert np.allclose(weights[foot], weights[foot][0])
@@ -291,7 +291,7 @@ for mesh in doc['meshes'][:1]:
         changed = deform_points(points)
         maximum_change = max(maximum_change, float(np.linalg.norm(changed - points, axis=1).max()))
         jacobian = np.stack([
-            (deform_points(points + np.eye(3)[axis] * 1e-7) - deform_points(points - np.eye(3)[axis] * 1e-7)) / 2e-7
+            (deform_points(points + np.eye(3)[axis] * 1.8e-7) - deform_points(points - np.eye(3)[axis] * 1.8e-7)) / 3.6e-7
             for axis in range(3)
         ], axis=2)
         normals = np.einsum('nij,nj->ni', np.linalg.pinv(jacobian.transpose(0, 2, 1)), normals)
@@ -302,10 +302,10 @@ for mesh in doc['meshes'][:1]:
         accumulated = np.zeros((weld.max() + 1, 3))
         for corner in range(3):
             np.add.at(accumulated, weld[faces[:, corner]], cross)
-        foot = (points[:, 1] < .055) & (points[:, 2] > .025)
+        foot = (points[:, 1] < .099) & (points[:, 2] > .045)
         normals[foot] = accumulated[weld][foot]
         minimum_area = min(minimum_area, float(area.min()))
-        assert np.isfinite(changed).all() and (area > 1e-12).all()
+        assert np.isfinite(changed).all() and (area > 3.24e-12).all()
         points = np.linalg.solve(deform, np.c_[changed, np.ones(len(changed))][..., None])[:, :3, 0]
         normals = np.einsum('nji,nj->ni', deform[:, :3, :3], normals)
         normals /= np.linalg.norm(normals, axis=1, keepdims=True)
@@ -372,7 +372,7 @@ report = {
     'toe_sole_reference': 'assets/items/female_knight_boots/references/user-toe-sole-outline.png',
     'front_alignment_reference': 'assets/items/female_knight_boots/references/user-front-ankle-alignment.png',
     'vertical_heel_reference': 'assets/items/female_knight_boots/references/user-upright-standing-heel.png',
-    'vertical_heel': {'lower_shaft_axis_xz': heel_axis.tolist(), 'blend_height_range': [.01, .065]},
+    'vertical_heel': {'lower_shaft_axis_xz': heel_axis.tolist(), 'blend_height_range': [.018, .117]},
     'sole_arch': {
         'reference': 'assets/items/female_knight_boots/references/user-red-sole-arch.png',
         'method': 'Extend the underside toward the heel with a smooth height profile, fading toward the instep',
@@ -383,27 +383,27 @@ report = {
     'plate_edge': {
         'reference': 'assets/items/female_knight_boots/references/user-blue-plate-extension.png',
         'method': 'Extend the textured plate border toward the sole, retaining the outer contour and shared UVs',
-        'height_range': [0, .058], 'maximum_extension': .0048,
-        'outer_contour_fixed_margin': .0005,
+        'height_range': [0, .1044], 'maximum_extension': .00864,
+        'outer_contour_fixed_margin': .0009,
     },
     'heel_cup_contour': {
         'reference': 'assets/items/female_knight_boots/references/user-rounded-cup-reference.png',
         'before': 'assets/items/female_knight_boots/references/user-rounded-cup-before.png',
         'method': 'Round the rear cup into the seam and recess the upper heel below it',
-        'maximum_cup_extension': .004, 'maximum_upper_heel_recess': .006,
-        'height_range': [.016, .070], 'lower_heel_axis_unchanged': True,
+        'maximum_cup_extension': .0072, 'maximum_upper_heel_recess': .0108,
+        'height_range': [.0288, .126], 'lower_heel_axis_unchanged': True,
         'smoothing_reference': 'assets/items/female_knight_boots/references/user-smooth-heel-curve.png',
         'rear_curve_smoothing': 'Cubic spline target blended into the cup and lower shaft',
         'fine_curve_reference': 'assets/items/female_knight_boots/references/user-fine-heel-curve.png',
-        'fine_curve_adjustment': {'lower_control_inward': .00025, 'upper_control_outward': .0003},
+        'fine_curve_adjustment': {'lower_control_inward': .00045, 'upper_control_outward': .00054},
         'lower_rear_trim': {
             'reference': 'assets/items/female_knight_boots/references/user-blue-heel-trim.png',
-            'height_range': [.002, .023], 'maximum_inward_displacement': .00018,
+            'height_range': [.0036, .0414], 'maximum_inward_displacement': .000324,
         },
     },
     'front_alignment': {'method': 'Extend the shin centerline through the ankle and foot using lateral displacement only',
-                        'shin_sample_height_range': [.13, .24], 'centerline_slope': float(shin_axis[0]),
-                        'centerline_intercept': float(shin_axis[1]), 'blend_height_range': [.10, .165]},
+                        'shin_sample_height_range': [.234, .432], 'centerline_slope': float(shin_axis[0]),
+                        'centerline_intercept': float(shin_axis[1]), 'blend_height_range': [.18, .297]},
     'profile_axes': {'front': '+Z, toward toe', 'rear': '-Z, toward heel', 'height': '+Y'},
     'textures_unchanged': True,
     'uv_changes': 'Forefoot subdivision interpolation and upper cuff leather projection',

@@ -35,11 +35,11 @@ def crossings(points, segments, mesh):
     origins = points[segments[:, 0]]
     delta = points[segments[:, 1]] - origins
     lengths = np.linalg.norm(delta, axis=1)
-    valid = lengths > 1e-8
+    valid = lengths > 1.8e-8
     origins, delta, lengths = origins[valid], delta[valid], lengths[valid]
     locations, rays, _ = mesh.ray.intersects_location(origins, delta / lengths[:, None])
     distance = np.linalg.norm(locations - origins[rays], axis=1)
-    return int(((distance > 1e-7) & (distance < lengths[rays] - 1e-7)).sum())
+    return int(((distance > 1.8e-7) & (distance < lengths[rays] - 1.8e-7)).sum())
 
 
 connector_edges, band_edges = edges(connector_faces), edges(band_faces)
@@ -67,7 +67,7 @@ for frame in range(0, len(poses), args.stride):
         print(json.dumps({'frame': frame, 'minimum': minimum, 'crossings': hits}), flush=True)
 
 report = {'source_sha256': source_hash, 'side': args.side, 'frame_count': len(frames), 'stride': args.stride,
-          'meters_per_source_unit': 1.8, 'minimum': minimum, 'maximum_attachment_distance': maximum_attachment,
+          'minimum': minimum, 'maximum_attachment_distance': maximum_attachment,
           'attachment_points': len(anchors), 'frames_with_crossings': sum(
               entry['edge_surface_crossings'] > 0 for entry in frames), 'frames': frames,
           'scope': 'Exposed connector outer-face vertices, centers and edge midpoints against ankle rings/buckles; '
@@ -75,5 +75,5 @@ report = {'source_sha256': source_hash, 'side': args.side, 'frame_count': len(fr
                    'stored attachment points are compared with the corresponding posed ring triangles.'}
 (directory / f'connector-layer-{args.side}-validation.json').write_text(json.dumps(report, indent=2) + '\n')
 print(json.dumps({key: report[key] for key in ['frame_count', 'minimum', 'maximum_attachment_distance', 'frames_with_crossings']}), flush=True)
-if minimum['distance'] < .0002 or report['frames_with_crossings'] or maximum_attachment['distance'] > .0015:
+if minimum['distance'] < .00036 or report['frames_with_crossings'] or maximum_attachment['distance'] > .0027:
     raise SystemExit('Connector attachment or exposed-surface clearance failed; see connector layer report')

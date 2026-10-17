@@ -11,50 +11,6 @@ import { dependencies, output as previewOutput } from './lib/female-preview.mjs'
 import { ensureFemalePreview } from './lib/ensure-female-preview.mjs'
 
 const output = 'client/public/models/characters/modular_female'
-const metersPerSourceUnit = 1.8
-function bakeDimensions(doc) {
-  const root = doc.getRoot()
-  const scaled = new Set()
-  const scaleAccessor = (accessor, matrix = false) => {
-    if (!accessor || scaled.has(accessor)) return
-    scaled.add(accessor)
-    const values = accessor.getArray().slice()
-    for (let i = 0; i < values.length; i++) {
-      if (!matrix || [12, 13, 14].includes(i % 16)) values[i] *= metersPerSourceUnit
-    }
-    accessor.setArray(values)
-  }
-  for (const node of root.listNodes()) node.setTranslation(node.getTranslation().map(v => v * metersPerSourceUnit))
-  for (const mesh of root.listMeshes()) {
-    for (const primitive of mesh.listPrimitives()) {
-      scaleAccessor(primitive.getAttribute('POSITION'))
-      for (const target of primitive.listTargets()) scaleAccessor(target.getAttribute('POSITION'))
-    }
-  }
-  for (const skin of root.listSkins()) scaleAccessor(skin.getInverseBindMatrices(), true)
-  for (const animation of root.listAnimations()) {
-    for (const channel of animation.listChannels()) {
-      if (channel.getTargetPath() === 'translation') scaleAccessor(channel.getSampler().getOutput())
-    }
-  }
-  for (const scene of root.listScenes()) scene.setExtras({ ...scene.getExtras(), meters_per_source_unit: metersPerSourceUnit })
-  for (const node of root.listNodes()) {
-    const pelt = node.getExtras().pelt_physics
-    if (!pelt) continue
-    const scale = values => values.map(v => v * metersPerSourceUnit)
-    node.setExtras({
-      ...node.getExtras(),
-      pelt_physics: {
-        ...pelt,
-        unit: metersPerSourceUnit,
-        pivot: scale(pelt.pivot),
-        length: pelt.length * metersPerSourceUnit,
-        ...(pelt.attachment_depth !== undefined && { attachment_depth: pelt.attachment_depth * metersPerSourceUnit }),
-        colliders: pelt.colliders.map(c => ({ ...c, center: scale(c.center), radii: scale(c.radii) })),
-      },
-    })
-  }
-}
 // The four fur panels hang from one shared hem rig, so they get one waist, ellipse and collider set.
 // Tuned in the browser preview against the pelt rig: standing poses hang on clearance, running follows the thighs.
 function bakeSkirtRobe(doc) {
@@ -106,7 +62,7 @@ if (selectedPack !== undefined && !packs.includes(selectedPack)) throw new Error
 const builtPacks = selectedPack ? [selectedPack] : packs
 mkdirSync(`${output}/animations`, { recursive: true })
 const reportPath = 'doc/assets/female-knight-runtime-sources.json'
-const report = { date: '2026-10-16', inputs: {}, outputs: {} }
+const report = { date: '2026-10-17', inputs: {}, outputs: {} }
 const record = (path) => { report.inputs[path] = hash(path) }
 for (const path of ['tools/prepare-female-knight.mjs', 'client/src/lib/utils/female-clip-bake.ts', 'client/src/lib/utils/female-boot-ground.ts']) record(path)
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS)
@@ -162,7 +118,6 @@ for (const [name, source] of Object.entries(sources)) {
     texture.setImage(image).setMimeType('image/webp')
   }
   doc.createExtension(EXTTextureWebP).setRequired(true)
-  bakeDimensions(doc)
   if (name === 'barbarian_bottom') bakeSkirtRobe(doc)
   // Fitting sources carry unreferenced accessors from earlier iterations.
   await doc.transform(prune({ propertyTypes: [PropertyType.ACCESSOR], keepAttributes: true, keepIndices: true }))
@@ -237,16 +192,10 @@ globalThis.FileReader = class {
 }
 try {
   const runtime = await server.ssrLoadModule('/src/lib/utils/characterAnimationUtils.ts')
-  // Animation work happens in meters, the unit of the shared packs: the rig is the converted base, and the
-  // female's own clips are converted as they are read.
   const base = await load(`${output}/base.glb`)
-  const toMeters = clip => {
-    for (const track of clip.tracks) if (track.name.endsWith('.position')) track.values = track.values.map(v => v * metersPerSourceUnit)
-    return clip
-  }
-  const corrected = new Map((await load(sources.base)).animations.map(c => [c.name, toMeters(c)]))
+  const corrected = new Map((await load(sources.base)).animations.map(c => [c.name, c]))
   for (const data of JSON.parse(readFileSync(preparedPath)).clips) {
-    const clip = toMeters(THREE.AnimationClip.parse(data))
+    const clip = THREE.AnimationClip.parse(data)
     corrected.set(clip.name, clip)
   }
   for (const name of ['idle2', 'idle3', 'idle4', 'idle5']) {
@@ -267,7 +216,6 @@ try {
     const bytes = await new GLTFExporter().parseAsync(scene, { binary: true, animations })
     const path = `${output}/animations/${name}.glb`
     const doc = await io.readBinary(new Uint8Array(bytes))
-    for (const s of doc.getRoot().listScenes()) s.setExtras({ ...s.getExtras(), meters_per_source_unit: metersPerSourceUnit })
     await write(path, doc)
     console.log(`${name}: ${animations.length} clips`)
   }

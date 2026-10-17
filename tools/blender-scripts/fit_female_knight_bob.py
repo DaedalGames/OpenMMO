@@ -39,12 +39,12 @@ def uv_triangles(mesh):
                    for p in mesh.polygons)
 
 source_uvs = uv_triangles(hair.data)
-transform = Matrix.Translation((0, .004, .925)) @ Matrix.Rotation(-math.pi / 2, 4, 'Z') @ Matrix.Diagonal((.145, .145, .17, 1))
+transform = Matrix.Translation((0, .0072, 1.665)) @ Matrix.Rotation(-math.pi / 2, 4, 'Z') @ Matrix.Diagonal((.261, .261, .306, 1))
 hair.data.transform(transform @ hair.matrix_world)
 hair.matrix_world = Matrix.Identity(4)
 for vertex in hair.data.vertices:
-    t = max(0, min(1, (vertex.co.z - .84) / .105))
-    vertex.co.z += .02 * (1 - t * t * (3 - 2 * t))
+    t = max(0, min(1, (vertex.co.z - 1.512) / .189))
+    vertex.co.z += .036 * (1 - t * t * (3 - 2 * t))
 bm = bmesh.new()
 bm.from_mesh(hair.data)
 
@@ -53,15 +53,15 @@ def signed_distance(point):
     return (point - nearest).dot(normal)
 
 internal = [face for face in bm.faces
-            if all(abs(v.co.x) < .035 and v.co.y > -.025 and v.co.z < .956
-                   and signed_distance(v.co) < -.002 for v in face.verts)
-            and signed_distance(face.calc_center_median()) < -.002]
+            if all(abs(v.co.x) < .063 and v.co.y > -.045 and v.co.z < 1.7208
+                   and signed_distance(v.co) < -.0036 for v in face.verts)
+            and signed_distance(face.calc_center_median()) < -.0036]
 removed = len(internal)
 bmesh.ops.delete(bm, geom=internal, context='FACES')
 bm.to_mesh(hair.data)
 bm.free()
 
-hair_offset = Vector((0, -.002, .0035))
+hair_offset = Vector((0, -.0036, .0063))
 
 def smoothstep(low, high, value):
     t = max(0, min(1, (value - low) / (high - low)))
@@ -70,15 +70,15 @@ def smoothstep(low, high, value):
 for vertex in hair.data.vertices:
     vertex.co += hair_offset
     p = vertex.co
-    p.y += .0035 * smoothstep(.005, .04, p.y) * smoothstep(.90, .93, p.z)
+    p.y += .0063 * smoothstep(.009, .072, p.y) * smoothstep(1.62, 1.674, p.z)
 hair.data.update()
 
-right_front_pivot = Vector((0, -.015, 0))
+right_front_pivot = Vector((0, -.027, 0))
 right_front_angle = -12
 
 def turn_right_front(point):
-    weight = smoothstep(.003, .035, -point.x) * smoothstep(-.020, .040, -point.y)
-    weight *= 1 - smoothstep(.960, .995, point.z)
+    weight = smoothstep(.0054, .063, -point.x) * smoothstep(-.036, .072, -point.y)
+    weight *= 1 - smoothstep(1.728, 1.791, point.z)
     rotation = Matrix.Rotation(math.radians(right_front_angle) * weight, 3, 'Z')
     return right_front_pivot + rotation @ (point - right_front_pivot)
 
@@ -89,13 +89,13 @@ for vertex in hair.data.vertices:
     before = vertex.co.copy()
     after = turn_right_front(before)
     displacement = (after - before).length
-    if displacement < 1e-8:
+    if displacement < 1.8e-8:
         continue
     columns = []
     for axis in range(3):
         delta = Vector((0, 0, 0))
-        delta[axis] = 1e-5
-        columns.append((turn_right_front(before + delta) - turn_right_front(before - delta)) / 2e-5)
+        delta[axis] = 1.8e-5
+        columns.append((turn_right_front(before + delta) - turn_right_front(before - delta)) / 3.6e-5)
     normal_transforms[vertex.index] = Matrix(columns).inverted()
     vertex.co = after
     right_front_displacements.append(displacement)
@@ -107,7 +107,7 @@ hair.data.normals_split_custom_set(corner_normals)
 hair.data.update()
 rear_clearances = []
 for polygon in hair.data.polygons:
-    if polygon.center.y <= .025 or polygon.center.z <= .925:
+    if polygon.center.y <= .045 or polygon.center.z <= 1.665:
         continue
     a, b, c = [hair.data.vertices[i].co for i in polygon.vertices]
     for i in range(5):
@@ -127,16 +127,16 @@ report = {
     'date': '2026-10-12', 'tool': f'Blender {bpy.app.version_string}',
     'source': str(SOURCE.relative_to(ROOT)), 'source_sha256': hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
     'body': str(BODY.relative_to(ROOT)), 'body_sha256': hashlib.sha256(BODY.read_bytes()).hexdigest(),
-    'transform_blender': {'scale': [.145, .145, .17], 'rotation_z_degrees': -90, 'translation': [0, .004, .925]},
-    'tip_shortening': {'offset': .02, 'smooth_falloff_height_range': [.84, .945]},
+    'transform_blender': {'scale': [.261, .261, .306], 'rotation_z_degrees': -90, 'translation': [0, .0072, 1.665]},
+    'tip_shortening': {'offset': .036, 'smooth_falloff_height_range': [1.512, 1.701]},
     'whole_hair_offset_blender': list(hair_offset),
     'right_front_turn': {'angle_degrees': right_front_angle, 'pivot_blender': list(right_front_pivot),
-                         'side_falloff': [.003, .035], 'front_falloff': [-.020, .040],
-                         'crown_falloff': [.960, .995], 'vertices_moved': len(right_front_displacements),
+                         'side_falloff': [.0054, .063], 'front_falloff': [-.036, .072],
+                         'crown_falloff': [1.728, 1.791], 'vertices_moved': len(right_front_displacements),
                          'maximum_displacement': max(right_front_displacements, default=0),
                          'normals': 'Inverse-transpose deformation Jacobian; UVs and image bytes preserved.'},
-    'rear_clearance': {'backward_offset': .0035, 'depth_falloff': [.005, .04],
-                       'height_falloff': [.90, .93], 'rest_surface_samples': len(rear_clearances),
+    'rear_clearance': {'backward_offset': .0063, 'depth_falloff': [.009, .072],
+                       'height_falloff': [1.62, 1.674], 'rest_surface_samples': len(rear_clearances),
                        'minimum_sampled_rest_clearance': min(rear_clearances)},
     'removed_internal_triangles': removed, 'triangles': len(hair.data.polygons),
     'bounds_blender': [[min(v.co[i] for v in hair.data.vertices) for i in range(3)],
@@ -155,20 +155,20 @@ scene.world = bpy.data.worlds.new('Review')
 scene.world.use_nodes = True
 scene.world.node_tree.nodes['Background'].inputs[0].default_value = (.18, .18, .18, 1)
 scene.world.node_tree.nodes['Background'].inputs[1].default_value = .7
-center = Vector((0, 0, .925))
-for location, energy in [((2, -3, 3), 220), ((-2, -1, 2), 150), ((0, 3, 2), 200)]:
+center = Vector((0, 0, 1.665))
+for location, energy in [((3.6, -5.4, 5.4), 712.8), ((-3.6, -1.8, 3.6), 486), ((0, 5.4, 3.6), 648)]:
     bpy.ops.object.light_add(type='AREA', location=location)
     light = bpy.context.object
-    light.data.energy, light.data.size = energy, 3
+    light.data.energy, light.data.size = energy, 5.4
     light.rotation_euler = (center - light.location).to_track_quat('-Z', 'Y').to_euler()
 bpy.ops.object.camera_add()
 camera = bpy.context.object
-camera.data.type, camera.data.ortho_scale = 'ORTHO', .225
+camera.data.type, camera.data.ortho_scale = 'ORTHO', .405
 scene.camera = camera
 scene.render.resolution_x, scene.render.resolution_y = 650, 750
 scene.render.resolution_percentage = 100
 scene.view_settings.view_transform = 'AgX'
-for name, offset in [('front', (0, -3, 0)), ('side', (3, 0, 0)), ('back', (0, 3, 0)), ('angle', (2, -3, .1))]:
+for name, offset in [('front', (0, -5.4, 0)), ('side', (5.4, 0, 0)), ('back', (0, 5.4, 0)), ('angle', (3.6, -5.4, .18))]:
     camera.location = center + Vector(offset)
     camera.rotation_euler = (center - camera.location).to_track_quat('-Z', 'Y').to_euler()
     scene.render.filepath = str(OUTPUT / f'fit-{name}.png')

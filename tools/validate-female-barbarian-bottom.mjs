@@ -76,7 +76,7 @@ try {
         for (let k = 0; k < 3; k++) {
           const a = index.getX(i + k), b = index.getX(i + (k + 1) % 3)
           const length = points[a].distanceTo(points[b])
-          if (length > .003 * 1.8 && driven(a) && driven(b)) edges.push([a, b, length])
+          if (length > .0054 && driven(a) && driven(b)) edges.push([a, b, length])
         }
     }
     return { mesh, geometry: mesh.geometry, points, edges }
@@ -104,7 +104,7 @@ try {
           maximumRatio = Math.max(maximumRatio, posed[a].distanceTo(posed[b]) / length)
       }
     }
-    assert.ok(seamGap < 1e-6 * 1.8, `${clip.name}: belt seam gap ${seamGap}`)
+    assert.ok(seamGap < 1.8e-6, `${clip.name}: belt seam gap ${seamGap}`)
     // Coarse hem columns shear the fur; a centerline tear shows up as tens of times longer edges.
     assert.ok(maximumRatio < 8, `${clip.name}: robe edge stretch ${maximumRatio}`)
     clips.push({ name: clip.name, samples, maximum_driven_edge_length_ratio: maximumRatio, maximum_belt_seam_gap: seamGap })

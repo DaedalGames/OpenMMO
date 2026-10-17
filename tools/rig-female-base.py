@@ -1,4 +1,8 @@
-"""Fit the modular skeleton and bind the preserved female surface locally."""
+"""Fit the modular skeleton and bind the preserved female surface locally.
+
+Archival: landmarks are in the pre-2026-10-17 source units (rig height 1). rig_v1/female-base.glb is now
+frozen in meters and this script no longer reproduces it.
+"""
 import copy
 import hashlib
 import importlib.util

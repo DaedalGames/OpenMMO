@@ -59,13 +59,13 @@ def main():
     labels = components[welded]
     skin, bra = np.argsort(np.bincount(labels))[-2:][::-1]
     bra_indices = np.flatnonzero(labels == bra)
-    assert points[bra_indices, 1].min() > .69 and points[bra_indices, 1].max() < .86
-    skin_faces = faces[(labels[faces[:, 0]] == skin) & (points[faces, 1].min(1) > .67)
-                       & (points[faces, 1].max(1) < .87)]
+    assert points[bra_indices, 1].min() > 1.242 and points[bra_indices, 1].max() < 1.548
+    skin_faces = faces[(labels[faces[:, 0]] == skin) & (points[faces, 1].min(1) > 1.206)
+                       & (points[faces, 1].max(1) < 1.566)]
     surface = trimesh.Trimesh(points, skin_faces, process=False)
-    centers = np.array([[-.08002812, .73636216, .03854832], [.08002812, .73636216, .03854832]])
+    centers = np.array([[-.144050616, 1.325451888, .069386976], [.144050616, 1.325451888, .069386976]])
     radius = np.linalg.norm(points[bra_indices, None] - centers[None], axis=2).min(1)
-    t = np.clip((radius - .012) / .015, 0, 1)
+    t = np.clip((radius - .0216) / .027, 0, 1)
     influence = 1 - t * t * (3 - 2 * t)
     indices = bra_indices[influence > 0]
     influence = influence[influence > 0]
@@ -95,7 +95,7 @@ def main():
     runtime_doc, runtime_binary = read_glb(RUNTIME)
     runtime_attrs = runtime_doc['meshes'][0]['primitives'][0]['attributes']
     runtime_points = accessor(runtime_doc, runtime_binary, runtime_attrs['POSITION'])
-    assert np.allclose(runtime_points, points * 1.8, atol=2e-7)
+    assert np.allclose(runtime_points, points, atol=3.6e-7)
     runtime_names = [runtime_doc['nodes'][i]['name'] for i in runtime_doc['skins'][0]['joints']]
     runtime_joints = np.array([runtime_names.index(names[i]) for i in corrected_joints.ravel()]).reshape(-1, 4)
     patch(RUNTIME, runtime_doc, indices, runtime_joints, corrected_weights)
@@ -103,7 +103,7 @@ def main():
               'body': str(BODY.relative_to(ROOT)), 'runtime': str(RUNTIME.relative_to(ROOT)),
               'runtime_sha256_before': runtime_before, 'runtime_sha256_after': digest(RUNTIME),
               'changed_underwear_vertices': len(indices), 'patch_centers': centers.tolist(),
-              'full_transfer_radius': .012, 'falloff_radius': .027,
+              'full_transfer_radius': .0216, 'falloff_radius': .0486,
               'method': 'Blend the lower outer cup weights toward barycentric skin weights, retaining four normalized influences.',
               'preserved': ['All positions, normals, UVs, indices, images, materials, skin weights, rig and animations']}
     report_path.write_text(json.dumps(report, indent=2) + '\n')

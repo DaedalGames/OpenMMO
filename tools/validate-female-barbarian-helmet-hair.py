@@ -21,19 +21,19 @@ def crossings(points, edges, surface):
     origin = points[edges[:, 0]]
     vector = points[edges[:, 1]] - origin
     length = np.linalg.norm(vector, axis=1)
-    valid = length > 1e-8
+    valid = length > 1.8e-8
     origin, vector, length = origin[valid], vector[valid], length[valid]
     hit, rays, _ = surface.ray.intersects_location(origin, vector / length[:, None])
     distance = np.linalg.norm(hit - origin[rays], axis=1)
-    return int(((distance > 1e-7) & (distance < length[rays] - 1e-7)).sum())
+    return int(((distance > 1.8e-7) & (distance < length[rays] - 1.8e-7)).sum())
 
 
 report = {'helmet_sha256': hashlib.sha256((DIRECTORY / 'helmet_female_barbarian.glb').read_bytes()).hexdigest(),
-          'meters_per_source_unit': 1.8, 'scope': 'Actual runtime binding, rest plus 17 samples per preview clip. '
+          'scope': 'Actual runtime binding, rest plus 17 samples per preview clip. '
           'In canonical Head space, test hair edges against helmet surfaces and helmet edges against hair surfaces. '
           'Measure hair vertices, face centers and edge midpoints against helmet triangles. '
-          'Reuse rigid Head-space geometry within 2e-6 source units; exclude probes outside the helmet box '
-          'expanded by 0.005, which provides a distance lower bound.', 'hair': {}}
+          'Reuse rigid Head-space geometry within 3.6e-6 m; exclude probes outside the helmet box '
+          'expanded by 0.009 m, which provides a distance lower bound.', 'hair': {}}
 for name in ['bob', 'knight']:
     manifest = json.loads((DIRECTORY / f'hair-{name}-poses.json').read_text())
     assert manifest['helmet_sha256'] == report['helmet_sha256']
@@ -54,15 +54,15 @@ for name in ['bob', 'knight']:
         for part_index, (part_faces, part_edges) in enumerate(parts):
             ids = np.unique(part_faces)
             drift = np.linalg.norm(vertices[ids] - frames[0, ids], axis=1).max()
-            if part_index in rigid_cache and drift < 2e-6:
+            if part_index in rigid_cache and drift < 3.6e-6:
                 cached_hits, cached_gap = rigid_cache[part_index]
                 hits += cached_hits
                 gap = min(gap, cached_gap - float(drift))
                 continue
             hair = trimesh.Trimesh(vertices, part_faces, process=False)
             probes = np.vstack([vertices[ids], vertices[part_faces].mean(1), vertices[part_edges].mean(1)])
-            candidates = probes[((probes >= shell.bounds[0] - .005) & (probes <= shell.bounds[1] + .005)).all(1)]
-            part_gap = .005
+            candidates = probes[((probes >= shell.bounds[0] - .009) & (probes <= shell.bounds[1] + .009)).all(1)]
+            part_gap = .009
             if len(candidates):
                 _, distance, _ = trimesh.proximity.closest_point(shell, candidates)
                 part_gap = min(part_gap, float(distance.min()))
@@ -78,4 +78,4 @@ for name in ['bob', 'knight']:
                             'frames_with_crossings': sum(frame['crossings'] > 0 for frame in records), 'frames': records}
     print(name, len(records), minimum, report['hair'][name]['frames_with_crossings'], flush=True)
 (DIRECTORY / 'hair-animation-validation.json').write_text(json.dumps(report, indent=2) + '\n')
-assert all(value['minimum_distance'] > .0002 and value['frames_with_crossings'] == 0 for value in report['hair'].values())
+assert all(value['minimum_distance'] > .00036 and value['frames_with_crossings'] == 0 for value in report['hair'].values())

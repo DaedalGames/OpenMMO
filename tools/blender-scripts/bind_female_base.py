@@ -1,3 +1,4 @@
+# Archival: pre-2026-10-17 source units (rig height 1); reproduce with assets.lock @ 1e291c68.
 """Compute bone-heat weights without round-tripping the source materials."""
 import sys
 import json
