@@ -1579,6 +1579,12 @@
     )
   }
 
+  // Only extends, so it never cuts an enchantment pose short.
+  export function setLevelUpPoseUntil(until: number) {
+    if (until > enchantPoseUntil)
+      setEnchantPoseUntil(until, equippedMainHandItemId !== null)
+  }
+
   export function setEnchantPoseUntil(until: number, weapon: boolean) {
     enchantPoseUntil = until
     enchantWeapon = weapon

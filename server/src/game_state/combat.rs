@@ -1184,7 +1184,7 @@ impl super::GameState {
                     p.name.clone(),
                     *new_xp,
                     new_level,
-                    leveled_up,
+                    leveled_up.then_some((p.position, p.floor_level)),
                     p.max_health,
                     p.health,
                 ));
@@ -1202,7 +1202,7 @@ impl super::GameState {
             self.party_vitals_dirty.write().await.extend(leveled);
         }
 
-        for (player_id, name, new_xp, new_level, leveled_up, max_hp, current_hp) in notices {
+        for (player_id, name, new_xp, new_level, leveled_at, max_hp, current_hp) in notices {
             self.publish_subject_change(ServerMessage::PlayerHealthUpdate {
                 player_id,
                 health: current_hp,
@@ -1216,7 +1216,7 @@ impl super::GameState {
                     xp_lost: 0,
                     total_xp: new_xp,
                     new_level,
-                    leveled_up,
+                    leveled_up: leveled_at.is_some(),
                     max_hp,
                     current_hp,
                     monster_id: Some(monster_id.to_string()),
@@ -1224,8 +1224,15 @@ impl super::GameState {
             )
             .await;
 
-            if leveled_up {
+            if let Some((position, floor_level)) = leveled_at {
                 info!("Player {} reached level {}", name, new_level);
+                self.publish_nearby(
+                    &position,
+                    floor_level,
+                    ServerMessage::PlayerLeveledUp { player_id },
+                    Some(&player_id),
+                )
+                .await;
             } else {
                 debug!(
                     "Player {} gained {} XP (total: {}, level: {})",

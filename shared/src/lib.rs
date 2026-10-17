@@ -211,7 +211,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v119: transient global announcements via `/announce`.
 /// v120: per-IP operator notices that stay until confirmed.
 /// v121: effective INT in EffectiveStatsUpdated.
-pub const PROTOCOL_VERSION: u32 = 121;
+/// v122: nearby PlayerLeveledUp celebration.
+pub const PROTOCOL_VERSION: u32 = 122;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from

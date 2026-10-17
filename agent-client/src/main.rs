@@ -456,6 +456,7 @@ pub fn msg_name(msg: &onlinerpg_shared::ServerMessage) -> &'static str {
         ServerMessage::TerrainTileVersion { .. } => "TerrainTileVersion",
         ServerMessage::WorldUpdate { .. } => "WorldUpdate",
         ServerMessage::EquipmentEnchantSucceeded { .. } => "EquipmentEnchantSucceeded",
+        ServerMessage::PlayerLeveledUp { .. } => "PlayerLeveledUp",
         ServerMessage::AuthSuccess { .. } => "AuthSuccess",
         ServerMessage::AuthError { .. } => "AuthError",
         ServerMessage::JoinSuccess { .. } => "JoinSuccess",

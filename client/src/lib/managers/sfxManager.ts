@@ -80,6 +80,13 @@ const ABILITY_SOUNDS: Partial<Record<AbilityId, SoundSpec>> = {
   },
 }
 
+// Pool 2: party members can level on the same kill.
+const LEVEL_UP_SOUND: SoundSpec = {
+  url: '/sounds/level-up.ogg',
+  volume: 0.5,
+  pool: 2,
+}
+
 const STORAGE_KEY_VOLUME = 'onlinerpg_sfxVolume'
 const STORAGE_KEY_MUTED = 'onlinerpg_sfxMuted'
 const DEFAULT_SFX_VOLUME = 0.5
@@ -322,6 +329,16 @@ export function preloadAbilitySounds() {
 export function playAbilitySound(ability: AbilityId) {
   const sound = ABILITY_SOUNDS[ability]
   if (sound) playSound(sound)
+}
+
+export function preloadLevelUpSound() {
+  preloadSounds({ levelUp: LEVEL_UP_SOUND })
+}
+
+export function playLevelUpSound(gain = 1) {
+  if (!canUseAudio()) return
+  const { url, volume, pool } = LEVEL_UP_SOUND
+  playAudioFromPool(url, volume * gain, pool)
 }
 
 export function preloadBowSounds() {

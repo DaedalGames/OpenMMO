@@ -84,6 +84,7 @@ import {
   playerEffectiveStats,
 } from '../stores/inventoryStore'
 import { queueEnchantSuccess } from '../stores/enchantSuccessStore'
+import { queueLevelUp } from '../stores/levelUpEffectStore'
 import { capeDyeDialog } from '../stores/capeDyeStore'
 import {
   applyFenceVisibility,
@@ -2159,6 +2160,10 @@ export function handleServerMessage(
       queueEnchantSuccess(data.player_id, data.weapon)
       break
 
+    case 'PlayerLeveledUp':
+      queueLevelUp(data.player_id)
+      break
+
     case 'InventoryState':
       setInventory(data.inventory)
       break
@@ -2394,7 +2399,10 @@ export function handleServerMessage(
           { level: data.new_level, totalXp: newTotalXp, lines },
           heldForKill,
           (xp) => {
+            // Coalesced arrivals keep only the last callback, so compare levels.
+            const before = get(gameStore).currentPlayer?.level ?? xp.level
             updatePlayer(playerId, { level: xp.level, totalXp: xp.totalXp })
+            if (xp.level > before) queueLevelUp(playerId)
             for (const text of xp.lines) {
               addCombatMessage({ text, sender: 'local' })
             }
@@ -2402,6 +2410,8 @@ export function handleServerMessage(
         )
       } else {
         for (const text of lines) addCombatMessage({ text, sender: 'local' })
+        if (isCurrentPlayer && !isStaleGain && data.leveled_up)
+          queueLevelUp(data.player_id)
       }
       break
     }

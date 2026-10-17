@@ -57,6 +57,7 @@
     playPropSound,
     preloadFishingSounds,
     preloadBowSounds,
+    preloadLevelUpSound,
     preloadPropSounds,
     preloadMonsterDeathSounds,
     preloadPlayerDeathSounds,
@@ -2216,6 +2217,7 @@
     preloadPlayerHurtSounds()
     preloadPlayerDeathSounds()
     preloadPropSounds()
+    preloadLevelUpSound()
     preloadBowSounds()
     preloadFishingSounds()
 

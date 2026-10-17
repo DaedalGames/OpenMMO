@@ -75,6 +75,13 @@ PROMPTS = {
         "no metal, no glass, no explosion, no reverb."
     ),
     "scp939": "The wet, distorted death shriek of a fleshy eyeless monster, unnatural and wrong",
+    "level_up": (
+        "Fantasy RPG level-up sound: a bright magical ascending shimmer. A quick "
+        "rising harp and glockenspiel arpeggio with sparkling twinkles and a soft "
+        "airy whoosh spiraling upward, ending on a warm radiant chime that fades "
+        "gently into glittering sparkles. Uplifting, celebratory, clean and "
+        "polished game UI feedback. No voice, no drums, no bass boom, no explosion."
+    ),
 }
 
 API = "https://api.elevenlabs.io/v1/sound-generation"

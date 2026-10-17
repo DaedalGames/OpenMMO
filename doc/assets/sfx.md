@@ -293,6 +293,18 @@ like the rest.
 
 Both were generated and processed exactly like the monster cries above.
 
+- level-up.ogg — 레벨업 이펙트와 함께 재생 (본인 1.0배, 15 m 안의 다른 플레이어 0.5배).
+  [ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects) API로 2026-10-17 직접 생성.
+  Starter 유료 플랜(API 구독 조회로 확인),
+  [유료 플랜 상업 이용 라이선스](https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform) 적용.
+  2.5초, `prompt_influence=0.5`. 세 프롬프트로 9개 후보 생성(총 225크레딧) 후
+  첫 프롬프트의 take 1 사용. 프롬프트는 `tools/gen-death-sfx.py`의 `level_up`에 기록
+  (부드러운·중간 톤 프롬프트는 미채택).
+  원래 고음이 날카로워, 고음을 깎은 신호에서 시작해 0.45초에 걸쳐 고음 −12 dB 셸빙 신호로
+  크로스페이드하고 0.25초 페이드인을 줬다. 피크 −3 dB 정규화, 끝 300 ms 페이드,
+  44.1 kHz 스테레오 Ogg Vorbis q5. 원본과 정확한 ffmpeg 필터 체인은
+  `~/assets_original/sfx/level-up_take1_2026-10-17.mp3` 및 같은 이름의 `.json`에 보관.
+
 ## Props
 
 - crate-break.ogg — sword hitting a wooden crate, generated with

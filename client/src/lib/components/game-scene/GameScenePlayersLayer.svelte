@@ -7,11 +7,16 @@
   import PlayerModel from '../PlayerModel.svelte'
   import GameSceneAbilitiesLayer from './GameSceneAbilitiesLayer.svelte'
   import GameSceneEnchantSuccessLayer from './GameSceneEnchantSuccessLayer.svelte'
+  import GameSceneLevelUpLayer from './GameSceneLevelUpLayer.svelte'
   import GameSceneTeleportLayer from './GameSceneTeleportLayer.svelte'
   import { teleportHiddenPlayers } from '../../stores/teleportEffectStore'
   import type { EnchantSuccess } from '../../stores/enchantSuccessStore'
   import type { EnchantEffectAnchor } from '../../utils/playerEffectAnchors'
-  import { applyEnchantLight } from '../../utils/enchantLight'
+  import {
+    applyEnchantLight,
+    selectEnchantLight,
+    type EnchantLight,
+  } from '../../utils/enchantLight'
   import PlayerControl from '../PlayerControl.svelte'
   import type { PlayerControlEvent } from '../player-control/events'
   import type {
@@ -243,6 +248,9 @@
     )
   )
 
+  const modelFor = (id: number) =>
+    id === currentPlayer?.id ? currentPlayerModel : remoteModels.get(id)
+
   function getAbilityAnchor(
     id: number,
     shield: boolean,
@@ -255,7 +263,7 @@
         : !remoteVisibility.get(id) || (otherPlayers.get(id)?.health ?? 0) <= 0
     )
       return false
-    const model = local ? currentPlayerModel : remoteModels.get(id)
+    const model = modelFor(id)
     if (!model) return false
     if (shield) return model.getShieldAnchor(target)
     const root = model.getModelGroup()
@@ -270,19 +278,33 @@
   ) {
     const local = event.playerId === currentPlayer?.id
     if (!local && !remoteVisibility.get(event.playerId)) return false
-    const model = local ? currentPlayerModel : remoteModels.get(event.playerId)
-    return model?.getEnchantAnchor(event.weapon, target) ?? false
+    return (
+      modelFor(event.playerId)?.getEnchantAnchor(event.weapon, target) ?? false
+    )
   }
 
   function setEnchantPose(playerId: number, until: number, weapon: boolean) {
-    const model =
-      playerId === currentPlayer?.id
-        ? currentPlayerModel
-        : remoteModels.get(playerId)
-    model?.setEnchantPoseUntil(until, weapon)
+    modelFor(playerId)?.setEnchantPoseUntil(until, weapon)
+  }
+
+  const effectLights: EnchantLight[] = []
+
+  function effectLight() {
+    if (!currentPlayer) return null
+    effectLights.length = 0
+    const enchant = enchantLayer?.getLight()
+    if (enchant) effectLights.push(enchant)
+    const levelUp = levelUpLayer?.getLight()
+    if (levelUp) effectLights.push(levelUp)
+    return selectEnchantLight(
+      effectLights,
+      currentPlayer.id,
+      currentPlayer.position
+    )
   }
 
   let enchantLayer: GameSceneEnchantSuccessLayer | undefined
+  let levelUpLayer: GameSceneLevelUpLayer | undefined
   let teleportLayer: GameSceneTeleportLayer | undefined
   // One shadow light: enchantment, fire, local light, then nearby light.
   let unifiedTorchLight = $state<THREE.PointLight | undefined>(undefined)
@@ -552,6 +574,7 @@
   export function updateUnifiedTorchFlicker(deltaTime: number) {
     teleportLayer?.update()
     enchantLayer?.update()
+    levelUpLayer?.update()
     if (currentPlayer) updateRadianceStrength(currentPlayer, deltaTime)
     for (const player of otherPlayers.values())
       updateRadianceStrength(player, deltaTime)
@@ -567,7 +590,7 @@
     let occupiedWallIdx = -1
     if (
       unifiedTorchLight &&
-      !applyEnchantLight(unifiedTorchLight, enchantLayer?.getLight() ?? null)
+      !applyEnchantLight(unifiedTorchLight, effectLight())
     ) {
       const result = computeUnifiedTorchTarget(wallPositions)
       if (result) {
@@ -607,6 +630,12 @@
   {currentPlayer}
   getAnchor={getEnchantAnchor}
   setPose={setEnchantPose}
+/>
+<GameSceneLevelUpLayer
+  bind:this={levelUpLayer}
+  {currentPlayer}
+  getAnchor={(id, target) => getAbilityAnchor(id, false, target)}
+  setPose={(id, until) => modelFor(id)?.setLevelUpPoseUntil(until)}
 />
 <GameSceneAbilitiesLayer
   {currentPlayer}

@@ -1950,3 +1950,40 @@ async fn partyless_kill_xp_is_unchanged() {
 
     assert_eq!(xp_gains(&mut alice_rx), [SHARED_KILL_XP]);
 }
+
+#[tokio::test]
+async fn level_up_is_celebrated_to_nearby_players_only() {
+    let game_state = make_test_game_state("level_up_nearby");
+    let mut alice_rx = add(&game_state, "alice", 0.0).await;
+    let mut near_rx = add(&game_state, "near", 3.0).await;
+    let mut far_rx = add(&game_state, "far", 1000.0).await;
+    game_state
+        .register_player_character(
+            &pid("alice"),
+            1,
+            onlinerpg_shared::xp::xp_for_level(2) - 1,
+            attrs_with_cha(10),
+            0,
+            Some(1000),
+        )
+        .await;
+    spawn_prey(&game_state).await;
+    drain(&mut alice_rx);
+    drain(&mut near_rx);
+    drain(&mut far_rx);
+
+    kill_monster(&game_state, "alice", "prey").await;
+
+    let celebrations = |rx: &mut DirectRx| {
+        drain(rx)
+            .into_iter()
+            .filter(|msg| matches!(msg, ServerMessage::PlayerLeveledUp { .. }))
+            .collect::<Vec<_>>()
+    };
+    assert!(matches!(
+        celebrations(&mut near_rx)[..],
+        [ServerMessage::PlayerLeveledUp { player_id }] if player_id == pid("alice")
+    ));
+    assert!(celebrations(&mut alice_rx).is_empty());
+    assert!(celebrations(&mut far_rx).is_empty());
+}

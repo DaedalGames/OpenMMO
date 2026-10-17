@@ -1309,6 +1309,10 @@ pub enum ServerMessage {
         player_id: PlayerId,
         weapon: bool,
     },
+    /// Nearby celebration; the leveling player learns from `XpGained`.
+    PlayerLeveledUp {
+        player_id: PlayerId,
+    },
     /// Direct ack to the attacker for a dropped `PlayerAttack` request, so a
     /// rejection is distinguishable from packet loss.
     PlayerAttackRejected {
@@ -2016,6 +2020,7 @@ impl ServerMessage {
             | Self::DaggerDoubleSlashStarted { .. }
             | Self::DaggerDoubleSlashSkipped { .. }
             | Self::EquipmentEnchantSucceeded { .. }
+            | Self::PlayerLeveledUp { .. }
             | Self::MonsterAttackedPlayer { .. }
             | Self::PlayerInstrumentNotes { .. }
             | Self::AbilityUsed { .. } => DeliveryClass::NearbyEffect,
