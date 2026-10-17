@@ -1,7 +1,7 @@
 {
   "date": "2026-10-17",
   "inputs": {
-    "tools/prepare-female-knight.mjs": "73a4ac504857dd32f92b0411b535b3e4451d662b719131e1bd75c8e14aafaa35",
+    "tools/prepare-female-knight.mjs": "13e6460c5963a65fd152918dc03026f13e6474cc4fa416e42390e77ca2ec1104",
     "client/src/lib/utils/female-clip-bake.ts": "ffe7b1e7dbefe8d7877efa81aba171c499bd639061246dbd8fa2c64059b71e7f",
     "client/src/lib/utils/female-boot-ground.ts": "a0c05d9bd0b98e249f4349443d0c0bc042e9957507fc9851cade04b5e0ff5741",
     "assets/modular_human_female_01/rig_v1/female-base.glb": "3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5",
@@ -45,7 +45,9 @@
     "client/public/models/animations/enchant_armor.glb": "77178f2ea299e1ebd73351c290285442347134c8519723e37c07ce722c409568",
     "client/public/models/animations/great_sword.glb": "ff7e995994d4f95298c1dd444e0e16dd5f93b7c6728de1fe6d8077a2624c366d",
     "client/public/models/animations/riding.glb": "e0d76b9900e0f9bf76425c4165ebba8fd9e350895f9d99779a085af6dc51c9f8",
-    "client/public/models/animations/dagger_preview.glb": "550c601a7459fb3229e54b549129c9643d1041059d7f54c915f26292afe033a6"
+    "client/public/models/animations/dagger_preview.glb": "550c601a7459fb3229e54b549129c9643d1041059d7f54c915f26292afe033a6",
+    "assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb": "3679643e1b04925af22775f8a76f810bf11ace63c7836687379d238bda9a9ff3",
+    "assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/body-occlusion.json": "6378efeef545061f5a1cece86b3795a9e595191d32b562ad6280c7888e5789bb"
   },
   "outputs": {
     "client/public/models/characters/modular_female/base.glb": "628216b190a027eb69e39b43ff3e26bd57a3cabae5e0e38b8134f28f5fb3bb4c",
@@ -70,7 +72,8 @@
     "client/public/models/characters/modular_female/animations/enchant_armor.glb": "781f058e2857e82e6e3fddd49a2d2f55793171a5f2effe26bdb965c755825bab",
     "client/public/models/characters/modular_female/animations/great_sword.glb": "c55deec92a128ad9c3476c36e9e8faf45b16674e58a990c80b7c4bd601817dc2",
     "client/public/models/characters/modular_female/animations/riding.glb": "f5303ac6d9fdd717d3f91f093137e35b2a133a7c979ee20bc19a8b514873c222",
-    "client/public/models/characters/modular_female/animations/dagger_preview.glb": "1336132000d8969184617143091a48e3a0b095d84595d0befb43405de5d058be"
+    "client/public/models/characters/modular_female/animations/dagger_preview.glb": "1336132000d8969184617143091a48e3a0b095d84595d0befb43405de5d058be",
+    "client/public/models/characters/modular_female/brilliance_helmet.glb": "6412563345705ea8c042d16a14b549cf55cb93722e8f729eb9de1899149b84e3"
   },
   "underwear_weight_patch": {
     "date": "2026-10-15",

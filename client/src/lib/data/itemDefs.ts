@@ -53,7 +53,7 @@ export interface ItemDefinition {
   basePrice?: number
   /** Guard (AC) bonus granted while equipped. Summed across equipped items. */
   guard?: number
-  /** Special effects while equipped: `;`-separated tokens (`cha+1`, `sustenance`). */
+  /** Special effects while equipped: `;`-separated tokens (`cha+1`, `int+1`, `sustenance`, `light`). */
   effects?: string
   /** Usable from the bag — the items.csv flag, which the server validates
    * against its `use_effect` dispatch at boot. */
@@ -144,7 +144,21 @@ export function itemDescription(
   return itemText(def.id, 'description', def.description, language)
 }
 
+// Read every frame for every visible player, so resolve the tokens once.
+const LIGHT_ITEM_IDS = new Set(
+  Object.values(itemDefs)
+    .filter((def) =>
+      def.effects?.split(';').some((token) => token.trim() === 'light')
+    )
+    .map((def) => def.id)
+)
+
+export function givesLight(itemDefId: string | null | undefined): boolean {
+  return LIGHT_ITEM_IDS.has(itemDefId ?? '')
+}
+
 /** Guard while equipped, with the armor enchant folded in as combat resolves it. */
+
 export function effectiveGuard(def: ItemDefinition, enchant = 0): number {
   return (def.guard ?? 0) + (def.category === 'armor' ? enchant : 0)
 }
@@ -204,6 +218,11 @@ export function averageDamage(
   return meanRoll(def.dice) + meanRoll(round?.dice) + enchant
 }
 
+const STAT_LABELS = {
+  cha: 'item.charisma',
+  int: 'item.intelligence',
+} as const
+
 /** Tooltip effects, including armor enchantment. */
 export function statLabels(
   def: ItemDefinition,
@@ -217,10 +236,19 @@ export function statLabels(
   for (const raw of def.effects?.split(';') ?? []) {
     const token = raw.trim()
     if (!token) continue
-    const cha = token.match(/^cha([+-]\d+)$/)
-    if (cha) lines.push(translate('item.charisma', { value: cha[1] }, language))
+    const stat = token.match(/^(cha|int)([+-]\d+)$/)
+    if (stat)
+      lines.push(
+        translate(
+          STAT_LABELS[stat[1] as keyof typeof STAT_LABELS],
+          { value: stat[2] },
+          language
+        )
+      )
     else if (token === 'sustenance')
       lines.push(translate('item.sustenance', {}, language))
+    else if (token === 'light')
+      lines.push(translate('item.light', {}, language))
     else lines.push(token)
   }
   return lines

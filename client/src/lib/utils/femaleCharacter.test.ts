@@ -143,12 +143,16 @@ describe('female modular starter outfits', () => {
         const part = parts[slot]
         const barbarianStyle =
           item.material === 'leather' || id.startsWith('worn_barbarian_')
-        const [shown, hidden] = barbarianStyle
-          ? [`barbarian_${part}`, part]
-          : [part, `barbarian_${part}`]
+        const brilliance = id === 'helm_of_brilliance'
+        const [shown, hidden] = brilliance
+          ? ['brilliance_helmet', part]
+          : barbarianStyle
+            ? [`barbarian_${part}`, part]
+            : [part, `barbarian_${part}`]
         await applyCharacterArmor(modelRoot, { [slot]: id } as ArmorEquipment)
         expect(count(modelRoot, shown), id).toBeGreaterThan(0)
         expect(count(modelRoot, hidden), id).toBe(0)
+        if (brilliance) expect(count(modelRoot, 'barbarian_helmet'), id).toBe(0)
         if (slot === 'head') {
           expect(count(modelRoot, 'barbarian_hair') > 0, id).toBe(
             barbarianStyle

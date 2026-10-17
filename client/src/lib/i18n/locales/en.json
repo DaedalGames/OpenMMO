@@ -133,6 +133,8 @@
   "item.noAmmo": "No ammunition",
   "item.guard": "Guard: +{{value}}",
   "item.charisma": "CHA: {{value}}",
+  "item.intelligence": "INT: {{value}}",
+  "item.light": "Gives off light",
   "item.sustenance": "Slows hunger",
   "item.compare": "vs {{item}}",
   "stat.weight": "Weight",

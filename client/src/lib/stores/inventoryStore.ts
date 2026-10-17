@@ -8,6 +8,7 @@ import type {
 } from '../network/networkTypes'
 import {
   getItemDef,
+  givesLight,
   isRangedWeapon,
   type ItemDefinition,
 } from '../data/itemDefs'
@@ -107,6 +108,10 @@ export const localTorchEquipped = derived(inventoryStore, (inv) => {
   const id = inv.equipped.off_hand?.item_def_id
   return isTorchItemDefId(id)
 })
+
+export const localHeadLight = derived(inventoryStore, (inv) =>
+  givesLight(inv.equipped.head?.item_def_id)
+)
 
 export function carriedItemWeight(
   item: Pick<ItemInstance, 'item_def_id' | 'quantity'>,

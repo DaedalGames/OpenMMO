@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import itemDefs, {
   armorTypeLabel,
   effectiveGuard,
+  givesLight,
   isRangedWeapon,
+  statLabels,
   isTwoHanded,
   weaponRangeMeters,
   WEAPON_TYPE_LABELS,
@@ -86,5 +88,20 @@ describe('weapon reach from items.json', () => {
   it('falls back to melee for an empty hand or an unknown item', () => {
     expect(weaponRangeMeters(null)).toBe(PLAYER_ATTACK_RANGE_METERS)
     expect(weaponRangeMeters('no_such_item')).toBe(PLAYER_ATTACK_RANGE_METERS)
+  })
+})
+
+describe('helm of brilliance', () => {
+  it('lists INT and light and is the only light-giving helmet', () => {
+    const helm = itemDefs['helm_of_brilliance']
+    expect(statLabels(helm, 0, 'en')).toEqual([
+      'Guard: +2',
+      'INT: +1',
+      'Gives off light',
+    ])
+    const lit = Object.values(itemDefs)
+      .filter((def) => givesLight(def.id))
+      .map((def) => def.id)
+    expect(lit).toEqual(['helm_of_brilliance'])
   })
 })

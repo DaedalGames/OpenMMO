@@ -54,16 +54,27 @@ const sources = {
   barbarian_boots: 'assets/items/female_barbarian_boots/tripo_v1/fitted_v3/boots_female_barbarian.glb',
   barbarian_gloves: 'assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/gloves_female_barbarian.glb',
   barbarian_helmet: 'assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/helmet_female_barbarian.glb',
+  brilliance_helmet: 'assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb',
 }
 const packs = ['locomotion', 'combat_melee', 'social', 'fishing', 'combat_ranged', 'offhand', 'enchant_armor', 'great_sword', 'riding', 'dagger_preview']
 const packFlag = process.argv.indexOf('--pack')
 const selectedPack = packFlag === -1 ? undefined : process.argv[packFlag + 1]
 if (selectedPack !== undefined && !packs.includes(selectedPack)) throw new Error(`--pack requires one of: ${packs.join(', ')}`)
 const builtPacks = selectedPack ? [selectedPack] : packs
+// Rebuilds one part without re-baking packs; only valid for parts the bakes do not read.
+const partFlag = process.argv.indexOf('--part')
+const selectedPart = partFlag === -1 ? undefined : process.argv[partFlag + 1]
+if (selectedPart !== undefined && !(selectedPart in sources)) throw new Error(`--part requires one of: ${Object.keys(sources).join(', ')}`)
 mkdirSync(`${output}/animations`, { recursive: true })
 const reportPath = 'doc/assets/female-knight-runtime-sources.json'
 const report = { date: '2026-10-17', inputs: {}, outputs: {} }
 const record = (path) => { report.inputs[path] = hash(path) }
+function writeReport() {
+  const previous = existsSync(reportPath) ? JSON.parse(readFileSync(reportPath)) : {}
+  if (selectedPack || selectedPart) report.inputs = { ...previous.inputs, ...report.inputs }
+  if (selectedPart) report.outputs = { ...previous.outputs, ...report.outputs }
+  writeFileSync(reportPath, JSON.stringify({ ...previous, ...report }, null, 2) + '\n')
+}
 for (const path of ['tools/prepare-female-knight.mjs', 'client/src/lib/utils/female-clip-bake.ts', 'client/src/lib/utils/female-boot-ground.ts']) record(path)
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS)
 // Replaces the file instead of rewriting it, since worktrees may hard-link these GLBs.
@@ -78,7 +89,7 @@ sharp.cache(false)
 sharp.concurrency(2)
 for (const [name, source] of Object.entries(sources)) {
   record(source)
-  if (selectedPack) continue
+  if (selectedPack || (selectedPart && name !== selectedPart)) continue
   const doc = await io.read(source)
   const scene = doc.getRoot().listScenes()[0]
   const metadata = { ...scene.getExtras(), female_part: name }
@@ -183,6 +194,12 @@ function disposeSampler(sampler) {
   for (const accessor of accessors) if (accessor.listParents().every(parent => parent.propertyType === 'Root')) accessor.dispose()
 }
 
+if (selectedPart) {
+  const path = `${output}/${selectedPart}.glb`
+  report.outputs[path] = hash(path)
+  writeReport()
+  process.exit(0)
+}
 await ensureFemalePreview('animations')
 const preparedPath = previewOutput('animations')
 for (const path of dependencies('animations')) record(path)
@@ -222,6 +239,4 @@ try {
   await bakeBootsAndGrip(path => server.ssrLoadModule(path), load)
 } finally { await server.close() }
 for (const path of [...Object.keys(sources).map(name => `${output}/${name}.glb`), ...packs.map(name => `${output}/animations/${name}.glb`)]) report.outputs[path] = hash(path)
-const previous = existsSync(reportPath) ? JSON.parse(readFileSync(reportPath)) : {}
-if (selectedPack) report.inputs = { ...previous.inputs, ...report.inputs }
-writeFileSync(reportPath, JSON.stringify({ ...previous, ...report }, null, 2) + '\n')
+writeReport()

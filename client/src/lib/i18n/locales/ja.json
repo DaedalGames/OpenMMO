@@ -133,6 +133,8 @@
   "item.noAmmo": "弾薬なし",
   "item.guard": "防御：+{{value}}",
   "item.charisma": "魅力：{{value}}",
+  "item.intelligence": "知力：{{value}}",
+  "item.light": "周囲を照らす",
   "item.sustenance": "空腹の進行を抑える",
   "item.compare": "比較：{{item}}",
   "stat.weight": "重量",

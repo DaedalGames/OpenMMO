@@ -133,6 +133,8 @@
   "item.noAmmo": "탄약 없음",
   "item.guard": "방어: +{{value}}",
   "item.charisma": "매력: {{value}}",
+  "item.intelligence": "지능: {{value}}",
+  "item.light": "주변을 밝힘",
   "item.sustenance": "허기 감소 속도 완화",
   "item.compare": "비교: {{item}}",
   "stat.weight": "무게",

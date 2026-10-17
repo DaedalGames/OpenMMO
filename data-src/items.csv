@@ -16,6 +16,7 @@ plate_greaves,Plate Greaves,Articulated steel greaves that guard the legs.,8,pan
 plate_boots,Plate Boots,Overlapping steel plates that guard the feet and shins.,7,boots,false,armor/plate_greaves.png,armor/plate_greaves.glb,armor,,,metal,9000,3,,,,,3,0.37,,,,,,,,,,,,,,,
 plate_helmet,Plate Helmet,A visored steel close helm that encases the whole head.,5,head,false,armor/plate_helmet.png,armor/plate_helmet.glb,armor,,,metal,15000,3,,,,,4,0.3,,,,,,,,,,,,,,,
 plate_gauntlets,Plate Gauntlets,Articulated steel gauntlets that encase the hands and wrists.,3,hands,false,armor/plate_gauntlets.png,armor/plate_gauntlets.glb,armor,,,metal,10000,3,,,,,4,0.3,,,,,,,,,,,,,,,
+helm_of_brilliance,Helm of Brilliance,An open steel helm trimmed in brass with a radiant crystal set in the brow.,3,head,false,armor/helm_of_brilliance.png,armor/helm_of_brilliance.glb,armor,,,metal,30000,2,,,,,,,,,,int+1;light,,,,,,,,,,,
 worn_breastplate,Worn Breastplate,Well-used plate armor issued to new knights. Merchants will not buy it.,20,chest,false,armor/plate_armor.png,armor/plate_armor.glb,armor,,,metal,,1,,,,,,,,,,,,true,,,,,,,,,
 worn_plate_greaves,Worn Plate Greaves,Well-used plate armor issued to new knights. Merchants will not buy it.,8,pants,false,armor/iron_leggings.png,armor/iron_leggings.glb,armor,,,metal,,1,,,,,,,,,,,,true,,,,,,,,,
 worn_plate_boots,Worn Plate Boots,Well-used plate armor issued to new knights. Merchants will not buy it.,7,boots,false,armor/plate_greaves.png,armor/plate_greaves.glb,armor,,,metal,,1,,,,,,,,,,,,true,,,,,,,,,

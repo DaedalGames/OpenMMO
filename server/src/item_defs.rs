@@ -15,6 +15,10 @@ pub enum ItemEffect {
     /// CHA bonus, added to the base attribute wherever CHA is read
     /// (haggling bands, doc/ITEM_TIERS.md).
     Cha(i32),
+    /// INT bonus. No rule reads INT yet; the tooltip shows it.
+    Int(i32),
+    /// Lights the wearer's surroundings; drawn by clients only.
+    Light,
     /// Slows satiation drain while equipped (doc/HUNGER.md).
     Sustenance,
 }
@@ -24,8 +28,12 @@ impl ItemEffect {
         if let Some(amount) = token.strip_prefix("cha") {
             return amount.parse().ok().map(ItemEffect::Cha);
         }
+        if let Some(amount) = token.strip_prefix("int") {
+            return amount.parse().ok().map(ItemEffect::Int);
+        }
         match token {
             "sustenance" => Some(ItemEffect::Sustenance),
+            "light" => Some(ItemEffect::Light),
             _ => None,
         }
     }
@@ -690,6 +698,17 @@ mod tests {
             .into_iter()
             .map(|(id, _)| id)
             .collect()
+    }
+
+    #[test]
+    fn helm_of_brilliance_grants_int_and_stays_out_of_chests() {
+        let defs = ItemDefs::load();
+        let helm = defs.get("helm_of_brilliance").expect("helm def");
+        assert_eq!(helm.equip_slot, Some(EquipSlot::Head));
+        assert_eq!(helm.effects, vec![ItemEffect::Int(1), ItemEffect::Light]);
+        for tier in 1..=5 {
+            assert!(!table_ids(&defs, tier).contains(&helm.id));
+        }
     }
 
     /// The three ranged columns come off items.csv, and an empty `range`

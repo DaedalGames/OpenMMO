@@ -42,6 +42,7 @@ const ARMOR_STYLES = {
     'armor/priest_helmet.glb': 'priest',
     'armor/plate_helmet.glb': 'plate',
     'armor/barbarian_helmet.glb': 'barbarian',
+    'armor/helm_of_brilliance.glb': 'brilliance',
   },
 } as const
 

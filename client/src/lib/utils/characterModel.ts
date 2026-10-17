@@ -11,7 +11,7 @@ import {
 import {
   loadFemaleCharacter,
   loadFemaleAnimationPack,
-  applyFemaleArmor,
+  applyFemaleArmorAsync,
   disposeFemaleCharacter,
 } from './femaleCharacter'
 import type {
@@ -21,6 +21,7 @@ import type {
 import { modularOutfitForArmor } from './modularEquipment'
 import { disposePeltPhysics } from '../effects/pelt-rig'
 import { separateWavyHairMaterials } from './wavyHairMaterials'
+import { femaleOutfitMask } from './female-outfit-mask'
 import modularSoleOffsets from './modularSoleOffsets.json'
 import {
   applyAppearanceColors,
@@ -39,6 +40,7 @@ import {
   type ModularOutfit,
   bindModularFace,
   bindModularPart,
+  region,
   modularAnimationClips,
   modularRigId,
   modularOutfitParts,
@@ -64,7 +66,7 @@ const lazyParts = new Set(
     BARD_MODULAR_OUTFIT,
   ]
     .flatMap((outfit) => [...modularOutfitParts(outfit)])
-    .concat(...SELECTABLE_HAIR_PARTS)
+    .concat(...SELECTABLE_HAIR_PARTS, 'helmet_brilliance')
     .filter((id) => !eagerParts.has(id))
 )
 const outfitParts = new Set([...eagerParts, ...lazyParts])
@@ -74,6 +76,8 @@ const lazyStates = new WeakMap<
     generation: number
     loads: Map<string, Promise<void>>
     outfitKey?: string
+    mask?: ReturnType<typeof femaleOutfitMask>
+    maskedParts: string[]
   }
 >()
 const soleOffsets: Record<ModularOutfit['boots'], number> = modularSoleOffsets
@@ -96,6 +100,7 @@ export function loadCharacterModel(
       .then(([base, faceSource, ...sources]) => {
         const scene = clone(base.scene) as THREE.Group
         scene.userData.modular_character = true
+        scene.userData.modular_face = face
         bindModularFace(scene, faceSource.scene)
         const body = skinnedParts(scene)
         const parts = new Map(
@@ -155,6 +160,7 @@ function bindLazyPart(
           mesh.frustumCulled = false
           if (id === 'hair_wavy_bone') separateWavyHairMaterials(mesh)
         }
+        registerBodyMask(scene, state, id, gltf.scene.userData.body_mask)
         state.outfitKey = undefined
       },
       (error) => {
@@ -167,13 +173,28 @@ function bindLazyPart(
   return load
 }
 
+// Masks are fitted to the default face; other faces have their own topology.
+function registerBodyMask(
+  scene: THREE.Object3D,
+  state: NonNullable<ReturnType<typeof lazyStates.get>>,
+  id: string,
+  mask: unknown
+) {
+  if (!mask || scene.userData.modular_face !== 'default') return
+  const head = outfitMeshes(scene).body.find((mesh) => region(mesh) === 'head')
+  if (!head) return
+  state.mask ??= femaleOutfitMask()
+  state.mask.register(id, mask, head)
+  state.maskedParts.push(id)
+}
+
 /** Keep the current outfit until the latest selection loads. */
 export async function applyCharacterArmor(
   root: THREE.Object3D,
   armor?: ArmorEquipment,
   appearance?: CharacterAppearance
 ): Promise<void> {
-  if (applyFemaleArmor(root, armor)) return
+  if (await applyFemaleArmorAsync(root, armor)) return
   const scene = modularScene(root)
   if (!scene) return
   const outfit = modularOutfitForArmor(armor)
@@ -183,7 +204,10 @@ export async function applyCharacterArmor(
   }
   let state = lazyStates.get(scene)
   if (!state)
-    lazyStates.set(scene, (state = { generation: 0, loads: new Map() }))
+    lazyStates.set(
+      scene,
+      (state = { generation: 0, loads: new Map(), maskedParts: [] })
+    )
   const generation = ++state.generation
   let { meshes, body, parts } = outfitMeshes(scene)
   const missing = [...modularOutfitParts(outfit)].filter((id) => !parts.has(id))
@@ -200,7 +224,10 @@ export async function applyCharacterArmor(
   }
   const outfitKey = JSON.stringify(outfit)
   if (state.outfitKey !== outfitKey) {
-    showModularOutfit(body, parts, outfit)
+    const selected = showModularOutfit(body, parts, outfit)
+    state.mask?.setEquippedAll(
+      Object.fromEntries(state.maskedParts.map((id) => [id, selected.has(id)]))
+    )
     state.outfitKey = outfitKey
   }
   applyAppearanceColors(root, meshes, appearance)
@@ -268,7 +295,10 @@ export function modularSwordAttachment(
 export function disposeCharacterSkeletons(root: THREE.Object3D): void {
   disposeFemaleCharacter(root)
   const scene = modularScene(root)
-  if (scene) lazyStates.delete(scene)
+  if (scene) {
+    lazyStates.get(scene)?.mask?.dispose()
+    lazyStates.delete(scene)
+  }
   disposeAppearanceColors(root)
   disposePeltPhysics(root)
   const skeletons = new Set(skinnedParts(root).map((mesh) => mesh.skeleton))

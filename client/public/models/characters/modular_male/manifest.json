@@ -1,5 +1,5 @@
 {
-  "source": "Modular male body, knight, barbarian, rogue, caveman, ranger, priest and bard equipment and user-provided Mixamo rig; source tiers and licenses in doc/assets/characters.md",
+  "source": "Modular male body, knight, barbarian, rogue, caveman, ranger, priest and bard equipment, Helm of Brilliance and user-provided Mixamo rig; source tiers and licenses in doc/assets/characters.md and doc/assets/helm-of-brilliance.md",
   "inputs": {
     "assets/modular_human_male_01/fitted/base.glb": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a",
     "assets/modular_human_male_01/fitted/hair_crop.glb": "5e8acb389f575331008c36dd94afcbf3831c90f53ca21ab0a7bbe666539f2472",
@@ -51,7 +51,9 @@
     "assets/modular_human_male_01/bard/tripo_pants_v1/pants_bard.glb": "87885b4a6459f124ea38024a2092f2b4c324fae7bb3b8f878328bf1b1cccb720",
     "assets/modular_human_male_01/bard/tripo_boots_v1/boots_bard.glb": "033658dbf434e1bd308f93de239989a20d49150ed5da96b84a865a1fe4746b66",
     "assets/modular_human_male_01/bard/tripo_hat_v1/helmet_bard.glb": "f7af3a0fb126147eff50d7d744368870b2c44004e7877c0729abc4d45edd4d70",
-    "client/public/models/animations/dagger_preview.glb": "550c601a7459fb3229e54b549129c9643d1041059d7f54c915f26292afe033a6"
+    "client/public/models/animations/dagger_preview.glb": "550c601a7459fb3229e54b549129c9643d1041059d7f54c915f26292afe033a6",
+    "assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb": "0af2bd50efc53d764bf9435e1e4e872162081b06272644eae1ff2095b908ceb6",
+    "assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/body-occlusion.json": "ae3a896b6c36035bb1659143190b590a653d095f7de908bd2e4308ee49f4bdb3"
   },
   "outputs": {
     "base.glb": "abf1a12178d5df11269afed6793e46ed16796c47174e356708ee73bdf590bdad",
@@ -178,6 +180,7 @@
     "animations/dagger_preview.glb": {
       "sha256": "9f83544cea294df4fd64cd19987174e5a7defd386d0bbd5d3d98004ab47bb331",
       "clips": ["dagger_inward", "dagger_outward"]
-    }
+    },
+    "helmet_brilliance.glb": "312c493a742d92afee77c99098b01a01b0ef2857a7d562e20468110f8a315654"
   }
 }

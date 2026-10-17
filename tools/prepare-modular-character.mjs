@@ -15,6 +15,8 @@ import * as THREE from "../client/node_modules/three/build/three.module.js";
 import { GLTFLoader } from "../client/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFExporter } from "../client/node_modules/three/examples/jsm/exporters/GLTFExporter.js";
 import { createServer } from "../client/node_modules/vite/dist/node/index.js";
+import { NodeIO } from "@gltf-transform/core";
+import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
 import { splitModularBody } from "./split-modular-body.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -86,6 +88,10 @@ const outfitSources = {
     boots_bard:
       "assets/modular_human_male_01/bard/tripo_boots_v1/boots_bard.glb",
   },
+  brilliance: {
+    helmet_brilliance:
+      "assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb",
+  },
 };
 const outfitPartSources = Object.assign({}, ...Object.values(outfitSources));
 parts.push(...Object.keys(outfitPartSources));
@@ -124,7 +130,7 @@ const hash = (path) =>
     .digest("hex");
 const report = {
   source:
-    "Modular male body, knight, barbarian, rogue, caveman, ranger, priest and bard equipment and user-provided Mixamo rig; source tiers and licenses in doc/assets/characters.md",
+    "Modular male body, knight, barbarian, rogue, caveman, ranger, priest and bard equipment, Helm of Brilliance and user-provided Mixamo rig; source tiers and licenses in doc/assets/characters.md and doc/assets/helm-of-brilliance.md",
   inputs: {},
   outputs: {},
 };
@@ -179,14 +185,31 @@ for (const name of selectedParts) {
       ? (rogue.part_overrides[name] ?? `${rogue.directory}/${name}.glb`)
       : `${fitted}/${name}.glb`);
   report.inputs[source] = hash(source);
-  const temporary = bodyParts.includes(name)
-    ? mkdtempSync(resolve(tmpdir(), "modular-body-"))
-    : undefined;
+  // A sibling body-occlusion.json reshapes the default head while the part is worn.
+  const occlusion = source.replace(/[^/]+$/, "body-occlusion.json");
+  const mask =
+    !bodyParts.includes(name) && existsSync(resolve(root, occlusion))
+      ? occlusion
+      : undefined;
+  const temporary =
+    bodyParts.includes(name) || mask
+      ? mkdtempSync(resolve(tmpdir(), "modular-body-"))
+      : undefined;
   try {
     const input = temporary
       ? resolve(temporary, `${name}.glb`)
       : resolve(root, source);
-    if (temporary) {
+    if (mask) {
+      report.inputs[mask] = hash(mask);
+      const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
+      const doc = await io.read(resolve(root, source));
+      const scene = doc.getRoot().listScenes()[0];
+      scene.setExtras({
+        ...scene.getExtras(),
+        body_mask: JSON.parse(readFileSync(resolve(root, mask), "utf8")),
+      });
+      await io.write(input, doc);
+    } else if (temporary) {
       report.inputs[`${fitted}/base.glb`] = hash(`${fitted}/base.glb`);
       await splitModularBody(
         resolve(root, source),

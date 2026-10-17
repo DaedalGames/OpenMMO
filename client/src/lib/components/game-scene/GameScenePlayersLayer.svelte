@@ -52,7 +52,11 @@
     unwrapWorldXNear,
   } from '../../terrain/world-wrap'
   import { OFFSCREEN_Y } from '../../utils/house-geo-utils'
-  import { localTorchEquipped } from '../../stores/inventoryStore'
+  import {
+    localHeadLight,
+    localTorchEquipped,
+  } from '../../stores/inventoryStore'
+  import { givesLight } from '../../data/itemDefs'
   import { LIGHT_WAKE, LIGHT_FADE } from '../../effects/radiance'
 
   const TORCH_OFFSET = new THREE.Vector3(
@@ -284,7 +288,17 @@
   let unifiedTorchLight = $state<THREE.PointLight | undefined>(undefined)
 
   let unifiedTorchFlickerTime = 0
+  // Radiance and light-giving headgear share the steady overhead light.
   const radianceStrengths = new SvelteMap<number, number>()
+
+  function glowing(player: LocalPlayer | RemotePlayer) {
+    return (
+      !!player.radianceOn ||
+      (player.id === currentPlayer?.id
+        ? $localHeadLight
+        : givesLight(player.armor?.head))
+    )
+  }
 
   function updateRadianceStrength(
     player: LocalPlayer | RemotePlayer,
@@ -294,7 +308,7 @@
     const next =
       player.health <= 0
         ? 0
-        : player.radianceOn
+        : glowing(player)
           ? Math.min(1, previous + dt / LIGHT_WAKE)
           : Math.max(0, previous - dt / LIGHT_FADE)
     if (next > 0) radianceStrengths.set(player.id, next)
@@ -411,7 +425,7 @@
     if (localTorch || localRadiance > 0) {
       const p = currentPlayer.position
       const radiance =
-        !!currentPlayer.radianceOn || (!localTorch && localRadiance > 0)
+        glowing(currentPlayer) || (!localTorch && localRadiance > 0)
       return {
         target: radiance
           ? _unifiedTorchTmp.set(p.x, p.y + TORCH_BASE_POSITION.y, p.z)
@@ -445,7 +459,7 @@
         bestDist = dist
         bestRp = rp
         bestWallIdx = -1
-        bestRadiance = !!player.radianceOn || (!player.torchOn && radiance > 0)
+        bestRadiance = glowing(player) || (!player.torchOn && radiance > 0)
         bestScale = player.torchOn ? 1 : radiance
       }
     }
