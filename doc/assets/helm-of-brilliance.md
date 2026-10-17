@@ -20,9 +20,9 @@
 - 실제 런타임 연결, 65본·기준 행렬, Head 100%, 14개 클립 × 33개 샘플과
   고개 회전을 포함한 467개 자세에서 강체 부착과 유한 좌표 검사를 통과했다.
 - **제한:** 피부를 숨기지 않은 상태에서 귀·뒤통수 등 투구 안쪽 피부와의 교차가 남는다.
-  FCL 검사는 467개 자세 모두에서 교차를 검출했다. 정면·측면·후면·사선의 착용 모습을
+  귀 보정 전 FCL 검사는 467개 자세 모두에서 교차를 검출했다. 정면·측면·후면·사선의 착용 모습을
   검토했지만 전 자세 무관통 판정은 하지 않는다. 내부 교차를 없애려고 투구를 다시
-  늘리거나 보호대를 찌그러뜨리지 않는다. 게임 적용 전 내부 피부 처리 검토가 필요하다.
+  늘리거나 보호대를 찌그러뜨리지 않는다. 귀 윗부분은 착용 시 안쪽 압축으로 처리했으며, 뒤통수 등 다른 내부 피부는 게임 적용 전 검토가 필요하다.
 - [여성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb) · [Blender](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helm-brilliance-female-fitted.blend).
 - [피팅 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/fitting.json) · [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/animation-validation.json) · [피부 교차](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/skin-clearance-validation.json) · [브라우저 로딩·서빙 해시](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/browser-validation.json).
 
@@ -34,7 +34,13 @@
 - [여성 착용 v3](https://localhost:10004/modular-character-preview.html?character=female&helmet=brilliance&camera=face&hair=none&motion=rest&fit=v3)
 
 기존 제작 페이지의 투구 선택 목록에 광휘의 투구를 추가했다. 회전·확대·동작 재생으로 확인할 수 있다.
-착용 중 헤어를 숨기며 탈착 후 선택한 헤어를 복원한다. 여성의 피부 가림 마스크는 비어 있다.
+착용 중 헤어를 숨기며 탈착 후 선택한 헤어를 복원한다. 귀 윗부분을 삼각형 가림으로
+처리한 시도는 구멍이 드러나 사용자 검토에서 폐기했다. 현재는 **모든 피부 삼각형을 복원**하고,
+양쪽 귀 위·뒤쪽의 736개 정점을 최대 약 15.34mm 안쪽으로 부드럽게 압축한다.
+압축 방향의 미분값이 양수가 되도록 해 접힘을 방지하고, 노멀·탄젠트 방향도 맞춘다.
+투구를 벗으면 원래 정점·노멀·삼각형을 복원한다. 투구와 몸체 원본 GLB는 변경하지 않았다.
+[귀 피팅 기록](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/ear-fitting.json).
+재현: `.venv/bin/python tools/fit-helm-of-brilliance-ears.py`.
 브라우저에서 실제 제공된 GLB의 해시와 로컬 v3 파일의 일치를 확인했다.
 
 ## 파일과 기준
@@ -52,7 +58,7 @@
 다르므로 교환해서 사용하지 않는다. 새 Auto Rig나 천 시뮬레이션은 사용하지 않는다.
 [남성 착용 이미지](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/review/head-angle.png).
 두 투구 모두 3,685 triangles다. 몸체와 투구의 합계는 남성 숨김 포함 17,576, 표시 16,999,
-여성 25,860이다. 의상·무기·망토를 포함한 게임 최종 예산과 얼굴 배분은 장비 등록 단계에서 확인한다.
+여성은 숨김 포함·표시 모두 25,860이다. 의상·무기·망토를 포함한 게임 최종 예산과 얼굴 배분은 장비 등록 단계에서 확인한다.
 
 ## 이전 피팅 기록
 

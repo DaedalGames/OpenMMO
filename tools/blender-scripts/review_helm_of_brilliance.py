@@ -1,12 +1,16 @@
 import argparse
 import json
 import sys
+import tempfile
 from pathlib import Path
 
 import bpy
 from mathutils import Matrix, Vector
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / 'tools'))
+from lib.glb import read_glb, write_glb
+from lib.glb_accessors import accessor, add_accessor
 parser = argparse.ArgumentParser()
 parser.add_argument('sex', choices=['male', 'female'])
 parser.add_argument('--directory', type=Path)
@@ -14,7 +18,31 @@ args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:])
 OUT = ROOT / (args.directory or Path('assets/items/helm_of_brilliance/tripo_v2/fitted_v1') / args.sex)
 fitting = json.loads((OUT / 'fitting.json').read_text())
 bpy.ops.wm.read_factory_settings(use_empty=True)
-bpy.ops.import_scene.gltf(filepath=str(ROOT / fitting['body']['path']), bone_heuristic='TEMPERANCE')
+body_path = ROOT / fitting['body']['path']
+mask_path = OUT / 'body-occlusion.json'
+with tempfile.TemporaryDirectory() as temporary:
+    if mask_path.exists():
+        mask = json.loads(mask_path.read_text())
+        if mask['hide_triangle_indices'] or mask.get('vertex_adjustments'):
+            body, binary = read_glb(body_path)
+            primitive = body['meshes'][mask['mesh_index']]['primitives'][mask['primitive_index']]
+            faces = accessor(body, binary, primitive['indices']).reshape(-1, 3)
+            hidden = set(mask['hide_triangle_indices'])
+            faces = faces[[i not in hidden for i in range(len(faces))]]
+            binary = bytearray(binary)
+            primitive['indices'] = add_accessor(body, binary, faces.reshape(-1, 1), 'SCALAR', 5125)
+            if mask.get('vertex_adjustments'):
+                attrs = primitive['attributes']
+                positions = accessor(body, binary, attrs['POSITION']).copy()
+                normals = accessor(body, binary, attrs['NORMAL']).copy()
+                for item in mask['vertex_adjustments']:
+                    positions[item['vertex']] = item['position']
+                    normals[item['vertex']] = item['normal']
+                attrs['POSITION'] = add_accessor(body, binary, positions, 'VEC3')
+                attrs['NORMAL'] = add_accessor(body, binary, normals, 'VEC3')
+            body_path = Path(temporary) / 'masked-body.glb'
+            write_glb(body_path, body, binary)
+    bpy.ops.import_scene.gltf(filepath=str(body_path), bone_heuristic='TEMPERANCE')
 rig = next(obj for obj in bpy.data.objects if obj.type == 'ARMATURE')
 if rig.animation_data:
     for track in rig.animation_data.nla_tracks:
