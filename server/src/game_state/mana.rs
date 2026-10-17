@@ -12,7 +12,7 @@ pub(super) struct ManaData {
 }
 
 impl ManaData {
-    fn message(&self) -> ServerMessage {
+    pub(super) fn message(&self) -> ServerMessage {
         ServerMessage::ManaUpdate {
             mana: self.mana,
             max_mana: self.max_mana,

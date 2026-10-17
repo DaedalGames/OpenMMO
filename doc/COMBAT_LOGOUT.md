@@ -1,6 +1,6 @@
 # Combat Logout
 
-전투 중 접속 종료 시 캐릭터를 월드에 남기는 규칙. **설계안 (미구현, 2026-10-17).**
+전투 중 접속 종료 시 캐릭터를 월드에 남기는 규칙. **구현 완료 (2026-10-18)**: `server/src/game_state/combat_logout.rs`.
 
 ## 문제
 
@@ -27,21 +27,13 @@
 
 ## 상태
 
-```rust
-struct LingeringBody {
-    account: String,      // 소문자 키
-    character_id: i64,
-    disconnected_at: u64, // ms
-}
-// GameState
-lingering_bodies: Arc<RwLock<HashMap<PlayerId, LingeringBody>>>,
-```
+`GameState::lingering_bodies: HashMap<PlayerId, LingeringBody>`. `LingeringBody`는 계정(소문자), `character_id`, 접속 종료 시각(ms)을 가진다. 변경은 `character_session_lock` 아래에서만 한다.
 
-락 순서는 `character_session_lock` → `persistence_lock` → `lingering_bodies` → `players`. `mod.rs`의 락 순서 문서와 lockscan에 추가한다.
+락 순서는 `character_session_lock` → `persistence_lock` → `lingering_bodies` → `players` (`mod.rs`의 락 순서 문서).
 
 ## 접속 종료
 
-`cleanup_player_session`을 부르는 두 곳에서 분기한다: `end_account_session`(소켓 종료)과 `register_account_session_locked`(다른 기기 로그인으로 인한 세션 교체). `kick_player`는 분기하지 않는다.
+`end_account_session`(소켓 종료)과 `register_account_session_locked`(다른 기기 로그인으로 인한 세션 교체)는 `end_player_session`을 부른다. 전투 중이면 `begin_linger`, 아니면 `cleanup_player_session`이다. `kick_player`와 `evict_account_session_locked`(`/ban` 등)는 `cleanup_player_session`을 바로 부르고, 계정의 남은 몸도 함께 정리한다. `cleanup_player_session`은 항상 `lingering_bodies` 항목부터 지운다.
 
 - 전투 중이면 `begin_linger`:
   - `end_account_activity`, `cancel_concentration_if_active`, `stop_player_attack`, 목표 이동 취소, `drop_player_trade`, 상점 점유 해제.
@@ -52,9 +44,9 @@ lingering_bodies: Arc<RwLock<HashMap<PlayerId, LingeringBody>>>,
 
 ## 정리
 
-기존 1초 틱(HP 재생 틱 등) 하나에서 `lingering_bodies`를 훑는다. 읽기 락으로 먼저 확인하고 비어 있으면 `character_session_lock`을 잡지 않고 바로 돌아간다. 그러지 않으면 매초 모든 로그인과 경합한다. 남은 몸은 동시에 많아야 수십 개이고, 몸마다 tokio 작업을 띄우지 않는다.
+`main.rs`의 1초 틱 `combat_logout`이 `tick_combat_logout`으로 `lingering_bodies`를 훑는다. 읽기 락으로 먼저 확인하고 비어 있으면 `character_session_lock`을 잡지 않고 바로 돌아간다. 그러지 않으면 매초 모든 로그인과 경합한다. 남은 몸은 동시에 많아야 수십 개이고, 몸마다 tokio 작업을 띄우지 않는다.
 
-정리 조건을 만족하면 `character_session_lock`을 잡고 항목이 아직 있는지 다시 확인한 뒤 제거하고, 지금의 `cleanup_player_session` 중 아직 하지 않은 단계(`persist_and_detach_player`, `unregister_player_character`, `remove_player`)를 실행한다. 재접속과 정리가 겹치면 락을 먼저 잡은 쪽이 이긴다.
+정리 조건을 만족하면 `character_session_lock`을 잡고 항목이 아직 있는지 다시 확인한 뒤 `cleanup_player_session`을 실행한다. 접속 종료 때 이미 한 단계는 다시 해도 아무 일이 없다. 재접속과 정리가 겹치면 락을 먼저 잡은 쪽이 이긴다.
 
 ## 사망
 
@@ -72,9 +64,10 @@ lingering_bodies: Arc<RwLock<HashMap<PlayerId, LingeringBody>>>,
   - DB에서 다시 읽지 않는다. 메모리 상태가 DB보다 새롭다. 스킬·인벤토리·칭호·던전 기록 로드도 건너뛴다.
   - `register_connection_channel`, `attach_player_to_account_session`, `reset_world_view`, 그리고 지금 `EnterGame` 응답이 보내는 본인 상태(인벤토리·스킬·칭호·파티 등)를 본인에게만 보낸다.
   - `add_player`를 거치지 않으므로 `PlayerJoined`를 방송하지 않는다. 다른 사람은 이미 몸을 보고 있다.
-  - **`ready_at`을 다시 걸지 않는다.** 로딩 무적을 주면 새로고침이 다시 회피 수단이 된다. 클라이언트가 월드를 불러오는 동안에도 몸은 맞는다.
+  - **`ready_at`을 0으로 둔다.** 로딩 무적을 주면 새로고침이 다시 회피 수단이 된다. 클라이언트가 월드를 불러오는 동안에도 몸은 맞는다.
+  - 본인 상태는 일반 입장과 같은 `owner_state_messages`가 메모리 값으로 만든다(마나·시간·날씨·인벤토리·능력치·쿨다운·버프·골드·스킬·던전 발견·허기/디버프·친구 목록). 표식·칭호·파티 상태는 `register_connection_channel` 뒤에 `send_resumed_state`가 보낸다.
 - **같은 계정의 다른 캐릭터를 고름** → 거절하고 남은 시간을 알린다 ("전투 중인 캐릭터가 아직 월드에 있습니다. N초 후 다시 시도하세요"). 계정당 월드에 있는 캐릭터는 하나라는 불변식을 유지한다.
-- 남은 몸이 있는 캐릭터의 이름 변경·삭제 예약도 같은 메시지로 거절한다.
+- 남은 몸이 있는 캐릭터는 이름 변경·삭제 예약이 거절된다. 몸이 `player_characters`에 남아 있으므로 `character_in_game`이 참이다.
 - 재인증 시 캐릭터 목록은 DB에서 읽으므로 남은 몸의 최신 레벨·장비가 아직 반영되지 않았을 수 있다. 목록 표시만의 문제라 그대로 둔다.
 
 ## 던전 복귀
@@ -94,13 +87,15 @@ lingering_bodies: Arc<RwLock<HashMap<PlayerId, LingeringBody>>>,
 
 ## 테스트
 
-- 전투 중 접속 종료 → 몸이 `players`에 남고, 10초 무교전 후 정리.
-- 전투 중이 아닐 때 접속 종료 → 즉시 정리 (지금 동작 유지).
-- 남은 몸이 몬스터에게 죽음 → XP 페널티 적용, HP 0·사망 위치로 저장.
+`server/src/game_state/tests/combat_logout_tests.rs`와 `connection.rs`의 `reentry_resumes_a_body_left_mid_fight`:
+
+- 전투 중 접속 종료 → 몸이 남고, 교전이 끝나면 정리·저장.
+- 전투 중이 아닐 때 접속 종료 → 즉시 정리.
+- 남은 몸이 죽음 → HP 0·사망 위치로 저장.
 - 60초 상한에서 정리.
-- 승계: 같은 `PlayerId`, HP·버프·파티 유지, `ready_at == 0`.
-- 다른 캐릭터 `EnterGame`, 남은 몸 캐릭터의 이름 변경·삭제 예약 거절.
+- 승계: 같은 `PlayerId`, 세션 연결, 이후 틱에서 정리되지 않음, `ready_at == 0`.
+- 다른 캐릭터 `EnterGame`과 남은 몸 캐릭터의 이름 변경 거절.
 - 다른 기기 로그인으로 세션이 교체될 때도 몸이 남음.
-- 던전 층에서 남은 몸 → 정리 시 던전 퇴장, 승계 시 같은 층.
-- 정리와 승계 경합: 한쪽만 이긴다.
-- `/kick`·서버 종료는 즉시 정리.
+- `/kick`·계정 퇴출은 즉시 정리.
+
+던전 층은 별도 테스트가 없다. 승계 시 `reset_world_view`가 몸의 층으로 뷰를 열고, 층 점유는 몸이 유지한다. 정리 시에는 `remove_player`의 기존 던전 퇴장이 돈다.

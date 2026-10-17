@@ -128,7 +128,7 @@ impl HungerData {
     }
 
     /// Both owner-only status messages: debuffs also move the multipliers.
-    fn status_msgs(&self, now: Instant) -> [ServerMessage; 2] {
+    pub(super) fn status_msgs(&self, now: Instant) -> [ServerMessage; 2] {
         [self.debuff_msg(now), self.hunger_msg(now)]
     }
 }

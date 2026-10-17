@@ -52,7 +52,7 @@ impl Abilities {
         }
     }
 
-    fn buff_message(&self, player_id: &PlayerId) -> ServerMessage {
+    pub(super) fn buff_message(&self, player_id: &PlayerId) -> ServerMessage {
         let now = Instant::now();
         let buffs = [
             (AbilityId::GuardianWard, self.wards.get(player_id)),
@@ -462,7 +462,7 @@ impl GameState {
         Ok(())
     }
 
-    async fn send_bow_mark_state(&self, player_id: &PlayerId) {
+    pub(super) async fn send_bow_mark_state(&self, player_id: &PlayerId) {
         let message = {
             let state = self.abilities.read().await;
             let mark = state

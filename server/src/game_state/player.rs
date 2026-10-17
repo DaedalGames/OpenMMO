@@ -294,7 +294,8 @@ impl super::GameState {
                 close_code: None,
             });
             if let Some(player_id) = replaced.player_id {
-                self.cleanup_player_session(&player_id, auth).await;
+                self.end_player_session(&player_id, account_name, auth)
+                    .await;
             }
         }
 
@@ -350,8 +351,63 @@ impl super::GameState {
             }
         };
         if let Some(player_id) = ended.and_then(|session| session.player_id) {
-            self.cleanup_player_session(&player_id, auth).await;
+            self.end_player_session(&player_id, account_name, auth)
+                .await;
         }
+    }
+
+    /// The owner's own state on entering the game, read from what is
+    /// registered for `id`; a resumed body sends its live values.
+    pub(crate) async fn owner_state_messages(&self, id: &PlayerId) -> Vec<ServerMessage> {
+        let mut messages = Vec::new();
+        let mana = self.mana.read().await.get(id).map(|mana| mana.message());
+        messages.extend(mana);
+        let datetime = self.current_game_datetime();
+        messages.push(ServerMessage::GameTimeSync {
+            is_night: Self::is_night(&datetime),
+            datetime,
+        });
+        messages.extend(self.weather_sync_message());
+        if let Some(inventory) = self.get_player_inventory(id).await {
+            messages.push(ServerMessage::InventoryState { inventory });
+        }
+        messages.push(self.effective_stats(id).await.into());
+        messages.push(self.ability_cooldown_message(id).await);
+        let buffs = self.abilities.read().await.buff_message(id);
+        messages.push(buffs);
+        messages.push(ServerMessage::GoldUpdate {
+            gold: self.get_player_gold(id).await,
+        });
+        let skills = self.player_skills.read().await.get(id).cloned();
+        messages.push(ServerMessage::SkillsUpdate {
+            skills: skills.unwrap_or_default(),
+        });
+        let entrance_ids = self
+            .dungeon_discoveries
+            .read()
+            .await
+            .get(id)
+            .map(|ids| ids.iter().cloned().collect())
+            .unwrap_or_default();
+        messages.push(ServerMessage::DungeonDiscoveries { entrance_ids });
+        let status = self
+            .hunger
+            .read()
+            .await
+            .get(id)
+            .map(|hunger| hunger.status_msgs(tokio::time::Instant::now()));
+        messages.extend(status.into_iter().flatten());
+        messages.push(self.friend_list_message(id).await);
+        messages
+    }
+
+    /// Includes a body still lingering after its owner disconnected.
+    pub(crate) async fn character_in_game(&self, character_id: i64) -> bool {
+        self.player_characters
+            .read()
+            .await
+            .values()
+            .any(|(id, _, _)| *id == character_id)
     }
 
     pub(crate) async fn change_character_deletion(
@@ -362,13 +418,7 @@ impl super::GameState {
         cancel: bool,
     ) -> Result<Option<i64>, AuthError> {
         let _sessions = self.character_session_lock.lock().await;
-        if self
-            .player_characters
-            .read()
-            .await
-            .values()
-            .any(|(id, _, _)| *id == character_id)
-        {
+        if self.character_in_game(character_id).await {
             return Err(AuthError::InvalidInput(
                 "Cannot delete a character while it is in game",
             ));
@@ -402,13 +452,7 @@ impl super::GameState {
         character_id: i64,
     ) -> Result<bool, AuthError> {
         let _sessions = self.character_session_lock.lock().await;
-        if self
-            .player_characters
-            .read()
-            .await
-            .values()
-            .any(|(active_id, _, _)| *active_id == character_id)
-        {
+        if self.character_in_game(character_id).await {
             return Ok(false);
         }
         let _persistence = self.persistence_lock.lock().await;
@@ -533,7 +577,8 @@ impl super::GameState {
             .map(|p| (p.position, p.rotation, p.floor_level, p.name.clone()))
     }
 
-    async fn cleanup_player_session(&self, player_id: &PlayerId, auth: &AuthService) {
+    pub(super) async fn cleanup_player_session(&self, player_id: &PlayerId, auth: &AuthService) {
+        self.lingering_bodies.write().await.remove(player_id);
         self.end_account_activity(player_id, auth).await;
         self.cancel_concentration_if_active(player_id).await;
         self.persist_and_detach_player(player_id, auth).await;
@@ -596,6 +641,9 @@ impl super::GameState {
             .write()
             .await
             .remove(&account_name.to_ascii_lowercase());
+        if let Some(body) = self.lingering_body_of_account(account_name).await {
+            self.cleanup_player_session(&body.id, auth).await;
+        }
         let Some(session) = session else {
             return;
         };

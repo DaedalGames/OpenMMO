@@ -27,7 +27,7 @@ pub(crate) struct Party {
 
 /// All party state behind one lock, so the membership index can never drift
 /// from the parties themselves. In-memory only: parties live within one
-/// server run, and a disconnect is a leave.
+/// server run, and leaving the world is a leave.
 #[derive(Default)]
 pub(crate) struct Parties {
     next_id: u64,
@@ -1000,7 +1000,7 @@ impl super::GameState {
         }
     }
 
-    async fn broadcast_party_state(&self, leader_id: PlayerId, member_ids: &[PlayerId]) {
+    pub(super) async fn broadcast_party_state(&self, leader_id: PlayerId, member_ids: &[PlayerId]) {
         let members: Vec<PartyMember> = {
             let players = self.players.read().await;
             member_ids

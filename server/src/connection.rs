@@ -747,6 +747,42 @@ async fn end_entry_grace(
     }
 }
 
+async fn bind_entered_player(
+    game_state: &GameState,
+    state: &mut ConnectionState,
+    auth_service: &Arc<AuthService>,
+    id: PlayerId,
+    account: &str,
+    name: &str,
+) {
+    state.player_id = Some(id);
+    state.last_furniture_tip.clear();
+    state.character_name = Some(name.to_owned());
+    if !state.is_official_npc {
+        state.next_ip_notice = Some(std::time::Instant::now());
+    }
+    game_state
+        .begin_account_activity(id, account, &state.country, auth_service)
+        .await;
+}
+
+async fn entry_notices(
+    game_state: &GameState,
+    state: &ConnectionState,
+    auth_service: &Arc<AuthService>,
+) -> Vec<ServerMessage> {
+    let mut notices = Vec::new();
+    if let Some(notice) = game_state.server_notice().await {
+        notices.push(ServerMessage::ServerNotice {
+            message: Some(notice),
+        });
+    }
+    if state.is_official_npc {
+        notices.push(game_state.pricing_notice(auth_service).await);
+    }
+    notices
+}
+
 /// Shared tail of both auth paths: replace any account session, load
 /// characters, and build the AuthSuccess reply.
 async fn finish_auth(
@@ -1185,6 +1221,11 @@ async fn handle_client_message(
                 Ok(name) => name,
                 Err(responses) => return Ok(responses),
             };
+            if game_state.character_in_game(character_id).await {
+                return Ok(vec![ServerMessage::CharacterError {
+                    message: "Cannot rename a character while it is in game".to_string(),
+                }]);
+            }
             match auth_service.rename_character(&authed_account_name, character_id, &new_name) {
                 Ok(name) => {
                     info!(
@@ -1295,6 +1336,52 @@ async fn handle_client_message(
                     "Account '{}' entering as admin character '{}' (role {})",
                     authed_account_name, selected_character.name, selected_character.admin_role
                 );
+            }
+
+            if let Some(body) = game_state
+                .lingering_body_of_account(&authed_account_name)
+                .await
+            {
+                if body.character_id != character_id {
+                    return Ok(vec![ServerMessage::CharacterError {
+                        message: format!(
+                            "Another of your characters is still in a fight in the world. Try again within {}s.",
+                            body.remaining_secs
+                        ),
+                    }]);
+                }
+                let id = body.id;
+                let Some(player) = game_state
+                    .resume_lingering_body(id, &authed_account_name, account_session_id)
+                    .await
+                else {
+                    return Ok(vec![]);
+                };
+                let mut responses = vec![ServerMessage::JoinSuccess {
+                    player,
+                    is_admin: state.is_admin,
+                }];
+                responses.extend(game_state.owner_state_messages(&id).await);
+                responses.extend(entry_notices(game_state, state, auth_service).await);
+                drop(player_persistence);
+                state.direct_rx = Some(game_state.register_connection_channel(&id).await);
+                game_state.send_resumed_state(&id).await;
+                bind_entered_player(
+                    game_state,
+                    state,
+                    auth_service,
+                    id,
+                    &authed_account_name,
+                    &selected_character.name,
+                )
+                .await;
+                drop(character_sessions);
+                info!(
+                    ip = %state.client_ip, account = authed_account_name, character = selected_character.name,
+                    player_id = %id, character_id,
+                    "Account resumed its lingering character"
+                );
+                return Ok(responses);
             }
 
             // Skills and dungeon history load before any registration: a failed
@@ -1438,7 +1525,7 @@ async fn handle_client_message(
             game_state.set_player_titles(&id, titles.0).await;
             game_state.send_player_titles(&id).await;
             game_state
-                .set_dungeon_discoveries(&id, discovered_dungeons.clone())
+                .set_dungeon_discoveries(&id, discovered_dungeons)
                 .await;
 
             if !game_state
@@ -1456,7 +1543,7 @@ async fn handle_client_message(
 
             // Missing rows = never trained.
             let skills = crate::game_state::skills_from_rows(&skill_rows);
-            game_state.register_player_skills(&id, skills.clone()).await;
+            game_state.register_player_skills(&id, skills).await;
 
             // The equipped off-hand is the authoritative carried-torch state.
             // Resolve it before add_player builds the late-join GameState snapshot.
@@ -1477,62 +1564,19 @@ async fn handle_client_message(
                 .as_ref()
                 .and_then(|inv| inv.equipped_cape_texture());
 
+            game_state
+                .register_mana(
+                    &player,
+                    selected_character.attributes.wis,
+                    selected_character.mana,
+                )
+                .await;
             let mut responses = vec![ServerMessage::JoinSuccess {
                 player: player.clone(),
                 is_admin: state.is_admin,
             }];
-            responses.push(
-                game_state
-                    .register_mana(
-                        &player,
-                        selected_character.attributes.wis,
-                        selected_character.mana,
-                    )
-                    .await,
-            );
-            let datetime = game_state.current_game_datetime();
-            responses.push(ServerMessage::GameTimeSync {
-                is_night: GameState::is_night(&datetime),
-                datetime,
-            });
-            if let Some(weather) = game_state.weather_sync_message() {
-                responses.push(weather);
-            }
-
-            // Send inventory state
-            if let Some(inv) = inventory {
-                responses.push(ServerMessage::InventoryState { inventory: inv });
-            }
-
-            responses.push(game_state.effective_stats(&id).await.into());
-            responses.push(game_state.ability_cooldown_message(&id).await);
-            responses.push(ServerMessage::BuffUpdate { buffs: vec![] });
-
-            responses.push(ServerMessage::GoldUpdate {
-                gold: game_state.get_player_gold(&id).await,
-            });
-
-            responses.push(ServerMessage::SkillsUpdate { skills });
-
-            responses.push(ServerMessage::DungeonDiscoveries {
-                entrance_ids: discovered_dungeons,
-            });
-
-            if !state.is_official_npc {
-                responses.push(crate::game_state::hunger::hunger_update_msg(
-                    selected_character.satiation,
-                    (1.0, 1.0, 1.0),
-                ));
-            }
-
-            if let Some(notice) = game_state.server_notice().await {
-                responses.push(ServerMessage::ServerNotice {
-                    message: Some(notice),
-                });
-            }
-            if state.is_official_npc {
-                responses.push(game_state.pricing_notice(auth_service).await);
-            }
+            responses.extend(game_state.owner_state_messages(&id).await);
+            responses.extend(entry_notices(game_state, state, auth_service).await);
 
             let rejoin_floor = player.floor_level;
             let rejoin_pos = player.position;
@@ -1549,9 +1593,6 @@ async fn handle_client_message(
             // Stamps last_seen_at at the next flush.
             game_state.mark_dirty(&id).await;
 
-            // After the snapshot on purpose: the client treats `GameState` as
-            // the start of a session and clears its friend stores there.
-            responses.push(game_state.friend_list_message(&id).await);
             if dungeon_reset_on_login {
                 responses.push(ServerMessage::SystemMessage {
                     localization: Some(onlinerpg_shared::messages::LocalizedMessage::new(
@@ -1567,16 +1608,16 @@ async fn handle_client_message(
                     .await;
             }
 
-            state.player_id = Some(id);
+            bind_entered_player(
+                game_state,
+                state,
+                auth_service,
+                id,
+                &authed_account_name,
+                &selected_character.name,
+            )
+            .await;
             state.awaiting_world_ready = true;
-            state.last_furniture_tip.clear();
-            state.character_name = Some(selected_character.name.clone());
-            if !state.is_official_npc {
-                state.next_ip_notice = Some(std::time::Instant::now());
-            }
-            game_state
-                .begin_account_activity(id, &authed_account_name, &state.country, auth_service)
-                .await;
             drop(character_sessions);
 
             info!(
@@ -2811,6 +2852,92 @@ mod tests {
                 _ => unreachable!(),
             }), "step {index}: {responses:?}");
         }
+    }
+
+    #[tokio::test]
+    async fn reentry_resumes_a_body_left_mid_fight() {
+        let game = Arc::new(crate::game_state::tests::make_test_game_state(
+            "resume_entry",
+        ));
+        let auth = Arc::new(crate::game_state::tests::make_test_auth("resume_entry"));
+        let auth_ctx = test_auth_ctx();
+        let account = auth.login_google("resume-entry").unwrap();
+        let [fighter, other] = ["Fighter", "Bystander"].map(|name| {
+            auth.create_character(
+                &account,
+                name,
+                &roll_character_attributes(&CharacterClass::Knight, crate::types::Gender::Male),
+                16,
+                CharacterClass::Knight,
+                crate::types::Gender::Male,
+            )
+            .unwrap()
+            .id
+        });
+        let connect = async |game: &Arc<GameState>| {
+            let mut state = ConnectionState::new(Ipv4Addr::LOCALHOST.into());
+            handle_handshake(
+                &client_info(onlinerpg_shared::PROTOCOL_VERSION, "web"),
+                &mut state,
+            );
+            finish_auth(game, &auth, &mut state, account.clone(), false).await;
+            state
+        };
+        let send = async |state: &mut ConnectionState, msg: ClientMessage| {
+            let encoded = onlinerpg_shared::serialize_client_msg(&msg).unwrap();
+            handle_client_message(&encoded, &game, &auth, &auth_ctx, state)
+                .await
+                .unwrap()
+        };
+
+        let mut first = connect(&game).await;
+        send(
+            &mut first,
+            ClientMessage::EnterGame {
+                character_id: fighter,
+            },
+        )
+        .await;
+        let id = first.player_id.unwrap();
+        crate::game_state::tests::put_in_combat(&game, &id).await;
+        game.end_account_session(&account, first.account_session_id.unwrap(), &auth)
+            .await;
+
+        let mut second = connect(&game).await;
+        for refused in [
+            ClientMessage::EnterGame {
+                character_id: other,
+            },
+            ClientMessage::RenameCharacter {
+                character_id: fighter,
+                new_name: "Renamed".into(),
+            },
+        ] {
+            let responses = send(&mut second, refused).await;
+            assert!(
+                matches!(responses.as_slice(), [ServerMessage::CharacterError { .. }]),
+                "{responses:?}"
+            );
+        }
+        let responses = send(
+            &mut second,
+            ClientMessage::EnterGame {
+                character_id: fighter,
+            },
+        )
+        .await;
+        assert!(
+            matches!(responses.first(), Some(ServerMessage::JoinSuccess { player, .. }) if player.id == id),
+            "{responses:?}"
+        );
+        assert!(responses
+            .iter()
+            .any(|msg| matches!(msg, ServerMessage::GoldUpdate { .. })));
+        assert_eq!(second.player_id, Some(id));
+        assert!(
+            !game.mark_world_ready(&id).await,
+            "no entry grace on resume"
+        );
     }
 
     #[tokio::test]

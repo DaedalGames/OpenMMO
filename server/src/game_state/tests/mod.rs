@@ -24,6 +24,7 @@ mod cape_texture_tests;
 mod character_deletion_tests;
 mod chat_tests;
 mod combat_audit_tests;
+mod combat_logout_tests;
 mod combat_tests;
 mod dungeon_tests;
 mod enchant_tests;
@@ -660,6 +661,15 @@ fn make_game_state_with_zones(
 
 pub(crate) fn make_test_game_state(test_name: &str) -> GameState {
     make_game_state_with(test_name, SplitWorldTiles, SeaOnlyWater)
+}
+
+pub(crate) async fn put_in_combat(game: &GameState, id: &PlayerId) {
+    game.players
+        .write()
+        .await
+        .get_mut(id)
+        .unwrap()
+        .last_combat_at = GameState::now_ms();
 }
 
 /// Temp-file AuthService for tests whose paths touch the auth DB.

@@ -197,6 +197,7 @@ pub(crate) use chat::{parse_admin_command, parse_notice_command};
 mod auto_attack;
 mod combat;
 mod combat_audit;
+mod combat_logout;
 mod consent;
 mod deals;
 mod debuff;
@@ -334,7 +335,7 @@ impl ServerGroundItem {
 }
 
 /// Lock order for guards held together, outermost first:
-/// `character_session_lock` → `persistence_lock` → `players` →
+/// `character_session_lock` → `persistence_lock` → `lingering_bodies` → `players` →
 /// `player_characters` → `stalls`/`fences` → `player_gold` → `hunger` →
 /// `inventories` → `mana`. tokio's fair `RwLock` turns one inversion into a
 /// server-wide stall.
@@ -381,6 +382,9 @@ pub struct GameState {
     world_drop_defs: crate::world_drop_defs::WorldDropDefs,
     id_state: Arc<RwLock<IdState>>,
     account_sessions: Arc<RwLock<HashMap<String, AccountSession>>>,
+    /// Characters left in the world after a disconnect mid-fight
+    /// (doc/COMBAT_LOGOUT.md). Mutated only under `character_session_lock`.
+    lingering_bodies: Arc<RwLock<HashMap<PlayerId, combat_logout::LingeringBody>>>,
     account_activities: Arc<RwLock<HashMap<PlayerId, crate::metrics::AccountActivity>>>,
     pending_weapon_enchant_failures: Arc<RwLock<Vec<crate::metrics::WeaponEnchantFailure>>>,
     pending_gold_sources:
@@ -718,6 +722,7 @@ impl GameState {
             world_drop_defs,
             id_state: Arc::new(RwLock::new(IdState::default())),
             account_sessions: Arc::new(RwLock::new(HashMap::new())),
+            lingering_bodies: Arc::new(RwLock::new(HashMap::new())),
             account_activities: Arc::new(RwLock::new(HashMap::new())),
             pending_gold_sources: Arc::new(RwLock::new(HashMap::new())),
             pending_weapon_enchant_failures: Arc::new(RwLock::new(Vec::new())),

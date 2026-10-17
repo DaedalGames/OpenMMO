@@ -883,6 +883,21 @@ async fn main() -> ExitCode {
         },
     ));
 
+    let game_state_for_combat_logout = Arc::clone(&game_state);
+    let auth_service_for_combat_logout = Arc::clone(&auth_service);
+    background.spawn(run_ticks(
+        "combat_logout",
+        Duration::from_secs(1),
+        drain_shutdown.clone(),
+        &health,
+        health::Deadline::Fixed(Duration::from_secs(120)),
+        move || {
+            let game_state = Arc::clone(&game_state_for_combat_logout);
+            let auth = Arc::clone(&auth_service_for_combat_logout);
+            async move { game_state.tick_combat_logout(&auth).await }
+        },
+    ));
+
     let addr = format!("{}:{}", args.bind, args.port);
     let listener = match TcpListener::bind(addr.as_str()).await {
         Ok(listener) => {
