@@ -189,6 +189,10 @@ pub(super) fn wall_openings(layout: &FloorLayout) -> Vec<InteriorDoorSpec> {
     openings
 }
 
+/// Narrowest opening that gets a door. A 1-cell mouth is a corridor grazing a
+/// room corner, which leaves the room open beside it anyway.
+const DOOR_MIN_LEN: i32 = 2;
+
 /// Give each corridor mouth a door with `INTERIOR_DOOR_PCT`% chance, hashed
 /// from the opening's coordinates so the list is stable per layout. A locked
 /// floor's stair-room exit always gets one.
@@ -197,8 +201,9 @@ pub fn interior_doors(layout: &FloorLayout) -> Vec<InteriorDoorSpec> {
         .into_iter()
         .filter(|d| {
             d.locked
-                || door_hash(layout.depth as i32, d.wall as i32, d.lat0, d.wall_line)
-                    < INTERIOR_DOOR_PCT * 10
+                || (d.len >= DOOR_MIN_LEN
+                    && door_hash(layout.depth as i32, d.wall as i32, d.lat0, d.wall_line)
+                        < INTERIOR_DOOR_PCT * 10)
         })
         .collect()
 }
@@ -239,6 +244,14 @@ mod tests {
             let (ox, oz) = crate::dungeon::dungeon_origin(position.x, position.z);
             for layout in &layouts {
                 for door in super::interior_doors(layout) {
+                    assert!(
+                        door.len >= super::DOOR_MIN_LEN,
+                        "{} depth {}: door {} is {} wide",
+                        entrance.id,
+                        layout.depth,
+                        door.door_id,
+                        door.len
+                    );
                     let point =
                         super::door_position(&position, &layouts, layout.depth, door.door_id)
                             .unwrap();
