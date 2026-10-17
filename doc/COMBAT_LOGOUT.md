@@ -8,7 +8,7 @@
 
 1. 저장 후 `remove_player`가 캐릭터를 `players`에서 지운다. 몬스터는 대상을 잃고, 지켜보는 사람이 없는 앰비언트 몬스터는 사라진다.
 2. 재접속하면 DB에 저장된 HP 그대로 새 `Player`가 생긴다.
-3. 새 `Player`는 `ready_at`(`WORLD_LOADING_GRACE_MS` 30초) 동안 피해를 받지 않는다. `WorldReady`나 첫 이동 요청이 오면 끝난다. 웹 클라이언트는 자동 재연결 후 다시 입장하면 곧바로 `WorldReady`를 보낸다.
+3. 새 `Player`는 `ready_at`(`WORLD_LOADING_GRACE_MS` 30초) 동안 피해를 받지 않는다. `WorldReady`나 첫 게임 행동이 오면 끝난다. 웹 클라이언트가 로딩 중 스스로 보내는 메시지(heartbeat, `ResyncWorld`, `EnvReport`, `RequestFriendsOnline`)만 예외다. 웹 클라이언트는 자동 재연결 후 다시 입장하면 곧바로 `WorldReady`를 보낸다.
 
 그래서 죽기 직전에 새로고침하면 사망과 XP 페널티(구간 15%)를 피한다. `/escape`와 주문서가 전투 중(`in_combat`, 마지막 교전 후 10초)에 막혀 있는 것과도 맞지 않는다. 클라이언트 종류와 상관없이 같은 규칙이 적용되어야 하고, 사람도 탭 닫기·네트워크 끊김으로 같은 결과를 얻으므로 서버 규칙으로 막는다.
 
