@@ -46,8 +46,9 @@ export async function showFemaleBase(
         <option value="none">없음</option>
         <option value="knight">은빛 기사 투구</option>
         <option value="barbarian">야만전사 뿔 투구</option>
+        <option value="brilliance">광휘의 투구</option>
       </select>
-      <p class="details">뿔 투구 아래로 보이는 헤어는 남기고, 은빛 기사 투구는 헤어를 숨깁니다. 투구를 벗으면 원래 헤어를 복원합니다.</p>
+      <p class="details">뿔 투구 아래로 보이는 헤어는 남기고, 은빛 기사 투구와 광휘의 투구는 헤어를 숨깁니다. 투구를 벗으면 원래 헤어를 복원합니다.</p>
       <label for="female-top">상의</label>
       <select id="female-top">
         <option value="none">없음</option>

@@ -1,5 +1,50 @@
 # Item Assets
 
+## Helm of Brilliance — 광휘의 투구
+
+- 여성 균일 축소 v3(2026-10-17): 사용자 결정에 따라 Tripo 원본에서 다시 제작해 **세 축 0.30의 균일 배율과 위치 이동만** 적용했다. 기존 볼 보호대 국소 변형을 없애고 머리와의 큰 틈을 줄였다. 여성 v1·v2는 **[미사용]**. [여성 현재 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb) · [피팅·검증·제한](helm-of-brilliance.md#여성-균일-축소-v3--현재).
+- 남녀 각각의 기준 몸체·65본에 `Head 100%`로 연결하며 두 파일 모두 3,685 triangles와 원본 4K 텍스처를 유지한다. 남성 v1은 269개 검사 자세의 피부 교차 0개. 여성 v3은 467개 자세의 강체 부착 검사를 통과했지만 귀·뒤통수 등 내부 피부 교차는 남아 있어 전 자세 무관통 판정은 하지 않는다. 게임 장비 등록·지능/조명 효과·의상 혼합은 후속 단계다.
+  - [남성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/helmet_brilliance.glb) · [여성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb).
+  - ![여성 균일 축소 착용](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/review/head-angle.png)
+
+- `assets/items/helm_of_brilliance/tripo_v2/source/model_url.glb` — 사용자 결정(2026-10-17)에 따라 **앞·뒤 2장만** 넣어 재생성한 현재 검토용 원본. 사용자는 전날에도 측면 입력 시 앞면 복제 현상을 관찰했다고 기록했다. 이번에는 **뒤통수가 닫히고 수정·얼굴 구멍이 앞쪽에만 존재**하는 것을 앞·옆·뒤·아래 렌더로 확인했다. 피팅·게임 등록·조명 효과 구현 전 원본 단계다.
+  - 출처: Tripo API, **유료 API 크레딧**, 생성일 **2026-10-17**. [Tripo 이용 조건](https://developers.tripo3d.ai/en/terms) 적용. 원화는 아래 OpenAI ImageGen 출처·이용 조건을 따른다.
+  - v1과 같은 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, 입력 조명 제거, seed `101701`. 목표 **4,000 triangles**, 결과 **3,685 triangles**, 메시·재질 각 1개, 컬러·노멀·ORM 각 **4096×4096**. 퇴화 면·붕괴 UV·비유한 정점 좌표 0개. 병합 기준 연결 성분 33개, 열린 경계 518개·비매니폴드 에지 531개이며 밀폐된 솔리드로 판정하지 않는다. 원본 메시와 텍스처를 보존했다.
+  - 작업 ID `bfe87055-a7ff-4539-8c67-8c98ffecc234`, 사용 **120크레딧**, 사용자 충전 후 잔액 **1,080 → 960**. v1·v2 합계 **240크레딧**. 초기 잔액 부족과 사용자 충전 후 제출 이력은 [잔액 확인 기록](../../assets/items/helm_of_brilliance/tripo_v2/preflight.json)에 보존했다.
+  - [제작 명세·입력 해시](../../assets/items/helm_of_brilliance/tripo_v2/build.json) · [요청·작업·비용 기록](../../assets/items/helm_of_brilliance/tripo_v2/generation.json) · [형상 진단·검토 기록](../../assets/items/helm_of_brilliance/tripo_v2/review.json).
+  - [원본 GLB](../../assets/items/helm_of_brilliance/tripo_v2/source/model_url.glb) · [원본 Blender](../../assets/items/helm_of_brilliance/tripo_v2/source.blend) · [검토 재현 스크립트](../../assets/items/helm_of_brilliance/tripo_v2/review_source.py).
+  - ![Tripo v2 앞·옆·뒤·사선·아래 검토](../../assets/items/helm_of_brilliance/tripo_v2/review/strip.png)
+
+- **[미사용 · 수정 필요]** `assets/items/helm_of_brilliance/tripo_v1/source/model_url.glb` — 승인된 앞·오른쪽 옆·뒤 원화 3장으로 생성한 첫 Tripo 메시(2026-10-17). **뒤통수에 이마 수정과 얼굴 구멍이 복제되는 오류**가 있어 피팅·게임 적용을 보류했다. 원본을 보존하며 자동 재생성하지 않았다.
+  - 출처: Tripo API, **유료 API 크레딧**. [Tripo 이용 조건](https://developers.tripo3d.ai/en/terms) 적용. 원화는 아래 OpenAI ImageGen 출처·이용 조건을 따른다.
+  - 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, 입력 조명 제거. 목표 **4,000 triangles**, 결과 **3,705 triangles**, 메시·재질 각 1개, 컬러·노멀·ORM 각 **4096×4096**. 퇴화 면·붕괴 UV·비유한 정점 좌표 0개. 병합 기준 연결 성분 16개, 열린 경계 545개·비매니폴드 에지 557개로 밀폐된 솔리드로 판정하지 않는다.
+  - 작업 ID `0c5ee49d-ff5b-437c-962d-ea478a3c7aa2`, seed `101701`, 사용 **120크레딧**, 잔액 **200 → 80**. [API 문서](https://developers.tripo3d.ai/en/docs/generation-multiview-to-model/p).
+  - [제작 명세·입력 해시](../../assets/items/helm_of_brilliance/tripo_v1/build.json) · [요청·작업·비용 기록](../../assets/items/helm_of_brilliance/tripo_v1/generation.json) · [형상 진단·오류 기록](../../assets/items/helm_of_brilliance/tripo_v1/review.json).
+  - [원본 GLB](../../assets/items/helm_of_brilliance/tripo_v1/source/model_url.glb) · [원본 Blender](../../assets/items/helm_of_brilliance/tripo_v1/source.blend) · [검토 재현 스크립트](../../assets/items/helm_of_brilliance/tripo_v1/review_source.py).
+  - ![Tripo 앞·옆·뒤·사선·아래 검토](../../assets/items/helm_of_brilliance/tripo_v1/review/strip.png)
+
+- `assets/items/helm_of_brilliance/turnaround_v2_strict_side/sheet.png` — Tripo 제작을 위해 측면 시점을 수정한 정면·오른쪽 측면·후면 3면도. 사용자 요구(2026-10-17): 측면은 정확한 옆모습이어야 하며 반대편 내부가 보이면 안 된다. 수정본에서 반대편 볼 보호대·가죽 안감이 노출되지 않고 얼굴 개구부로 배경이 보이는 것을 확인했다. Tripo 제출 전 원화 단계다.
+  - 개별 입력 파일: [앞면](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/front.png) · [옆면](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/side.png) · [뒷면](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/back.png). 2026-10-17에 원본 픽셀을 재생성·리사이즈 없이 각각 **512×800 PNG**로 잘랐다. 세 파일의 높이 범위를 동일하게 유지하고 하단 방향 표기를 제외했다. 출처·요금제·라이선스는 원본과 동일하며 [분리 기록](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/split.json)에 영역을 기록했다.
+  - 출처: OpenAI Codex built-in ImageGen. 요금제: **ChatGPT Pro 20x**. 생성일: **2026-10-17**. 라이선스: OpenAI 출력물 이용 조건 적용, 별도 CC 라이선스 지정 없음.
+  - [수정 프롬프트](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/prompt.txt) · [생성·검토 기록](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/generation.json).
+  - ![광휘의 투구 측면 수정 3면도](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/sheet.png)
+
+- **[미사용]** `assets/items/helm_of_brilliance/turnaround_v1/sheet.png` — 날개 장식 원화를 기준으로 정면·오른쪽 측면·후면을 배치한 첫 3면도. 측면에서 반대편 내부가 보여 Tripo 입력용으로 사용하지 않으며 위 수정본으로 대체했다. 후면은 원화에서 보이지 않는 구조를 보완한 시안이다.
+  - 출처: OpenAI Codex built-in ImageGen. 요금제: **ChatGPT Pro 20x**. 생성일: **2026-10-17**. 라이선스: OpenAI 출력물 이용 조건 적용, 별도 CC 라이선스 지정 없음.
+  - [생성 프롬프트](../../assets/items/helm_of_brilliance/turnaround_v1/prompt.txt) · [생성·검토 기록](../../assets/items/helm_of_brilliance/turnaround_v1/generation.json).
+  - ![광휘의 투구 3면도](../../assets/items/helm_of_brilliance/turnaround_v1/sheet.png)
+
+- `assets/items/helm_of_brilliance/concept_v2_wings/concept.png` — 기존 원화를 유지하면서 귀 양옆에 황동 깃털 날개 장식을 추가한 검토용 수정안. 원본 `concept_v1` 보존.
+  - 출처: OpenAI Codex built-in ImageGen. 요금제: **ChatGPT Pro 20x**. 생성일: **2026-10-17**. 라이선스: OpenAI 출력물 이용 조건 적용, 별도 CC 라이선스 지정 없음.
+  - [수정 프롬프트](../../assets/items/helm_of_brilliance/concept_v2_wings/prompt.txt) · [생성 기록](../../assets/items/helm_of_brilliance/concept_v2_wings/generation.json).
+  - ![광휘의 투구 날개 장식 수정안](../../assets/items/helm_of_brilliance/concept_v2_wings/concept.png)
+
+- `assets/items/helm_of_brilliance/concept_v1/concept.png` — 이마의 발광 수정, 황동 테두리, 강철 외피와 가죽 안감을 갖춘 개방형 투구 원화. 착용 시 지능 +1과 횃불 같은 조명을 제공하는 아이템의 디자인 시안이며, 게임 등록·3D 제작 전 검토 단계다.
+  - 출처: OpenAI Codex built-in ImageGen. 요금제: **ChatGPT Pro 20x**. 생성일: **2026-10-17**.
+  - 라이선스: OpenAI 출력물 이용 조건 적용, 별도 CC 라이선스 지정 없음. NetHack의 아이템 이름과 지능 보너스에서 착안한 새 디자인이며 원작 이미지·모델은 사용하지 않았다.
+  - [생성 프롬프트](../../assets/items/helm_of_brilliance/concept_v1/prompt.txt) · [생성 기록](../../assets/items/helm_of_brilliance/concept_v1/generation.json).
+  - ![광휘의 투구 원화](../../assets/items/helm_of_brilliance/concept_v1/concept.png)
+
 ## Stethoscope
 
 - `doc/images/items/stethoscope.png` — 플레이어·몬스터 조사용 청진기의 3D 제작 원화. 낡은 황동 귀관·흉부 접촉부, 짙은 갈색 가죽 피복관, 밝은 뿔 재질 이어팁으로 구성한 단독 소품 이미지.

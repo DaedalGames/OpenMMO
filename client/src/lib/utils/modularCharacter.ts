@@ -103,7 +103,7 @@ export interface ModularOutfit {
     | 'caveman'
     | 'ranger'
   boots: (typeof MODULAR_BOOTS)[number]
-  helmet: 'none' | 'plate' | 'barbarian' | 'priest' | 'bard'
+  helmet: 'none' | 'plate' | 'barbarian' | 'priest' | 'bard' | 'brilliance'
 }
 
 export const SELECTABLE_HAIR_PARTS = new Set<ModularOutfit['hair']>([

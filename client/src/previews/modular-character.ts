@@ -164,6 +164,7 @@ async function main() {
     'pants_bard',
     'boots_bard',
     'helmet_bard',
+    'helmet_brilliance',
   ]
   const [base, sources, animations, sword, profile, candidateSources, social] =
     await Promise.all([
@@ -590,6 +591,8 @@ async function main() {
     const view = trackCloseup()
     if (view) {
       camera.position.copy(tracked).add(view.position)
+      if (cameraSelect.value === 'face' && helmet.value === 'brilliance')
+        camera.position.copy(tracked).addScaledVector(view.position, 1.25)
     } else {
       tracked.set(0, 0.95, 0)
       camera.position.set(2.6, 2, 4.3)
@@ -599,6 +602,10 @@ async function main() {
     controls.update()
   }
   cameraSelect.onchange = setCamera
+  helmet.onchange = () => {
+    dress()
+    setCamera()
+  }
   setCamera()
   const resize = () => {
     camera.aspect = host.clientWidth / host.clientHeight
@@ -675,6 +682,27 @@ async function main() {
     helmet.value = 'none'
     dress()
   }
+  const requestedHelmet = params.get('helmet')
+  if (
+    requestedHelmet &&
+    [...helmet.options].some(
+      (option) => option.value === requestedHelmet && !option.disabled
+    )
+  ) {
+    helmet.value = requestedHelmet
+    dress()
+  }
+  const requestedCamera = params.get('camera')
+  if (
+    requestedCamera &&
+    [...cameraSelect.options].some((option) => option.value === requestedCamera)
+  ) {
+    cameraSelect.value = requestedCamera
+    setCamera()
+  }
+  const requestedMotion = params.get('motion')
+  if (requestedMotion && actions.has(requestedMotion))
+    play(requestedMotion, false)
   let last = performance.now()
   const render = (now: number) => {
     const dt = Math.min((now - last) / 1000, 0.05) * Number(speed.value)

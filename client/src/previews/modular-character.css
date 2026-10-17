@@ -31,6 +31,10 @@ header p {
   margin: 6px 0;
   color: #afbec4;
 }
+header nav a {
+  color: #b4ded2;
+  text-underline-offset: 3px;
+}
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
