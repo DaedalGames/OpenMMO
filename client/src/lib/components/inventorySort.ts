@@ -86,6 +86,10 @@ function stackWeight(item: ItemInstance): number {
   return (getItemDef(item.item_def_id)?.weight ?? 1) * item.quantity
 }
 
+function stackPrice(item: ItemInstance): number {
+  return (getItemDef(item.item_def_id)?.basePrice ?? 0) * item.quantity
+}
+
 function compareByMode(
   a: SortEntry,
   b: SortEntry,
@@ -97,6 +101,8 @@ function compareByMode(
       return stackWeight(b.item) - stackWeight(a.item)
     case 'light':
       return stackWeight(a.item) - stackWeight(b.item)
+    case 'expensive':
+      return stackPrice(b.item) - stackPrice(a.item)
     case 'name':
       return nameCollator.compare(
         itemDisplayName(a.item.item_def_id, a.item.enchant, language),

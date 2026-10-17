@@ -118,6 +118,7 @@
   "inventory.sort.category": "類別",
   "inventory.sort.heavy": "最重",
   "inventory.sort.light": "最輕",
+  "inventory.sort.expensive": "最貴",
   "inventory.sort.name": "名稱",
   "inventory.sort.recent": "最新",
   "inventory.sort.oldest": "最早",

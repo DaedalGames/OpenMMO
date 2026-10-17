@@ -118,6 +118,7 @@
   "inventory.sort.category": "Type",
   "inventory.sort.heavy": "Heaviest",
   "inventory.sort.light": "Lightest",
+  "inventory.sort.expensive": "Priciest",
   "inventory.sort.name": "Name",
   "inventory.sort.recent": "Newest",
   "inventory.sort.oldest": "Oldest",

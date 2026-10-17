@@ -180,6 +180,15 @@ describe('sortBag modes', () => {
     ])
   })
 
+  it('orders by stack price', () => {
+    expect(ids('expensive')).toEqual([
+      'iron_sword',
+      'leather_armor',
+      'bread',
+      'apple',
+    ])
+  })
+
   it('orders by display name', () => {
     expect(ids('name')).toEqual([
       'apple',

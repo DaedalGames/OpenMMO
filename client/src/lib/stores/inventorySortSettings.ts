@@ -4,6 +4,7 @@ export const INVENTORY_SORT_MODES = [
   'category',
   'heavy',
   'light',
+  'expensive',
   'name',
   'recent',
   'oldest',
