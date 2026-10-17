@@ -113,7 +113,11 @@ function modularCharacterPreview(): Plugin {
   ])
   const fixed: Record<string, URL> = {
     helmet_brilliance: new URL(
-      '../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/helmet_brilliance.glb',
+      '../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb',
+      import.meta.url
+    ),
+    'male-brilliance-helmet-occlusion.json': new URL(
+      '../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/body-occlusion.json',
       import.meta.url
     ),
     female_brilliance_helmet: new URL(

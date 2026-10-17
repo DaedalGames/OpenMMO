@@ -2,8 +2,34 @@
 
 2026-10-17. 앞·뒤 두 장으로 생성한 Tripo 원본을 남녀 기준 몸체에 따로 맞췄다.
 두 파일 모두 기존 65본을 사용하며 투구·수정·날개·목 보호대 전체를 **Head 100%**로 연결한다.
-현재 남성은 피팅 v1, 여성은 원본 비율을 복원한 균일 축소 v3를 사용한다.
+현재 남녀 모두 원본 비율을 복원한 균일 축소 v3를 사용한다. 남녀 몸체에 맞춰 배율·위치·리그를 따로 적용한다.
 게임 장비 등록·조명·지능 효과는 후속 단계다.
+
+## 남성 균일 축소 v3 — 현재
+
+사용자 요청(2026-10-17): 남성도 머리와 투구 사이 간격을 줄인다. 변형된 남성 v1 대신
+Tripo 원본에서 다시 제작해 **세 축 0.33 / 0.33 / 0.33**, 위치 **(0, 1.800, -0.015)m**를 적용했다.
+첫 피팅 대비 폭 약 24%, 높이·깊이 약 19% 축소다. 보호대·돔·날개·수정에 국소 변형을 적용하지 않았다.
+
+- 원본 균일 변환과 출력 정점의 최대 오차 **0.000000060m 미만**.
+  3,685 triangles, 삼각형 인덱스·UV·내장 4K 텍스처 바이트를 보존한다.
+- 남성 65본·Head 100%, 8개 클립과 고개 회전을 포함한 269개 자세에서 강체 부착 검사를 통과했다.
+  정면·측면·후면·사선 렌더와 실제 브라우저 로딩·제공 GLB 해시를 확인했다.
+- **제한:** 귀·뒤통수 등의 피부가 투구 안쪽과 겹친다. 귀 윗부분의 돌출은 착용 시 안쪽 압축으로 처리했다.
+  귀 보정 전 FCL 검사에서는 269개 자세 모두 교차가 검출됐으며 무관통 판정은 하지 않는다.
+  투구 크기를 다시 늘리거나 피부 면을 잘라내지 않았다.
+- [남성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb) · [Blender](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helm-brilliance-male-fitted.blend) · [피팅 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/fitting.json).
+- [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/animation-validation.json) · [피부 교차 요약](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/skin-clearance-validation.json) · [브라우저 확인](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/browser-validation.json).
+- 남성 귀 보정(2026-10-17): 여성과 같은 연속 압축 방식으로 양쪽 귀 뒤쪽 524개 정점을
+  최대 약 22.95mm 안쪽으로 이동한다. 남아 있던 아래쪽 돌출까지 덮도록 보정 시작 높이를
+  1.735m에서 1.715m로 내렸다. 모든 삼각형·UV·원래 Head/Neck 가중치를 유지하고,
+  노멀·탄젠트 방향을 맞춘다. 탈착·다른 투구로 변경 시 원래 머리 지오메트리를 복원한다.
+  기준 남성 얼굴에만 적용하며 rugged/ranger 대체 얼굴에는 적용하지 않는다.
+  [귀 피팅 기록](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/ear-fitting.json).
+  재현: `.venv/bin/python tools/fit-helm-of-brilliance-ears.py male`.
+- 재현: `.venv/bin/python tools/fit-helm-of-brilliance.py male --uniform-scale 0.33 --offset 0 1.800 -0.015 --directory assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male`.
+
+![남성 균일 축소 착용](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/review/head-angle.png)
 
 ## 여성 균일 축소 v3 — 현재
 
@@ -30,7 +56,7 @@
 
 ## 제작 미리보기
 
-- [남성 착용](https://localhost:10004/modular-character-preview.html?helmet=brilliance&camera=face&top=none&motion=idle1)
+- [남성 착용](https://localhost:10004/modular-character-preview.html?helmet=brilliance&camera=face&top=none&motion=idle1&fit=male-v3-ears)
 - [여성 착용 v3](https://localhost:10004/modular-character-preview.html?character=female&helmet=brilliance&camera=face&hair=none&motion=rest&fit=v3)
 
 기존 제작 페이지의 투구 선택 목록에 광휘의 투구를 추가했다. 회전·확대·동작 재생으로 확인할 수 있다.
@@ -49,21 +75,22 @@
 | --- | --- | --- |
 | 기준 몸체 | `assets/modular_human_male_01/fitted/base.glb` | `assets/modular_human_female_01/rig_v1/female-base.glb` |
 | 리그 ID | `human_male_01_mixamo_candidate_v2` | `human_female_01_local_v1` |
-| 현재 피팅 | v1 | v3 균일 축소 |
-| GLB | [남성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/helmet_brilliance.glb) | [여성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb) |
-| Blender | [남성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/helm-brilliance-male-fitted.blend) | [여성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helm-brilliance-female-fitted.blend) |
-| 피팅·몸체 해시 | [남성 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/fitting.json) | [여성 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/fitting.json) |
+| 현재 피팅 | v3 균일 축소 | v3 균일 축소 |
+| GLB | [남성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb) | [여성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb) |
+| Blender | [남성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helm-brilliance-male-fitted.blend) | [여성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helm-brilliance-female-fitted.blend) |
+| 피팅·몸체 해시 | [남성 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/fitting.json) | [여성 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/fitting.json) |
 
 각 몸체의 본 계층·본 순서·inverse bind matrix를 복사한다. 남녀 파일은 리그 ID와 bind 기준이
 다르므로 교환해서 사용하지 않는다. 새 Auto Rig나 천 시뮬레이션은 사용하지 않는다.
-[남성 착용 이미지](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/review/head-angle.png).
+[남성 착용 이미지](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/review/head-angle.png).
 두 투구 모두 3,685 triangles다. 몸체와 투구의 합계는 남성 숨김 포함 17,576, 표시 16,999,
 여성은 숨김 포함·표시 모두 25,860이다. 의상·무기·망토를 포함한 게임 최종 예산과 얼굴 배분은 장비 등록 단계에서 확인한다.
 
 ## 이전 피팅 기록
 
-- 남성 v1: 방사형 머리 간격 탐색 후 아래 볼 보호대를 최대 3cm, 뒤 목 보호대를 최대 6cm
-  들어 올렸다. 실제 정점 최대 이동은 4.97cm다. 남성 8개 클립, 총 269개 검사 자세의 피부 교차 0개.
+- **[미사용] 남성 v1:** 방사형 머리 간격 탐색 후 아래 볼 보호대를 최대 3cm, 뒤 목 보호대를 최대 6cm
+  들어 올렸다. 실제 정점 최대 이동은 4.97cm다. 남성 8개 클립, 총 269개 검사 자세의 피부 교차 0개였으나 사용자 검토에서 간격이 커 v3로 대체했다.
+  이전 GLB·Blender 복사본·검토 이미지는 커밋 정리 때 삭제하고 피팅 수치와 검증 요약을 보존한다.
   [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/animation-validation.json) · [피부 교차](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/skin-clearance-validation.json).
 - **[미사용] 여성 v1:** 비균일 초기 배율과 보호대 국소 변형을 사용했다. 467개 검사 자세의 교차는
   없었지만 사용자 검토에서 머리와 투구 사이 간격이 너무 컸다. `fitted_v1/female/fitting.json`에 수치·해시만 보존한다.

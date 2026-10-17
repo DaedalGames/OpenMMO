@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { disposeObjects } from './dispose-objects'
+import { femaleOutfitMask as createOutfitMask } from '../lib/utils/female-outfit-mask'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
@@ -227,6 +228,18 @@ async function main() {
   const parts = new Map(
     ids.map((id, i) => [id, bindModularPart(body, sources[i].scene)])
   )
+  const outfitMask = createOutfitMask()
+  cleanup.push(() => outfitMask.dispose())
+  if (!customFace && parts.has('helmet_brilliance')) {
+    const response = await fetch(
+      '/__modular-character/male-brilliance-helmet-occlusion.json'
+    )
+    if (!response.ok)
+      throw new Error('투구의 귀 보정 정보를 불러오지 못했습니다.')
+    const head = bodyMeshes.find((mesh) => mesh.userData.region === 'head')
+    if (!head) throw new Error('투구의 기준 머리를 찾지 못했습니다.')
+    outfitMask.register('helmet-brilliance', await response.json(), head)
+  }
   const meshes = skinnedParts(body)
   for (const mesh of meshes) {
     mesh.frustumCulled = false
@@ -285,6 +298,10 @@ async function main() {
       boots: boots.value as ModularOutfit['boots'],
       helmet: helmet.value as ModularOutfit['helmet'],
     })
+    outfitMask.setEquipped(
+      'helmet-brilliance',
+      !customFace && equipped.has('helmet_brilliance')
+    )
     const inspectingPriest =
       equipped.has('helmet_priest') ||
       equipped.has('top_priest') ||

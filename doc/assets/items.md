@@ -4,8 +4,11 @@
 
 - 여성 균일 축소 v3(2026-10-17): 사용자 결정에 따라 Tripo 원본에서 다시 제작해 **세 축 0.30의 균일 배율과 위치 이동만** 적용했다. 기존 볼 보호대 국소 변형을 없애고 머리와의 큰 틈을 줄였다. 여성 v1·v2는 **[미사용]**. [여성 현재 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb) · [피팅·검증·제한](helm-of-brilliance.md#여성-균일-축소-v3--현재).
 - 귀 윗부분 피팅(2026-10-17): 삼각형 가림으로 구멍이 생긴 시도를 폐기하고 모든 면을 복원했다. 현재는 양쪽 귀 위·뒤쪽 736개 정점만 부드럽게 안쪽으로 압축한다. 탈착 시 원상 복원하며 투구 형태와 몸체 원본은 유지한다.
-- 남녀 각각의 기준 몸체·65본에 `Head 100%`로 연결하며 두 파일 모두 3,685 triangles와 원본 4K 텍스처를 유지한다. 남성 v1은 269개 검사 자세의 피부 교차 0개. 여성 v3은 467개 자세의 강체 부착 검사를 통과했지만 귀·뒤통수 등 내부 피부 교차는 남아 있어 전 자세 무관통 판정은 하지 않는다. 게임 장비 등록·지능/조명 효과·의상 혼합은 후속 단계다.
-  - [남성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/helmet_brilliance.glb) · [여성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb).
+- 남성 균일 축소 v3(2026-10-17): Tripo 원본에 세 축 0.33과 위치 이동만 적용해 최초 피팅보다 폭 약 24%, 높이·깊이 약 19% 줄였다. 남성 v1은 **[미사용]**. [현재 피팅·검증·제한](helm-of-brilliance.md#남성-균일-축소-v3--현재).
+- 남성 귀 윗부분 피팅(2026-10-17): 아래쪽에 남았던 돌출까지 포함해 양쪽 귀 뒤쪽 524개 정점을 안쪽으로 압축해 뒤쪽 테두리 밖 돌출을 감췄다. 모든 면을 유지하고 탈착·다른 투구 착용 시 원상 복원한다. 기준 남성 얼굴에 적용한다.
+- 남녀 각각의 기준 몸체·65본에 `Head 100%`로 연결하며 두 파일 모두 3,685 triangles와 원본 4K 텍스처를 유지한다. 남성 269개·여성 467개 자세의 강체 부착 검사를 통과했다. 귀·뒤통수 등의 내부 피부 교차는 남아 있어 전 자세 무관통 판정은 하지 않는다. 게임 장비 등록·지능/조명 효과·의상 혼합은 후속 단계다.
+  - [남성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb) · [여성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb).
+  - ![남성 균일 축소 착용](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/review/head-angle.png)
   - ![여성 균일 축소 착용](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/review/head-angle.png)
 
 - `assets/items/helm_of_brilliance/tripo_v2/source/model_url.glb` — 사용자 결정(2026-10-17)에 따라 **앞·뒤 2장만** 넣어 재생성한 현재 검토용 원본. 사용자는 전날에도 측면 입력 시 앞면 복제 현상을 관찰했다고 기록했다. 이번에는 **뒤통수가 닫히고 수정·얼굴 구멍이 앞쪽에만 존재**하는 것을 앞·옆·뒤·아래 렌더로 확인했다. 피팅·게임 등록·조명 효과 구현 전 원본 단계다.
