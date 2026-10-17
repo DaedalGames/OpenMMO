@@ -257,7 +257,7 @@ const COMMANDS: Record<string, Command> = {
         })
         for (const [i, d] of tpDestinations().entries()) {
           addChatMessage({
-            text: `${i + 1}. ${[d.name, d.alias].filter(Boolean).join('/')} — ${d.label}`,
+            text: `${i + 1}. ${d.name} — ${d.label}`,
             sender: 'system',
           })
         }
@@ -265,7 +265,11 @@ const COMMANDS: Record<string, Command> = {
       }
 
       if (!/\s/.test(trimmed)) {
-        const dest = resolveTpDestination(trimmed, tpDestinations())
+        const dest = resolveTpDestination(
+          trimmed,
+          tpDestinations(),
+          DUNGEON_ENTRANCES
+        )
         if (!dest) {
           addChatMessage({
             text: translate('command.tpUnknown', { name: trimmed }),

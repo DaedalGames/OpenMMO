@@ -10,19 +10,28 @@ export function parseTpArgs(
   return { x, z, y }
 }
 
-/** Resolve a single-token `/tp` argument against the destination list:
- *  a 1-based list index, or a case-insensitive name or alias. */
+/** Resolve a single-token `/tp` argument: a 1-based list index, a place
+ *  name, or a dungeon named as for `/tp <dungeon> <floor>` (`matchDungeons`),
+ *  with `-boss` for its boss room. */
 export function resolveTpDestination<
-  T extends { name: string; alias?: string },
->(token: string, destinations: T[]): T | null {
+  T extends { name: string; dungeonId?: string; boss?: boolean },
+>(token: string, destinations: T[], dungeons: { id: string }[]): T | null {
   const trimmed = token.trim()
   if (/^\d+$/.test(trimmed)) {
     return destinations[parseInt(trimmed, 10) - 1] ?? null
   }
   const lower = trimmed.toLowerCase()
+  const place = destinations.find(
+    (d) => !d.dungeonId && d.name.toLowerCase() === lower
+  )
+  if (place) return place
+  const base = lower.replace(/-boss$/, '')
+  const boss = base !== lower
+  const matches = matchDungeons(base, dungeons)
+  if (matches.length !== 1) return null
   return (
     destinations.find(
-      (d) => d.name.toLowerCase() === lower || d.alias === lower
+      (d) => d.dungeonId === matches[0].id && !!d.boss === boss
     ) ?? null
   )
 }
@@ -30,9 +39,9 @@ export function resolveTpDestination<
 /** `d1`, `d2`, … for the dungeons in list (CSV) order. */
 export const dungeonAlias = (index: number) => `d${index + 1}`
 
-/** Dungeons a `/tp <dungeon> <floor>` token names: a `dN` alias or an exact
- *  id, else every dungeon with the token as one `_` part of its id
- *  ("skeleton" → skeleton_crypt). */
+/** Dungeons a `/tp` token names: a `dN` alias or an exact id, else every
+ *  dungeon with the token as one `_` part of its id ("skeleton" →
+ *  skeleton_crypt). */
 export function matchDungeons<T extends { id: string }>(
   token: string,
   dungeons: T[]

@@ -50,25 +50,39 @@ describe('parseTpArgs', () => {
 describe('resolveTpDestination', () => {
   const dests = [
     { name: 'spawn', x: 0 },
-    { name: 'crypt-boss', alias: 'd1-boss', x: 1 },
-    { name: 'Snowpeak', x: 2 },
+    { name: 'old/d1', dungeonId: 'old_crypt', x: 1 },
+    { name: 'old-boss/d1-boss', dungeonId: 'old_crypt', boss: true, x: 2 },
+    { name: 'Snowpeak', x: 3 },
+    { name: 'skeleton/d2', dungeonId: 'skeleton_crypt', x: 4 },
   ]
+  const dungeons = [{ id: 'old_crypt' }, { id: 'skeleton_crypt' }]
+  const resolve = (token: string) =>
+    resolveTpDestination(token, dests, dungeons)?.x
 
   it('resolves by case-insensitive name', () => {
-    expect(resolveTpDestination('crypt-boss', dests)?.x).toBe(1)
-    expect(resolveTpDestination('D1-boss', dests)?.x).toBe(1)
-    expect(resolveTpDestination('SNOWPEAK', dests)?.x).toBe(2)
+    expect(resolve('SNOWPEAK')).toBe(3)
+  })
+
+  it('resolves dungeons the way the floor form does', () => {
+    expect(resolve('old')).toBe(1)
+    expect(resolve('D1')).toBe(1)
+    expect(resolve('old_crypt')).toBe(1)
+    expect(resolve('d1-boss')).toBe(2)
+    expect(resolve('skeleton')).toBe(4)
+    expect(resolve('old/d1')).toBeUndefined()
+    expect(resolve('crypt')).toBeUndefined()
+    expect(resolve('d2-boss')).toBeUndefined()
   })
 
   it('resolves by 1-based index', () => {
-    expect(resolveTpDestination('1', dests)?.name).toBe('spawn')
-    expect(resolveTpDestination('3', dests)?.name).toBe('Snowpeak')
+    expect(resolveTpDestination('1', dests, dungeons)?.name).toBe('spawn')
+    expect(resolveTpDestination('4', dests, dungeons)?.name).toBe('Snowpeak')
   })
 
   it('returns null for unknown names and out-of-range indices', () => {
-    expect(resolveTpDestination('nowhere', dests)).toBeNull()
-    expect(resolveTpDestination('0', dests)).toBeNull()
-    expect(resolveTpDestination('4', dests)).toBeNull()
+    expect(resolveTpDestination('nowhere', dests, dungeons)).toBeNull()
+    expect(resolveTpDestination('0', dests, dungeons)).toBeNull()
+    expect(resolveTpDestination('6', dests, dungeons)).toBeNull()
   })
 })
 

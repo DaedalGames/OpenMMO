@@ -13,8 +13,9 @@ import worldJson from '../../../../data-src/world.json'
 
 export interface TpDestination {
   name: string
-  alias?: string
   label: string
+  dungeonId?: string
+  boss?: boolean
   x: number
   y: number
   z: number
@@ -56,8 +57,8 @@ export function tpDestinations(): TpDestination[] {
     const short = shortNames[i]
     const alias = dungeonAlias(i)
     out.push({
-      name: short,
-      alias,
+      name: `${short}/${alias}`,
+      dungeonId: e.id,
       get label() {
         return translate('command.tpEntrance', { name: e.name })
       },
@@ -72,8 +73,9 @@ export function tpDestinations(): TpDestination[] {
     if (!last || !boss) continue
     const depth = last.depth
     out.push({
-      name: `${short}-boss`,
-      alias: `${alias}-boss`,
+      name: `${short}-boss/${alias}-boss`,
+      dungeonId: e.id,
+      boss: true,
       get label() {
         return translate('command.tpBoss', { name: e.name, depth })
       },
