@@ -252,6 +252,8 @@ struct ConnectionState {
     account_session_id: Option<u64>,
     account_rx: Option<mpsc::UnboundedReceiver<KickNotice>>,
     player_id: Option<PlayerId>,
+    /// In game but no `WorldReady` yet; spares the hot move path a lock.
+    awaiting_world_ready: bool,
     /// Entered character's name, kept here so disconnect-path logs can name the
     /// player after `GameState` has already dropped the record.
     character_name: Option<String>,
@@ -313,6 +315,7 @@ impl ConnectionState {
             account_session_id: None,
             account_rx: None,
             player_id: None,
+            awaiting_world_ready: false,
             character_name: None,
             direct_rx: None,
             pending_character_attributes: None,
@@ -710,6 +713,22 @@ pub async fn handle_connection(
         character = state.character_name.as_deref(), player_id = state.player_id.map(PlayerId::get),
         "Connection handler finished"
     );
+}
+
+/// A client moves only after loading, so a move inside the entry grace is
+/// logged and ends the grace: it must not walk past monsters untouchable.
+async fn end_grace_on_move(game_state: &GameState, state: &mut ConnectionState, id: PlayerId) {
+    if !std::mem::take(&mut state.awaiting_world_ready) {
+        return;
+    }
+    if game_state.mark_world_ready(&id).await {
+        warn!(
+            ip = %state.client_ip, account = state.account_name.as_deref(),
+            character = state.character_name.as_deref(), player_id = id.get(),
+            kind = state.client_kind.unwrap_or_default().as_str(), version = %state.reported_client_version,
+            "Moved before WorldReady; entry grace ended"
+        );
+    }
 }
 
 /// Shared tail of both auth paths: replace any account session, load
@@ -1530,6 +1549,7 @@ async fn handle_client_message(
             }
 
             state.player_id = Some(id);
+            state.awaiting_world_ready = true;
             state.last_furniture_tip.clear();
             state.character_name = Some(selected_character.name.clone());
             if !state.is_official_npc {
@@ -1556,6 +1576,7 @@ async fn handle_client_message(
             stop_at_entrance,
         } => {
             if let Some(id) = state.player_id {
+                end_grace_on_move(game_state, state, id).await;
                 game_state
                     .request_move_goal_with_entrance(
                         id,
@@ -1581,6 +1602,7 @@ async fn handle_client_message(
             sprinting,
         } => {
             if let Some(id) = state.player_id {
+                end_grace_on_move(game_state, state, id).await;
                 game_state
                     .request_move_direction(id, request_id, rotation, forward, turn, sprinting)
                     .await;
@@ -1599,7 +1621,9 @@ async fn handle_client_message(
         }
         ClientMessage::WorldReady => {
             if let Some(id) = &state.require_in_game("world ready") {
-                game_state.mark_world_ready(id).await;
+                if std::mem::take(&mut state.awaiting_world_ready) {
+                    game_state.mark_world_ready(id).await;
+                }
             }
         }
 
@@ -2619,6 +2643,52 @@ mod tests {
         }
         assert!(!logs.contains("Some("), "{logs}");
         assert!(!logs.contains("PlayerId("), "{logs}");
+    }
+
+    #[tokio::test]
+    async fn moving_before_world_ready_is_logged_once_and_ends_the_grace() {
+        use tracing::instrument::WithSubscriber;
+
+        let game = crate::game_state::tests::make_test_game_state("move_before_ready");
+        let player = crate::types::new_player(
+            "Mover".into(),
+            1,
+            10,
+            CharacterClass::Knight,
+            Default::default(),
+            Position {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
+            0.0,
+            false,
+            ClientKind::Web,
+        );
+        let id = player.id;
+        game.add_player(player).await;
+        let mut state = ConnectionState::new("203.0.113.7".parse().unwrap());
+        handle_handshake(
+            &client_info(onlinerpg_shared::PROTOCOL_VERSION, "web"),
+            &mut state,
+        );
+        state.player_id = Some(id);
+        state.awaiting_world_ready = true;
+
+        let (subscriber, buffer) = crate::test_util::capture_logs();
+        end_grace_on_move(&game, &mut state, id)
+            .with_subscriber(subscriber)
+            .await;
+        let logs = String::from_utf8(buffer.lock().unwrap().clone()).unwrap();
+        assert!(logs.contains("Moved before WorldReady"), "{logs}");
+        assert!(logs.contains("kind=\"web\""), "{logs}");
+        assert!(!game.mark_world_ready(&id).await, "grace already ended");
+
+        let (subscriber, buffer) = crate::test_util::capture_logs();
+        end_grace_on_move(&game, &mut state, id)
+            .with_subscriber(subscriber)
+            .await;
+        assert!(buffer.lock().unwrap().is_empty(), "logged only once");
     }
 
     #[tokio::test]

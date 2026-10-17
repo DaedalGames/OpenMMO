@@ -23,6 +23,7 @@ vi.mock('../managers/remotePlayerManager', () => ({
 
 import { networkManager } from './socket'
 import { localTeleportActive } from '../stores/teleportEffectStore'
+import { setApiAuthToken } from '../utils/networkUtils'
 
 class TestWebSocket {
   static OPEN = 1
@@ -153,5 +154,54 @@ describe('movement during teleport', () => {
       { PlayerMoveGoal: { ...goal, request_id: 4, x: 500, z: 600 } },
       { PlayerMoveDirection: { ...direction, request_id: 5 } },
     ])
+  })
+})
+
+describe('automatic rejoin', () => {
+  beforeEach(async () => {
+    vi.useFakeTimers()
+    vi.stubGlobal('WebSocket', TestWebSocket)
+    await networkManager.ensureWasm()
+    networkManager.connect('ws://test')
+    setApiAuthToken('token')
+  })
+
+  afterEach(() => {
+    networkManager.disconnect()
+    setApiAuthToken(null)
+    vi.unstubAllGlobals()
+    vi.useRealTimers()
+  })
+
+  const sent = () =>
+    TestWebSocket.current.send.mock.calls.map(([bytes]) =>
+      new TextDecoder().decode(bytes as Uint8Array)
+    )
+
+  it('reports the world ready once the server readmits the character', async () => {
+    authenticate()
+    const entry = networkManager.requestEnterGame(7)
+    await vi.waitFor(() =>
+      expect(sent()).toContain(
+        JSON.stringify({ EnterGame: { character_id: 7 } })
+      )
+    )
+    networkManager.joinSuccess.emit()
+    await entry
+
+    TestWebSocket.current.onclose?.({ code: 1006, reason: '' })
+    await vi.runOnlyPendingTimersAsync()
+    authenticate()
+    await vi.waitFor(() =>
+      expect(sent()).toContain(
+        JSON.stringify({ EnterGame: { character_id: 7 } })
+      )
+    )
+    expect(sent()).not.toContain(JSON.stringify('WorldReady'))
+
+    networkManager.joinSuccess.emit()
+    await vi.waitFor(() =>
+      expect(sent()).toContain(JSON.stringify('WorldReady'))
+    )
   })
 })

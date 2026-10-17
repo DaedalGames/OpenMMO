@@ -387,8 +387,9 @@ class NetworkManager {
       unsubSuccess = this.authSuccess.on(() => {
         cleanup()
         if (this.lastCharacterId) {
-          this.sendAndSerialize({
-            EnterGame: { character_id: this.lastCharacterId },
+          // The scene stayed mounted, so a rejoin has nothing to load.
+          void this.requestEnterGame(this.lastCharacterId).then((result) => {
+            if (result.ok) this.sendWorldReady()
           })
         }
       })

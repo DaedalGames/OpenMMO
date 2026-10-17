@@ -891,11 +891,14 @@ impl super::GameState {
         }
     }
 
-    pub async fn mark_world_ready(&self, player_id: &PlayerId) {
+    /// Ends the entry grace; true when it was still running.
+    pub async fn mark_world_ready(&self, player_id: &PlayerId) -> bool {
         let mut players = self.players.write().await;
-        if let Some(player) = players.get_mut(player_id) {
+        players.get_mut(player_id).is_some_and(|player| {
+            let loading = !player.is_ready(Self::now_ms());
             player.ready_at = 0;
-        }
+            loading
+        })
     }
 
     pub(super) async fn clear_player_movement(&self, id: &PlayerId, _reason: &'static str) {
