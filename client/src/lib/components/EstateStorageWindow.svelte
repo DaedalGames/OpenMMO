@@ -3,20 +3,19 @@
   import './tradePanel.css'
   import { SvelteMap } from 'svelte/reactivity'
   import { activeDebuffs } from '../stores/debuffStore'
-  import { hungerState } from '../stores/hungerStore'
   import {
     carriedItemWeight,
     carryWeight,
     formatKg,
     inventoryStore,
-    maxCarryWeight,
+    carryLimit,
+    liveArmorMult,
   } from '../stores/inventoryStore'
   import {
     estateChestError,
     estateChestPending,
     openEstateChest,
   } from '../stores/estateStorageStore'
-  import { armorWeightMult } from '../data/debuffPresentation'
   import { getItemDef, itemDisplayName } from '../data/itemDefs'
   import { isEstateStorageItem } from '../data/estateFurnitureDefs'
   import { networkManager } from '../network/socket'
@@ -27,18 +26,12 @@
   import { itemTooltip } from '../actions/itemTooltip'
   import { sortBag } from './inventorySort'
 
-  interface Props {
-    str: number
-  }
-
   type Direction = 'deposit' | 'withdraw'
   type PendingSelection = {
     direction: Direction
     item: ItemInstance
     max: number
   }
-
-  let { str }: Props = $props()
 
   const deposits = new SvelteMap<number, number>()
   const withdrawals = new SvelteMap<number, number>()
@@ -50,14 +43,7 @@
     stored.reduce((sum, item) => sum + baseWeight(item), 0)
   )
   const storageLimit = $derived($openEstateChest?.max_weight ?? 0)
-  const armorMultiplier = $derived(
-    armorWeightMult(
-      $activeDebuffs
-        .filter((debuff) => debuff.until > Date.now())
-        .map((debuff) => debuff.id)
-    )
-  )
-  const playerLimit = $derived(maxCarryWeight(str, $hungerState))
+  const armorMultiplier = $derived(liveArmorMult($activeDebuffs))
   const depositStorageWeight = $derived(selectedWeight(deposits, bag, false))
   const depositPlayerWeight = $derived(selectedWeight(deposits, bag, true))
   const withdrawalStorageWeight = $derived(
@@ -83,7 +69,7 @@
   const validSelection = $derived(
     selectedQuantity > 0 &&
       (!hasIncomingStorage || projectedStorageWeight <= storageLimit + 0.001) &&
-      (!hasIncomingPlayer || projectedPlayerWeight <= playerLimit + 0.001)
+      (!hasIncomingPlayer || projectedPlayerWeight <= $carryLimit + 0.001)
   )
 
   $effect(() => {
@@ -147,7 +133,7 @@
       item.quantity,
       Math.max(
         0,
-        Math.floor((playerLimit - projectedPlayerWeight + 0.001) / unit)
+        Math.floor(($carryLimit - projectedPlayerWeight + 0.001) / unit)
       )
     )
   }
@@ -364,7 +350,7 @@
         <WeightBar
           current={$carryWeight}
           projected={projectedPlayerWeight}
-          max={playerLimit}
+          max={$carryLimit}
           label="Bag weight"
         />
       </section>
@@ -376,7 +362,7 @@
         free</span
       >
       <span
-        >Bag: {formatKg(Math.max(0, playerLimit - projectedPlayerWeight))} kg free</span
+        >Bag: {formatKg(Math.max(0, $carryLimit - projectedPlayerWeight))} kg free</span
       >
     </div>
     <footer>

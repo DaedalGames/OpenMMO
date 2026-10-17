@@ -60,6 +60,7 @@ EXPORT_PACKS = {
         "stand_pose4",
         "weight_shift",
         "yawn",
+        "shake_head",
     ],
     "offhand": [
         "torch_idle1",

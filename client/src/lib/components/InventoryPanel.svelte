@@ -6,10 +6,9 @@
     itemLockMode,
     playerGold,
     carryWeight,
-    maxCarryWeight,
+    carryLimit,
     wornAmmoStack,
   } from '../stores/inventoryStore'
-  import { hungerState } from '../stores/hungerStore'
   import type { ItemInstance } from '../stores/inventoryStore'
   import { getItemDef, isUsable, type ItemDefinition } from '../data/itemDefs'
   import GoldAmount from './GoldAmount.svelte'
@@ -40,13 +39,10 @@
 
   interface Props {
     visible: boolean
-    str: number
     onClose: () => void
   }
 
-  let { visible, str, onClose }: Props = $props()
-
-  const maxWeight = $derived(maxCarryWeight(str, $hungerState))
+  let { visible, onClose }: Props = $props()
 
   // The character panel already displays the worn quiver.
   const wornId = $derived(wornAmmoStack($inventoryStore)?.instance_id)
@@ -387,7 +383,7 @@
 
     <WeightBar
       current={$carryWeight}
-      max={maxWeight}
+      max={$carryLimit}
       label={$t('inventory.weight')}
     />
   </div>

@@ -23,9 +23,17 @@ export const localEmoteAnim = writable<string | null>(null)
  *  and agent-client read it from there. */
 export const MUSIC_EMOTE_ANIM = 'guitar_playing'
 
+/** Played instead of the pickup crouch when the item would not fit. */
+export const REFUSE_PICKUP_ANIM = 'shake_head'
+
 /** One-shot clips `/emote <name>` plays. Must match `ONE_SHOT_EMOTES` in
  *  `shared/src/messages.rs` — the server validates the command against it. */
-export const ONE_SHOT_EMOTE_ANIMS = new Set(['excited', 'clap', 'yawn'])
+export const ONE_SHOT_EMOTE_ANIMS = new Set([
+  'excited',
+  'clap',
+  'yawn',
+  'shake_head',
+])
 
 /** Clips `/emote <name>` loops until the player moves or presses Escape.
  *  Must match `LOOPING_EMOTES` in `shared/src/messages.rs`. */

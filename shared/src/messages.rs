@@ -345,7 +345,7 @@ pub struct InstrumentNoteEvent {
 /// contract as [`MUSIC_EMOTE`]: the server validates against this list, and
 /// clients start the clip off the broadcast and send `StopInteraction` when
 /// it ends. Clip names live in `social.glb`.
-pub const ONE_SHOT_EMOTES: &[&str] = &["excited", "clap", "yawn"];
+pub const ONE_SHOT_EMOTES: &[&str] = &["excited", "clap", "yawn", "shake_head"];
 
 /// Clips `/emote <name>` loops instead of playing once: the dancer's client
 /// repeats the clip until the player moves or presses Escape, then sends

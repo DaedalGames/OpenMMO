@@ -39,7 +39,10 @@
   import { networkManager } from '../network/socket'
   import { monsterManager } from '../managers/monsterManager'
   import { remotePlayerManager } from '../managers/remotePlayerManager'
-  import { groundItemManager } from '../managers/groundItemManager'
+  import {
+    groundItemManager,
+    type GroundItemData,
+  } from '../managers/groundItemManager'
   import { combatController } from '../managers/combatController'
   import {
     daggerSkillState,
@@ -84,7 +87,11 @@
     cameraRotationEnabled,
     teleportLoading,
   } from '../stores/debugStore'
-  import { localTorchEquipped, inventoryStore } from '../stores/inventoryStore'
+  import {
+    canCarryOne,
+    localTorchEquipped,
+    inventoryStore,
+  } from '../stores/inventoryStore'
   import { hungerState, SPRINT_MIN_SATIATION } from '../stores/hungerStore'
   import { isRangedWeapon, weaponRangeMeters } from '../data/itemDefs'
   import { type Position, type PlayerState } from '../utils/movementUtils'
@@ -186,6 +193,7 @@
     HELD_EMOTE_ANIMS,
     isEmoteAnim,
     isSelfEndingEmote,
+    REFUSE_PICKUP_ANIM,
   } from '../stores/emoteStore'
   import { respawnPoseRequest } from '../stores/respawnPoseStore'
   import { objectManager } from '../managers/objectManager'
@@ -1266,6 +1274,7 @@
 
     let nearestId: number | null = null
     let nearestDistanceSq = Infinity
+    let tooHeavy: GroundItemData | null = null
     const floorLevel = get(ownPlayerFloor)
     for (const item of groundItemManager.items.values()) {
       if (item.instanceId < 0 || item.inHand || item.floorLevel !== floorLevel)
@@ -1276,12 +1285,30 @@
       )
       const dz = item.position.z - currentPlayer.position.z
       const distanceSq = dx * dx + dz * dz
-      if (distanceSq <= 4 && distanceSq < nearestDistanceSq) {
+      if (distanceSq > 4) continue
+      // The server takes every nearby item that fits, so a heavy one is
+      // refused only when nothing in reach fits.
+      if (!canCarryOne(item.itemDefId)) {
+        tooHeavy ??= item
+        continue
+      }
+      if (distanceSq < nearestDistanceSq) {
         nearestId = item.instanceId
         nearestDistanceSq = distanceSq
       }
     }
     if (nearestId !== null) enterPickup(nearestId, true)
+    else if (tooHeavy) refusePickup(tooHeavy)
+  }
+
+  function refusePickup(item: GroundItemData) {
+    cancelAutoTravel()
+    addChatMessage({ text: translate('server.tooHeavy'), sender: 'system' })
+    if (playerState.state === 'interact' || isMounted(currentPlayer)) return
+    faceTowards(item.position.x, item.position.z)
+    stopAndFace(playerRotation)
+    // Through the server so nearby players see it; the echo starts it here.
+    networkManager.sendChatMessage(`/emote ${REFUSE_PICKUP_ANIM}`)
   }
 
   function enterPickup(instanceId: number, pickupNearby = false) {
@@ -1361,6 +1388,10 @@
   ) {
     if (playerState.state === 'dead') return
     const item = groundItemManager.items.get(intent.instanceId)
+    if (item && !canCarryOne(item.itemDefId)) {
+      refusePickup(item)
+      return
+    }
     // Never pick up straight from an interaction: re-entering picking_up would
     // overwrite the owned id and strand the grabbed item on the hand bone
     // (finishPickup never runs). The walk-up settles the interaction first.

@@ -15,7 +15,7 @@ import {
 import { activeDebuffs } from './debuffStore'
 import { calendarVisible } from './debugStore'
 import { armorWeightMult } from '../data/debuffPresentation'
-import type { HungerSnapshot } from './hungerStore'
+import { hungerState } from './hungerStore'
 
 export type { EquipSlot, ItemInstance, PlayerInventory }
 
@@ -123,15 +123,17 @@ export function carriedItemWeight(
   return (def?.weight ?? 1) * mult * item.quantity
 }
 
+export const liveArmorMult = (debuffs: { id: string; until: number }[]) => {
+  const now = Date.now()
+  return armorWeightMult(debuffs.filter((d) => d.until > now).map((d) => d.id))
+}
+
 /** Mirrors the server's `calc_total_weight`: soaked armour drags, worn and
  *  packed alike (doc/DEBUFF.md). Per-item tooltips keep the dry weight. */
 export const carryWeight = derived(
   [inventoryStore, activeDebuffs],
   ([inv, debuffs]) => {
-    const now = Date.now()
-    const armorMult = armorWeightMult(
-      debuffs.filter((d) => d.until > now).map((d) => d.id)
-    )
+    const armorMult = liveArmorMult(debuffs)
     let total = 0
     for (const item of inv.bag) total += carriedItemWeight(item, armorMult)
     for (const item of Object.values(inv.equipped)) {
@@ -141,9 +143,28 @@ export const carryWeight = derived(
   }
 )
 
+/** The selected character's STR, the base of the carry limit. */
+export const localStr = writable(10)
+
 /** Mirrors the server's max_carry_weight: STR × 15 scaled by hunger. */
-export const maxCarryWeight = (str: number, hunger: HungerSnapshot | null) =>
-  str * 15 * (hunger?.carryMult ?? 1)
+export const carryLimit = derived(
+  [localStr, hungerState],
+  ([str, hunger]) => str * 15 * (hunger?.carryMult ?? 1)
+)
+
+/** Mirrors the server's `pickup_item_with_range`, which takes a partial pile
+ *  and refuses only when not even one unit fits. */
+export function fitsOneUnit(current: number, max: number, unitWeight: number) {
+  return unitWeight <= 0 || Math.floor((max - current) / unitWeight + 1e-3) >= 1
+}
+
+export function canCarryOne(itemDefId: string): boolean {
+  const unit = carriedItemWeight(
+    { item_def_id: itemDefId, quantity: 1 },
+    liveArmorMult(get(activeDebuffs))
+  )
+  return fitsOneUnit(get(carryWeight), get(carryLimit), unit)
+}
 
 export const formatKg = (weight: number) => (weight / 10).toFixed(1)
 

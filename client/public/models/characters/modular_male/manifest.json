@@ -20,7 +20,7 @@
     "assets/modular_human_male_01/animations/hand-grips.json": "c34d315d2794038dc44ee68ef4c4bc9b36133fb2d1895727dfddec5b2ad1ca89",
     "client/public/models/animations/locomotion.glb": "cfa79f5b5f82f3b26d0d0bc86e4293a919fbc28829a2c6192f19a4a488271da8",
     "client/public/models/animations/combat_melee.glb": "b29f34de8cf7523d176a634ceac7ab4791084994493adbfac5f59dda686a057b",
-    "client/public/models/animations/social.glb": "789cea2a6670840e53f1ca0d5555b5c599765414ca52c7dd16cc7d49536fea95",
+    "client/public/models/animations/social.glb": "67d40a7153e10c943df557b36e2069ec89b64ede50367f032db455eda2237c03",
     "client/public/models/animations/fishing.glb": "04dcb3fa6b0ea6f2fac21a29e630665c4e01c05820848b98f660c3a9dbd1dd3e",
     "client/public/models/animations/combat_ranged.glb": "7aeb8c233c2f246a651cf7c3c96a557edc1584ab2a35ce283d51cc746ce36518",
     "client/public/models/animations/offhand.glb": "b9dfabc7e57505515da545622ac7b781541d550d035c3351bfb1c532fc2df125",
@@ -100,7 +100,7 @@
       ]
     },
     "animations/social.glb": {
-      "sha256": "a9efe7a2d388011cdc039ca6778c2b3a929b07953941ee7bb7c50a511d4b083d",
+      "sha256": "a708d773f98fd2677c130788261aacb247c600b0a7ec0ae9e85f399496e3cb74",
       "clips": [
         "sleep",
         "pickup",
@@ -120,7 +120,8 @@
         "weight_shift",
         "yawn",
         "enchant_weapon",
-        "enchant_weapon_left"
+        "enchant_weapon_left",
+        "shake_head"
       ]
     },
     "animations/fishing.glb": {

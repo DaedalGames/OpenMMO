@@ -24,6 +24,7 @@ const LABEL_KEYS: Partial<Record<string, MessageKey>> = {
   excited: 'emote.excited',
   clap: 'emote.clap',
   yawn: 'emote.yawn',
+  shake_head: 'emote.shake_head',
   twist: 'emote.twist',
   macarena: 'emote.macarena',
   chicken: 'emote.chicken',

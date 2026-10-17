@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isTorchItemDefId, wornAmmoStack } from './inventoryStore'
+import { fitsOneUnit, isTorchItemDefId, wornAmmoStack } from './inventoryStore'
 
 describe('isTorchItemDefId', () => {
   it('recognizes every carried torch variant', () => {
@@ -72,5 +72,20 @@ describe('wornAmmoStack', () => {
         active_ammo: null,
       })
     ).toBeUndefined()
+  })
+})
+
+describe('fitsOneUnit', () => {
+  it('refuses only when not one unit fits', () => {
+    expect(fitsOneUnit(149, 150, 2)).toBe(false)
+    expect(fitsOneUnit(148, 150, 2)).toBe(true)
+  })
+
+  it('accepts an exact fit despite f32-style rounding', () => {
+    expect(fitsOneUnit(149.70000001, 150, 0.3)).toBe(true)
+  })
+
+  it('always accepts weightless items', () => {
+    expect(fitsOneUnit(200, 150, 0)).toBe(true)
   })
 })

@@ -178,7 +178,6 @@
           xp={playerXp}
           hp={playerHp}
           maxHp={playerMaxHp}
-          str={selectedCharacter.attributes.str}
         />
         <div class="status-indicators">
           <HungerIndicator />
@@ -221,11 +220,10 @@
     />
     <InventoryPanel
       visible={$inventoryVisible}
-      str={selectedCharacter.attributes.str}
       onClose={() => inventoryVisible.set(false)}
     />
     <TradeWindow />
-    <EstateStorageWindow str={selectedCharacter.attributes.str} />
+    <EstateStorageWindow />
     <PlayerTradeWindow />
     <StallWindow />
     <TradeOfferToast />

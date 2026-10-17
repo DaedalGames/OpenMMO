@@ -235,6 +235,13 @@ tip followed the handle. Other rigs and offhand props kept their previous placem
     `CLASS_IDLE_CLIP_NAMES` 클래스→클립 테이블, `PlayerModel.svelte`의 `pickClassIdleClip` —
     같은 클립 연속 재생은 피하고, 첫 miss에 social 팩 로드를 시작한다).
 
+- Annoyed Head Shake https://www.mixamo.com/#/?query=annoyed+head+shake&type=Motion%2CMotionPack (social pack, `shake_head`, `/emote shake_head` — 원샷 이모트)
+  - 2026-10-17 Mixamo, 30fps, `assets/animations/Annoyed Head Shake.fbx`. `import_mixamo_animation`으로 `Armature`에 bake(fake user),
+    도너 팩 export 후 `graft-glb-clip.py`로 social.glb에 이식. 77프레임(2.6초) 원본 그대로.
+    플레이어 캐릭터용 팩은 `node tools/prepare-modular-character.mjs --pack social`과
+    `node tools/prepare-female-knight.mjs --pack social`로 다시 만들었다 (기존 클립은 바이트 동일).
+  - 무게 초과로 바닥 아이템을 들 수 없을 때 줍기 동작 대신 재생된다.
+
 ## Mixamo Animation Export Workflow
 
 새 Mixamo 애니메이션을 offhand/locomotion 등의 pack에 추가할 때:

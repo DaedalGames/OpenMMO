@@ -7,10 +7,9 @@
   import {
     playerGold,
     carryWeight,
-    maxCarryWeight,
+    carryLimit,
     formatKg,
   } from '../stores/inventoryStore'
-  import { hungerState } from '../stores/hungerStore'
   import GoldAmount from './GoldAmount.svelte'
 
   let {
@@ -18,16 +17,12 @@
     xp,
     hp,
     maxHp,
-    str,
   }: {
     level: number
     xp: number
     hp: number
     maxHp: number
-    str: number
   } = $props()
-
-  const maxWeight = $derived(maxCarryWeight(str, $hungerState))
 
   const xpInfo = $derived(levelProgress(level, xp))
   const ring = new Tween(0, { duration: 300, easing: cubicOut })
@@ -218,7 +213,7 @@
     <div class="gold"><GoldAmount copper={$playerGold} /></div>
     <div>
       <strong class="weight">{formatKg($carryWeight)}</strong>
-      <span> / {formatKg(maxWeight)} kg</span>
+      <span> / {formatKg($carryLimit)} kg</span>
     </div>
   </div>
 </button>

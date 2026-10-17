@@ -14,6 +14,7 @@
   import RenameCharacterDialog from './lib/components/RenameCharacterDialog.svelte'
   import RenderFrameLimiter from './lib/components/RenderFrameLimiter.svelte'
   import { gameStore } from './lib/stores/gameStore'
+  import { localStr } from './lib/stores/inventoryStore'
   import { createWebGPURenderer } from './lib/utils/renderer'
   import {
     networkManager,
@@ -51,6 +52,9 @@
       (character) => character.id === selectedCharacterId
     ) ?? null
   )
+  $effect(() => {
+    if (selectedCharacter) localStr.set(selectedCharacter.attributes.str)
+  })
   let isPlayerDead = $state(false)
   let currentPlayerHp = $state<number | null>(null)
   let currentPlayerMaxHp = $state<number | null>(null)
