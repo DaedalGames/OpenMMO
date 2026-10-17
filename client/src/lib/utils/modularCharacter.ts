@@ -48,9 +48,14 @@ export function modularRigId(root: THREE.Object3D): string {
 
 export function skinnedParts(root: THREE.Object3D): THREE.SkinnedMesh[] {
   const result: THREE.SkinnedMesh[] = []
-  root.traverse((node) => {
+  // Meshes hung off a bone (the cape rig) carry their own skeleton.
+  const visit = (node: THREE.Object3D) => {
     if (node instanceof THREE.SkinnedMesh) result.push(node)
-  })
+    for (const child of node.children)
+      if (!(node instanceof THREE.Bone) || child instanceof THREE.Bone)
+        visit(child)
+  }
+  visit(root)
   return result
 }
 

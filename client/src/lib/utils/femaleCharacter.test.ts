@@ -19,6 +19,7 @@ import { skinnedParts } from './modularCharacter'
 import { FEMALE_BOOTS_PARTS, FEMALE_BOOTS_PROPERTY } from './femaleCharacter'
 import { poseMainHandProp } from './handProps'
 import { updatePeltPhysics } from '../effects/pelt-rig'
+import { attachCapeFit, fitCapeToSkeleton } from '../effects/cape-rig'
 import { robeBaseSkeleton } from '../effects/robe-rig'
 import itemDefs from '../data/itemDefs'
 import type { ArmorEquipment } from '../network/networkTypes'
@@ -166,6 +167,20 @@ describe('female modular starter outfits', () => {
         expect(count(modelRoot, `barbarian_${part}`)).toBe(0)
       }
       expect(count(modelRoot, 'hair')).toBeGreaterThan(0)
+      disposeCharacterSkeletons(modelRoot)
+    }
+  )
+  it.skipIf(!hasAssets)(
+    'loads the brilliance helmet while a cape hangs off the spine',
+    async () => {
+      const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
+      const { clonedScene, modelRoot } = createCharacterModelRoot(source.scene)
+      modelRoot.updateMatrixWorld(true)
+      const cape = attachCapeFit(fitCapeToSkeleton(clonedScene)!)
+      await applyCharacterArmor(modelRoot, { head: 'helm_of_brilliance' })
+      expect(count(modelRoot, 'brilliance_helmet')).toBeGreaterThan(0)
+      expect(count(modelRoot, 'hair')).toBe(0)
+      cape.dispose()
       disposeCharacterSkeletons(modelRoot)
     }
   )
