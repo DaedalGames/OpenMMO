@@ -11,6 +11,8 @@ const JOINT_INSET = 0.008
 const TILE_SIZE = 1 / (4 * DUNGEON_FLOOR_UV_SCALE)
 const TILES_PER_CELL = Math.round(1 / TILE_SIZE)
 const DAMAGE_LIFT = 0.006
+// Highest broken-tile vertex; overlays drawn above the floor must clear it.
+export const MASONRY_DAMAGE_MAX_Y = 0.029
 const SOIL_TEXTURE = HOUSING_TEXTURES.findIndex(
   (entry) => entry.glb === 'red_laterite_soil_stones_1k'
 )

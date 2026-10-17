@@ -30,8 +30,9 @@ import {
   type DungeonDrip,
   type DungeonPuddle,
 } from '../utils/dungeon-puddles'
+import { MASONRY_DAMAGE_MAX_Y } from '../utils/dungeon-geo-masonry'
 
-const SURFACE_Y = 0.012
+const SURFACE_Y = MASONRY_DAMAGE_MAX_Y + 0.003
 const MAX_INTERVAL_MULTIPLIER = 6
 
 interface ScheduledDrip {

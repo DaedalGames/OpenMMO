@@ -8,7 +8,11 @@ import {
   type BufferGeometry,
 } from 'three'
 import type { DungeonFloorLayout } from '../managers/dungeonManager'
-import { buildMasonryWall, buildMasonryWallGhost } from './dungeon-geo-masonry'
+import {
+  buildMasonryWall,
+  buildMasonryWallGhost,
+  MASONRY_DAMAGE_MAX_Y,
+} from './dungeon-geo-masonry'
 import { disposeDungeonGroup } from './dungeon-geometry'
 import { buildDungeonFloorGroup } from './dungeon-geo-floor'
 import { carveDungeon, dungeonCtx } from './dungeon-layout.fixture'
@@ -263,7 +267,9 @@ describe('damaged masonry floors', () => {
       expect(mesh.receiveShadow).toBe(true)
       mesh.geometry.computeBoundingBox()
       expect(mesh.geometry.boundingBox!.min.y).toBeGreaterThan(0)
-      expect(mesh.geometry.boundingBox!.max.y).toBeLessThan(0.035)
+      expect(mesh.geometry.boundingBox!.max.y).toBeLessThanOrEqual(
+        MASONRY_DAMAGE_MAX_Y
+      )
     }
     const surface = damageSurface(group)
     let soilHits = 0
