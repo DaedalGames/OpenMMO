@@ -1,0 +1,23 @@
+{
+  "generation_date": "2026-10-18",
+  "service": "OpenAI Codex built-in ImageGen (codex exec, codex-cli 0.162.1)",
+  "tier": "ChatGPT Pro 20x",
+  "license": "OpenAI generated output terms.",
+  "status": "Final concept; no 3D generation yet.",
+  "references": [
+    {
+      "path": "barkan-concept-v2.png (intermediate draft, deleted)",
+      "role": "Edit target",
+      "sha256": "12a15443e7b5e8b4d7db8f6669231c67f35e4e42bcff337c852b27499661710f"
+    }
+  ],
+  "prompt": "Use case: precise localized edit. Edit target: the supplied Barkan demon lord concept (image 1).\n\nRemove ONLY the long hanging dark ash-grey cloth tabard/loincloth that drops from the belt down the middle between the legs, and the side fauld plates hanging over the hips. Replace them with short fitted armored briefs, like barbarian or gladiator bikini armor for a male warrior: a compact pair of matte charred black iron plate trunks with cool polished steel-grey bevelled edges, covering only the groin and hips and ending high on the upper thigh, with a small rune-etched central plate with a faint molten-orange line. Keep the wide belt and the bronze chain wrapped around the waist. The thighs are bare crimson-maroon demon skin down to the knee greaves; reconstruct the thigh skin naturally with the same glowing orange cracks style.\n\nKeep everything else exactly unchanged: same character, face, horns (his LEFT horn, viewer's right, broken), glowing eyes, wings, pauldrons, collar, chest and arms, chains and bronze shackles, gauntlets, knee greaves and boots, T-pose, empty hands with no weapon, colors, lighting, plain light grey background, framing and 1024x1024 square composition. No text.",
+  "codex_output": "~/.codex/generated_images/01a14ab8-7342-71b1-9ad7-de62f9a6bc03/exec-b06fceba-ca92-43f3-98a6-f6f7d87dc50b.png",
+  "output": {
+    "path": "doc/images/monsters/barkan-concept.png",
+    "sha256": "9d465fb24de599a70128048acf84f69b2977cb58cb4b49c7eb05be30abd6d70a",
+    "width": 1254,
+    "height": 1254,
+    "mode": "RGB"
+  }
+}
