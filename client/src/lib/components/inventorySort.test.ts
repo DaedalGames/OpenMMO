@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ItemInstance } from '../network/networkTypes'
 import { sortBag } from './inventorySort'
+import type { InventorySortMode } from '../stores/inventorySortSettings'
 
 function makeItem(
   overrides: Partial<ItemInstance> & { instance_id: number }
@@ -150,5 +151,57 @@ describe('runs that wear no slot', () => {
       'clump_of_kelp',
       'old_boot',
     ])
+  })
+})
+
+describe('sortBag modes', () => {
+  const bag = [
+    makeItem({ instance_id: 1, item_def_id: 'leather_armor' }),
+    makeItem({ instance_id: 2, item_def_id: 'apple', quantity: 20 }),
+    makeItem({ instance_id: 3, item_def_id: 'iron_sword' }),
+    makeItem({ instance_id: 4, item_def_id: 'bread', quantity: 2 }),
+    makeItem({ instance_id: 5, item_def_id: 'apple', quantity: 1 }),
+  ]
+  const ids = (mode: InventorySortMode) =>
+    sortBag(bag, mode, 'en').map((item) => item.item_def_id)
+
+  it('orders by stack weight', () => {
+    expect(ids('heavy')).toEqual([
+      'leather_armor',
+      'apple',
+      'iron_sword',
+      'bread',
+    ])
+    expect(ids('light')).toEqual([
+      'bread',
+      'iron_sword',
+      'apple',
+      'leather_armor',
+    ])
+  })
+
+  it('orders by display name', () => {
+    expect(ids('name')).toEqual([
+      'apple',
+      'bread',
+      'iron_sword',
+      'leather_armor',
+    ])
+  })
+
+  it('puts the latest pickup first, placing a merged stack by its last part', () => {
+    expect(ids('recent')).toEqual([
+      'apple',
+      'bread',
+      'iron_sword',
+      'leather_armor',
+    ])
+  })
+
+  it('keeps the first instance as the merged stack id', () => {
+    expect(
+      sortBag(bag, 'recent').find((item) => item.item_def_id === 'apple')
+        ?.instance_id
+    ).toBe(2)
   })
 })

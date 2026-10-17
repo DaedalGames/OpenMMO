@@ -26,6 +26,10 @@
   import { itemTooltip } from '../actions/itemTooltip'
   import { buildInventorySlots } from './inventorySlots'
   import { inventoryGroupKey, sortBag } from './inventorySort'
+  import {
+    INVENTORY_SORT_MODES,
+    inventorySortMode,
+  } from '../stores/inventorySortSettings'
   import ItemLockButton from './ItemLockButton.svelte'
   import { groupBagForSelection, splitGroupQty } from './inventoryGroups'
   import QuantityPopup from './QuantityPopup.svelte'
@@ -48,7 +52,11 @@
   const wornId = $derived(wornAmmoStack($inventoryStore)?.instance_id)
   const slots = $derived(
     buildInventorySlots(
-      sortBag($inventoryStore.bag.filter((item) => item.instance_id !== wornId))
+      sortBag(
+        $inventoryStore.bag.filter((item) => item.instance_id !== wornId),
+        $inventorySortMode,
+        $locale
+      )
     )
   )
 
@@ -288,6 +296,16 @@
       <span class="panel-title">{$t('inventory.title')}</span>
       <span class="gold-display"><GoldAmount copper={$playerGold} /></span>
       <div class="mode-buttons">
+        <select
+          class="mode-btn sort-select"
+          aria-label={$t('inventory.sortHint')}
+          title={$t('inventory.sortHint')}
+          bind:value={$inventorySortMode}
+        >
+          {#each INVENTORY_SORT_MODES as mode (mode)}
+            <option value={mode}>{$t(`inventory.sort.${mode}`)}</option>
+          {/each}
+        </select>
         <button
           class="mode-btn select-btn"
           class:active={selectMode}
@@ -470,6 +488,41 @@
   .mode-btn:hover {
     color: #fff;
     border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .sort-select {
+    appearance: none;
+    color-scheme: dark;
+    padding-right: 18px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239fb2c3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
+      no-repeat right 4px center / 10px;
+  }
+
+  .sort-select option {
+    background: #0e141a;
+    color: #e6edf3;
+  }
+
+  @supports (appearance: base-select) {
+    .sort-select,
+    .sort-select::picker(select) {
+      appearance: base-select;
+    }
+
+    .sort-select::picker-icon {
+      display: none;
+    }
+
+    .sort-select::picker(select) {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      background: #0e141a;
+    }
+
+    .sort-select option:hover,
+    .sort-select option:focus {
+      background: #1f2a35;
+    }
   }
 
   .select-btn.active {

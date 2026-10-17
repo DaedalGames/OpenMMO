@@ -1,5 +1,12 @@
 import type { EquipSlot, ItemInstance } from '../network/networkTypes'
-import { ammoAverageDamage, getItemDef, isConsumable } from '../data/itemDefs'
+import {
+  ammoAverageDamage,
+  getItemDef,
+  isConsumable,
+  itemDisplayName,
+} from '../data/itemDefs'
+import type { Locale } from '../i18n'
+import type { InventorySortMode } from '../stores/inventorySortSettings'
 
 type Category = EquipSlot | 'ammo' | 'dungeon_key' | 'consumable' | 'misc'
 
@@ -69,21 +76,68 @@ export function compareInventoryOrder(
   return nameDiff !== 0 ? nameDiff : quantityB - quantityA
 }
 
-/** Merges same-item/enchant stackable stacks, then groups by equip slot,
- *  name, and quantity. Client-side only; does not touch server state. */
-export function sortBag(bag: readonly ItemInstance[]): ItemInstance[] {
-  const merged = new Map<string, ItemInstance>()
-  for (const item of bag) {
+interface SortEntry {
+  item: ItemInstance
+  /** Bag index of the group's last part; the server appends pickups. */
+  newest: number
+}
+
+function stackWeight(item: ItemInstance): number {
+  return (getItemDef(item.item_def_id)?.weight ?? 1) * item.quantity
+}
+
+function compareByMode(
+  a: SortEntry,
+  b: SortEntry,
+  mode: InventorySortMode,
+  language?: Locale
+): number {
+  switch (mode) {
+    case 'heavy':
+      return stackWeight(b.item) - stackWeight(a.item)
+    case 'light':
+      return stackWeight(a.item) - stackWeight(b.item)
+    case 'name':
+      return nameCollator.compare(
+        itemDisplayName(a.item.item_def_id, a.item.enchant, language),
+        itemDisplayName(b.item.item_def_id, b.item.enchant, language)
+      )
+    case 'recent':
+      return b.newest - a.newest
+    case 'category':
+      return 0
+  }
+}
+
+/** Merges same-item/enchant stackable stacks, then sorts by `mode`, falling
+ *  back to equip slot, name, and quantity. Client-side only. */
+export function sortBag(
+  bag: readonly ItemInstance[],
+  mode: InventorySortMode = 'category',
+  language?: Locale
+): ItemInstance[] {
+  const merged = new Map<string, SortEntry>()
+  bag.forEach((item, index) => {
     const key = inventoryGroupKey(item)
     const existing = merged.get(key)
     if (existing) {
-      existing.quantity += item.quantity
+      existing.item.quantity += item.quantity
+      existing.newest = index
     } else {
-      merged.set(key, { ...item })
+      merged.set(key, { item: { ...item }, newest: index })
     }
-  }
+  })
 
-  return [...merged.values()].sort((a, b) =>
-    compareInventoryOrder(a.item_def_id, a.quantity, b.item_def_id, b.quantity)
-  )
+  return [...merged.values()]
+    .sort(
+      (a, b) =>
+        compareByMode(a, b, mode, language) ||
+        compareInventoryOrder(
+          a.item.item_def_id,
+          a.item.quantity,
+          b.item.item_def_id,
+          b.item.quantity
+        )
+    )
+    .map((entry) => entry.item)
 }
