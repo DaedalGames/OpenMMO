@@ -6,6 +6,7 @@ export const INVENTORY_SORT_MODES = [
   'light',
   'name',
   'recent',
+  'oldest',
 ] as const
 export type InventorySortMode = (typeof INVENTORY_SORT_MODES)[number]
 

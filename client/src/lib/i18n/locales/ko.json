@@ -119,6 +119,7 @@
   "inventory.sort.light": "가벼운순",
   "inventory.sort.name": "이름순",
   "inventory.sort.recent": "최근순",
+  "inventory.sort.oldest": "오래된순",
   "inventory.lockItem": "잠금: {{item}}",
   "inventory.unlockItem": "잠금 해제: {{item}}",
   "inventory.unlockTitle": "아이템 잠금을 해제할까요?",

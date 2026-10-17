@@ -119,6 +119,7 @@
   "inventory.sort.light": "Lightest",
   "inventory.sort.name": "Name",
   "inventory.sort.recent": "Newest",
+  "inventory.sort.oldest": "Oldest",
   "inventory.lockItem": "Lock {{item}}",
   "inventory.unlockItem": "Unlock {{item}}",
   "inventory.unlockTitle": "Unlock item?",

@@ -1,4 +1,5 @@
 use super::*;
+use crate::game_state::inventory::is_coin_pile_payout;
 
 /// An item lying at (0.5, 0, 0), within reach of a picker at the origin.
 fn ground_item(instance_id: u64, item_def_id: &str, quantity: u32) -> GroundItem {
@@ -70,7 +71,9 @@ async fn chest_coins_are_reserved_before_any_wallet_is_credited() {
     assert_eq!(game.get_player_gold(&pid("rival")).await, 0);
     assert!(game.ground_items.read().await.contains_key(&42));
     game.pickup_nearby_items(&pid("opener")).await;
-    assert!((1..=10).contains(&game.get_player_gold(&pid("opener")).await));
+    assert!(is_coin_pile_payout(
+        game.get_player_gold(&pid("opener")).await
+    ));
     assert!(game.ground_items.read().await.is_empty());
 }
 
@@ -173,7 +176,9 @@ async fn nearby_pickup_reaches_across_the_world_seam() {
     game.spawn_ground_item(item).await;
     game.pickup_nearby_items(&pid("picker")).await;
     assert!(game.ground_items.read().await.is_empty());
-    assert!((1..=10).contains(&game.get_player_gold(&pid("picker")).await));
+    assert!(is_coin_pile_payout(
+        game.get_player_gold(&pid("picker")).await
+    ));
 }
 
 #[tokio::test]
@@ -189,7 +194,7 @@ async fn coin_pickup_records_only_the_successful_payout() {
     tokio::join!(game.pickup_item(&picker, 42), game.pickup_item(&rival, 42));
     game.pickup_item(&picker, 42).await;
     let gold = game.get_player_gold(&picker).await + game.get_player_gold(&rival).await;
-    assert!((1..=10).contains(&gold));
+    assert!(is_coin_pile_payout(gold));
     assert_gold_production(&game, GoldSource::CoinPile, 1, gold).await;
 }
 

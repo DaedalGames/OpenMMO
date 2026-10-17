@@ -119,6 +119,7 @@
   "inventory.sort.light": "最輕",
   "inventory.sort.name": "名稱",
   "inventory.sort.recent": "最新",
+  "inventory.sort.oldest": "最早",
   "inventory.lockItem": "鎖定{{item}}",
   "inventory.unlockItem": "解鎖{{item}}",
   "inventory.unlockTitle": "解鎖物品？",

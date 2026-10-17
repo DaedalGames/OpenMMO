@@ -119,6 +119,7 @@
   "inventory.sort.light": "軽い順",
   "inventory.sort.name": "名前順",
   "inventory.sort.recent": "新しい順",
+  "inventory.sort.oldest": "古い順",
   "inventory.lockItem": "{{item}}をロック",
   "inventory.unlockItem": "{{item}}のロックを解除",
   "inventory.unlockTitle": "アイテムのロックを解除しますか？",

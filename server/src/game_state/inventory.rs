@@ -7,6 +7,7 @@ use onlinerpg_shared::inventory::{
 };
 use onlinerpg_shared::messages::BagLineItem;
 use rand::Rng;
+use std::ops::RangeInclusive;
 use tracing::{info, warn};
 
 use super::party::SummonCast;
@@ -20,6 +21,10 @@ const GROUND_ITEM_LIFETIME_MS: u64 = 30 * 60 * 1000;
 const MAX_PICKUP_DISTANCE: f32 = 2.5;
 const NEARBY_PICKUP_DISTANCE: f32 = 2.0;
 const CHEST_LOOT_RESERVATION_MS: u64 = 30_000;
+const COIN_PILE_COPPER: RangeInclusive<i64> = 1..=10;
+/// A rare pile worth about 1g, so breaking props is worth a gamble.
+const COIN_PILE_JACKPOT_COPPER: RangeInclusive<i64> = 5_000..=15_000;
+const COIN_PILE_JACKPOT_CHANCE: f64 = 0.03;
 
 pub(super) const PLACEMENT_DISTANCE_M: f32 = 1.0;
 pub(super) const LOCKED_ITEM_MESSAGE: &str = "Unlock this item before dropping or trading it.";
@@ -89,6 +94,19 @@ fn enchant_success_bp(enchant: i32) -> u32 {
 /// armor fills six slots to a weapon's one (doc/ENCHANT.md).
 fn armor_enchant_success_bp(enchant: i32) -> u32 {
     enchant_success_bp(enchant.saturating_add(2))
+}
+
+fn roll_coin_pile_copper(rng: &mut impl Rng) -> i64 {
+    if rng.gen_bool(COIN_PILE_JACKPOT_CHANCE) {
+        rng.gen_range(COIN_PILE_JACKPOT_COPPER)
+    } else {
+        rng.gen_range(COIN_PILE_COPPER)
+    }
+}
+
+#[cfg(test)]
+pub(super) fn is_coin_pile_payout(copper: i64) -> bool {
+    COIN_PILE_COPPER.contains(&copper) || COIN_PILE_JACKPOT_COPPER.contains(&copper)
 }
 
 /// A client-supplied cloth colour as `#rrggbb`, lowercased so the change
@@ -2497,7 +2515,7 @@ impl super::GameState {
         true
     }
 
-    /// Claim a coin pile and credit 1–10 copper without taking bag space.
+    /// Claim a coin pile and credit its rolled copper without taking bag space.
     async fn pickup_coin_pile(
         &self,
         player_id: &PlayerId,
@@ -2527,7 +2545,7 @@ impl super::GameState {
             }
         }
 
-        let copper: i64 = rand::thread_rng().gen_range(1..=10);
+        let copper = roll_coin_pile_copper(&mut rand::thread_rng());
         self.award_copper(player_id, copper).await;
         self.record_gold_source(crate::metrics::GoldSource::CoinPile, 1, copper)
             .await;
@@ -2633,6 +2651,19 @@ impl super::GameState {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::{rngs::StdRng, SeedableRng};
+
+    #[test]
+    fn coin_piles_rarely_pay_about_a_gold() {
+        let mut rng = StdRng::seed_from_u64(7);
+        let mut jackpots = 0;
+        for _ in 0..20_000 {
+            let copper = roll_coin_pile_copper(&mut rng);
+            assert!(is_coin_pile_payout(copper), "{copper}");
+            jackpots += usize::from(COIN_PILE_JACKPOT_COPPER.contains(&copper));
+        }
+        assert!((480..=720).contains(&jackpots), "{jackpots} jackpots");
+    }
 
     #[test]
     fn enchant_success_ladder_halves_past_seven_with_one_percent_floor() {

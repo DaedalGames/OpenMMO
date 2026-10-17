@@ -104,6 +104,8 @@ function compareByMode(
       )
     case 'recent':
       return b.newest - a.newest
+    case 'oldest':
+      return a.newest - b.newest
     case 'category':
       return 0
   }

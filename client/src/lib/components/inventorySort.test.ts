@@ -198,6 +198,10 @@ describe('sortBag modes', () => {
     ])
   })
 
+  it('puts the oldest pickup first', () => {
+    expect(ids('oldest')).toEqual([...ids('recent')].reverse())
+  })
+
   it('keeps the first instance as the merged stack id', () => {
     expect(
       sortBag(bag, 'recent').find((item) => item.item_def_id === 'apple')
