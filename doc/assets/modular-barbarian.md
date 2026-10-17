@@ -65,7 +65,16 @@
 
 ```sh
 blender -b --python-exit-code 1 -P tools/blender-scripts/export_barbarian_items.py
+blender -b --python-exit-code 1 -P tools/blender-scripts/rerender_item_icon.py -- \
+  --name barbarian_bracers --category armor --icon-rotation -65 -8 -12 --exposure -1.2 --keep-side +x
+blender -b --python-exit-code 1 -P tools/blender-scripts/rerender_item_icon.py -- \
+  --name barbarian_armor --category armor --turn 40 --icon-rotation -65 0 0 --exposure -0.6
 ```
+
+2026-10-17 아이콘 두 개를 다시 렌더했다. 손목 보호대는 한쪽(+X)만 크게 보이게 했고,
+견갑은 정면 위쪽 각도에서 금속이 어둡게 뭉개져 보여서 은색 바깥면이 보이는
+3/4 각도와 밝은 노출로 바꿨다. 첫 명령이 두 아이콘을 예전 구도로 덮어쓰므로
+나머지 두 명령을 이어서 실행한다.
 
 ## 착용 모습
 
