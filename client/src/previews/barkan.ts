@@ -9,7 +9,6 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 import { disposeObjects } from './dispose-objects'
 import { getMonsterDef, parseWeaponRotation } from '../lib/data/monsterDefs'
 import { withBarkanRuneGrip } from '../lib/utils/barkanRuneGrip'
-import { withBarkanAttackFollowThrough } from '../lib/utils/barkanAttack'
 import {
   BARKAN_RUNE_SLASH,
   createBarkanRuneSlash,
@@ -293,7 +292,7 @@ export async function showBarkan(
   let paused = false
   const clips = new Map(gltf.animations.map((clip) => [clip.name, clip]))
   const attack = combat.animations.find((clip) => clip.name === 'Attack')
-  if (attack) clips.set('Attack', withBarkanAttackFollowThrough(attack))
+  if (attack) clips.set('Attack', attack)
   status.textContent = '플레이어의 검 들기와 슬래시 1을 바르칸에 맞추는 중…'
   const [[enchant], [slash]] = await Promise.all([
     retargetAnimationsForCharacterModel(

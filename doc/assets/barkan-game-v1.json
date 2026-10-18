@@ -581,14 +581,31 @@
     },
     {
       "name": "Attack",
-      "frames": 31,
-      "duration": 1.25,
-      "min_ground_m": -2.942979335784912e-07,
-      "max_ground_m": 3.241002559661865e-07,
-      "max_height_m": 2.9035282135009766,
+      "frames": 38,
+      "duration": 1.5416666666666667,
+      "source_duration": 1.25,
+      "follow_through": {
+        "start": 0.66,
+        "slow_start": 0.7,
+        "slow_full": 0.82,
+        "slow_end": 1.1,
+        "resume": 1.35,
+        "slow_rate": 0.4,
+        "twist_peak": 1.02,
+        "twist_hold": 1.12,
+        "twists": {
+          "Spine": 17,
+          "Spine1": 15,
+          "Spine2": 13,
+          "Neck": -18
+        }
+      },
+      "min_ground_m": -1.9744038581848145e-07,
+      "max_ground_m": 1.601874828338623e-07,
+      "max_height_m": 2.9086647033691406,
       "root_translation_ratio": 1.0613838481697038,
       "root_translation_scale_basis": "summed upper/lower leg lengths; independent of source origin",
-      "lateral_root_span_m": 0.11233741417527199,
+      "lateral_root_span_m": 0.11133262142539024,
       "source": "assets/monsters/skeleton_knight/fbx/Attack.fbx",
       "source_sha256": "9edc062273a5850c1fcdc10aabd5d0a1d893c1fad78b7fd78a94e0d56c425166"
     },
@@ -623,7 +640,7 @@
       1.0
     ]
   },
-  "output_sha256": "ec245fe78c840b4c55ab31c11c14828d6856271d152c6a93643201a72128643a",
+  "output_sha256": "503c7c8a936183ffb091dcb4bb1b0de7a25f117ba1c0d6b4fb0cffa385bdb979",
   "idle_retargeting": {
     "animation": "Orc Idle",
     "provider": "Adobe Mixamo",

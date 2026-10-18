@@ -16,6 +16,10 @@ spec = importlib.util.spec_from_file_location('wing_io', ROOT / 'tools/blender-s
 wing_io = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(wing_io)
 FPS = 24
+FOLLOW_THROUGH = {
+    'start': .66, 'slow_start': .7, 'slow_full': .82, 'slow_end': 1.1, 'resume': 1.35, 'slow_rate': .4,
+    'twist_peak': 1.02, 'twist_hold': 1.12, 'twists': {'Spine': 17, 'Spine1': 15, 'Spine2': 13, 'Neck': -18},
+}
 
 
 def clear_pose(rig):
@@ -42,7 +46,7 @@ def world_bounds(mesh):
     return points.min(0), points.max(0)
 
 
-def load_motion(path, names):
+def load_motion(path, names, retime=None):
     before = set(bpy.data.objects)
     before_actions = set(bpy.data.actions)
     bpy.ops.import_scene.fbx(filepath=str(path))
@@ -55,9 +59,10 @@ def load_motion(path, names):
     source_fps = bpy.context.scene.render.fps / bpy.context.scene.render.fps_base
     duration = (end - start) / source_fps
     count = round(duration * FPS)
+    times = retime(duration) if retime else [duration * index / count for index in range(count + 1)]
     frames = []
-    for index in range(count + 1):
-        frame = start + (end - start) * index / count
+    for time in times:
+        frame = start + (end - start) * time / duration
         bpy.context.scene.frame_set(int(frame), subframe=frame % 1)
         frames.append({name: source.matrix_world @ source.pose.bones[actual].matrix for name, actual in mapping.items()})
     for obj in imported:
@@ -65,6 +70,43 @@ def load_motion(path, names):
     for action in set(bpy.data.actions) - before_actions:
         bpy.data.actions.remove(action)
     return rest, frames, duration
+
+
+def smoothstep(value, low, high, smoother=False):
+    t = min(max((value - low) / (high - low), 0), 1)
+    return t * t * t * (t * (t * 6 - 15) + 10) if smoother else t * t * (3 - 2 * t)
+
+
+def follow_through_source_time(time):
+    f = FOLLOW_THROUGH
+    steps = math.ceil(time * 1000)
+    source = 0
+    for step in range(steps):
+        at = (step + .5) * time / steps
+        slow = smoothstep(at, f['slow_start'], f['slow_full']) * (1 - smoothstep(at, f['slow_end'], f['resume']))
+        source += time / steps * (1 - (1 - f['slow_rate']) * slow)
+    return source
+
+
+def follow_through_times(duration):
+    frames = math.ceil(duration * FPS)
+    while follow_through_source_time(frames / FPS) < duration:
+        frames += 1
+    return [min(follow_through_source_time(index / FPS), duration) for index in range(frames + 1)]
+
+
+# The source chop bottoms out near the floor, so the extra swing turns the torso
+# about world up: the blade travels further without dropping.
+def twist_follow_through(rig, time, duration):
+    f = FOLLOW_THROUGH
+    amount = smoothstep(time, f['start'], f['twist_peak'], True) * (1 - smoothstep(time, f['twist_hold'], duration - .1, True))
+    up = (rig.matrix_world.to_3x3().inverted() @ Vector((0, 0, 1))).normalized()
+    for name, degrees in f['twists'].items():
+        bone = rig.pose.bones[name]
+        pivot = bone.head.copy()
+        turn = Matrix.Translation(pivot) @ Matrix.Rotation(math.radians(degrees) * amount, 4, up) @ Matrix.Translation(-pivot)
+        bone.matrix = turn @ bone.matrix
+        bpy.context.view_layer.update()
 
 
 def rotate_world_axis(bone, axis, angle):
@@ -76,7 +118,10 @@ def bake_motion(rig, mesh, name, path):
     rig.animation_data_create()
     rig.animation_data.action = None
     clear_pose(rig)
-    source_rest, source_frames, duration = load_motion(path, [bone.name for bone in rig.data.bones])
+    follow_through = name == 'Attack'
+    source_rest, source_frames, source_duration = load_motion(
+        path, [bone.name for bone in rig.data.bones], follow_through_times if follow_through else None)
+    duration = (len(source_frames) - 1) / FPS if follow_through else source_duration
     scene = bpy.context.scene
     scene.render.fps, scene.render.fps_base = FPS, 1
     target_rest = {bone.name: rig.matrix_world @ bone.matrix_local for bone in rig.data.bones}
@@ -118,6 +163,8 @@ def bake_motion(rig, mesh, name, path):
                 location = bone.bone.head_local + rig.matrix_world.to_3x3().inverted() @ root_motion[index]
             bone.matrix = Matrix.Translation(location) @ rotation.to_matrix().to_4x4()
             bpy.context.view_layer.update()
+        if follow_through:
+            twist_follow_through(rig, index / FPS, duration)
         phase = index / max(1, len(source_frames) - 1)
         for side, sign in [('Left', 1), ('Right', -1)]:
             angle = math.radians(2 * math.sin(phase * math.tau))
@@ -141,7 +188,8 @@ def bake_motion(rig, mesh, name, path):
             bone.keyframe_insert(data_path='rotation_quaternion', frame=index, group=bone.name)
             if bone.name == 'Hips':
                 bone.keyframe_insert(data_path='location', frame=index, group=bone.name)
-    return action, {'name': name, 'frames': len(source_frames), 'duration': duration,
+    extra = {'source_duration': source_duration, 'follow_through': FOLLOW_THROUGH} if follow_through else {}
+    return action, {'name': name, 'frames': len(source_frames), 'duration': duration, **extra,
                     'min_ground_m': min(minimum), 'max_ground_m': max(minimum),
                     'max_height_m': max(maximum), 'root_translation_ratio': factor,
                     'root_translation_scale_basis': 'summed upper/lower leg lengths; independent of source origin',

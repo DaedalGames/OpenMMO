@@ -27,7 +27,6 @@
 
   import type { MonsterData } from '../types/Monster'
   import { withBarkanRuneGrip } from '../utils/barkanRuneGrip'
-  import { withBarkanAttackFollowThrough } from '../utils/barkanAttack'
   import {
     attackClipNames,
     getMonsterDef,
@@ -110,7 +109,7 @@
     return clip &&
       initialDef?.id === 'barkan' &&
       initialDef.weapon === 'weapons/rune_blade.glb'
-      ? withBarkanRuneGrip(withBarkanAttackFollowThrough(clip))
+      ? withBarkanRuneGrip(clip)
       : clip
   }
 
