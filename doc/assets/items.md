@@ -260,7 +260,8 @@
 
 ## Rune Blade
 
-- `rune_blade`(가칭) 원화, 2026-10-18. 바르칸의 양손 대검이자 티어 5 드롭 무기다([아이템 티어](../ITEM_TIERS.md)).
+- `rune_blade` 원화, 2026-10-18. 바르칸의 양손 대검이자 티어 5 드롭 무기다([아이템 티어](../ITEM_TIERS.md)).
+  `rune_blade`: great_sword 타입·2d10·무게 7·50,000·티어 5 상자 20%·hands=2.
   - 원화 `assets/items/rune_blade/concepts/rune-blade.png`, 1536×1024: OpenAI Codex built-in ImageGen,
     **ChatGPT Pro 20x**, 2026-10-18. OpenAI 생성 출력물 이용 조건 적용.
     [프롬프트·해시](../../assets/items/rune_blade/concepts/generation.json).

@@ -128,6 +128,14 @@ impl MonsterDefinition {
             .clone()
             .unwrap_or_else(|| combat::monster_damage_roll_for_level(self.level).to_string())
     }
+
+    /// A csv `damageRoll` is the monster's own and holds at any depth; only
+    /// the level-based default follows depth.
+    pub fn damage_roll_at(&self, level: u8) -> String {
+        self.damage_roll
+            .clone()
+            .unwrap_or_else(|| combat::monster_damage_roll_for_level(level).to_string())
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -215,6 +223,20 @@ mod tests {
             tuned.attack_bonus_at(8),
             hobgoblin.attack_bonus_at(8) + 2,
             "the override survives the scaling"
+        );
+    }
+
+    #[test]
+    fn depth_scaling_keeps_a_hand_tuned_damage_roll() {
+        let defs = MonsterDefs::load();
+        let gnoll = defs.get("gnoll").expect("gnoll def");
+        assert_eq!(gnoll.damage_roll_at(20), "2d6");
+
+        let kobold = defs.get("kobold").expect("kobold def");
+        assert_eq!(kobold.damage_roll_at(kobold.level), kobold.damage_roll());
+        assert_eq!(
+            kobold.damage_roll_at(9),
+            combat::monster_damage_roll_for_level(9)
         );
     }
 }

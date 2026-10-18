@@ -8,9 +8,9 @@ async fn skeleton_crypt_early_floors_spawn_weaker_skeletons() {
     let regular = game_state.monster_defs.get("skeleton").unwrap();
     assert_eq!(weak.model, regular.model);
     assert_eq!(weak.guard, 14);
-    assert_eq!(weak.damage_roll(), "3d6");
+    assert_eq!(weak.damage_roll(), "2d6");
     assert_eq!(regular.guard, 20);
-    assert_eq!(regular.damage_roll(), "6d8");
+    assert_eq!(regular.damage_roll(), "3d6");
     for (depth, expected_type, expected_level, expected_health) in [
         (1, "skeleton_weak", 8, 40),
         (5, "skeleton_weak", 8, 40),

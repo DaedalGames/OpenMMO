@@ -12,7 +12,7 @@
 | 2 | Orc Warrens | 가죽 세트 완성 (몸통·장갑·부츠) + 체인 세트 일부 (철 부츠·철 투구) + iron_sword | 운영 중 |
 | 3 | Ogre Stronghold (15층, ogre_boss) | 체인 세트 완성 (체인 메일·건틀릿) + 판금 세트 일부 (부츠·그리브) + 기본 망토 + steel_longsword | 운영 중 |
 | 4 | Skeleton Crypt (20층, skeleton_knight) | 판금 세트 완성 (흉갑·투구·건틀릿) + great_sword | 구현 완료·운영 배포 대기 |
-| 5 | Sundered Bastion (25층, barkan) · [필드 레이드 연계 설계](TIER5_FIELD_RAID.md) | ring_of_protection + rune_blade + 대지의 아뮬렛 (가칭) | 던전 본체 구현, 아뮬렛·rune_blade 미구현 |
+| 5 | Sundered Bastion (25층, barkan) · [필드 레이드 연계 설계](TIER5_FIELD_RAID.md) | ring_of_protection + rune_blade + 대지의 아뮬렛 (가칭) | 던전 본체·rune_blade 구현, 아뮬렛 미구현 |
 
 특수 망토(투명·보호 등)·셔츠·amulet_of_life_saving·ring_of_regeneration은 던전 풀에 넣지 않는다 — **월드 드랍 전용 희소템**으로 유저 간 거래의 축을 만든다 (아래 참조).
 
@@ -160,7 +160,7 @@ amulet_of_life_saving·ring_of_regeneration은 성능이 강력해 확정 파밍
 | 2 | iron_sword | 1d8 | 10,000 | Orc Warrens 상자 확정, 월드 드랍 0.5% (상점 비판매) | 있음 |
 | 3 | steel_longsword | 1d10 | 16,000 | 티어 3 던전 무장 몬스터 + Ogre Stronghold 상자 확정 | 있음. 일반 오거는 아직 greatclub(600c) 10% |
 | 4 | great_sword | 2d8 | 28,000 | 티어 4 던전 무장 몬스터 + 상자 확정 | 모델·아이콘 등록; 양손무기; 던전 미구현 |
-| 5 | rune_blade (가칭) | 2d8 | 50,000 | 티어 5 보스 20% 롤 (ring_of_protection과 동일 철학) | **신규 애셋 필요** |
+| 5 | rune_blade | 2d10 | 50,000 | 티어 5 상자 20% 롤 (ring_of_protection과 동일 철학) | 있음. 양손무기, 바르칸도 들고 싸운다 |
 
 - basePrice는 평균 피해당 가격이 방어구의 guard당 가격 곡선과 나란히 오르도록 책정 (2,200 → 2,900 → 4,000 → 5,600/pt).
 - 몬스터가 드랍하는 환금 무기는 **무게당 가격을 동일하게** (티어 1은 1,000c/kg: small_sword 1,500/w1.5, goblin_sword 2,000/w2) — 인벤토리가 무게로 차므로 무게당 가격이 다르면 그 무기를 주는 몬스터만 파밍하게 된다. dagger(2,500/w1)는 드랍 없는 상점 전용이라 예외.
@@ -180,7 +180,7 @@ amulet_of_life_saving·ring_of_regeneration은 성능이 강력해 확정 파밍
 
 ## 남은 작업
 
-1. 신규 애셋: 특수 망토, 셔츠, 장신구 아이콘 2종(life_saving·regeneration), 무기 rune_blade(가칭); steel_longsword·great_sword 애셋은 등록 완료. Meshy/ChatGPT 생성, `doc/assets/items.md`에 기록. 망토는 프로시저럴이라 3D 애셋이 필요 없다 — 새 망토는 items.csv 행 + 아이콘이면 된다.
+1. 신규 애셋: 특수 망토, 셔츠, 장신구 아이콘 2종(life_saving·regeneration), steel_longsword·great_sword·rune_blade 애셋은 등록 완료. Meshy/ChatGPT 생성, `doc/assets/items.md`에 기록. 망토는 프로시저럴이라 3D 애셋이 필요 없다 — 새 망토는 items.csv 행 + 아이콘이면 된다.
 2. ~~back 슬롯 캐릭터 부착 렌더링~~ 완료 (2026-08-17). shirt 칸은 해당 아이템 등장 시 추가.
 3. 특수 망토·장신구 효과 시스템 — 투명은 서버 측 가시성 처리, 사망 방지·재생은 서버 전투 로직.
 4. **유저 간 거래 시스템.** 현재 `trading.rs`는 NPC 상인뿐, P2P 거래 미구현 — 월드 드랍 희소템 컨셉의 전제.

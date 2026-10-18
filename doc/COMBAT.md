@@ -530,7 +530,7 @@ NetHack의 AC를 반전시킨 방어 수치이자 명중 목표값. **높을수�
 | `level` | u8 | 몬스터 레벨 (기본 HP/명중/피해/XP 계산에 사용) |
 | `guard` | u8 | 명중 목표값. 높을수록 맞히기 어렵고, 10 초과분은 XP 보너스에 영향 |
 | `attackBonus` | i32? | 몬스터 명중 보너스 override. 비우면 `level / 2` |
-| `damageRoll` | string? | 대미지 주사위 override. 비우면 레벨 기반 기본값 |
+| `damageRoll` | string? | 대미지 주사위 override. 던전 깊이와 무관하게 이 값을 쓴다. 비우면 레벨 기반 기본값(던전에서는 깊이로 오른 레벨 기준) |
 | `behavior` | string | 몬스터 행동 트리 이름 (`data-src/behavior_trees.json`, 없으면 `brave` 사용) |
 | `attackRange` | f32 | 근접 공격 가능 거리 |
 | `chaseRange` | f32 | 플레이어 추적 시작 거리 |

@@ -1273,15 +1273,16 @@ impl super::GameState {
                         let weapon_damage_roll = def
                             .and_then(|d| d.weapon.as_deref())
                             .and_then(|weapon| self.item_defs.damage_dice_for_weapon_model(weapon));
-                        // Depth-scaled dungeon monsters attack at their
-                        // effective level (bonus + damage dice).
                         let (attack_bonus, damage_roll) = match monster.level_override {
                             Some(level) => (
                                 def.map_or_else(
                                     || combat::monster_attack_bonus(level),
                                     |d| d.attack_bonus_at(level),
                                 ),
-                                combat::monster_damage_roll_for_level(level).to_string(),
+                                def.map_or_else(
+                                    || combat::monster_damage_roll_for_level(level).to_string(),
+                                    |d| d.damage_roll_at(level),
+                                ),
                             ),
                             None => (
                                 def.map(|d| d.attack_bonus())
