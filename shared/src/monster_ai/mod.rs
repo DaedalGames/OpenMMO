@@ -15,6 +15,7 @@ mod brain;
 mod command;
 mod movement;
 mod path;
+mod skill;
 mod tree;
 
 #[cfg(test)]
@@ -23,6 +24,7 @@ mod tests;
 pub use brain::MonsterBrain;
 pub use command::{AiCommand, AiState, ChaseAim, NearbyMonster, NearbyPlayer};
 pub use path::{CachePathProvider, PathProvider};
+pub use skill::{skill_by_id, skill_for, MonsterSkill, MonsterSkillId, RUNE_SLASH};
 pub use tree::{behavior_tree_for, load_behavior_trees, BehaviorNode, BehaviorTree};
 
 /// Attack clip length per monster type, in ms, measured from the models by

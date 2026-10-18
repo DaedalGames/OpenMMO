@@ -1,6 +1,7 @@
 //! Behavior input/output types: the internal [`AiState`], the [`NearbyPlayer`]
 //! projection fed into each tick, and [`AiCommand`] outputs.
 
+use super::MonsterSkillId;
 use crate::{MonsterState, PlayerId, Position};
 use serde::{Deserialize, Serialize};
 
@@ -100,5 +101,16 @@ pub enum AiCommand {
     },
     Attack {
         target_player_id: PlayerId,
+    },
+    /// A skill wound up facing `rotation`; viewers play it from now.
+    CastSkill {
+        skill: MonsterSkillId,
+        rotation: f32,
+    },
+    /// The cast's damage moment, from where it was cast.
+    SkillStrike {
+        skill: MonsterSkillId,
+        position: Position,
+        rotation: f32,
     },
 }

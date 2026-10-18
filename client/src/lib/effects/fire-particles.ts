@@ -7,7 +7,7 @@ type N = any
 
 const PARTICLE_OPACITY_ATTR = 'aFireOpacity'
 
-interface FireParticle {
+export interface FireParticle {
   alive: boolean
   age: number
   maxAge: number
@@ -22,7 +22,7 @@ interface FireParticle {
 }
 
 /** Per-source tuning; `spawn` fills in position/velocity/lifetime fields. */
-interface FireTuning {
+export interface FireTuning {
   maxParticles: number
   spawnRate: number
   particleSize: number
@@ -152,7 +152,8 @@ export class FireParticles {
     const dt = Math.min(deltaTime, 0.1)
 
     // Spawn new particles
-    this.spawnAccumulator += dt
+    this.spawnAccumulator =
+      this.tuning.spawnRate > 0 ? this.spawnAccumulator + dt : 0
     const spawnInterval = 1 / this.tuning.spawnRate
     while (this.spawnAccumulator >= spawnInterval) {
       this.spawnAccumulator -= spawnInterval

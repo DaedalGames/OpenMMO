@@ -5,7 +5,9 @@ import { BARKAN_RUNE_SLASH } from '../utils/barkanRuneSlash'
 export function createBarkanRuneSlashEffect(
   model: THREE.Object3D,
   weapon: THREE.Object3D,
-  clip: THREE.AnimationClip
+  clip: THREE.AnimationClip,
+  // The game skips the light: a new light recompiles every lit material.
+  { light: withLight = true, bounds: withBounds = true } = {}
 ) {
   const materials: {
     material: THREE.MeshStandardMaterial
@@ -24,14 +26,15 @@ export function createBarkanRuneSlashEffect(
   })
   const light = new THREE.PointLight('#ff7c24', 0, 3, 2)
   light.position.set(0.8, 0, 0)
-  weapon.add(light)
+  if (withLight) weapon.add(light)
   const ghost = clone(model)
   const ghostWeapon = ghost.getObjectByName(weapon.name)!
   const mixer = new THREE.AnimationMixer(ghost)
   const action = mixer.clipAction(clip).setLoop(THREE.LoopOnce, 1).play()
   action.clampWhenFinished = true
+  // Only the preview frames its camera on the swing.
   const bounds = new THREE.Box3()
-  for (let index = 0; index <= 60; index++) {
+  for (let index = 0; withBounds && index <= 60; index++) {
     mixer.setTime((clip.duration * index) / 60)
     ghost.updateMatrixWorld(true)
     bounds.union(new THREE.Box3().setFromObject(ghostWeapon, true))

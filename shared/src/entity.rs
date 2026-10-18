@@ -114,6 +114,9 @@ pub struct Player {
     /// damaged; `WorldReady` zeroes it early. 0 = ready.
     #[serde(skip)]
     pub ready_at: u64,
+    /// Admin `/god`: blows still land but take no health. Session only.
+    #[serde(skip)]
+    pub invulnerable: bool,
 }
 
 /// Backstop for a client that never sends `WorldReady`.
@@ -293,6 +296,7 @@ mod tests {
             client_kind: ClientKind::default(),
             mount: None,
             ready_at: 0,
+            invulnerable: false,
             back_color: None,
             back_texture: None,
             armor: Default::default(),
@@ -348,6 +352,7 @@ mod tests {
             client_kind: ClientKind::default(),
             mount: None,
             ready_at: 0,
+            invulnerable: false,
             back_color: None,
             back_texture: None,
             armor: Default::default(),

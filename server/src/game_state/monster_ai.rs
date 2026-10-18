@@ -647,7 +647,57 @@ impl super::GameState {
             AiCommand::Attack {
                 target_player_id, ..
             } => self.monster_attack(monster_id, &target_player_id).await,
+            AiCommand::CastSkill { skill, rotation } => {
+                self.publish_monster_skill(monster_id, floor_level, skill, rotation)
+                    .await
+            }
+            AiCommand::SkillStrike {
+                skill,
+                position,
+                rotation,
+            } => {
+                self.monster_skill_strike(
+                    monster_id,
+                    monster_ai::skill_by_id(skill),
+                    position,
+                    rotation,
+                )
+                .await
+            }
         }
+    }
+
+    async fn publish_monster_skill(
+        &self,
+        monster_id: &str,
+        floor_level: i8,
+        skill: monster_ai::MonsterSkillId,
+        rotation: f32,
+    ) {
+        let Some(position) = self
+            .monsters
+            .read()
+            .await
+            .get(monster_id)
+            .filter(|m| m.state != MonsterState::Dead)
+            .map(|m| m.position)
+        else {
+            return;
+        };
+        let def = monster_ai::skill_by_id(skill);
+        self.publish_nearby(
+            &position,
+            floor_level,
+            ServerMessage::MonsterSkillStarted {
+                monster_id: monster_id.to_string(),
+                skill,
+                rotation,
+                range: def.range,
+                half_angle: def.half_angle,
+            },
+            None,
+        )
+        .await;
     }
 
     #[allow(clippy::too_many_arguments)]

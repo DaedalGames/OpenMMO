@@ -147,7 +147,7 @@
     룬 블레이드 장착 시 손가락을 더 굽힌 복제 클립을 사용한다. 최종 보스 전투와 양손 전용 동작은 별도 단계다.
     이동 속도 검토용 연결이며 작업용 4096² 텍스처를 유지한다. 원본 텍스처 바이트와 기준 크기를 보존한다.
     [게임 연결 기록](barkan-game-v1.json). 게임 모델 검증은 아래 명령으로 실행한다.
-    재현: `blender -b --python-exit-code 1 --python tools/blender-scripts/animate_barkan.py -- assets/monsters/barkan/rig_v1/barkan.glb --game-output assets/monsters/barkan/game_v1/barkan.glb` → `node tools/validate-barkan-rig.mjs --game`.
+    재현: `blender -b --python-exit-code 1 --python tools/blender-scripts/animate_barkan.py -- assets/monsters/barkan/rig_v1/barkan.glb --game-output assets/monsters/barkan/game_v1/barkan.glb` → `node tools/bake-barkan-rune-slash.mjs` → `node tools/validate-barkan-rig.mjs --game`.
   - [리그·피팅 기록](barkan-rig-v1.json), [Three.js 검증 도구](../../tools/validate-barkan-rig.mjs).
     개발 서버의 `/modular-character-preview.html?character=barkan`에서 기준 자세·대기·걷기·날개 접기를 확인한다.
   - 룬 검격 시각 초안(2026-10-18): 미리보기의 `RuneSlash`에서 플레이어의
@@ -168,7 +168,13 @@
     실제 검 궤적에 맞춘 주황 잔상과 조명을 더한다. 일시정지·프레임 이동에도 효과 시간을 맞춘다.
     기존 Mixamo·Tripo 출처와 이용 조건을 유지한 로컬 코드 제작이며 추가 유료 생성이나 새 이미지·모델은 없다.
     평타 선택 항목은 게임 모델의 기존 1.25초 `Attack`을 재생한다.
-    룬 검격의 게임 내 선택·전조 동기화·피해 판정은 아직 연결하지 않았다.
+    게임 연결(2026-10-18): `node tools/bake-barkan-rune-slash.mjs`가 같은 코드로 `game_v1/barkan.glb`에서 클립을 만들어
+    60fps `RuneSlash`와 `RightHand` 아래 `WeaponSocket` 노드로 `client/public/models/monsters/barkan.glb`에 덧붙인다.
+    검은 게임에서 이 소켓에 달리고, 소켓의 기본 자세는 csv 파지 값이다. 텍스처는 건드리지 않는다.
+    다시 읽어 검 끝 위치가 원본 클립과 같은지 확인하고, 횡베기(2.55–2.73초, 오른쪽→왼쪽 약 170°) 측정을
+    [굽기 기록](barkan-rune-slash-bake.json)에 남긴다. 서버 판정 시각과 불꽃이 부채꼴(90°)을 지나는 시각은 이 측정에서 정했다.
+    `client/src/lib/effects/barkan-fire-fan.ts`는 횡베기부터 검을 따라 부채꼴에 번지는 불꽃을 그린다. 바닥 범위 경고는 없다.
+    로컬 코드 제작이며 추가 유료 생성은 없다.
     검증: `node tools/validate-barkan-rune-slash.mjs` — 실제 검 메시의 바닥 간격,
     검을 세운 전조, `slash1` 팔꿈치·손목 회전의 보존, 연결의 연속성과 원래 자세 복귀를 확인한다.
     연결·베기 구간은 120fps로 검의 중앙·양쪽 날과 실제 머리·몸통 메시의 교차가 없는지 검사한다.

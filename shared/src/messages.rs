@@ -1323,6 +1323,15 @@ pub enum ServerMessage {
         monster_id: String,
         request_id: u32,
     },
+    /// A telegraphed skill began; its damage arrives later as
+    /// `MonsterAttackedPlayer` for each player still in the fan.
+    MonsterSkillStarted {
+        monster_id: String,
+        skill: crate::monster_ai::MonsterSkillId,
+        rotation: f32,
+        range: f32,
+        half_angle: f32,
+    },
     MonsterAttackedPlayer {
         monster_id: String,
         player_id: PlayerId,
@@ -2021,6 +2030,7 @@ impl ServerMessage {
             | Self::DaggerDoubleSlashSkipped { .. }
             | Self::EquipmentEnchantSucceeded { .. }
             | Self::PlayerLeveledUp { .. }
+            | Self::MonsterSkillStarted { .. }
             | Self::MonsterAttackedPlayer { .. }
             | Self::PlayerInstrumentNotes { .. }
             | Self::AbilityUsed { .. } => DeliveryClass::NearbyEffect,

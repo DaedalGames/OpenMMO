@@ -397,3 +397,94 @@ async fn a_monster_blocked_from_returning_can_be_attacked_and_retaliate() {
     assert!(retaliated, "the trapped monster must fight back");
     assert!(monster_x(&game_state, &goblin).await >= 50.0);
 }
+
+#[tokio::test]
+async fn barkans_rune_slash_strikes_the_fan_in_front_after_the_windup() {
+    let game_state = make_flat_world_game_state("barkan_rune_slash");
+    let front = pid("front");
+    let side = pid("side");
+    for (name, x, z) in [
+        ("front", 0.0, 2.0),
+        ("side", 1.5, 2.0),
+        ("flank", 2.5, 0.5),
+        ("behind", 0.0, -2.5),
+    ] {
+        game_state.add_player(make_player(name, x, z)).await;
+        let mut players = game_state.players.write().await;
+        let player = players.get_mut(&pid(name)).unwrap();
+        player.health = 100_000;
+        player.max_health = 100_000;
+        player.invulnerable = name == "front";
+    }
+    let mut rx = game_state.register_direct_channel(&front).await;
+    let barkan = game_state
+        .spawn_monster(
+            "barkan".to_string(),
+            Position {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
+            0.0,
+            0,
+            MonsterLifecycle::Ambient,
+            None,
+            true,
+        )
+        .await
+        .expect("barkan spawns")
+        .id;
+
+    let mut started = None;
+    for _ in 0..80 {
+        game_state.tick_monster_ai_by(200.0).await;
+        started = drain(&mut rx).into_iter().find_map(|m| match m {
+            ServerMessage::MonsterSkillStarted {
+                monster_id,
+                rotation,
+                ..
+            } if monster_id == barkan => Some(rotation),
+            _ => None,
+        });
+        if started.is_some() {
+            break;
+        }
+    }
+    let rotation = started.expect("barkan casts the rune slash");
+    assert!(rotation.abs() < 0.1, "faces the front player: {rotation}");
+
+    let struck = |messages: &[ServerMessage]| -> Vec<PlayerId> {
+        messages
+            .iter()
+            .filter_map(|m| match m {
+                ServerMessage::MonsterAttackedPlayer {
+                    monster_id,
+                    player_id,
+                    ..
+                } if monster_id == &barkan => Some(*player_id),
+                _ => None,
+            })
+            .collect()
+    };
+    let mut elapsed = 0.0;
+    while elapsed + 200.0 < onlinerpg_shared::monster_ai::RUNE_SLASH.strike_ms {
+        game_state.tick_monster_ai_by(200.0).await;
+        elapsed += 200.0;
+        assert!(
+            struck(&drain(&mut rx)).is_empty(),
+            "no damage at {elapsed}ms"
+        );
+    }
+    game_state.tick_monster_ai_by(200.0).await;
+    let hit: HashSet<PlayerId> = struck(&drain(&mut rx)).into_iter().collect();
+    assert_eq!(
+        hit,
+        HashSet::from([front, side]),
+        "the flank and the back stand outside the fan"
+    );
+    assert_eq!(
+        health_of(&game_state, &front).await,
+        100_000,
+        "/god takes the blow without losing health"
+    );
+}

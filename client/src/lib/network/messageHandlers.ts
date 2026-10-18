@@ -1465,6 +1465,16 @@ export function handleServerMessage(
       combatController.attackStopped(data.monster_id, data.request_id)
       break
 
+    case 'MonsterSkillStarted':
+      monsterManager.handleMonsterSkillStarted(
+        data.monster_id,
+        data.skill,
+        data.rotation,
+        data.range,
+        data.half_angle
+      )
+      break
+
     case 'MonsterAttackedPlayer': {
       const gameState = get(gameStore)
       const isCurrentPlayer = gameState.currentPlayer?.id === data.player_id

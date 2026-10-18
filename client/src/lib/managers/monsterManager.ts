@@ -26,6 +26,7 @@ import {
   playSwordMissSound,
 } from './sfxManager'
 import { clearXpArrival, releaseXpArrival } from './xpArrival'
+import { MONSTER_SKILLS } from '../effects/monster-skills'
 import {
   shortestWrappedDeltaX,
   unwrapWorldXNear,
@@ -324,6 +325,35 @@ class MonsterManager {
     this.monsters.set(monsterId, { ...monster })
   }
 
+  handleMonsterSkillStarted(
+    monsterId: string,
+    skill: string,
+    rotation: number,
+    range: number,
+    halfAngle: number
+  ) {
+    const monster = this.monsters.get(monsterId)
+    if (!monster || monster.state === 'dead' || !MONSTER_SKILLS[skill]) return
+    this.applyMonsterPose(monster, { rotation, state: 'attack' })
+    monster.skill = {
+      id: skill,
+      counter: (monster.skill?.counter ?? 0) + 1,
+      startedAt: globalThis.performance?.now() ?? Date.now(),
+      rotation,
+      range,
+      halfAngle,
+    }
+    this.monsters.set(monsterId, { ...monster })
+  }
+
+  /** A cast owns the pose: its strikes start no swing and cause no flinch. */
+  isCasting(monster: MonsterData) {
+    const skill = monster.skill
+    if (!skill || monster.state === 'dead') return false
+    const now = globalThis.performance?.now() ?? Date.now()
+    return now - skill.startedAt < MONSTER_SKILLS[skill.id].durationMs
+  }
+
   // Facing is the client's call: the server's rotation lags the target.
   handleMonsterAttackStarted(
     monsterId: string,
@@ -331,7 +361,7 @@ class MonsterManager {
     target?: { x: number; z: number }
   ) {
     const monster = this.monsters.get(monsterId)
-    if (!monster || monster.state === 'dead') return
+    if (!monster || monster.state === 'dead' || this.isCasting(monster)) return
 
     const now = globalThis.performance?.now() ?? Date.now()
     if (
@@ -357,6 +387,7 @@ class MonsterManager {
   getMonsterAttackDamageTextDelayMs(monsterId: string) {
     const monster = this.monsters.get(monsterId)
     if (!monster) return DEFAULT_MONSTER_ATTACK_IMPACT_DELAY_MS
+    if (this.isCasting(monster)) return 0
 
     const def = getMonsterDef(monster.type)
     return (
@@ -500,6 +531,10 @@ class MonsterManager {
       targetPosition?: Position
     }
   ) {
+    if (update.state === 'hit' && this.isCasting(monster)) {
+      this.playPendingSwordHitSound(monster)
+      update = { ...update, state: undefined }
+    }
     if (update.state) {
       // The frame the kill starts falling: XP held for it can ride the clip.
       const falling = update.state === 'dead' && monster.state !== 'dead'

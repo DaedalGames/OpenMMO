@@ -238,6 +238,7 @@ pub(crate) enum AdminCommand<'a> {
     Summon(&'a str),
     Goto(&'a str),
     Weather(&'a str),
+    God,
     Spawnmob {
         monster_type: &'a str,
         count: Option<&'a str>,
@@ -279,6 +280,9 @@ pub(crate) fn parse_admin_command(message: &str) -> Option<AdminCommand<'_>> {
             monster_type,
             count,
         });
+    }
+    if strip_command(message, "/god").is_some() {
+        return Some(AdminCommand::God);
     }
     if let Some(rest) = strip_command(message, "/weather") {
         return Some(AdminCommand::Weather(rest));
@@ -977,6 +981,7 @@ impl super::GameState {
             AdminCommand::Summon(name) => self.summon_command(admin_id, name).await,
             AdminCommand::Goto(name) => self.goto_command(admin_id, name).await,
             AdminCommand::Weather(args) => self.weather_command(admin_id, args),
+            AdminCommand::God => self.god_command(admin_id).await,
             AdminCommand::Spawnmob {
                 monster_type,
                 count,
@@ -1219,6 +1224,20 @@ impl super::GameState {
         )
         .await;
         Ok(format!("Summon: {canonical} is at your side."))
+    }
+
+    async fn god_command(&self, admin_id: &PlayerId) -> Result<String, String> {
+        let mut players = self.players.write().await;
+        let player = players
+            .get_mut(admin_id)
+            .ok_or_else(|| "God: you are not in the world.".to_string())?;
+        player.invulnerable = !player.invulnerable;
+        info!(admin = ?admin_id, on = player.invulnerable, "admin god mode");
+        Ok(if player.invulnerable {
+            "God: on — blows land but take no health. /god again to turn off.".to_string()
+        } else {
+            "God: off.".to_string()
+        })
     }
 
     async fn goto_command(&self, admin_id: &PlayerId, name: &str) -> Result<String, String> {

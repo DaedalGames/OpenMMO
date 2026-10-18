@@ -370,6 +370,9 @@ impl MonsterBrain {
 
         if self.attack_cooldown_left_ms <= 0.0 {
             self.attack_cooldown_left_ms = self.attack_cooldown_ms;
+            if self.try_cast(commands) {
+                return BehaviorStatus::Running;
+            }
             self.swing_left_ms = self.swing_commit_ms;
             commands.push(self.make_move_cmd());
             commands.push(AiCommand::Attack {

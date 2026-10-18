@@ -6,6 +6,7 @@ use rand::rngs::SmallRng;
 use rand::SeedableRng;
 
 mod return_tests;
+mod skill_tests;
 
 /// PathProvider that returns a straight-line path to the goal, over open ground.
 struct DirectPath;

@@ -141,6 +141,7 @@ pub(super) fn make_player(id: &str, x: f32, z: f32) -> Player {
         armor: Default::default(),
         mount: None,
         ready_at: 0,
+        invulnerable: false,
     }
 }
 

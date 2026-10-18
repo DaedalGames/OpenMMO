@@ -60,6 +60,11 @@ pub struct MonsterBrain {
     pub(super) swing_commit_ms: f32,
     /// Time left in the swing currently being delivered.
     pub(super) swing_left_ms: f32,
+    pub(super) skill: Option<&'static super::MonsterSkill>,
+    pub(super) skill_cooldown_left_ms: f32,
+    /// Time left in a cast; the brain holds its pose and facing until it ends.
+    pub(super) cast_left_ms: f32,
+    pub(super) strike_pending: bool,
     /// The free cell near the target the chase is heading to; kept while it
     /// stays free so re-slotting doesn't oscillate.
     pub(super) chase_goal_cell: Option<(i32, i32)>,
@@ -92,6 +97,7 @@ impl MonsterBrain {
         attack_cooldown_ms: f32,
     ) -> Self {
         let swing_commit_ms = super::attack_clip_ms(monster_type);
+        let skill = super::skill_for(monster_type);
         Self {
             monster_id,
             behavior,
@@ -132,6 +138,10 @@ impl MonsterBrain {
             attack_cooldown_left_ms: 0.0,
             swing_commit_ms,
             swing_left_ms: 0.0,
+            skill,
+            skill_cooldown_left_ms: skill.map_or(0.0, |skill| skill.first_cast_ms),
+            cast_left_ms: 0.0,
+            strike_pending: false,
             chase_goal_cell: None,
             occupied_cells: Vec::new(),
             cell_yield: false,
@@ -235,6 +245,45 @@ impl MonsterBrain {
         self.sync_elapsed_ms += delta_ms;
         self.attack_cooldown_left_ms = (self.attack_cooldown_left_ms - delta_ms).max(0.0);
         self.swing_left_ms = (self.swing_left_ms - delta_ms).max(0.0);
+        self.skill_cooldown_left_ms = (self.skill_cooldown_left_ms - delta_ms).max(0.0);
+        self.cast_left_ms = (self.cast_left_ms - delta_ms).max(0.0);
+    }
+
+    pub fn is_casting(&self) -> bool {
+        self.cast_left_ms > 0.0
+    }
+
+    /// Start the skill if it is ready, in place of a plain swing.
+    pub(super) fn try_cast(&mut self, commands: &mut Vec<AiCommand>) -> bool {
+        let Some(skill) = self.skill else {
+            return false;
+        };
+        if self.skill_cooldown_left_ms > 0.0 {
+            return false;
+        }
+        self.skill_cooldown_left_ms = skill.cooldown_ms;
+        self.cast_left_ms = skill.cast_ms;
+        self.strike_pending = true;
+        commands.push(self.make_move_cmd());
+        commands.push(AiCommand::CastSkill {
+            skill: skill.id,
+            rotation: self.rotation,
+        });
+        true
+    }
+
+    fn tick_cast(&mut self, commands: &mut Vec<AiCommand>) {
+        let Some(skill) = self.skill else {
+            return;
+        };
+        if self.strike_pending && skill.cast_ms - self.cast_left_ms >= skill.strike_ms {
+            self.strike_pending = false;
+            commands.push(AiCommand::SkillStrike {
+                skill: skill.id,
+                position: self.position,
+                rotation: self.rotation,
+            });
+        }
     }
 
     pub fn tick_with_behavior_tree(
@@ -273,8 +322,16 @@ impl MonsterBrain {
             self.detour_goal = None;
         }
 
+        let casting = self.is_casting();
         self.advance_timers(delta_ms);
         let mut commands = Vec::new();
+
+        if casting {
+            self.tick_cast(&mut commands);
+            if self.is_casting() {
+                return commands;
+            }
+        }
 
         if self.state == AiState::Hit {
             if self.state_timer_ms < DEFAULT_HIT_STAGGER_MS {
@@ -341,6 +398,10 @@ impl MonsterBrain {
 
         if previous_target != self.target_player_id {
             self.retry_chase();
+        }
+
+        if self.is_casting() {
+            return vec![];
         }
 
         if hit {

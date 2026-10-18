@@ -109,23 +109,6 @@ fn resolves_as_hit(roll_total: i32, attack_bonus: i32, target_guard: i32) -> boo
     roll_total + attack_bonus > target_guard
 }
 
-pub fn roll_attack_with_extra_damage_roll(
-    attack_bonus: i32,
-    target_guard: i32,
-    damage_roll: &str,
-    extra_damage_roll: Option<&str>,
-    damage_bonus: i32,
-) -> AttackResult {
-    roll_attack_with_accuracy(
-        attack_bonus,
-        target_guard,
-        damage_roll,
-        extra_damage_roll,
-        damage_bonus,
-        false,
-    )
-}
-
 pub fn roll_attack_with_accuracy(
     attack_bonus: i32,
     target_guard: i32,
@@ -172,7 +155,7 @@ mod tests {
 
     #[test]
     fn extra_damage_roll_is_added_on_hit() {
-        let result = roll_attack_with_extra_damage_roll(20, 0, "1d1", Some("2d1"), 0);
+        let result = roll_attack_with_accuracy(20, 0, "1d1", Some("2d1"), 0, false);
 
         assert!(result.hit);
         assert_eq!(result.damage, 3);
@@ -182,7 +165,7 @@ mod tests {
     fn extra_damage_roll_is_ignored_on_miss() {
         // Explosions can still land, so scan for a miss.
         let miss = (0..200)
-            .map(|_| roll_attack_with_extra_damage_roll(-20, 20, "1d1", Some("2d1"), 0))
+            .map(|_| roll_attack_with_accuracy(-20, 20, "1d1", Some("2d1"), 0, false))
             .find(|result| !result.hit)
             .expect("a miss within 200 rolls");
 

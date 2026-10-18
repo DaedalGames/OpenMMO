@@ -183,6 +183,10 @@ const COMMANDS: Record<string, Command> = {
     desc: 'command.help.spawnmob',
     admin: true,
   },
+  '/god': {
+    desc: 'command.help.god',
+    admin: true,
+  },
   '/notice': {
     desc: 'command.help.notice',
     admin: true,

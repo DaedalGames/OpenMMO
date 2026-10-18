@@ -60,5 +60,6 @@ pub fn new_player(
         back_color: None,
         mount: None,
         ready_at: crate::game_state::GameState::now_ms() + WORLD_LOADING_GRACE_MS,
+        invulnerable: false,
     }
 }

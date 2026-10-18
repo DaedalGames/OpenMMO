@@ -93,6 +93,27 @@ fn dropped_weapon_position(monster_position: Position) -> Position {
     offset_position_at_angle(monster_position, angle, WEAPON_DROP_OFFSET_METERS)
 }
 
+struct MonsterAttackSnapshot {
+    attack_bonus: i32,
+    damage_roll: String,
+    weapon_damage_roll: Option<String>,
+    position: Position,
+    floor_level: i8,
+    attack_range: f32,
+    hit_debuff: Option<String>,
+    monster_type: String,
+}
+
+#[derive(Clone, Copy)]
+enum MonsterReach<'a> {
+    Melee(f32),
+    Fan {
+        skill: &'a onlinerpg_shared::monster_ai::MonsterSkill,
+        origin: Position,
+        rotation: f32,
+    },
+}
+
 /// Squared XZ distance between two participants, or `None` when they sit on
 /// different floors or a position is non-finite. Attack and trade paths gate on
 /// this before applying their own reach: floors are stacked (a dungeon depth
@@ -1242,17 +1263,45 @@ impl super::GameState {
         }
     }
 
-    pub(super) async fn monster_attack(&self, monster_id: &str, target_player_id: &PlayerId) {
-        struct MonsterAttackSnapshot {
-            attack_bonus: i32,
-            damage_roll: String,
-            weapon_damage_roll: Option<String>,
-            position: Position,
-            floor_level: i8,
-            attack_range: f32,
-            hit_debuff: Option<String>,
-            monster_type: String,
+    /// A swing's roll inputs, read under the monster lock.
+    fn monster_attack_snapshot(&self, monster: &crate::types::Monster) -> MonsterAttackSnapshot {
+        let def = self.monster_defs.get(&monster.monster_type);
+        let weapon_damage_roll = def
+            .and_then(|d| d.weapon.as_deref())
+            .and_then(|weapon| self.item_defs.damage_dice_for_weapon_model(weapon));
+        let (attack_bonus, damage_roll) = match monster.level_override {
+            Some(level) => (
+                def.map_or_else(
+                    || combat::monster_attack_bonus(level),
+                    |d| d.attack_bonus_at(level),
+                ),
+                def.map_or_else(
+                    || combat::monster_damage_roll_for_level(level).to_string(),
+                    |d| d.damage_roll_at(level),
+                ),
+            ),
+            None => (
+                def.map(|d| d.attack_bonus())
+                    .unwrap_or_else(|| combat::monster_attack_bonus(1)),
+                def.map(|d| d.damage_roll())
+                    .unwrap_or_else(|| "1d6".to_string()),
+            ),
+        };
+        MonsterAttackSnapshot {
+            attack_bonus,
+            damage_roll,
+            weapon_damage_roll,
+            position: monster.position,
+            floor_level: monster.floor_level,
+            attack_range: def
+                .map(|d| d.attack_range)
+                .unwrap_or(onlinerpg_shared::monster_ai::DEFAULT_ATTACK_RANGE),
+            hit_debuff: def.and_then(|d| d.hit_debuff.clone()),
+            monster_type: monster.monster_type.clone(),
         }
+    }
+
+    pub(super) async fn monster_attack(&self, monster_id: &str, target_player_id: &PlayerId) {
         let now = Self::now_ms();
         let mut monster_data = None;
         let mut audit = self.combat_audit.attack(*target_player_id);
@@ -1264,64 +1313,79 @@ impl super::GameState {
                 audit.reason = "dead";
                 if monster.state != MonsterState::Dead {
                     audit.reason = "cooldown";
-                    let def = self.monster_defs.get(&monster.monster_type);
-                    let attack_cooldown_ms =
-                        def.map(|d| u64::from(d.attack_cooldown)).unwrap_or(1500);
+                    let attack_cooldown_ms = self
+                        .monster_defs
+                        .get(&monster.monster_type)
+                        .map(|d| u64::from(d.attack_cooldown))
+                        .unwrap_or(1500);
 
                     if now.saturating_sub(monster.last_attack_at) >= attack_cooldown_ms {
                         monster.last_attack_at = now;
-                        let weapon_damage_roll = def
-                            .and_then(|d| d.weapon.as_deref())
-                            .and_then(|weapon| self.item_defs.damage_dice_for_weapon_model(weapon));
-                        let (attack_bonus, damage_roll) = match monster.level_override {
-                            Some(level) => (
-                                def.map_or_else(
-                                    || combat::monster_attack_bonus(level),
-                                    |d| d.attack_bonus_at(level),
-                                ),
-                                def.map_or_else(
-                                    || combat::monster_damage_roll_for_level(level).to_string(),
-                                    |d| d.damage_roll_at(level),
-                                ),
-                            ),
-                            None => (
-                                def.map(|d| d.attack_bonus())
-                                    .unwrap_or_else(|| combat::monster_attack_bonus(1)),
-                                def.map(|d| d.damage_roll())
-                                    .unwrap_or_else(|| "1d6".to_string()),
-                            ),
-                        };
-                        monster_data = Some(MonsterAttackSnapshot {
-                            attack_bonus,
-                            damage_roll,
-                            weapon_damage_roll,
-                            position: monster.position,
-                            floor_level: monster.floor_level,
-                            attack_range: def
-                                .map(|d| d.attack_range)
-                                .unwrap_or(onlinerpg_shared::monster_ai::DEFAULT_ATTACK_RANGE),
-                            hit_debuff: def.and_then(|d| d.hit_debuff.clone()),
-                            monster_type: monster.monster_type.clone(),
-                        });
+                        monster_data = Some(self.monster_attack_snapshot(monster));
                     }
                 }
             }
         }
 
-        let Some(MonsterAttackSnapshot {
-            attack_bonus,
-            damage_roll,
-            weapon_damage_roll,
-            position: monster_position,
-            floor_level: monster_floor_level,
-            attack_range: monster_attack_range,
-            hit_debuff,
-            monster_type,
-        }) = monster_data
-        else {
+        let Some(snapshot) = monster_data else {
             return;
         };
+        let reach =
+            MonsterReach::Melee(snapshot.attack_range + MONSTER_ATTACK_RANGE_TOLERANCE_METERS);
+        self.monster_hit_player(monster_id, &snapshot, target_player_id, reach, audit)
+            .await;
+    }
 
+    /// Land a cast's strike on everyone standing in its fan.
+    pub(super) async fn monster_skill_strike(
+        &self,
+        monster_id: &str,
+        skill: &onlinerpg_shared::monster_ai::MonsterSkill,
+        origin: Position,
+        rotation: f32,
+    ) {
+        let snapshot = {
+            let monsters = self.monsters.read().await;
+            match monsters.get(monster_id) {
+                Some(m) if m.state != MonsterState::Dead => self.monster_attack_snapshot(m),
+                _ => return,
+            }
+        };
+        let nearby = self
+            .players_within_position(&origin, snapshot.floor_level, skill.range, None)
+            .await;
+        let reach = MonsterReach::Fan {
+            skill,
+            origin,
+            rotation,
+        };
+        for (victim, _) in nearby {
+            let mut audit = self.combat_audit.attack(victim);
+            audit.monster(monster_id, &snapshot.monster_type);
+            self.monster_hit_player(monster_id, &snapshot, &victim, reach, audit)
+                .await;
+        }
+    }
+
+    async fn monster_hit_player(
+        &self,
+        monster_id: &str,
+        snapshot: &MonsterAttackSnapshot,
+        target_player_id: &PlayerId,
+        reach: MonsterReach<'_>,
+        mut audit: super::combat_audit::Attack<'_>,
+    ) {
+        let MonsterAttackSnapshot {
+            attack_bonus,
+            ref damage_roll,
+            ref weapon_damage_roll,
+            position: monster_position,
+            floor_level: monster_floor_level,
+            ref hit_debuff,
+            ref monster_type,
+            ..
+        } = *snapshot;
+        let now = Self::now_ms();
         audit.reason = "target_not_damageable";
         let (target_player_name, target_position, target_floor_level);
         {
@@ -1345,8 +1409,15 @@ impl super::GameState {
         ) else {
             return;
         };
-        let max_range = monster_attack_range + MONSTER_ATTACK_RANGE_TOLERANCE_METERS;
-        if distance_sq > max_range.powi(2) {
+        let in_reach = match reach {
+            MonsterReach::Melee(max_range) => distance_sq <= max_range.powi(2),
+            MonsterReach::Fan {
+                skill,
+                origin,
+                rotation,
+            } => skill.fan_contains(&origin, rotation, &target_position),
+        };
+        if !in_reach {
             audit.reason = "out_of_range";
             debug!(
                 "Rejected monster attack {:.0}m away: monster {} -> player {}",
@@ -1374,13 +1445,19 @@ impl super::GameState {
         let place_bonus =
             combat::place_attack_bonus(monster_floor_level, self.town_distance(&monster_position));
 
-        let result = combat::roll_attack_with_extra_damage_roll(
+        let (damage_multiplier, ignores_guard) = match reach {
+            MonsterReach::Melee(_) => (1, false),
+            MonsterReach::Fan { skill, .. } => (skill.damage_multiplier, skill.ignores_guard),
+        };
+        let mut result = combat::roll_attack_with_accuracy(
             attack_bonus + place_bonus,
             target_guard,
-            &damage_roll,
+            damage_roll,
             weapon_damage_roll.as_deref(),
             0,
+            ignores_guard,
         );
+        result.damage *= damage_multiplier;
 
         debug!(
             "Monster {} attacks player {}: Roll {}, Hit: {}, Damage: {}",
@@ -1403,7 +1480,7 @@ impl super::GameState {
                 player.last_combat_at = now;
                 let old_health = player.health;
 
-                if result.hit {
+                if result.hit && !player.invulnerable {
                     player.health = player.health.saturating_sub(result.damage);
                     if player.health == 0 {
                         did_die = true;
@@ -1449,8 +1526,7 @@ impl super::GameState {
 
         if result.hit && !did_die {
             if let Some(debuff_id) = hit_debuff {
-                self.inflict_debuff(target_player_id, &debuff_id, None)
-                    .await;
+                self.inflict_debuff(target_player_id, debuff_id, None).await;
             }
         }
 
@@ -1459,7 +1535,7 @@ impl super::GameState {
                 target_player_id,
                 target_position,
                 target_floor,
-                &monster_type,
+                monster_type,
             )
             .await;
         }

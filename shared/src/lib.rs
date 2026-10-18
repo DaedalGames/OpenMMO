@@ -212,7 +212,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v120: per-IP operator notices that stay until confirmed.
 /// v121: effective INT in EffectiveStatsUpdated.
 /// v122: nearby PlayerLeveledUp celebration.
-pub const PROTOCOL_VERSION: u32 = 122;
+/// v123: telegraphed monster skills (`MonsterSkillStarted`).
+pub const PROTOCOL_VERSION: u32 = 123;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from
@@ -543,6 +544,7 @@ mod tests {
             client_kind: Default::default(),
             mount: None,
             ready_at: 0,
+            invulnerable: false,
             back_color: None,
             back_texture: None,
             armor: Default::default(),

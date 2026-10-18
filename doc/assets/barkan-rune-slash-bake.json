@@ -1,0 +1,348 @@
+{
+  "source": "assets/monsters/barkan/game_v1/barkan.glb",
+  "source_sha256": "503c7c8a936183ffb091dcb4bb1b0de7a25f117ba1c0d6b4fb0cffa385bdb979",
+  "output": "client/public/models/monsters/barkan.glb",
+  "output_sha256": "6ba083505e05e76f15533d57264dd3731f274405af6392e3be5e22117e5e5e70",
+  "clip": "RuneSlash",
+  "duration_s": 4.2,
+  "fps": 60,
+  "weapon_socket": {
+    "name": "WeaponSocket",
+    "parent": "RightHand"
+  },
+  "strike_s": [
+    2.25,
+    2.78
+  ],
+  "sideways_sweep_s": [
+    2.55,
+    2.73
+  ],
+  "roundtrip_blade_tip_error_m": 0,
+  "blade_tip_sweep": [
+    {
+      "time": 2.25,
+      "bearing_degrees": -58,
+      "reach_m": 0.77,
+      "height_m": 3.03
+    },
+    {
+      "time": 2.26,
+      "bearing_degrees": -54.7,
+      "reach_m": 0.77,
+      "height_m": 3.01
+    },
+    {
+      "time": 2.27,
+      "bearing_degrees": -51.1,
+      "reach_m": 0.77,
+      "height_m": 2.99
+    },
+    {
+      "time": 2.28,
+      "bearing_degrees": -46.8,
+      "reach_m": 0.77,
+      "height_m": 2.97
+    },
+    {
+      "time": 2.29,
+      "bearing_degrees": -42.2,
+      "reach_m": 0.77,
+      "height_m": 2.95
+    },
+    {
+      "time": 2.3,
+      "bearing_degrees": -37.8,
+      "reach_m": 0.78,
+      "height_m": 2.91
+    },
+    {
+      "time": 2.31,
+      "bearing_degrees": -32.2,
+      "reach_m": 0.78,
+      "height_m": 2.88
+    },
+    {
+      "time": 2.32,
+      "bearing_degrees": -26.8,
+      "reach_m": 0.79,
+      "height_m": 2.84
+    },
+    {
+      "time": 2.33,
+      "bearing_degrees": -21.4,
+      "reach_m": 0.8,
+      "height_m": 2.81
+    },
+    {
+      "time": 2.34,
+      "bearing_degrees": -15.3,
+      "reach_m": 0.81,
+      "height_m": 2.77
+    },
+    {
+      "time": 2.35,
+      "bearing_degrees": -9.3,
+      "reach_m": 0.82,
+      "height_m": 2.74
+    },
+    {
+      "time": 2.36,
+      "bearing_degrees": -3,
+      "reach_m": 0.83,
+      "height_m": 2.7
+    },
+    {
+      "time": 2.37,
+      "bearing_degrees": 3,
+      "reach_m": 0.84,
+      "height_m": 2.67
+    },
+    {
+      "time": 2.38,
+      "bearing_degrees": 9.1,
+      "reach_m": 0.85,
+      "height_m": 2.64
+    },
+    {
+      "time": 2.39,
+      "bearing_degrees": 15.1,
+      "reach_m": 0.85,
+      "height_m": 2.62
+    },
+    {
+      "time": 2.4,
+      "bearing_degrees": 20.8,
+      "reach_m": 0.86,
+      "height_m": 2.6
+    },
+    {
+      "time": 2.41,
+      "bearing_degrees": 27.5,
+      "reach_m": 0.84,
+      "height_m": 2.59
+    },
+    {
+      "time": 2.42,
+      "bearing_degrees": 34.4,
+      "reach_m": 0.82,
+      "height_m": 2.58
+    },
+    {
+      "time": 2.43,
+      "bearing_degrees": 42,
+      "reach_m": 0.8,
+      "height_m": 2.56
+    },
+    {
+      "time": 2.44,
+      "bearing_degrees": 49.9,
+      "reach_m": 0.75,
+      "height_m": 2.56
+    },
+    {
+      "time": 2.45,
+      "bearing_degrees": 58.2,
+      "reach_m": 0.7,
+      "height_m": 2.55
+    },
+    {
+      "time": 2.46,
+      "bearing_degrees": 67.8,
+      "reach_m": 0.63,
+      "height_m": 2.56
+    },
+    {
+      "time": 2.47,
+      "bearing_degrees": 79,
+      "reach_m": 0.54,
+      "height_m": 2.56
+    },
+    {
+      "time": 2.48,
+      "bearing_degrees": 93.8,
+      "reach_m": 0.44,
+      "height_m": 2.58
+    },
+    {
+      "time": 2.49,
+      "bearing_degrees": 116.9,
+      "reach_m": 0.33,
+      "height_m": 2.6
+    },
+    {
+      "time": 2.5,
+      "bearing_degrees": 154.2,
+      "reach_m": 0.28,
+      "height_m": 2.62
+    },
+    {
+      "time": 2.51,
+      "bearing_degrees": -156.4,
+      "reach_m": 0.4,
+      "height_m": 2.62
+    },
+    {
+      "time": 2.52,
+      "bearing_degrees": -128.7,
+      "reach_m": 0.66,
+      "height_m": 2.58
+    },
+    {
+      "time": 2.53,
+      "bearing_degrees": -109.8,
+      "reach_m": 1.03,
+      "height_m": 2.49
+    },
+    {
+      "time": 2.54,
+      "bearing_degrees": -94.7,
+      "reach_m": 1.42,
+      "height_m": 2.34
+    },
+    {
+      "time": 2.55,
+      "bearing_degrees": -81.3,
+      "reach_m": 1.8,
+      "height_m": 2.1
+    },
+    {
+      "time": 2.56,
+      "bearing_degrees": -66.9,
+      "reach_m": 2.16,
+      "height_m": 1.76
+    },
+    {
+      "time": 2.57,
+      "bearing_degrees": -53.6,
+      "reach_m": 2.41,
+      "height_m": 1.38
+    },
+    {
+      "time": 2.58,
+      "bearing_degrees": -41.2,
+      "reach_m": 2.55,
+      "height_m": 1.02
+    },
+    {
+      "time": 2.59,
+      "bearing_degrees": -30.2,
+      "reach_m": 2.6,
+      "height_m": 0.74
+    },
+    {
+      "time": 2.6,
+      "bearing_degrees": -19.7,
+      "reach_m": 2.61,
+      "height_m": 0.52
+    },
+    {
+      "time": 2.61,
+      "bearing_degrees": -9.5,
+      "reach_m": 2.62,
+      "height_m": 0.38
+    },
+    {
+      "time": 2.62,
+      "bearing_degrees": 0.4,
+      "reach_m": 2.62,
+      "height_m": 0.3
+    },
+    {
+      "time": 2.63,
+      "bearing_degrees": 9.4,
+      "reach_m": 2.64,
+      "height_m": 0.31
+    },
+    {
+      "time": 2.64,
+      "bearing_degrees": 18.3,
+      "reach_m": 2.67,
+      "height_m": 0.36
+    },
+    {
+      "time": 2.65,
+      "bearing_degrees": 27.2,
+      "reach_m": 2.68,
+      "height_m": 0.45
+    },
+    {
+      "time": 2.66,
+      "bearing_degrees": 35.8,
+      "reach_m": 2.69,
+      "height_m": 0.62
+    },
+    {
+      "time": 2.67,
+      "bearing_degrees": 44.5,
+      "reach_m": 2.66,
+      "height_m": 0.78
+    },
+    {
+      "time": 2.68,
+      "bearing_degrees": 53.2,
+      "reach_m": 2.59,
+      "height_m": 0.93
+    },
+    {
+      "time": 2.69,
+      "bearing_degrees": 60.6,
+      "reach_m": 2.49,
+      "height_m": 1.07
+    },
+    {
+      "time": 2.7,
+      "bearing_degrees": 67.8,
+      "reach_m": 2.38,
+      "height_m": 1.18
+    },
+    {
+      "time": 2.71,
+      "bearing_degrees": 75.2,
+      "reach_m": 2.24,
+      "height_m": 1.27
+    },
+    {
+      "time": 2.72,
+      "bearing_degrees": 82.6,
+      "reach_m": 2.1,
+      "height_m": 1.32
+    },
+    {
+      "time": 2.73,
+      "bearing_degrees": 89.2,
+      "reach_m": 1.96,
+      "height_m": 1.36
+    },
+    {
+      "time": 2.74,
+      "bearing_degrees": 96.3,
+      "reach_m": 1.82,
+      "height_m": 1.37
+    },
+    {
+      "time": 2.75,
+      "bearing_degrees": 104.1,
+      "reach_m": 1.67,
+      "height_m": 1.37
+    },
+    {
+      "time": 2.76,
+      "bearing_degrees": 109.9,
+      "reach_m": 1.55,
+      "height_m": 1.36
+    },
+    {
+      "time": 2.77,
+      "bearing_degrees": 116.2,
+      "reach_m": 1.44,
+      "height_m": 1.34
+    },
+    {
+      "time": 2.78,
+      "bearing_degrees": 123.1,
+      "reach_m": 1.33,
+      "height_m": 1.31
+    }
+  ]
+}

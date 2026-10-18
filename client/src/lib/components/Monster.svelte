@@ -28,6 +28,10 @@
   import type { MonsterData } from '../types/Monster'
   import { withBarkanRuneGrip } from '../utils/barkanRuneGrip'
   import {
+    MONSTER_SKILLS,
+    type MonsterSkillEffects,
+  } from '../effects/monster-skills'
+  import {
     attackClipNames,
     getMonsterDef,
     parseWeaponRotation,
@@ -51,6 +55,7 @@
     monsterState: MonsterData['state']
     attackCounter?: number
     hitCounter?: number
+    skill?: MonsterData['skill']
     id: string
     type: string
     floorLevel?: number
@@ -66,6 +71,7 @@
     monsterState,
     attackCounter,
     hitCounter,
+    skill,
     id,
     type,
     floorLevel = 0,
@@ -136,6 +142,7 @@
     ...parseWeaponRotation(initialDef?.weaponRotation)
   )
   const WEAPON_SCALE = 1
+  const WEAPON_SOCKET = 'WeaponSocket'
   let weaponAttached = false
   let weaponObject: THREE.Object3D | undefined
 
@@ -186,6 +193,13 @@
   let lastAttackAnimFinished = $state(true)
   let lastAttackCounter = $state<number | undefined>(undefined)
   let lastHitCounter = $state<number | undefined>(undefined)
+  let lastSkillCounter = $state<number | undefined>(
+    untrack(() => skill?.counter)
+  )
+  let skillEffects:
+    | { clip: THREE.AnimationClip; effects: MonsterSkillEffects }
+    | undefined
+  onDestroy(() => skillEffects?.effects.dispose())
   const damageText = new DamageTextEmitter()
   onDestroy(() => damageText.dispose())
   let lastAppliedOpacity = 1
@@ -351,6 +365,44 @@
     }
   }
 
+  // Plays the cast's clip; false when this model has none to play.
+  function startSkill(cast: NonNullable<MonsterData['skill']>) {
+    const def = MONSTER_SKILLS[cast.id]
+    const clip = def && findClip(def.clip)
+    if (!mixer || !model || !clip || monsterState === 'dead') return false
+    if (!skillEffects && weaponObject?.parent) {
+      skillEffects = {
+        clip,
+        effects: def.createEffects(
+          threlte.scene,
+          model,
+          weaponObject,
+          clip,
+          cast
+        ),
+      }
+    }
+    if (skillEffects && group) {
+      skillEffects.effects.start(
+        group.getWorldPosition(new THREE.Vector3()),
+        cast
+      )
+    }
+    attackClip = clip.name
+    isAttackAnimationFinished = false
+    return true
+  }
+
+  function updateSkillEffects(deltaTime: number, camera?: THREE.Camera) {
+    if (!skillEffects) return
+    const action =
+      currentAction?.getClip() === skillEffects.clip ? currentAction : undefined
+    const active =
+      !!action && monsterState !== 'dead' && !isAttackAnimationFinished
+    const time = action?.time ?? 0
+    skillEffects.effects.update(time, active, deltaTime, camera)
+  }
+
   export function update(deltaTime: number, camera?: THREE.Camera) {
     // 0. Sync Three.js group position imperatively so the refraction render
     //    (which runs during the game loop, before Svelte's reactive updates)
@@ -367,6 +419,15 @@
     // 1. Sync animation with state
     if (monsterState !== 'attack') {
       isAttackAnimationFinished = true
+    }
+    if (lastSkillCounter !== skill?.counter) {
+      lastSkillCounter = skill?.counter
+      if (skill && startSkill(skill)) {
+        lastAttackCounter = attackCounter
+        lastMonsterState = monsterState
+        lastAttackAnimFinished = isAttackAnimationFinished
+        playAnimation(true)
+      }
     }
     if (
       lastAttackCounter !== attackCounter ||
@@ -393,6 +454,8 @@
           (hitCounterChanged && monsterState === 'hit')
       )
     }
+
+    updateSkillEffects(deltaTime, camera)
 
     // 2. Update damage texts; bosses spawn them above the nameplate so the
     // number isn't drawn behind the name (both are transparent billboards).
@@ -504,7 +567,10 @@
           if (finishedClipName === (def?.animHit ?? 'Hit')) {
             onHitFinished?.()
           }
-          if (attackClips.includes(finishedClipName)) {
+          if (
+            attackClips.includes(finishedClipName) ||
+            finishedClipName === attackClip
+          ) {
             isAttackAnimationFinished = true
           }
           if (finishedClipName === (def?.animDie ?? 'Die')) {
@@ -567,9 +633,15 @@
 
     const weapon = $weaponGltf.scene.clone(true)
     weaponObject = weapon
-    weaponObject.position.copy(WEAPON_OFFSET)
-    weaponObject.rotation.copy(WEAPON_ROTATION)
+    // A baked socket carries the grip that skill clips turn; the csv grip
+    // stays authoritative for its rest pose.
+    const socket = bone.getObjectByName(WEAPON_SOCKET)
+    const grip = socket ?? weapon
+    grip.position.copy(WEAPON_OFFSET)
+    grip.rotation.copy(WEAPON_ROTATION)
     weaponObject.scale.setScalar(WEAPON_SCALE)
+    // Skill effects find the blade again in their clones by this name.
+    weapon.name = 'MonsterWeapon'
     weaponObject.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         const mesh = child as THREE.Mesh
@@ -584,7 +656,7 @@
       }
     })
     weaponAttached = true
-    const attachBone = bone
+    const attachBone = socket ?? bone
     void warmupPipelines(
       threlte,
       `monster-weapon:${initialWeaponModel}`,

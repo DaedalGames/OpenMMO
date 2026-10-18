@@ -70,7 +70,7 @@ for (const id of used) {
 }
 assert.ok(bindError < .0001, `Bind drift ${bindError}`)
 assert.ok(weightError < 1e-6)
-assert.deepEqual(result.animations.map(clip => clip.name).sort(), game ? ['Attack', 'Death', 'Idle', 'Walk'] : ['Idle', 'Walk', 'WingFold'])
+assert.deepEqual(result.animations.map(clip => clip.name).sort(), game ? ['Attack', 'Death', 'Idle', 'RuneSlash', 'Walk'] : ['Idle', 'Walk', 'WingFold'])
 if (game) {
   const def = JSON.parse(read('data/monsters.json')).barkan
   assert.equal(def.model, 'monsters/barkan.glb')
@@ -124,7 +124,8 @@ for (const side of ['Left', 'Right']) {
   }
 }
 restore()
-for (const clip of result.animations) {
+// RuneSlash is checked by validate-barkan-rune-slash.mjs and baked by bake-barkan-rune-slash.mjs.
+for (const clip of result.animations.filter(clip => clip.name !== 'RuneSlash')) {
   assert.ok(clip.validate(), clip.name)
   restore()
   const action = mixer.clipAction(clip).setLoop(THREE.LoopOnce, 1)

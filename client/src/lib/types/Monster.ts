@@ -10,6 +10,15 @@ export interface MonsterData {
   chaseAim?: { playerId: number; stopRange: number } // engage-ring chase leg from the last Move sync
   moveSpeed: number
   attackCounter?: number
+  /** The telegraphed skill under way; `counter` restarts its clip. */
+  skill?: {
+    id: string
+    counter: number
+    startedAt: number
+    rotation: number
+    range: number
+    halfAngle: number
+  }
   hitCounter?: number
   deadPendingTimer?: number
   lastAttackStartedAt?: number

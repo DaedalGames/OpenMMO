@@ -493,6 +493,7 @@
   "command.help.give": "아이템 지급: /give <item_id> [수량] (기본 1, 최대 10000)",
   "command.help.weather": "서버 날씨 변경: /weather rain [0..1] (기본 1), /weather snow [0..1] (기본 1), /weather clear, /weather auto",
   "command.help.spawnmob": "주변에 몬스터 생성: /spawnmob <종류> [수량]",
+  "command.help.god": "테스트용 무적 켜기/끄기: 맞아도 체력이 줄지 않음",
   "command.help.notice": "서버 공지 설정, /notice만 입력하면 삭제",
   "command.help.announce": "접속 중인 모두에게 {{seconds}}초간 공지 표시: /announce <내용> (최대 {{max}}자)",
   "command.help.kick": "접속 중인 플레이어 추방: /kick <이름>",

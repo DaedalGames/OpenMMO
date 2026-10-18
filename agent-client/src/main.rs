@@ -500,6 +500,7 @@ pub fn msg_name(msg: &onlinerpg_shared::ServerMessage) -> &'static str {
         ServerMessage::DaggerDoubleSlashSkipped { .. } => "DaggerDoubleSlashSkipped",
         ServerMessage::PlayerAttackRejected { .. } => "PlayerAttackRejected",
         ServerMessage::PlayerAttackStopped { .. } => "PlayerAttackStopped",
+        ServerMessage::MonsterSkillStarted { .. } => "MonsterSkillStarted",
         ServerMessage::MonsterAttackedPlayer { .. } => "MonsterAttackedPlayer",
         ServerMessage::PlayerDead { .. } => "PlayerDead",
         ServerMessage::PlayerRespawned { .. } => "PlayerRespawned",

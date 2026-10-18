@@ -136,6 +136,7 @@ pub(crate) fn test_player(x: f32, z: f32) -> Player {
         client_kind: Default::default(),
         mount: None,
         ready_at: 0,
+        invulnerable: false,
         back_color: None,
         back_texture: None,
         armor: Default::default(),

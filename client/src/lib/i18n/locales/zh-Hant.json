@@ -493,6 +493,7 @@
   "command.help.give": "給予自己物品：/give <item_id> [數量]（預設1，最多10000）",
   "command.help.weather": "更改伺服器天氣：/weather rain [0..1]（預設1）、/weather snow [0..1]（預設1）、/weather clear、/weather auto",
   "command.help.spawnmob": "在附近生成怪物：/spawnmob <類型> [數量]",
+  "command.help.god": "切換測試用無敵：會被擊中但不扣生命",
   "command.help.notice": "設定伺服器公告，單獨輸入 /notice 可清除",
   "command.help.announce": "向所有線上玩家顯示{{seconds}}秒公告：/announce <內容>（最多{{max}}字）",
   "command.help.kick": "踢出線上玩家：/kick <名字>",
