@@ -236,7 +236,12 @@
             </div>
             <div class="stat-row">
               <span class="stat-label">{$t('stat.hp')}</span>
-              <span class="stat-value hp-value">{currentHp}/{maxHp}</span>
+              <span class="stat-value hp-value"
+                >{currentHp}/{maxHp}{#if $playerEffectiveStats?.maxHpBonus}
+                  <span class="stat-bonus"
+                    >(+{$playerEffectiveStats.maxHpBonus})</span
+                  >{/if}</span
+              >
             </div>
             {#if $visibleMana}
               <div class="stat-row">
@@ -587,7 +592,8 @@
 
   .stats-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    /* The middle column holds HP, the widest value. */
+    grid-template-columns: 1fr 1.2fr 1fr;
     gap: 2px;
   }
 
@@ -622,6 +628,12 @@
 
   .hp-value {
     color: #6ee7b7;
+    white-space: nowrap;
+  }
+
+  .stat-bonus {
+    font-size: 11px;
+    font-weight: 600;
   }
 
   .guard-value {

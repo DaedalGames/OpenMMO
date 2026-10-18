@@ -144,6 +144,7 @@
   "item.charisma": "魅力：{{value}}",
   "item.intelligence": "智力：{{value}}",
   "item.light": "照亮周圍",
+  "item.maxHpPerLevel": "每級最大生命值 +{{value}}",
   "item.sustenance": "減緩飢餓",
   "item.compare": "對比：{{item}}",
   "stat.weight": "重量",

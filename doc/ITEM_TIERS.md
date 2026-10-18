@@ -12,7 +12,7 @@
 | 2 | Orc Warrens | 가죽 세트 완성 (몸통·장갑·부츠) + 체인 세트 일부 (철 부츠·철 투구) + iron_sword | 운영 중 |
 | 3 | Ogre Stronghold (15층, ogre_boss) | 체인 세트 완성 (체인 메일·건틀릿) + 판금 세트 일부 (부츠·그리브) + 기본 망토 + steel_longsword | 운영 중 |
 | 4 | Skeleton Crypt (20층, skeleton_knight) | 판금 세트 완성 (흉갑·투구·건틀릿) + great_sword | 구현 완료·운영 배포 대기 |
-| 5 | Sundered Bastion (25층, barkan) · [필드 레이드 연계 설계](TIER5_FIELD_RAID.md) | ring_of_protection + rune_blade + 대지의 아뮬렛 (가칭) | 던전 본체·rune_blade 구현, 아뮬렛 미구현 |
+| 5 | Sundered Bastion (25층, barkan) · [필드 레이드 연계 설계](TIER5_FIELD_RAID.md) | ring_of_protection + rune_blade + 대지의 아뮬렛 (가칭) | 던전 본체·rune_blade·아뮬렛 착용 효과 구현, 봉헌 미구현 |
 
 특수 망토(투명·보호 등)·셔츠·amulet_of_life_saving·ring_of_regeneration은 던전 풀에 넣지 않는다 — **월드 드랍 전용 희소템**으로 유저 간 거래의 축을 만든다 (아래 참조).
 
@@ -67,7 +67,7 @@
 | 아이템 | 효과 (`effects`) | 획득처 | 상태 |
 |--------|------|--------|------|
 | ring_of_protection | guard +1 (guard 열) | 티어 5 던전 (20% 롤) | 있음 |
-| 대지의 아뮬렛 (가칭) | 목 장비. 최대 HP +5% 후보, 제단 봉헌 시 소모하여 필드 보스 소환 | 티어 5 던전 개인 상자 (약 10%) | [디자인 초안](TIER5_FIELD_RAID.md), 미구현 |
+| earth_amulet (대지의 아뮬렛, 가칭) | 목 장비. 레벨당 최대 HP +1 (`maxhp+1/lv`), 제단 봉헌 시 소모하여 필드 보스 소환 | 티어 5 던전 (10% 롤) | 있음. 봉헌은 [설계](TIER5_FIELD_RAID.md)만 |
 | gold_ring | CHA +1 (`cha+1`) | 티어 3 던전 (10% 롤) | 있음 |
 | silver_necklace | 허기 감소 ×0.75 (`sustenance`) | 티어 2 던전 (10% 롤) | 있음 (아이콘 필요) |
 | amulet_of_life_saving | 사망 1회 방지 후 소모 | **월드 드랍 전용** | 소모품 `phoenix_talisman`(죽은 뒤 사용해 제자리 부활, Rica 5,000c + 월드 드랍 0.2%)으로 대체 구현 (2026-08-20). 착용형 자동 발동판은 보류 |

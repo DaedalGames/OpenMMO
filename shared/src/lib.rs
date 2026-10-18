@@ -213,7 +213,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v121: effective INT in EffectiveStatsUpdated.
 /// v122: nearby PlayerLeveledUp celebration.
 /// v123: telegraphed monster skills (`MonsterSkillStarted`).
-pub const PROTOCOL_VERSION: u32 = 123;
+/// v124: gear max HP bonus in EffectiveStatsUpdated.
+pub const PROTOCOL_VERSION: u32 = 124;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from
@@ -545,6 +546,8 @@ mod tests {
             mount: None,
             ready_at: 0,
             invulnerable: false,
+            max_health_bonus: 0,
+            max_health_per_level: 0,
             back_color: None,
             back_texture: None,
             armor: Default::default(),

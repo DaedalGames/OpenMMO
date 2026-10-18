@@ -144,6 +144,7 @@
   "item.charisma": "魅力：{{value}}",
   "item.intelligence": "知力：{{value}}",
   "item.light": "周囲を照らす",
+  "item.maxHpPerLevel": "レベルごとに最大HP +{{value}}",
   "item.sustenance": "空腹の進行を抑える",
   "item.compare": "比較：{{item}}",
   "stat.weight": "重量",

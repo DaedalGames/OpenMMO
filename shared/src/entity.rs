@@ -117,6 +117,13 @@ pub struct Player {
     /// Admin `/god`: blows still land but take no health. Session only.
     #[serde(skip)]
     pub invulnerable: bool,
+    /// Gear's share of `max_health`: `max_health_per_level` × level.
+    /// Level rolls and saves use the base; set it via `set_base_max_health`
+    /// after any level or gear change.
+    #[serde(skip)]
+    pub max_health_bonus: u32,
+    #[serde(skip)]
+    pub max_health_per_level: u32,
 }
 
 /// Backstop for a client that never sends `WorldReady`.
@@ -125,6 +132,20 @@ pub const WORLD_LOADING_GRACE_MS: u64 = 30_000;
 impl Player {
     pub fn is_ready(&self, now_ms: u64) -> bool {
         now_ms >= self.ready_at
+    }
+
+    pub fn base_max_health(&self) -> u32 {
+        self.max_health.saturating_sub(self.max_health_bonus)
+    }
+
+    /// Re-derive after a level or gear change that kept the base.
+    pub fn refresh_max_health(&mut self) {
+        self.set_base_max_health(self.base_max_health());
+    }
+
+    pub fn set_base_max_health(&mut self, base: u32) {
+        self.max_health_bonus = self.max_health_per_level.saturating_mul(self.level);
+        self.max_health = base.saturating_add(self.max_health_bonus);
     }
 
     pub fn is_damageable(&self, now_ms: u64) -> bool {
@@ -262,6 +283,54 @@ pub struct Monster {
 mod tests {
     use super::*;
 
+    #[test]
+    fn gear_max_health_rederives_from_the_base() {
+        let mut player = Player {
+            id: 1.into(),
+            name: "wearer".into(),
+            position: Position {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
+            rotation: 0.0,
+            level: 13,
+            health: 94,
+            max_health: 94,
+            class: CharacterClass::Knight,
+            gender: Gender::default(),
+            appearance: Default::default(),
+            is_official_npc: false,
+            torch_on: false,
+            radiance_on: false,
+            floor_level: 0,
+            object_type: None,
+            main_hand: None,
+            back: None,
+            object_id: None,
+            last_combat_at: 0,
+            client_kind: ClientKind::default(),
+            mount: None,
+            ready_at: 0,
+            invulnerable: false,
+            max_health_bonus: 0,
+            max_health_per_level: 1,
+            back_color: None,
+            back_texture: None,
+            armor: Default::default(),
+            wet: false,
+            title: None,
+        };
+        player.set_base_max_health(94);
+        assert_eq!((player.max_health, player.base_max_health()), (107, 94));
+        player.level = 14;
+        player.set_base_max_health(player.base_max_health() + 8);
+        assert_eq!((player.max_health, player.base_max_health()), (116, 102));
+        player.max_health_per_level = 0;
+        player.refresh_max_health();
+        assert_eq!(player.max_health, 102);
+    }
+
     /// `PlayerId` must reach the client as a bare integer, not as a nested
     /// one-element array (what a newtype encodes to without
     /// `#[serde(transparent)]`) and not as a string. The client decodes this
@@ -297,6 +366,8 @@ mod tests {
             mount: None,
             ready_at: 0,
             invulnerable: false,
+            max_health_bonus: 0,
+            max_health_per_level: 0,
             back_color: None,
             back_texture: None,
             armor: Default::default(),
@@ -353,6 +424,8 @@ mod tests {
             mount: None,
             ready_at: 0,
             invulnerable: false,
+            max_health_bonus: 0,
+            max_health_per_level: 0,
             back_color: None,
             back_texture: None,
             armor: Default::default(),

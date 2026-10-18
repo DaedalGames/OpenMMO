@@ -144,6 +144,7 @@
   "item.charisma": "CHA: {{value}}",
   "item.intelligence": "INT: {{value}}",
   "item.light": "Gives off light",
+  "item.maxHpPerLevel": "Max HP +{{value}} per level",
   "item.sustenance": "Slows hunger",
   "item.compare": "vs {{item}}",
   "stat.weight": "Weight",

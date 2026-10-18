@@ -83,10 +83,9 @@ export const playerGold = writable(0)
  *  computed server-side and pushed on join and after each equipment change.
  *  `null` until the first EffectiveStatsUpdated arrives. */
 export type EffectiveStatKey = 'guard' | 'cha' | 'int'
-export const playerEffectiveStats = writable<Pick<
-  CharacterAttributes,
-  EffectiveStatKey
-> | null>(null)
+export const playerEffectiveStats = writable<
+  (Pick<CharacterAttributes, EffectiveStatKey> & { maxHpBonus: number }) | null
+>(null)
 
 /** Item defs that act as a carried light source (mirrors shared TORCH_ITEM_IDS). */
 const TORCH_ITEM_IDS = ['torch', 'worn_torch']

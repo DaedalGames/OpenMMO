@@ -1720,6 +1720,8 @@ pub enum ServerMessage {
         guard: i32,
         cha: i32,
         int: i32,
+        /// Gear's share of max HP, already counted in `max_health`.
+        max_hp_bonus: u32,
     },
     /// Direct message: the receiving player gained loose currency from a
     /// pickup. `amount` is in the smallest unit (copper).

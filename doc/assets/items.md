@@ -10,6 +10,18 @@
 
 - 피팅·원화·Tripo 원본 출처와 라이선스: [광휘의 투구](helm-of-brilliance.md).
 
+## Amulet of the Earth — 대지의 아뮬렛 (가칭)
+
+- [concept_v1](../../assets/items/earth_amulet/concept_v1/concept.png) — v2의 편집 원본. 바르칸이 봉인한 대지 수호자의 돌 심장 목걸이 원화. 철 띠·청동 사슬로 묶인 화강암 심장, 균열 속 용암빛, 앞 띠의 봉인 룬(제단과 같은 문양). [설계](../TIER5_FIELD_RAID.md).
+  - OpenAI Codex built-in ImageGen(`codex exec`, codex-cli 0.162.1), **ChatGPT Pro 20x**, 2026-10-19. OpenAI 출력물 이용 조건 적용, 별도 CC 라이선스 없음.
+  - [프롬프트](../../assets/items/earth_amulet/concept_v1/prompt.txt) · [생성 기록](../../assets/items/earth_amulet/concept_v1/generation.json).
+- **확정** [concept_v2_chain](../../assets/items/earth_amulet/concept_v2_chain/concept.png) — v1을 편집 원본으로 화면을 넓혀 고리·잠금쇠까지 목걸이 체인 전체를 보이게 했다. 펜던트는 그대로. 도구·등급·조건은 v1과 같다.
+  - [프롬프트](../../assets/items/earth_amulet/concept_v2_chain/prompt.txt) · [생성 기록](../../assets/items/earth_amulet/concept_v2_chain/generation.json).
+- 바닥 모델 `client/public/models/accessory/earth_amulet.glb` — concept_v2_chain 한 장으로 Tripo에서 생성했다. 체인 고리가 펜던트 면 뒤로 45° 젖혀져 있어, 고리 부분을 축으로 체인을 펴서 바닥에 닿게 했다. 이어 정면이 위를 보도록 눕히고 펜던트를 -Y로 돌렸다. 최장축 0.40m(0.18×0.40×0.075, silver_necklace 0.35m보다 약간 크게), 원점=바닥 중심, 텍스처 512² WebP q90, 4,019 triangles. 용암 균열은 base color만 쓰고 발광은 넣지 않았다.
+  - 게임 등록(2026-10-19): `earth_amulet` 목 장비, 레벨당 최대 HP +1(`maxhp+1/lv`), 무게 0.5, 기준가 30000, 티어 5 상자 10%. 아이콘 `client/public/items/accessory/earth_amulet.png`은 Cycles 직교 측면·위 각도 렌더 512²→128².
+  - 3D: Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, seed `102019`, 목표 4,000 triangles, 2026-10-19, **120크레딧**. [이용 조건](https://developers.tripo3d.ai/en/terms).
+  - [제작 명세](../../assets/items/earth_amulet/tripo_v1/build.json) · [요청·작업·비용 기록](../../assets/items/earth_amulet/tripo_v1/generation.json) · [Tripo GLB](../../assets/items/earth_amulet/tripo_v1/source/model_url.glb) · [바닥 모델 스크립트](../../assets/items/earth_amulet/tripo_v1/floor/build_floor.py) · [Blender](../../assets/items/earth_amulet/tripo_v1/floor/earth_amulet.blend) · [검수 렌더](../../assets/items/earth_amulet/tripo_v1/floor/review.png).
+
 ## Stethoscope
 
 - `doc/images/items/stethoscope.png` — 플레이어·몬스터 조사용 청진기의 3D 제작 원화. 낡은 황동 귀관·흉부 접촉부, 짙은 갈색 가죽 피복관, 밝은 뿔 재질 이어팁으로 구성한 단독 소품 이미지.

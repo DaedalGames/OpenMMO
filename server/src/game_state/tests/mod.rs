@@ -142,6 +142,8 @@ pub(super) fn make_player(id: &str, x: f32, z: f32) -> Player {
         mount: None,
         ready_at: 0,
         invulnerable: false,
+        max_health_bonus: 0,
+        max_health_per_level: 0,
     }
 }
 

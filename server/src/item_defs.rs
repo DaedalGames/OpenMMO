@@ -19,6 +19,8 @@ pub enum ItemEffect {
     Int(i32),
     /// Lights the wearer's surroundings; drawn by clients only.
     Light,
+    /// Max HP bonus per character level (doc/TIER5_FIELD_RAID.md).
+    MaxHpPerLevel(u32),
     /// Slows satiation drain while equipped (doc/HUNGER.md).
     Sustenance,
 }
@@ -30,6 +32,12 @@ impl ItemEffect {
         }
         if let Some(amount) = token.strip_prefix("int") {
             return amount.parse().ok().map(ItemEffect::Int);
+        }
+        if let Some(amount) = token
+            .strip_prefix("maxhp+")
+            .and_then(|rest| rest.strip_suffix("/lv"))
+        {
+            return amount.parse().ok().map(ItemEffect::MaxHpPerLevel);
         }
         match token {
             "sustenance" => Some(ItemEffect::Sustenance),
@@ -277,6 +285,16 @@ impl ItemDefinition {
 
     pub fn has_sustenance(&self) -> bool {
         self.effects.contains(&ItemEffect::Sustenance)
+    }
+
+    pub fn max_hp_per_level(&self) -> u32 {
+        self.effects
+            .iter()
+            .map(|effect| match effect {
+                ItemEffect::MaxHpPerLevel(amount) => *amount,
+                _ => 0,
+            })
+            .sum()
     }
 
     pub fn is_weapon(&self) -> bool {
@@ -701,6 +719,16 @@ mod tests {
         for tier in 1..=5 {
             assert!(!table_ids(&defs, tier).contains(&helm.id));
         }
+    }
+
+    #[test]
+    fn earth_amulet_adds_max_hp_and_drops_from_tier_five_chests() {
+        let defs = ItemDefs::load();
+        let amulet = defs.get("earth_amulet").expect("amulet def");
+        assert_eq!(amulet.equip_slot, Some(EquipSlot::Neck));
+        assert_eq!(amulet.effects, vec![ItemEffect::MaxHpPerLevel(1)]);
+        let table: HashMap<_, _> = defs.chest_roll_table(5).into_iter().collect();
+        assert_eq!(table["earth_amulet"], 0.1);
     }
 
     /// The three ranged columns come off items.csv, and an empty `range`

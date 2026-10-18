@@ -144,6 +144,7 @@
   "item.charisma": "매력: {{value}}",
   "item.intelligence": "지능: {{value}}",
   "item.light": "주변을 밝힘",
+  "item.maxHpPerLevel": "레벨당 최대 HP +{{value}}",
   "item.sustenance": "허기 감소 속도 완화",
   "item.compare": "비교: {{item}}",
   "stat.weight": "무게",

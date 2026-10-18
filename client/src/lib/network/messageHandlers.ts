@@ -2295,6 +2295,7 @@ export function handleServerMessage(
         guard: Number(data.guard),
         cha: Number(data.cha),
         int: Number(data.int),
+        maxHpBonus: Number(data.max_hp_bonus ?? 0),
       })
       break
 

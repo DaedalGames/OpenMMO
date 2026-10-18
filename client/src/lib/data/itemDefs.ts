@@ -53,7 +53,7 @@ export interface ItemDefinition {
   basePrice?: number
   /** Guard (AC) bonus granted while equipped. Summed across equipped items. */
   guard?: number
-  /** Special effects while equipped: `;`-separated tokens (`cha+1`, `int+1`, `sustenance`, `light`). */
+  /** Special effects while equipped: `;`-separated tokens (`cha+1`, `int+1`, `maxhp+1/lv`, `sustenance`, `light`). */
   effects?: string
   /** Usable from the bag — the items.csv flag, which the server validates
    * against its `use_effect` dispatch at boot. */
@@ -237,6 +237,7 @@ export function statLabels(
     const token = raw.trim()
     if (!token) continue
     const stat = token.match(/^(cha|int)([+-]\d+)$/)
+    const hpPerLevel = token.match(/^maxhp\+(\d+)\/lv$/)
     if (stat)
       lines.push(
         translate(
@@ -244,6 +245,10 @@ export function statLabels(
           { value: stat[2] },
           language
         )
+      )
+    else if (hpPerLevel)
+      lines.push(
+        translate('item.maxHpPerLevel', { value: hpPerLevel[1] }, language)
       )
     else if (token === 'sustenance')
       lines.push(translate('item.sustenance', {}, language))

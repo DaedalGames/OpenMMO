@@ -716,3 +716,75 @@ async fn helm_of_brilliance_raises_reported_int() {
     );
     assert_eq!(game.effective_stats(&id).await.int, 11);
 }
+
+async fn amulet_wearer(game_state: &GameState) -> PlayerId {
+    let mut player = make_player("amulet", 100.0, 50.0);
+    player.level = 13;
+    player.max_health = 100;
+    player.health = 100;
+    let id = player.id;
+    game_state.add_player(player).await;
+    let mut inv = PlayerInventory::default();
+    inv.bag.push(bag_item(1, "earth_amulet", 1));
+    game_state.inventories.write().await.insert(id, inv);
+    id
+}
+
+async fn vitals(game_state: &GameState, id: &PlayerId) -> (u32, u32) {
+    let players = game_state.players.read().await;
+    (players[id].health, players[id].max_health)
+}
+
+#[tokio::test]
+async fn earth_amulet_adds_max_hp_per_level_without_healing() {
+    let game_state = make_test_game_state("earth_amulet_equip");
+    let id = amulet_wearer(&game_state).await;
+
+    game_state.equip_item(&id, 1).await;
+    assert_eq!(vitals(&game_state, &id).await, (100, 113));
+    let save = {
+        let players = game_state.players.read().await;
+        crate::game_state::player::build_save_data(&players[&id], 1, 0, 0, 0, None, None, 0)
+    };
+    assert_eq!(save.max_hp, 100, "saves keep the rolled base");
+
+    game_state
+        .players
+        .write()
+        .await
+        .get_mut(&id)
+        .unwrap()
+        .health = 113;
+    game_state.unequip_item(&id, EquipSlot::Neck).await;
+    assert_eq!(vitals(&game_state, &id).await, (100, 100));
+}
+
+#[tokio::test]
+async fn join_stats_carry_the_gear_max_hp_bonus_before_add_player() {
+    let game_state = make_test_game_state("earth_amulet_join");
+    let id = pid("rejoin");
+    game_state
+        .register_player_character(
+            &id,
+            1,
+            onlinerpg_shared::xp::xp_for_level(13),
+            attrs_with_cha(10),
+            0,
+            None,
+        )
+        .await;
+    let mut inv = PlayerInventory::default();
+    inv.equipped
+        .insert(EquipSlot::Neck, bag_item(1, "earth_amulet", 1));
+    game_state.inventories.write().await.insert(id, inv);
+
+    let bonus = game_state
+        .owner_state_messages(&id)
+        .await
+        .into_iter()
+        .find_map(|m| match m {
+            ServerMessage::EffectiveStatsUpdated { max_hp_bonus, .. } => Some(max_hp_bonus),
+            _ => None,
+        });
+    assert_eq!(bonus, Some(13));
+}

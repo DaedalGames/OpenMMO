@@ -1432,10 +1432,7 @@ async fn handle_client_message(
             player.appearance = selected_character.appearance;
             player.title = titles.1.clone();
 
-            // Restore saved health (if available) and floor_level from DB
-            if let Some(saved_health) = selected_character.health {
-                player.health = saved_health.min(max_hp);
-            }
+            // Health is restored once gear sets max HP, below.
             let saved_floor = selected_character.floor_level;
             player.floor_level = restored_floor_level(saved_floor);
             if player.floor_level != saved_floor {
@@ -1563,6 +1560,13 @@ async fn handle_client_message(
             player.back_texture = inventory
                 .as_ref()
                 .and_then(|inv| inv.equipped_cape_texture());
+            player.max_health_per_level = inventory
+                .as_ref()
+                .map_or(0, |inv| game_state.equipped_max_health_per_level(inv));
+            player.set_base_max_health(max_hp);
+            player.health = selected_character
+                .health
+                .map_or(player.max_health, |saved| saved.min(player.max_health));
 
             game_state
                 .register_mana(

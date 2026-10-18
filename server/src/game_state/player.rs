@@ -74,7 +74,7 @@ pub(super) fn build_save_data(
         rotation: player.rotation,
         xp,
         level: player.level,
-        max_hp: player.max_health,
+        max_hp: player.base_max_health(),
         health: player.health,
         mana,
         floor_level: player.floor_level,
@@ -1365,12 +1365,31 @@ impl super::GameState {
         let back_color = inventory.equipped_cape_color();
         let back_texture = inventory.equipped_cape_texture();
         let armor = inventory.equipped_armor();
+        let max_hp_per_level = self.equipped_max_health_per_level(inventory);
         let changed = {
             let mut players = self.players.write().await;
             let Some(player) = players.get_mut(player_id) else {
                 return;
             };
             let mut messages = Vec::new();
+            let mut health_changed = false;
+            // Equipping never heals; unequipping clamps to the lower max.
+            if player.max_health_per_level != max_hp_per_level {
+                player.max_health_per_level = max_hp_per_level;
+                player.refresh_max_health();
+                let old_health = player.health;
+                player.health = player.health.min(player.max_health);
+                if player.health != old_health {
+                    self.combat_audit.health(old_health, player, "max_hp_gear");
+                }
+                self.interest_lock().refresh_player(player);
+                self.publish_subject_change(ServerMessage::PlayerHealthUpdate {
+                    player_id: *player_id,
+                    health: player.health,
+                    max_health: player.max_health,
+                });
+                health_changed = true;
+            }
             if player.armor != armor {
                 player.armor = armor.clone();
                 messages.push(ServerMessage::PlayerArmorChanged {
@@ -1399,13 +1418,22 @@ impl super::GameState {
                     cape_texture: back_texture,
                 });
             }
-            if messages.is_empty() {
+            if messages.is_empty() && !health_changed {
                 return;
             }
-            (player.position, player.floor_level, messages)
+            (
+                player.position,
+                player.floor_level,
+                messages,
+                health_changed,
+            )
         };
 
-        let (position, floor_level, messages) = changed;
+        let (position, floor_level, messages, health_changed) = changed;
+        if health_changed {
+            self.mark_dirty(player_id).await;
+            self.mark_party_vitals_dirty(player_id).await;
+        }
         for message in messages {
             self.publish_nearby(&position, floor_level, message, Some(player_id))
                 .await;

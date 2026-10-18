@@ -7,6 +7,7 @@ pub struct EffectiveStats {
     pub guard: i32,
     pub cha: i32,
     pub int: i32,
+    pub max_hp_bonus: u32,
 }
 
 impl From<EffectiveStats> for ServerMessage {
@@ -15,6 +16,7 @@ impl From<EffectiveStats> for ServerMessage {
             guard: s.guard,
             cha: s.cha,
             int: s.int,
+            max_hp_bonus: s.max_hp_bonus,
         }
     }
 }
@@ -341,33 +343,48 @@ impl super::GameState {
     /// attacker must beat; CHA drives haggling bands. Reported to the client
     /// so it never recomputes the formula itself.
     pub async fn effective_stats(&self, player_id: &PlayerId) -> EffectiveStats {
-        let mut stats = {
+        let (mut stats, level) = {
             let chars = self.player_characters.read().await;
             chars
                 .get(player_id)
-                .map(|(_, _, a)| EffectiveStats {
-                    guard: i32::from(a.guard),
-                    cha: i32::from(a.cha),
-                    int: i32::from(a.int),
+                .map(|(_, xp, a)| {
+                    let stats = EffectiveStats {
+                        guard: i32::from(a.guard),
+                        cha: i32::from(a.cha),
+                        int: i32::from(a.int),
+                        max_hp_bonus: 0,
+                    };
+                    (stats, xp::level_from_xp(*xp))
                 })
-                .unwrap_or(EffectiveStats {
-                    guard: 10,
-                    cha: 10,
-                    int: 10,
-                })
+                .unwrap_or((
+                    EffectiveStats {
+                        guard: 10,
+                        cha: 10,
+                        int: 10,
+                        max_hp_bonus: 0,
+                    },
+                    1,
+                ))
         };
         if let Some(inv) = self.inventories.read().await.get(player_id) {
             stats.guard += self.equipped_guard(inv);
+            // Same formula as `Player::set_base_max_health`; read from here so
+            // a login reports it before the player joins the roster.
+            stats.max_hp_bonus = self.equipped_max_health_per_level(inv) * level;
             for effect in self.equipped_defs(inv).flat_map(|d| d.effects()) {
                 match effect {
                     ItemEffect::Cha(amount) => stats.cha += amount,
                     ItemEffect::Int(amount) => stats.int += amount,
-                    ItemEffect::Light | ItemEffect::Sustenance => {}
+                    ItemEffect::Light | ItemEffect::Sustenance | ItemEffect::MaxHpPerLevel(_) => {}
                 }
             }
         }
         stats.guard = self.abilities.read().await.guard(player_id, stats.guard);
         stats
+    }
+
+    pub fn equipped_max_health_per_level(&self, inv: &PlayerInventory) -> u32 {
+        self.equipped_defs(inv).map(|d| d.max_hp_per_level()).sum()
     }
 
     pub async fn effective_guard(&self, player_id: &PlayerId) -> i32 {
@@ -1179,7 +1196,7 @@ impl super::GameState {
                     if new_level > p.level {
                         p.level = new_level;
                     }
-                    let mut updated_max_hp = p.max_health;
+                    let mut updated_max_hp = p.base_max_health();
                     for _ in 0..new_level.saturating_sub(old_level) {
                         match character_hp::level_up_max_hp(
                             updated_max_hp,
@@ -1193,7 +1210,7 @@ impl super::GameState {
                             }
                         }
                     }
-                    p.max_health = updated_max_hp;
+                    p.set_base_max_health(updated_max_hp);
                     let old_health = p.health;
                     p.health = p.max_health;
                     self.combat_audit.health(old_health, p, "level_up");
@@ -1218,6 +1235,8 @@ impl super::GameState {
             .extend(grants.iter().map(|(id, ..)| *id));
         for id in &leveled {
             self.refresh_player_mana(id).await;
+            self.send_direct_message(id, self.effective_stats(id).await.into())
+                .await;
         }
         if !leveled.is_empty() {
             self.party_vitals_dirty.write().await.extend(leveled);
@@ -1726,21 +1745,20 @@ impl super::GameState {
 
                     match character_hp::roll_level_hp_delta(&player.class, attributes.con) {
                         Ok(hp_loss) => {
-                            let candidate = i64::from(player.max_health) - i64::from(hp_loss);
+                            let candidate =
+                                i64::from(player.base_max_health()) - i64::from(hp_loss);
                             let bounded = candidate
                                 .max(i64::from(level_one_floor))
                                 .clamp(1, i64::from(u32::MAX))
                                 as u32;
-
-                            if bounded != player.max_health {
-                                player.max_health = bounded;
-                            }
+                            player.set_base_max_health(bounded);
                         }
                         Err(err) => {
                             warn!(
                                 "Failed to roll level-down HP delta for player {}: {}",
                                 player_name, err
                             );
+                            player.refresh_max_health();
                         }
                     }
                 }
@@ -1759,6 +1777,10 @@ impl super::GameState {
         }
 
         self.refresh_player_mana(player_id).await;
+        if penalty.leveled_down {
+            self.send_direct_message(player_id, self.effective_stats(player_id).await.into())
+                .await;
+        }
         self.mark_dirty(player_id).await;
         self.mark_party_vitals_dirty(player_id).await;
 
