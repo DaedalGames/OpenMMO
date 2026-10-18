@@ -79,7 +79,7 @@
     `R_Hand`의 로컬 Y +0.11m에 장착하며 전용 외형으로 사용한다(아이템 드롭 없음).
     [대검 출처](items.md). 정예 일반 몬스터의 임시 능력치는 레벨 25·체력 350·guard 32·피해 6d12.
     던전 출현 설정은 비워 두어 관리자가 배치한다.
-- barkan — Sundered Bastion 25층 보스 원화, 2026-10-18. 게임 모델은 아직 `skeleton_knight.glb`를 임시로 쓴다.
+- barkan — Sundered Bastion 25층 보스, 2026-10-18. 게임 모델은 `client/public/models/monsters/barkan.glb`다.
   - [원화](../images/monsters/barkan-concept.png): OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**,
     2026-10-18. OpenAI 생성 출력물 이용 조건 적용. [프롬프트·해시](barkan-concept-sources.json).
   - 본인 기준 왼쪽(화면 오른쪽) 뿔이 부러진 악마 군주로, 등에 박쥐형 가죽 날개가 있다. 갑옷은 견갑·목가리개·건틀릿·판금 하의·정강이받이만 남겨
@@ -106,7 +106,52 @@
     재실행: `blender -b --python tools/blender-scripts/cut_barkan_wing_holes.py -- assets/monsters/barkan/tripo_v2/heel_fixed.glb assets/monsters/barkan/tripo_v2/wing_holes.glb`.
     원본에 겹친 면·열린 경계가 있어 폐체적 Boolean 대신 각 삼각형의 기둥 내부를 제거한다.
     Python 보조 도구는 프로젝트 `.venv`의 NumPy·Shapely를 사용한다.
-    스케일·리깅·텍스처 축소·게임 적용은 아직 하지 않았다.
+  - 피팅·리깅 작업본(2026-10-18): `assets/monsters/barkan/rig_v1/barkan.blend`와 `barkan.glb`.
+    발바닥 0m부터 가장 높은 뿔·날개 끝까지 기준 포즈 높이를 **2.5m**로 정한 뒤 리깅했다.
+    Blender는 Metric·`scale_length=1`이며 메시·Armature 오브젝트 스케일은 `(1,1,1)`이다.
+    GLB의 모든 노드 스케일도 1이고 스케일 애니메이션은 없다. 게임 연결 시 확대 배율 없이 사용한다.
+    게임의 `monsters.csv`도 `scale=1`이며 임시 스켈레톤 나이트의 1.2배 확대를 제거했다.
+  - 기존 모듈형 남성의 Mixamo 호환 65본을 바르칸 체형과 T포즈에 맞추고, 날개 32본·손목 사슬 6본을 더해 총 103본으로 구성했다.
+    크기를 반영한 도너 표면에서 몸 가중치를 옮기고 손가락·날개·갑옷·사슬을 따로 보정했다.
+    원본의 12,086 triangles·UV·구멍을 유지하며 세 WebP 텍스처는 원본 바이트 그대로다.
+    로컬 가공이며 추가 유료 생성은 없다. 원본 Tripo·ImageGen 및 기존 Mixamo 출처·라이선스를 유지한다.
+  - `Idle`은 사용자가 Adobe Mixamo에서 내려받아 제공한 **Orc Idle**을 옮긴 5.33초 대기다(2026-10-18).
+    원본 `/mnt/y/web_downloads/Orc Idle.fbx`를 `assets/monsters/barkan/fbx/Orc_Idle.fbx`에 바이트 그대로 보관했다.
+    SHA-256: `7d1bbe85b789b3c8e99bcf2a96351d4deb8620ae9849f88542e0ee9205add36b`.
+    팔을 아래로 내리고 몸을 조금 앞으로 두는 원본 자세를 유지하며, 바르칸 체형에 맞춰 골반 이동과 접지를 보정했다.
+    기존 Mixamo 출처·이용 조건을 유지하며 로컬 변환만 했다. 추가 유료 생성은 없다.
+    **[미사용]** 스켈레톤 나이트의 `Idle.fbx`에서 옮긴 이전 대기는 두리번거림·구부린 허리·앞으로 모은 손 때문에 교체했다.
+  - `Walk`는 사용자가 Adobe Mixamo에서 내려받아 제공한 **Orc Walk**를 옮긴 약 1.2초 걷기다(2026-10-18).
+    원본 `/mnt/y/web_downloads/Orc Walk.fbx`를 `assets/monsters/barkan/fbx/Orc_Walk.fbx`에 바이트 그대로 보관했다.
+    SHA-256: `60ebcc04d684836fd052174751239f1b82e394c5b4095ef6cb8711c33da8bd3c`.
+    바르칸 체형에 맞춰 골반 이동과 접지를 보정하고, 전진 이동을 제거해 제자리에서 반복 재생한다.
+    원본 리그의 원점이 발바닥과 달라 골반 높이 비율로 이동을 확대하면 좌우 이동 폭이 70.6cm로 과장됐다.
+    상·하퇴 길이 합의 비율로 이동 크기를 맞추고 수평 이동의 평균을 중앙에 맞춰 좌우 폭을 13.6cm로 고쳤다.
+    같은 이동 크기 보정을 대기에도 적용하며 원본의 관절 회전은 유지한다.
+    기존 Mixamo 출처·이용 조건을 유지하며 로컬 변환만 했다. 추가 유료 생성은 없다.
+    **[미사용]** 스켈레톤 나이트의 `Walk.fbx`에서 옮긴 이전 걷기는 Orc Walk로 교체했다.
+    이동은 걷기만 사용한다. 게임 설정의 `animWalk`·`animRun`은 모두 `Walk`이며 `walkSpeed`·`runSpeed`도 3.0m/s로 같다. 로컬 던전에서 4.0m/s의 미끄러짐을 확인한 뒤 사용자 요청으로 3.0m/s로 조정했고 모션 재생 속도는 유지한다.
+    GLB·Blender 작업본·미리보기에서 `Run`을 제거했다. 이전 달리기 미리보기 URL도 걷기로 전환한다.
+    **[미사용]** 바르칸에 임시로 옮겼던 `assets/monsters/skeleton_knight/fbx/Run.fbx` 동작은 더 이상 포함하지 않는다.
+    날개는 대기·이동 중 작게 움직이며 `WingFold`는 별도로 키프레임을 만든 2초 접기·펼치기 검토 동작이다.
+    손목 사슬은 팔 움직임을 따라 위치를 옮기되 아래로 늘어지는 방향을 유지한다.
+  - 로컬 게임 연결본은 `assets/monsters/barkan/game_v1/barkan.glb`·`barkan.blend`와 `client/public/models/monsters/barkan.glb`다.
+    티어 5 갈라진 성채 25층의 기존 `barkan` 배치에 연결했다. 외형만 임시 해골 기사였으므로 보스 종류·층 배치는 바꾸지 않았다.
+    대기·걷기와 별도로 기존 `skeleton_knight/fbx/Attack.fbx`·`Death.fbx`를 옮긴 임시 공격·사망 동작을 포함한다.
+    공격은 1.25초, 사망은 약 2.58초이며 원본 Mixamo 출처·이용 조건을 유지한다. 게임 연결본에는 `WingFold`를 넣지 않는다.
+    기존 해골 기사 대검은 새 손에 피팅되지 않았으므로 제거했다. 최종 보스 전투·무기 피팅은 별도 단계다.
+    이동 속도 검토용 연결이며 작업용 4096² 텍스처를 유지한다. 원본 텍스처 바이트와 기준 크기를 보존한다.
+    [게임 연결 기록](barkan-game-v1.json). 게임 모델 검증은 아래 명령으로 실행한다.
+    재현: `blender -b --python-exit-code 1 --python tools/blender-scripts/animate_barkan.py -- assets/monsters/barkan/rig_v1/barkan.glb --game-output assets/monsters/barkan/game_v1/barkan.glb` → `node tools/validate-barkan-rig.mjs --game`.
+  - [리그·피팅 기록](barkan-rig-v1.json), [Three.js 검증 도구](../../tools/validate-barkan-rig.mjs).
+    개발 서버의 `/modular-character-preview.html?character=barkan`에서 기준 자세·대기·걷기·날개 접기를 확인한다.
+    상단의 **바르칸**으로 이동하며, 일시정지·재생 속도·프레임 슬라이더·뼈대·와이어프레임·1.9m 플레이어 비교를 제공한다.
+    [1.9m 플레이어와 크기 비교](../images/monsters/barkan-rig-size-comparison.png),
+    [날개 접기·펼치기 미리보기](../images/monsters/barkan-wing-fold.gif)는 보존 모델을 Blender에서 렌더한 검토 자료다.
+    검증은 실제 크기·스케일 1·접지·정규화 가중치·텍스처 보존·손가락 굽힘·날개 단독 변형을 확인한다.
+    재현: `.venv/bin/python tools/rig-barkan.py` →
+    `blender -b --python-exit-code 1 --python tools/blender-scripts/animate_barkan.py -- assets/monsters/barkan/rig_v1/barkan.glb` →
+    `node tools/validate-barkan-rig.mjs`.
 - SCP939 https://sketchfab.com/3d-models/scp939-79a749a5073b453d9d85875797bf45d7
   - 전송량 최적화 (2026-10-16): `scp939.edf348b1.glb`를 **5,776,536 → 1,395,636바이트(75.84% 감소)**로 줄였다.
     gzip level 6 예상 전송량은 **4,032,324 → 994,918바이트(75.33% 감소)**이며 다음 빌드 파일명은 `scp939.79bd676e.glb`다.

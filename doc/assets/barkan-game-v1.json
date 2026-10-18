@@ -1,0 +1,660 @@
+{
+  "date": "2026-10-18",
+  "rig_id": "barkan_meters_v1",
+  "height_m": 2.5,
+  "height_definition": "Ground to highest horn/wing point in the bind pose",
+  "units": "meters",
+  "runtime_scale": 1,
+  "geometry_scale_baked_before_binding": 2.528395061728395,
+  "geometry_offset_m": [
+    0.0,
+    1.25,
+    -0.54
+  ],
+  "sources": [
+    {
+      "path": "assets/monsters/barkan/tripo_v2/wing_holes.glb",
+      "sha256": "451e91bfdf41538374b1201965c320672f2085bb811d0d051ad34df204df2761"
+    },
+    {
+      "path": "assets/modular_human_male_01/fitted/base.glb",
+      "sha256": "0e629865af6c3feac3a4444e0cb2d5f2d3861bf2350d643cbff0f9858b83535a"
+    }
+  ],
+  "method": "Locally fitted Mixamo-compatible human hierarchy; existing body weights transferred through a proportion-fitted donor surface; fitted fingers and independent wing chains",
+  "rejected_attempt": "Voxel proxy bone-heat binding failed to find a solution for this surface; no geometry from that proxy is retained.",
+  "source_conditions": "Existing Tripo and concept source/license records apply. Existing project Mixamo skeleton reused; local processing, no paid generation.",
+  "joints": 103,
+  "humanoid_joints": 65,
+  "wing_joints": 32,
+  "chain_joints": 6,
+  "triangles": 12086,
+  "vertices": 19917,
+  "wing_vertices": 2601,
+  "unweighted_vertices": 0,
+  "max_weight_sum_error": 3.3306690738754696e-16,
+  "body_proxy_max_transfer_distance_m": 0.38785374845979587,
+  "landmarks_m": {
+    "Hips": [
+      0.0,
+      1.12,
+      -0.02
+    ],
+    "Spine": [
+      0.0,
+      1.3,
+      -0.01
+    ],
+    "Spine1": [
+      0.0,
+      1.48,
+      -0.015
+    ],
+    "Spine2": [
+      0.0,
+      1.68,
+      -0.02
+    ],
+    "Neck": [
+      0.0,
+      1.91,
+      0.015
+    ],
+    "Head": [
+      0.0,
+      2.055,
+      0.045
+    ],
+    "HeadTop_End": [
+      0.0,
+      2.175,
+      0.035
+    ],
+    "LeftUpLeg": [
+      0.205,
+      1.075,
+      -0.02
+    ],
+    "RightUpLeg": [
+      -0.205,
+      1.075,
+      -0.02
+    ],
+    "LeftLeg": [
+      0.285,
+      0.67,
+      -0.015
+    ],
+    "RightLeg": [
+      -0.285,
+      0.67,
+      -0.015
+    ],
+    "LeftFoot": [
+      0.36,
+      0.15,
+      -0.09
+    ],
+    "RightFoot": [
+      -0.36,
+      0.15,
+      -0.09
+    ],
+    "LeftToeBase": [
+      0.38,
+      0.065,
+      0.18
+    ],
+    "RightToeBase": [
+      -0.38,
+      0.065,
+      0.18
+    ],
+    "LeftToe_End": [
+      0.39,
+      0.035,
+      0.35
+    ],
+    "RightToe_End": [
+      -0.39,
+      0.035,
+      0.35
+    ],
+    "LeftShoulder": [
+      0.095,
+      1.84,
+      -0.025
+    ],
+    "RightShoulder": [
+      -0.095,
+      1.84,
+      -0.025
+    ],
+    "LeftArm": [
+      0.335,
+      1.745,
+      0.005
+    ],
+    "RightArm": [
+      -0.335,
+      1.745,
+      0.005
+    ],
+    "LeftForeArm": [
+      0.64,
+      1.645,
+      0.035
+    ],
+    "RightForeArm": [
+      -0.64,
+      1.645,
+      0.035
+    ],
+    "LeftHand": [
+      0.965,
+      1.615,
+      0.005
+    ],
+    "RightHand": [
+      -0.965,
+      1.615,
+      0.005
+    ],
+    "LeftHandIndex1": [
+      1.09,
+      1.645,
+      0.032
+    ],
+    "RightHandIndex1": [
+      -1.09,
+      1.645,
+      0.059
+    ],
+    "LeftHandIndex2": [
+      1.15042,
+      1.6233400000000002,
+      0.03542
+    ],
+    "RightHandIndex2": [
+      -1.14586,
+      1.6233400000000002,
+      0.062419999999999996
+    ],
+    "LeftHandIndex3": [
+      1.2044800000000002,
+      1.60396,
+      0.03848
+    ],
+    "RightHandIndex3": [
+      -1.19584,
+      1.60396,
+      0.06548000000000001
+    ],
+    "LeftHandIndex4": [
+      1.249,
+      1.588,
+      0.041
+    ],
+    "RightHandIndex4": [
+      -1.237,
+      1.588,
+      0.068
+    ],
+    "LeftHandMiddle1": [
+      1.095,
+      1.646,
+      -0.041
+    ],
+    "RightHandMiddle1": [
+      -1.095,
+      1.646,
+      -0.012
+    ],
+    "LeftHandMiddle2": [
+      1.16112,
+      1.61712,
+      -0.04024
+    ],
+    "RightHandMiddle2": [
+      -1.15694,
+      1.61712,
+      -0.012
+    ],
+    "LeftHandMiddle3": [
+      1.22028,
+      1.59128,
+      -0.03956
+    ],
+    "RightHandMiddle3": [
+      -1.21236,
+      1.59128,
+      -0.012
+    ],
+    "LeftHandMiddle4": [
+      1.269,
+      1.57,
+      -0.039
+    ],
+    "RightHandMiddle4": [
+      -1.258,
+      1.57,
+      -0.012
+    ],
+    "LeftHandRing1": [
+      1.08,
+      1.62,
+      -0.12
+    ],
+    "RightHandRing1": [
+      -1.08,
+      1.62,
+      -0.094
+    ],
+    "LeftHandRing2": [
+      1.12826,
+      1.5926399999999998,
+      -0.12037999999999999
+    ],
+    "RightHandRing2": [
+      -1.12484,
+      1.5926399999999998,
+      -0.09437999999999999
+    ],
+    "LeftHandRing3": [
+      1.17144,
+      1.56816,
+      -0.12072
+    ],
+    "RightHandRing3": [
+      -1.16496,
+      1.56816,
+      -0.09472
+    ],
+    "LeftHandRing4": [
+      1.207,
+      1.548,
+      -0.121
+    ],
+    "RightHandRing4": [
+      -1.198,
+      1.548,
+      -0.095
+    ],
+    "LeftHandPinky1": [
+      1.065,
+      1.635,
+      -0.133
+    ],
+    "RightHandPinky1": [
+      -1.065,
+      1.635,
+      -0.133
+    ],
+    "LeftHandPinky2": [
+      1.1144,
+      1.6217000000000001,
+      -0.13756000000000002
+    ],
+    "RightHandPinky2": [
+      -1.1144,
+      1.6217000000000001,
+      -0.13756000000000002
+    ],
+    "LeftHandPinky3": [
+      1.1586,
+      1.6098,
+      -0.14164
+    ],
+    "RightHandPinky3": [
+      -1.1586,
+      1.6098,
+      -0.14164
+    ],
+    "LeftHandPinky4": [
+      1.195,
+      1.6,
+      -0.145
+    ],
+    "RightHandPinky4": [
+      -1.195,
+      1.6,
+      -0.145
+    ],
+    "LeftHandThumb1": [
+      1.015,
+      1.575,
+      0.07
+    ],
+    "RightHandThumb1": [
+      -1.015,
+      1.575,
+      0.095
+    ],
+    "LeftHandThumb2": [
+      1.05414,
+      1.5510599999999999,
+      0.06886
+    ],
+    "RightHandThumb2": [
+      -1.0492,
+      1.5510599999999999,
+      0.09348000000000001
+    ],
+    "LeftHandThumb3": [
+      1.0891600000000001,
+      1.52964,
+      0.06784
+    ],
+    "RightHandThumb3": [
+      -1.0798,
+      1.52964,
+      0.09212
+    ],
+    "LeftHandThumb4": [
+      1.118,
+      1.512,
+      0.067
+    ],
+    "RightHandThumb4": [
+      -1.105,
+      1.512,
+      0.091
+    ],
+    "LeftWingRoot": [
+      0.16,
+      1.73,
+      -0.27
+    ],
+    "LeftWingArm": [
+      0.38,
+      2.02,
+      -0.43
+    ],
+    "LeftWingWrist": [
+      0.625,
+      2.43,
+      -0.75
+    ],
+    "LeftWingHook_End": [
+      0.47,
+      2.405,
+      -0.78
+    ],
+    "LeftWingFinger1": [
+      0.625,
+      2.43,
+      -0.75
+    ],
+    "LeftWingFinger1Mid": [
+      0.97,
+      2.13,
+      -1.14
+    ],
+    "LeftWingFinger1_End": [
+      1.26,
+      1.69,
+      -1.43
+    ],
+    "LeftWingFinger2": [
+      0.625,
+      2.43,
+      -0.75
+    ],
+    "LeftWingFinger2Mid": [
+      0.865,
+      2.01,
+      -0.96
+    ],
+    "LeftWingFinger2_End": [
+      1.005,
+      1.65,
+      -1.09
+    ],
+    "LeftWingFinger3": [
+      0.625,
+      2.43,
+      -0.75
+    ],
+    "LeftWingFinger3Mid": [
+      0.72,
+      1.99,
+      -0.7
+    ],
+    "LeftWingFinger3_End": [
+      0.77,
+      1.52,
+      -0.79
+    ],
+    "LeftWingFinger4": [
+      0.625,
+      2.43,
+      -0.75
+    ],
+    "LeftWingFinger4Mid": [
+      0.52,
+      1.94,
+      -0.46
+    ],
+    "LeftWingFinger4_End": [
+      0.48,
+      1.46,
+      -0.46
+    ],
+    "RightWingRoot": [
+      -0.16,
+      1.73,
+      -0.27
+    ],
+    "RightWingArm": [
+      -0.38,
+      2.02,
+      -0.43
+    ],
+    "RightWingWrist": [
+      -0.625,
+      2.43,
+      -0.75
+    ],
+    "RightWingHook_End": [
+      -0.47,
+      2.405,
+      -0.78
+    ],
+    "RightWingFinger1": [
+      -0.625,
+      2.43,
+      -0.75
+    ],
+    "RightWingFinger1Mid": [
+      -0.97,
+      2.13,
+      -1.14
+    ],
+    "RightWingFinger1_End": [
+      -1.26,
+      1.69,
+      -1.43
+    ],
+    "RightWingFinger2": [
+      -0.625,
+      2.43,
+      -0.75
+    ],
+    "RightWingFinger2Mid": [
+      -0.865,
+      2.01,
+      -0.96
+    ],
+    "RightWingFinger2_End": [
+      -1.005,
+      1.65,
+      -1.09
+    ],
+    "RightWingFinger3": [
+      -0.625,
+      2.43,
+      -0.75
+    ],
+    "RightWingFinger3Mid": [
+      -0.72,
+      1.99,
+      -0.7
+    ],
+    "RightWingFinger3_End": [
+      -0.77,
+      1.52,
+      -0.79
+    ],
+    "RightWingFinger4": [
+      -0.625,
+      2.43,
+      -0.75
+    ],
+    "RightWingFinger4Mid": [
+      -0.52,
+      1.94,
+      -0.46
+    ],
+    "RightWingFinger4_End": [
+      -0.48,
+      1.46,
+      -0.46
+    ],
+    "LeftWristChain": [
+      0.865,
+      1.59,
+      -0.015
+    ],
+    "LeftWristChainMid": [
+      0.865,
+      1.4,
+      -0.015
+    ],
+    "LeftWristChain_End": [
+      0.865,
+      1.22,
+      -0.015
+    ],
+    "RightWristChain": [
+      -0.865,
+      1.59,
+      -0.015
+    ],
+    "RightWristChainMid": [
+      -0.865,
+      1.4,
+      -0.015
+    ],
+    "RightWristChain_End": [
+      -0.865,
+      1.22,
+      -0.015
+    ]
+  },
+  "output": "assets/monsters/barkan/game_v1/barkan.glb",
+  "animations": [
+    {
+      "name": "Idle",
+      "frames": 129,
+      "duration": 5.333333333333333,
+      "min_ground_m": -3.501772880554199e-07,
+      "max_ground_m": 2.7589510409598006e-07,
+      "max_height_m": 2.6736907958984375,
+      "root_translation_ratio": 90.12488599844568,
+      "root_translation_scale_basis": "summed upper/lower leg lengths; independent of source origin",
+      "lateral_root_span_m": 0.013604434207081795,
+      "source": "assets/monsters/barkan/fbx/Orc_Idle.fbx",
+      "source_sha256": "7d1bbe85b789b3c8e99bcf2a96351d4deb8620ae9849f88542e0ee9205add36b"
+    },
+    {
+      "name": "Walk",
+      "frames": 30,
+      "duration": 1.2,
+      "min_ground_m": -4.172325134277344e-07,
+      "max_ground_m": 1.3404496712610126e-07,
+      "max_height_m": 2.7101995944976807,
+      "root_translation_ratio": 90.12488599844568,
+      "root_translation_scale_basis": "summed upper/lower leg lengths; independent of source origin",
+      "lateral_root_span_m": 0.13610729575157166,
+      "source": "assets/monsters/barkan/fbx/Orc_Walk.fbx",
+      "source_sha256": "60ebcc04d684836fd052174751239f1b82e394c5b4095ef6cb8711c33da8bd3c"
+    },
+    {
+      "name": "Attack",
+      "frames": 31,
+      "duration": 1.25,
+      "min_ground_m": -2.942979335784912e-07,
+      "max_ground_m": 3.241002559661865e-07,
+      "max_height_m": 2.9035282135009766,
+      "root_translation_ratio": 1.0613838481697038,
+      "root_translation_scale_basis": "summed upper/lower leg lengths; independent of source origin",
+      "lateral_root_span_m": 0.11233741417527199,
+      "source": "assets/monsters/skeleton_knight/fbx/Attack.fbx",
+      "source_sha256": "9edc062273a5850c1fcdc10aabd5d0a1d893c1fad78b7fd78a94e0d56c425166"
+    },
+    {
+      "name": "Death",
+      "frames": 63,
+      "duration": 2.5833333333333335,
+      "min_ground_m": -7.152557373046875e-07,
+      "max_ground_m": 7.152557373046875e-07,
+      "max_height_m": 3.046999931335449,
+      "root_translation_ratio": 0.5533185195728157,
+      "root_translation_scale_basis": "summed upper/lower leg lengths; independent of source origin",
+      "lateral_root_span_m": 0.15740662440657616,
+      "source": "assets/monsters/skeleton_knight/fbx/Death.fbx",
+      "source_sha256": "6bcca73d1e8a2f2b476d7e7d1087c326091d9b0437adca13dd40e5f4f10a3ef3"
+    }
+  ],
+  "blender_units": {
+    "system": "METRIC",
+    "scale_length": 1,
+    "length_unit": "METERS"
+  },
+  "blender_object_scales": {
+    "BarkanRig": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "Barkan": [
+      1.0,
+      1.0,
+      1.0
+    ]
+  },
+  "output_sha256": "ec245fe78c840b4c55ab31c11c14828d6856271d152c6a93643201a72128643a",
+  "idle_retargeting": {
+    "animation": "Orc Idle",
+    "provider": "Adobe Mixamo",
+    "supplied_by": "user",
+    "download_date": "2026-10-18",
+    "original_path": "/mnt/y/web_downloads/Orc Idle.fbx",
+    "source_conditions": "User-provided Mixamo download; original Mixamo terms apply; local retargeting, no paid generation.",
+    "method": "Retarget the original Orc Idle body motion to the fitted Barkan rig; scale root motion by the leg-length ratio, keep the feet grounded, and add independent wing sway and hanging wrist chains.",
+    "superseded": {
+      "status": "unused",
+      "source": "assets/monsters/skeleton_knight/fbx/Idle.fbx"
+    }
+  },
+  "walk_retargeting": {
+    "animation": "Orc Walk",
+    "provider": "Adobe Mixamo",
+    "supplied_by": "user",
+    "download_date": "2026-10-18",
+    "original_path": "/mnt/y/web_downloads/Orc Walk.fbx",
+    "source_conditions": "User-provided Mixamo download; original Mixamo terms apply; local retargeting, no paid generation.",
+    "method": "Retarget the original Orc Walk body motion to the fitted Barkan rig; scale root motion by the leg-length ratio, remove forward travel and center horizontal sway for in-place playback, keep the feet grounded, and add independent wing sway and hanging wrist chains.",
+    "superseded": {
+      "status": "unused",
+      "source": "assets/monsters/skeleton_knight/fbx/Walk.fbx"
+    }
+  },
+  "locomotion": {
+    "movement_clip": "Walk",
+    "running_enabled": false,
+    "unused_run_source": "assets/monsters/skeleton_knight/fbx/Run.fbx"
+  },
+  "runtime": "client/public/models/monsters/barkan.glb",
+  "combat_motion_status": "Temporary retargeted skeleton knight Attack and Death; unarmed movement review, final boss attacks and weapon fitting pending."
+}

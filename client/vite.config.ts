@@ -112,6 +112,10 @@ function modularCharacterPreview(): Plugin {
     'helmet_barbarian',
   ])
   const fixed: Record<string, URL> = {
+    barkan: new URL(
+      '../assets/monsters/barkan/rig_v1/barkan.glb',
+      import.meta.url
+    ),
     helmet_brilliance: new URL(
       '../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb',
       import.meta.url

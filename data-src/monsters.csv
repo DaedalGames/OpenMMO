@@ -19,4 +19,4 @@ skeleton_weak,Forgotten Dead,monsters/skeleton.glb,40,8,14,,0.78,3.0,1.6,32.0,30
 skeleton,Skeleton,monsters/skeleton.glb,,16,20,20,0.78,3.0,1.6,32.0,3000,1042,1042,6d8,brave,Idle,Walk,Run,Attack,Idle,,Death,Death,,,,false,bone,,,,,,,,,,,0.45,false,/sounds/skeleton-death.ogg,
 skeleton_warrior,Skeleton Warrior,monsters/skeleton_warrior.glb,,20,24,,0.8,3.1,2.2,32.0,2000,625,625,6d8,brave,Idle,Walk,Run,Attack,Idle,,Death,Death,morningstar,0.1,R_Hand,false,metal,,,,false,,,0.103,0.02,-0.004,,0.55,false,/sounds/skeleton-death.ogg,
 skeleton_knight,Skeleton Knight,monsters/skeleton_knight.glb,350,25,32,,0.83,3.2,2.6,32,2800,1083,1083,6d12,brave,Idle,Walk,Run,Attack,Idle,,Death,Death,weapons/skeleton_greatsword.glb,0,R_Hand,false,metal,,,,true,,,0.11,0,0,,0.6,false,,
-barkan,Barkan,monsters/skeleton_knight.glb,600,30,36,,0.83,3.2,2.6,32,2800,1083,1083,7d12,brave,Idle,Walk,Run,Attack,Idle,,Death,Death,weapons/skeleton_greatsword.glb,0,R_Hand,false,metal,,,1.2,true,,,0.11,0,0,,0.6,false,,
+barkan,Barkan,monsters/barkan.glb,600,30,36,,3.0,3.0,2.6,32,2800,1083,1083,7d12,brave,Idle,Walk,Walk,Attack,Idle,,Death,Death,,0,,false,metal,,,1,true,,,,,,,0.6,false,,

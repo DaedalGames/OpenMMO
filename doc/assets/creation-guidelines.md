@@ -54,6 +54,14 @@ These guidelines were confirmed by the user on 2026-09-20 and apply until the us
   the total budget among parts; do not apply the full character target or the general item target to every part.
 - These are approximate targets, not exact caps. Do not decimate generated models solely to match the numbers.
 
+## Character Scale and Rigging Units
+
+- Fit and rig characters in actual metres from the start (user-confirmed 2026-10-18).
+- Use Blender Metric units with `scale_length = 1`; bake the intended size into mesh and bone coordinates before binding.
+- Keep mesh and armature object scales at `(1, 1, 1)` and export at runtime scale `1`.
+- Do not author a one-metre character and apply its intended height through a later game multiplier.
+- The player reference is approximately **1.9m**. Barkan's bind-pose height is **2.5m**, measured from the soles to the highest horn/wing point.
+
 ## Mixamo Upload Preparation
 
 - For Mixamo characters, prepare the neutral A/T pose with palms facing down/toward the body, not forward (user-confirmed project requirement, 2026-09-28). Inspect finger separation from a side view instead of twisting the forearms to expose the palms in front views.
