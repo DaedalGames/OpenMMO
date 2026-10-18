@@ -146,6 +146,28 @@
     재현: `blender -b --python-exit-code 1 --python tools/blender-scripts/animate_barkan.py -- assets/monsters/barkan/rig_v1/barkan.glb --game-output assets/monsters/barkan/game_v1/barkan.glb` → `node tools/validate-barkan-rig.mjs --game`.
   - [리그·피팅 기록](barkan-rig-v1.json), [Three.js 검증 도구](../../tools/validate-barkan-rig.mjs).
     개발 서버의 `/modular-character-preview.html?character=barkan`에서 기준 자세·대기·걷기·날개 접기를 확인한다.
+  - 룬 검격 시각 초안(2026-10-18): 미리보기의 `RuneSlash`에서 플레이어의
+    `enchant_weapon`으로 검을 머리 위에 들고 빛내는 1.6초 전조 뒤, `slash1`의 0.3초 준비 자세로 연결한다.
+    원본의 첫 되감기는 건너뛰고 0.55초 동안 연결한 뒤, 첫 0.16초에 재생 속도를 올려 베기를 시작한다.
+    회복과 대기를 포함한 전체 길이는 4.2초다.
+    원본은 `client/public/models/characters/modular_male/animations/social.glb`와
+    `combat_melee.glb`이고, 기존 캐릭터 리타게팅 경로로 바르칸 체형에 맞춘다.
+    `client/src/lib/utils/barkanRuneSlash.ts`는 클립을 연결해 60fps 키프레임으로 굽는다.
+    연결 중 검 방향은 월드 좌표에서 보간해 팔과 장착 회전이 겹쳐 검을 뒤집지 않도록 한다.
+    위팔은 어깨의 앞쪽 축을 기준으로 바깥으로 벌린 뒤 원래 동작으로 돌아온다.
+    2.30초 전후의 얼굴·가슴 관통을 피하기 위한 체형 보정이며 팔꿈치와 손목은 원본 클립의 회전을 유지한다.
+    검 들기에는 플레이어의 `EnchantWeaponGrip`을 재사용하고,
+    베기에는 플레이어의 검 장착 회전을 본의 기준 자세 차이에 맞춰 옮긴다.
+    오른손 손가락은 바르칸의 기존 파지를 유지한다. 발바닥 접지와 손목 사슬 방향도 보정한다.
+    **[미사용]** 이전 3.2초 IK 가로베기는 손목 뒤집힘과 팔 변형으로 사용자 검토에서 폐기했다.
+    `client/src/lib/effects/barkan-rune-slash.ts`는 기존 룬 발광 맵의 강도를 높이고,
+    실제 검 궤적에 맞춘 주황 잔상과 조명을 더한다. 일시정지·프레임 이동에도 효과 시간을 맞춘다.
+    기존 Mixamo·Tripo 출처와 이용 조건을 유지한 로컬 코드 제작이며 추가 유료 생성이나 새 이미지·모델은 없다.
+    평타 선택 항목은 게임 모델의 기존 1.25초 `Attack`을 재생한다.
+    룬 검격의 게임 내 선택·전조 동기화·피해 판정은 아직 연결하지 않았다.
+    검증: `node tools/validate-barkan-rune-slash.mjs` — 실제 검 메시의 바닥 간격,
+    검을 세운 전조, `slash1` 팔꿈치·손목 회전의 보존, 연결의 연속성과 원래 자세 복귀를 확인한다.
+    연결·베기 구간은 120fps로 검의 중앙·양쪽 날과 실제 머리·몸통 메시의 교차가 없는지 검사한다.
     상단의 **바르칸**으로 이동하며, 일시정지·재생 속도·프레임 슬라이더·뼈대·와이어프레임·1.9m 플레이어 비교를 제공한다.
     [1.9m 플레이어와 크기 비교](../images/monsters/barkan-rig-size-comparison.png),
     [날개 접기·펼치기 미리보기](../images/monsters/barkan-wing-fold.gif)는 보존 모델을 Blender에서 렌더한 검토 자료다.

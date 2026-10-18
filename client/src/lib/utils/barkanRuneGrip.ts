@@ -5,6 +5,7 @@ const curl = [30, 60, 35].map(THREE.MathUtils.degToRad)
 const armSpread = THREE.MathUtils.degToRad(-22)
 
 export function withBarkanRuneGrip(clip: THREE.AnimationClip) {
+  if (clip.name === 'RuneSlash') return clip
   const cached = cache.get(clip)
   if (cached) return cached
   const result = clip.clone()

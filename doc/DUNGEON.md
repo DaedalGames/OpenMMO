@@ -28,7 +28,7 @@ node tools/reserve-dungeon-land.mjs --dungeon skeleton_crypt --ownership /tmp/ow
 
 설계는 [TIER5_FIELD_RAID.md](TIER5_FIELD_RAID.md). 1단계(던전 본체)만 구현했다.
 
-- 입구: `world(-1950, 1.1, 5456)`, 남향(`entranceDir=s`). 25층, 최종 보스 `barkan`(레벨 30·HP 600·guard 36·피해 7d12). 모델은 `barkan.glb`이며 기준 높이 2.5m·스케일 1이다. 이동·추적은 Orc Walk로 3.0m/s이며, 맨손으로 표시한다. 공격·사망은 기존 Mixamo 동작을 옮긴 임시 모션이고 전조 패턴은 없다.
+- 입구: `world(-1950, 1.1, 5456)`, 남향(`entranceDir=s`). 25층, 최종 보스 `barkan`(레벨 30·HP 600·guard 36·피해 7d12). 모델은 `barkan.glb`이며 기준 높이 2.5m·스케일 1이다. 이동·추적은 Orc Walk로 3.0m/s이며, 오른손에 룬 블레이드를 장착한다. 공격·사망은 기존 Mixamo 동작을 옮긴 임시 모션이고 게임 내 전조 패턴은 없다. 룬 검격의 모션·발광 초안은 캐릭터 미리보기에서 검토할 수 있다.
 - 입구 주변 80×80m 범위의 지형은 모두 입구 높이 − 1m 이상이어야 한다. 서버는 이 범위에서 `입구 높이 − 4m × 층` ±2.5m를 그 층으로 판정하므로, 낮은 지면은 지하로 취급된다. 그래서 경사지가 아닌 평지에 둔다.
 - 몬스터는 `data-src/dungeon_spawns.csv`의 `bastion` 그룹이다. 모든 던전의 스폰은 이 파일에서 그룹·몬스터·깊이 범위별 행으로 정의하므로, 같은 몬스터를 던전마다 다른 깊이에 둘 수 있다. 모두 선공형이다.
 - 층수 상한은 `MAX_FLOORS`(25)이고, `floors`가 비어 있는 던전의 무작위 층수 범위 `MIN_DRAWN_FLOORS..=MAX_DRAWN_FLOORS`(5–20)는 기존 배치를 지키기 위해 그대로 둔다. 깊이 보정 몬스터 레벨 상한은 25다.

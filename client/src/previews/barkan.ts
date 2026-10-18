@@ -2,9 +2,20 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 import { disposeObjects } from './dispose-objects'
 import { getMonsterDef, parseWeaponRotation } from '../lib/data/monsterDefs'
 import { withBarkanRuneGrip } from '../lib/utils/barkanRuneGrip'
+import {
+  BARKAN_RUNE_SLASH,
+  createBarkanRuneSlash,
+} from '../lib/utils/barkanRuneSlash'
+import { createBarkanRuneSlashEffect } from '../lib/effects/barkan-rune-slash'
+import { retargetAnimationsForCharacterModel } from '../lib/utils/characterAnimationUtils'
+import { parseModularHandProfile } from '../lib/utils/modularCharacter'
 
 export let barkanPreview:
   | {
@@ -41,8 +52,11 @@ export async function showBarkan(
         <option value="Bind">기준 자세 · T포즈</option>
         <option value="Idle">대기</option>
         <option value="Walk">걷기</option>
+        <option value="Attack">평타 · 임시 공격</option>
+        <option value="RuneSlash">룬 검격 · 검 들기 → 슬래시 1</option>
         <option value="WingFold">날개 접기·펼치기</option>
       </select>
+      <p id="barkan-phase" class="details" aria-live="polite"></p>
       <div class="buttons">
         <button id="barkan-pause" type="button">일시정지</button>
         <button id="barkan-replay" type="button">처음부터</button>
@@ -103,10 +117,19 @@ export async function showBarkan(
       new THREE.MeshStandardMaterial({ color: '#7f9daa', roughness: 1 }),
   }))
   const definition = getMonsterDef('barkan')!
-  const [gltf, player, sword] = await Promise.all([
+  const [gltf, player, sword, combat, social, melee] = await Promise.all([
     load(new GLTFLoader(), '/__modular-character/parts/barkan.glb'),
     load(referenceLoader, '/__modular-character/parts/base.glb'),
     load(new GLTFLoader(), `/models/${definition.weapon}`),
+    load(new GLTFLoader(), `/models/${definition.model}`),
+    load(
+      new GLTFLoader(),
+      '/models/characters/modular_male/animations/social.glb'
+    ),
+    load(
+      new GLTFLoader(),
+      '/models/characters/modular_male/animations/combat_melee.glb'
+    ),
   ])
   if (disposed()) return
   const model = gltf.scene
@@ -117,6 +140,7 @@ export async function showBarkan(
   scene.add(model, reference)
   scene.updateMatrixWorld(true)
   const modelBounds = new THREE.Box3().setFromObject(model)
+  const runeBounds = new THREE.Box3()
   const weapon = sword.scene
   weapon.name = 'BarkanRuneBlade'
   weapon.position.set(
@@ -225,6 +249,7 @@ export async function showBarkan(
     model.updateWorldMatrix(true, true)
     const bounds = modelBounds.clone()
     if (weapon.visible) bounds.union(new THREE.Box3().setFromObject(weapon))
+    if (weapon.visible && motion.value === 'RuneSlash') bounds.union(runeBounds)
     if (reference.visible && !['wings', 'weapon'].includes(view.value))
       bounds.union(new THREE.Box3().setFromObject(reference))
     const sphere = bounds.getBoundingSphere(new THREE.Sphere())
@@ -266,6 +291,63 @@ export async function showBarkan(
   let action: THREE.AnimationAction | undefined
   let paused = false
   const clips = new Map(gltf.animations.map((clip) => [clip.name, clip]))
+  const attack = combat.animations.find((clip) => clip.name === 'Attack')
+  if (attack) clips.set('Attack', attack)
+  status.textContent = '플레이어의 검 들기와 슬래시 1을 바르칸에 맞추는 중…'
+  const [[enchant], [slash]] = await Promise.all([
+    retargetAnimationsForCharacterModel(
+      model,
+      social.scene,
+      social.animations.filter((clip) => clip.name === 'enchant_weapon')
+    ),
+    retargetAnimationsForCharacterModel(
+      model,
+      melee.scene,
+      melee.animations.filter((clip) => clip.name === 'slash1')
+    ),
+  ])
+  if (disposed()) return
+  if (!enchant || !slash)
+    throw new Error('룬 검격에 필요한 플레이어 동작이 없습니다.')
+  const profileResponse = await fetch('/__modular-character/hand-grips.json')
+  if (!profileResponse.ok) throw new Error('플레이어 검 파지 설정이 없습니다.')
+  const profile = parseModularHandProfile(await profileResponse.json())
+  if (disposed()) return
+  const slashGrip = hand
+    .getWorldQuaternion(new THREE.Quaternion())
+    .invert()
+    .multiply(
+      melee.scene
+        .getObjectByName('RightHand')!
+        .getWorldQuaternion(new THREE.Quaternion())
+    )
+    .multiply(new THREE.Quaternion().fromArray(profile.iron_sword.quaternion))
+  const runeSlash = createBarkanRuneSlash(
+    model,
+    withBarkanRuneGrip(clips.get('Idle')!),
+    enchant,
+    slash,
+    slashGrip
+  )
+  clips.set('RuneSlash', runeSlash)
+  const runeEffect = createBarkanRuneSlashEffect(model, weapon, runeSlash)
+  runeBounds.copy(runeEffect.bounds)
+  cleanup.push(() => runeEffect.dispose())
+  const phase = el('phase')
+  const composer = new EffectComposer(renderer)
+  composer.addPass(new RenderPass(scene, camera))
+  const bloom = new UnrealBloomPass(
+    new THREE.Vector2(host.clientWidth, host.clientHeight),
+    0.65,
+    0.35,
+    1.4
+  )
+  composer.addPass(bloom)
+  composer.addPass(new OutputPass())
+  cleanup.push(() => {
+    for (const pass of composer.passes) pass.dispose()
+    composer.dispose()
+  })
   const play = () => {
     mixer.stopAllAction()
     const originalClip = clips.get(motion.value)
@@ -278,6 +360,7 @@ export async function showBarkan(
     pause.disabled = replay.disabled = scrub.disabled = !action
     scrub.value = '0'
     mixer.update(0)
+    runeEffect.update(0, motion.value === 'RuneSlash')
     remember()
   }
   motion.onchange = () => {
@@ -307,6 +390,7 @@ export async function showBarkan(
     camera.aspect = host.clientWidth / Math.max(host.clientHeight, 1)
     camera.updateProjectionMatrix()
     renderer.setSize(host.clientWidth, host.clientHeight)
+    composer.setSize(host.clientWidth, host.clientHeight)
   }
   const observer = new ResizeObserver(resize)
   observer.observe(host)
@@ -321,8 +405,24 @@ export async function showBarkan(
     if (!paused) mixer.update(dt * Number(speed.value))
     if (action) scrub.value = String(action.time / action.getClip().duration)
     time.textContent = `${(action?.time ?? 0).toFixed(2)} / ${(action?.getClip().duration ?? 0).toFixed(2)}초`
+    const runeActive = motion.value === 'RuneSlash'
+    const moment = action?.time ?? 0
+    runeEffect.update(moment, runeActive)
+    const phaseText = runeActive
+      ? moment < BARKAN_RUNE_SLASH.windup
+        ? '전조 · 검의 룬이 빛납니다. 정면에서 벗어나세요.'
+        : moment < BARKAN_RUNE_SLASH.strikeStart
+          ? '공격 준비 · 검을 내려 베기를 준비합니다.'
+          : moment < BARKAN_RUNE_SLASH.strikeEnd
+            ? '룬 검격 · 전방을 크게 벱니다.'
+            : '회복 · 자세를 되돌리는 동안 반격할 수 있습니다.'
+      : motion.value === 'Attack'
+        ? '기존 게임에 연결된 1.25초 임시 평타입니다.'
+        : ''
+    if (phase.textContent !== phaseText) phase.textContent = phaseText
     controls.update()
-    renderer.render(scene, camera)
+    if (runeActive) composer.render()
+    else renderer.render(scene, camera)
   })
   barkanPreview = {
     model,
