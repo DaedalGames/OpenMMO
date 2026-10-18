@@ -139,7 +139,8 @@
     티어 5 갈라진 성채 25층의 기존 `barkan` 배치에 연결했다. 외형만 임시 해골 기사였으므로 보스 종류·층 배치는 바꾸지 않았다.
     대기·걷기와 별도로 기존 `skeleton_knight/fbx/Attack.fbx`·`Death.fbx`를 옮긴 임시 공격·사망 동작을 포함한다.
     공격은 1.25초, 사망은 약 2.58초이며 원본 Mixamo 출처·이용 조건을 유지한다. 게임 연결본에는 `WingFold`를 넣지 않는다.
-    기존 해골 기사 대검은 새 손에 피팅되지 않았으므로 제거했다. 최종 보스 전투·무기 피팅은 별도 단계다.
+    기존 해골 기사 대검은 제거했고, 원화에서 제작한 [룬 블레이드](items.md#rune-blade)를 오른손에 피팅했다.
+    룬 블레이드 장착 시 손가락을 더 굽힌 복제 클립을 사용한다. 최종 보스 전투와 양손 전용 동작은 별도 단계다.
     이동 속도 검토용 연결이며 작업용 4096² 텍스처를 유지한다. 원본 텍스처 바이트와 기준 크기를 보존한다.
     [게임 연결 기록](barkan-game-v1.json). 게임 모델 검증은 아래 명령으로 실행한다.
     재현: `blender -b --python-exit-code 1 --python tools/blender-scripts/animate_barkan.py -- assets/monsters/barkan/rig_v1/barkan.glb --game-output assets/monsters/barkan/game_v1/barkan.glb` → `node tools/validate-barkan-rig.mjs --game`.

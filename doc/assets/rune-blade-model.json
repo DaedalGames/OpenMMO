@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-18",
+  "source": "assets/items/rune_blade/tripo_v1/model_url.glb",
+  "source_sha256": "0fe456106e4d9773332966729a68d2399298bb3cd1a0727b201875ab88f20a3b",
+  "generation_record": "assets/items/rune_blade/tripo_v1/generation.json",
+  "tool": "Tripo API",
+  "tier": "Paid API credits; user purchased 1000 credits",
+  "license": "Tripo Terms of User Agreement; source image provenance retained separately",
+  "license_url": "https://developers.tripo3d.ai/en/terms",
+  "task_id": "dc10e570-e8e0-45ec-93f7-ecfa81a86a8f",
+  "credits_consumed": 120.0,
+  "parameters": {
+    "model": "P2-20260801",
+    "quad": false,
+    "face_limit": 4000,
+    "texture": true,
+    "pbr": true,
+    "texture_quality": "detailed",
+    "texture_version": "v3.5-20260815",
+    "delight": true,
+    "texture_alignment": "original_image",
+    "orientation": "align_image",
+    "auto_size": false,
+    "export_uv": true,
+    "model_seed": 102018,
+    "texture_seed": 102018,
+    "enable_image_autofix": false
+  },
+  "method": "Preserve generated topology and UVs; align blade to +X; bake metric size and grip origin; derive orange rune emission from the base color; resize PBR maps to 1024px.",
+  "length_m": 2.1,
+  "grip_fraction_from_pommel": 0.23,
+  "blade_tip_x_m": 1.6170000000000002,
+  "triangles": 4518,
+  "dimensions_blender_xyz_m": [
+    2.0999999046325684,
+    0.10361504554748535,
+    0.4298485517501831
+  ],
+  "scale": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "model": "client/public/models/weapons/rune_blade.glb",
+  "icon": "client/public/items/weapons/rune_blade.png",
+  "blender": "assets/items/rune_blade/rune_blade.blend"
+}

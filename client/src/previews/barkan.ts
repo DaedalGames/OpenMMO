@@ -3,11 +3,14 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { disposeObjects } from './dispose-objects'
+import { getMonsterDef, parseWeaponRotation } from '../lib/data/monsterDefs'
+import { withBarkanRuneGrip } from '../lib/utils/barkanRuneGrip'
 
 export let barkanPreview:
   | {
       model: THREE.Group
       reference: THREE.Group
+      weapon: THREE.Group
       mixer: THREE.AnimationMixer
       currentAction: () => THREE.AnimationAction | undefined
     }
@@ -22,7 +25,7 @@ export async function showBarkan(
   document.title = '바르칸 · 캐릭터 미리보기'
   document.querySelector('h1')!.textContent = '바르칸 미리보기'
   document.querySelector('header p:last-child')!.textContent =
-    '2.5m 바르칸의 크기와 리깅, 날개와 몸의 움직임을 살펴보세요.'
+    '2.5m 바르칸의 룬 블레이드 파지와 날개, 몸의 움직임을 살펴보세요.'
   document
     .querySelector('nav[aria-label="광휘의 투구 착용 비교"]')
     ?.setAttribute('hidden', '')
@@ -59,7 +62,9 @@ export async function showBarkan(
         <option value="side">측면</option>
         <option value="back">후면</option>
         <option value="wings">날개 확대</option>
+        <option value="weapon">룬 블레이드 확대</option>
       </select>
+      <label class="toggle"><input id="barkan-weapon" type="checkbox" checked /> 룬 블레이드 장착</label>
       <label class="toggle"><input id="barkan-reference" type="checkbox" checked /> 1.9m 플레이어와 크기 비교</label>
       <label class="toggle"><input id="barkan-skeleton" type="checkbox" /> 뼈대 보기</label>
       <label class="toggle"><input id="barkan-wireframe" type="checkbox" /> 와이어프레임</label>
@@ -75,6 +80,7 @@ export async function showBarkan(
   const motion = el<HTMLSelectElement>('motion')
   const view = el<HTMLSelectElement>('view')
   const referenceToggle = el<HTMLInputElement>('reference')
+  const weaponToggle = el<HTMLInputElement>('weapon')
   const scrub = el<HTMLInputElement>('scrub')
   const speed = el<HTMLSelectElement>('speed')
   const pause = el<HTMLButtonElement>('pause')
@@ -96,9 +102,11 @@ export async function showBarkan(
     loadMaterial: async () =>
       new THREE.MeshStandardMaterial({ color: '#7f9daa', roughness: 1 }),
   }))
-  const [gltf, player] = await Promise.all([
+  const definition = getMonsterDef('barkan')!
+  const [gltf, player, sword] = await Promise.all([
     load(new GLTFLoader(), '/__modular-character/parts/barkan.glb'),
     load(referenceLoader, '/__modular-character/parts/base.glb'),
+    load(new GLTFLoader(), `/models/${definition.weapon}`),
   ])
   if (disposed()) return
   const model = gltf.scene
@@ -109,6 +117,19 @@ export async function showBarkan(
   scene.add(model, reference)
   scene.updateMatrixWorld(true)
   const modelBounds = new THREE.Box3().setFromObject(model)
+  const weapon = sword.scene
+  weapon.name = 'BarkanRuneBlade'
+  weapon.position.set(
+    definition.weaponOffsetX ?? 0,
+    definition.weaponOffset ?? 0,
+    definition.weaponOffsetZ ?? 0
+  )
+  weapon.rotation.set(...parseWeaponRotation(definition.weaponRotation))
+  weapon.visible = params.get('weapon') !== '0'
+  weaponToggle.checked = weapon.visible
+  const hand = model.getObjectByName(definition.weaponBone ?? 'RightHand')
+  if (!hand) throw new Error('Barkan weapon hand is missing')
+  hand.add(weapon)
   const playerHeight = new THREE.Box3()
     .setFromObject(reference)
     .getSize(new THREE.Vector3()).y
@@ -188,6 +209,7 @@ export async function showBarkan(
     side: [1, 0.1, 0],
     back: [0, 0.1, -1],
     wings: [0, 0.1, -1],
+    weapon: [1, 0.5, 1],
   }
   const requestedView = params.get('camera') ?? ''
   if (Object.hasOwn(views, requestedView)) view.value = requestedView
@@ -196,17 +218,22 @@ export async function showBarkan(
     query.set('motion', motion.value)
     query.set('camera', view.value)
     query.set('reference', reference.visible ? '1' : '0')
+    query.set('weapon', weapon.visible ? '1' : '0')
     history.replaceState(null, '', `?${query}`)
   }
   const reset = () => {
+    model.updateWorldMatrix(true, true)
     const bounds = modelBounds.clone()
-    if (reference.visible && view.value !== 'wings')
+    if (weapon.visible) bounds.union(new THREE.Box3().setFromObject(weapon))
+    if (reference.visible && !['wings', 'weapon'].includes(view.value))
       bounds.union(new THREE.Box3().setFromObject(reference))
     const sphere = bounds.getBoundingSphere(new THREE.Sphere())
     if (view.value === 'wings') {
       sphere.center.set(0, 2, -0.8)
       sphere.radius = 1.35
     }
+    if (view.value === 'weapon')
+      new THREE.Box3().setFromObject(weapon).getBoundingSphere(sphere)
     const halfFov = Math.atan(
       Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) *
         Math.min(camera.aspect, 1)
@@ -228,6 +255,12 @@ export async function showBarkan(
     reset()
     remember()
   }
+  weaponToggle.onchange = () => {
+    weapon.visible = weaponToggle.checked
+    play()
+    reset()
+    remember()
+  }
   el('reset').onclick = reset
   const mixer = new THREE.AnimationMixer(model)
   let action: THREE.AnimationAction | undefined
@@ -235,7 +268,10 @@ export async function showBarkan(
   const clips = new Map(gltf.animations.map((clip) => [clip.name, clip]))
   const play = () => {
     mixer.stopAllAction()
-    const clip = clips.get(motion.value)
+    const originalClip = clips.get(motion.value)
+    const clip =
+      originalClip &&
+      (weapon.visible ? withBarkanRuneGrip(originalClip) : originalClip)
     action = clip ? mixer.clipAction(clip).reset().play() : undefined
     paused = false
     pause.textContent = '일시정지'
@@ -244,7 +280,10 @@ export async function showBarkan(
     mixer.update(0)
     remember()
   }
-  motion.onchange = play
+  motion.onchange = () => {
+    play()
+    reset()
+  }
   replay.onclick = play
   pause.onclick = () => {
     paused = !paused
@@ -273,8 +312,8 @@ export async function showBarkan(
   observer.observe(host)
   cleanup.push(() => observer.disconnect())
   resize()
-  reset()
   play()
+  reset()
   let previous = performance.now()
   renderer.setAnimationLoop((now) => {
     const dt = Math.min((now - previous) / 1000, 0.05)
@@ -285,7 +324,13 @@ export async function showBarkan(
     controls.update()
     renderer.render(scene, camera)
   })
-  barkanPreview = { model, reference, mixer, currentAction: () => action }
+  barkanPreview = {
+    model,
+    reference,
+    weapon,
+    mixer,
+    currentAction: () => action,
+  }
   cleanup.push(() => {
     mixer.stopAllAction()
     mixer.uncacheRoot(model)

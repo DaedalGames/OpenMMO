@@ -26,6 +26,7 @@
   import { DamageTextEmitter } from '../effects/damage-text-pool'
 
   import type { MonsterData } from '../types/Monster'
+  import { withBarkanRuneGrip } from '../utils/barkanRuneGrip'
   import {
     attackClipNames,
     getMonsterDef,
@@ -102,10 +103,14 @@
     .flatMap(([, value]) => splitClipNames(value as string))
 
   function findClip(name: string): THREE.AnimationClip | undefined {
-    return (
+    const clip =
       $gltf?.animations.find((c) => c.name === name) ??
       sharedClips.find((c) => c.name === name)
-    )
+    return clip &&
+      initialDef?.id === 'barkan' &&
+      initialDef.weapon === 'weapons/rune_blade.glb'
+      ? withBarkanRuneGrip(clip)
+      : clip
   }
 
   // Optional hand weapon, attached to a skeleton bone.

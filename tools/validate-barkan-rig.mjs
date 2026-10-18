@@ -78,7 +78,8 @@ if (game) {
   assert.equal(def.walkSpeed, 3)
   assert.equal(def.runSpeed, 3)
   assert.equal(def.animRun, 'Walk')
-  assert.ok(!def.weapon)
+  assert.equal(def.weapon, 'weapons/rune_blade.glb')
+  assert.equal(def.weaponBone, 'RightHand')
   const clips = new Set(result.animations.map(clip => clip.name))
   for (const [key, value] of Object.entries(def)) if (key.startsWith('anim') && value) assert.ok(clips.has(value), `${key}: ${value}`)
   const dungeon = JSON.parse(read('data/dungeons.json')).sundered_bastion

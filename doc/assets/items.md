@@ -265,7 +265,31 @@
     **ChatGPT Pro 20x**, 2026-10-18. OpenAI 생성 출력물 이용 조건 적용.
     [프롬프트·해시](../../assets/items/rune_blade/concepts/generation.json).
   - 손잡이 굵기는 칼날 폭의 약 0.37이다. [Great Sword](#great-sword)는 0.27이다.
-  - 3D 모델·아이콘·아이템 데이터는 아직 없다.
+  - 3D 모델: Tripo API 유료 크레딧, 2026-10-18. Tripo 서비스 이용 조건 적용.
+    기존 구매분에서 120 credits를 사용했다. P2 단일 이미지·PBR·상세 텍스처·목표 4,000 faces로 생성했고
+    결과 4,518 triangles를 유지했다. 원본·요청·task ID는 `assets/items/rune_blade/tripo_v1/`에 보관한다.
+  - 전장 2.1m, 칼날 +X, 칼날 평면 XY(glTF)·XZ(Blender), 손잡이 끝에서 전장의 23% 지점이 그립 원점이다.
+    실제 미터 크기를 메시 좌표에 굽고 object/runtime scale은 1이다. 1024² PBR 텍스처를 WebP로 내보냈다.
+    원본 색상맵의 밝은 주황색 부분에서 발광 맵을 만들고 강도 1.6을 적용했다.
+  - 게임 모델 `client/public/models/weapons/rune_blade.glb`(700,624 bytes),
+    투명 128² 아이콘 `client/public/items/weapons/rune_blade.png`,
+    패킹한 Blender 편집본 `assets/items/rune_blade/rune_blade.blend`.
+    [제작 기록](rune-blade-model.json). 재현: `blender -b -t 6 --python-exit-code 1 --python tools/blender-scripts/build_rune_blade.py`.
+  - 바르칸의 `RightHand`에 로컬 위치 `(0.019808135, 0.082672966, 0.04)m`, 회전 `0|0|-3°`으로 장착한다.
+    **[미사용]** 이전 위치 `(0.02, 0.17, 0.07)m`는 대기 중 손잡이가 주먹 밖으로 벗어나 폐기했다.
+    검지·중지와의 겹침을 줄이기 위해 기존 피팅에서 손목·엄지 쪽으로 총 1.5cm 더 옮겼다.
+    새끼손가락 쪽 손잡이 축의 점 `(-0.12, 0.09, 0.04)m`를 고정하고 로컬 Z축으로 -3° 돌렸다.
+    검지 쪽만 손목 방향으로 약 1cm 움직이며, 위치 보정으로 새끼 쪽 회전 중심을 유지한다.
+    대기·걷기의 전체 프레임에서 회전 중심과 손가락 관절 윤곽 주변의 파지를 검사한다. [파지 확대](../images/monsters/barkan-rune-grip.png).
+    장착 시 오른손 네 손가락의 각 관절을 로컬 X축으로 30°·60°·35° 더 굽힌 클립을 사용한다.
+    대기·걷기는 양쪽 위팔도 각각 로컬 X축으로 -22° 회전해 양손을 허벅지 바깥으로 대칭으로 벌린다.
+    각 손과 같은 높이에 있는 같은 쪽 허벅지 표면을 기준으로, 전체 프레임에서 손의 안쪽 끝과
+    허벅지 바깥쪽 끝 사이에 5mm 이상 간격이 남는지 검증한다.
+    원본 클립을 보존하며 프리뷰에서 장착을 끄면 원래 손 자세를 재생한다. 캐릭터와 검 합계 16,604 triangles다.
+  - [장착 미리보기](../images/monsters/barkan-rune-blade.png).
+    대기·걷기·공격·사망의 검 정점이 바닥 위에 있고 길이와 장착 위치를 유지함을 24fps로 검증했다.
+    파지 위치 수정으로 기존 임시 사망 동작의 검 바닥 간섭도 해소했다. 양손 전용 동작과 플레이어 아이템·드롭 데이터는 후속 작업이다.
+    검증: `node tools/validate-rune-blade.mjs`.
 
 ## 로그 기본 장비 — 2026-10-02
 
