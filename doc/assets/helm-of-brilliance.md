@@ -19,7 +19,7 @@ Tripo 원본에서 다시 제작해 **세 축 0.33 / 0.33 / 0.33**, 위치 **(0,
   귀 보정 전 FCL 검사에서는 269개 자세 모두 교차가 검출됐으며 무관통 판정은 하지 않는다.
   투구 크기를 다시 늘리거나 피부 면을 잘라내지 않았다.
 - [남성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb) · [Blender](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helm-brilliance-male-fitted.blend) · [피팅 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/fitting.json).
-- [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/animation-validation.json) · [피부 교차 요약](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/skin-clearance-validation.json) · [브라우저 확인](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/browser-validation.json).
+- [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/animation-validation.json) · [피부 교차 요약](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/skin-clearance-validation.json).
 - 남성 귀 보정(2026-10-17): 여성과 같은 연속 압축 방식으로 양쪽 귀 뒤쪽 524개 정점을
   최대 약 22.95mm 안쪽으로 이동한다. 남아 있던 아래쪽 돌출까지 덮도록 보정 시작 높이를
   1.735m에서 1.715m로 내렸다. 모든 삼각형·UV·원래 Head/Neck 가중치를 유지하고,
@@ -28,8 +28,6 @@ Tripo 원본에서 다시 제작해 **세 축 0.33 / 0.33 / 0.33**, 위치 **(0,
   [귀 피팅 기록](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/ear-fitting.json).
   재현: `.venv/bin/python tools/fit-helm-of-brilliance-ears.py male`.
 - 재현: `.venv/bin/python tools/fit-helm-of-brilliance.py male --uniform-scale 0.33 --offset 0 1.800 -0.015 --directory assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male`.
-
-![남성 균일 축소 착용](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/review/head-angle.png)
 
 ## 여성 균일 축소 v3 — 현재
 
@@ -50,9 +48,7 @@ Tripo 원본에서 다시 제작해 **세 축 0.33 / 0.33 / 0.33**, 위치 **(0,
   검토했지만 전 자세 무관통 판정은 하지 않는다. 내부 교차를 없애려고 투구를 다시
   늘리거나 보호대를 찌그러뜨리지 않는다. 귀 윗부분은 착용 시 안쪽 압축으로 처리했으며, 뒤통수 등 다른 내부 피부는 게임 적용 전 검토가 필요하다.
 - [여성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb) · [Blender](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helm-brilliance-female-fitted.blend).
-- [피팅 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/fitting.json) · [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/animation-validation.json) · [피부 교차](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/skin-clearance-validation.json) · [브라우저 로딩·서빙 해시](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/browser-validation.json).
-
-![여성 균일 축소 착용](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/review/head-angle.png)
+- [피팅 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/fitting.json) · [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/animation-validation.json) · [피부 교차](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/skin-clearance-validation.json).
 
 ## 제작 미리보기
 
@@ -82,7 +78,6 @@ Tripo 원본에서 다시 제작해 **세 축 0.33 / 0.33 / 0.33**, 위치 **(0,
 
 각 몸체의 본 계층·본 순서·inverse bind matrix를 복사한다. 남녀 파일은 리그 ID와 bind 기준이
 다르므로 교환해서 사용하지 않는다. 새 Auto Rig나 천 시뮬레이션은 사용하지 않는다.
-[남성 착용 이미지](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/review/head-angle.png).
 두 투구 모두 3,685 triangles다. 몸체와 투구의 합계는 남성 숨김 포함 17,576, 표시 16,999,
 여성은 숨김 포함·표시 모두 25,860이다. 의상·무기·망토를 포함한 게임 최종 예산과 얼굴 배분은 장비 등록 단계에서 확인한다.
 

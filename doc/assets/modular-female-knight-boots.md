@@ -32,15 +32,12 @@
 0.0015 더하고 아치의 밑면을 최대 0.0035 뒤쪽으로 넓혔다. 굽 위의 뒤꿈치 경계는
 뒤쪽으로 올라가는 사선으로 변형했다. 접지 높이와 가는 힐 끝, 발목 위 0.10 이상의
 형상은 유지했다. 이번 추가 수정은 UV·면·가중치·텍스처를 바꾸지 않는 좌표 변형이다.
-[측면 확대](../../assets/items/female_knight_boots/fitted_v5/browser/foot-side.png)와
-[사선 확대](../../assets/items/female_knight_boots/fitted_v5/browser/foot-angle.png)에서 확인할 수 있다.
 
 [정면 발목 지시](../../assets/items/female_knight_boots/references/user-front-ankle-alignment.png)에
 맞춰 발목 아래의 수직 중심선을 정강이 기울기에 맞게 수정했다. 제작 높이 0.13–0.24의
 정강이 단면 중심을 직선으로 근사하고 발목·발등·앞코·힐을 그 연장선에 맞췄다.
 0.10–0.165 구간에서 보정을 부드럽게 연결하며 좌우 이동만 적용하므로 기존 측면 윤곽과
-접지 높이는 유지된다. [수정된 정면](../../assets/items/female_knight_boots/fitted_v5/browser/ankle-front.png)을
-기준으로 양쪽을 대칭 검토했고, 14개 동작의 발끝 이음새 검사를 다시 통과했다.
+접지 높이는 유지된다. 정면에서 양쪽을 대칭 검토했고, 14개 동작의 발끝 이음새 검사를 다시 통과했다.
 
 [발 가로선 지시](../../assets/items/female_knight_boots/references/user-level-foot-crossline.png)의
 기울기는 정지 메시의 변형이 아니라 대기 애니메이션의 발 본 회전에서 확인됐다.
@@ -48,7 +45,6 @@
 보정한다. 발목 위치와 발이 향하는 방향을 유지하고, 걷기·달리기·점프·공격·죽기·앉기에는
 이 보정을 적용하지 않는다. 매 프레임 원래 회전을 복원하므로 착탈이나 동작 전환으로
 보정이 누적되지 않는다. Blender의 동작과 검증 기록도 함께 갱신했다.
-[대기 자세 후면](../../assets/items/female_knight_boots/fitted_v5/browser/standing-rear.png)을 보존한다.
 밑창의 좌우 정점 489쌍을 검사했고, 보정 대상 6개 동작의 최대 높이차/폭 비율은 2.55e-6 이하다.
 
 이어 [대기 자세의 수직 힐 지시](../../assets/items/female_knight_boots/references/user-upright-standing-heel.png)에
@@ -98,8 +94,6 @@ UV와 원본 PBR 텍스처는 그대로 사용해 무늬·금속성·노멀의 �
 한쪽 106면에 기존 가죽 이미지의 진한 네이비 구간을 투영했고, 갈색 끈·버클·은색 테두리는
 원래 재질을 유지한다. 새 이미지 생성이나 텍스처 파일 수정은 없다. 삼각형별 위치·법선·
 가중치와 리그가 수정 전과 동일한지 확인했고, 14개 동작 검사를 통과했다.
-[측면 재질](../../assets/items/female_knight_boots/fitted_v5/browser/cuff-navy-side.png)과
-[재질 검증](../../assets/items/female_knight_boots/fitted_v5/material-validation.json)을 보존한다.
 
 텍스처 이미지·재질·65본 리그·높은 굽 자세·허벅지 입구·피부 가림은 유지했다.
 발끝 곡면의 국소 분할에서 UV와 가중치를 보간했고, 위쪽 가죽 면은 기존 무릎 재질에
@@ -107,9 +101,6 @@ UV와 원본 PBR 텍스처는 그대로 사용해 무늬·금속성·노멀의 �
 
 - [현재 GLB](../../assets/items/female_knight_boots/fitted_v5/boots_female_knight.glb),
   [Blender 편집본](../../assets/items/female_knight_boots/fitted_v5/female-knight-boots-fitted.blend).
-- [측면](../../assets/items/female_knight_boots/fitted_v5/review/rest-side.png),
-  [사선](../../assets/items/female_knight_boots/fitted_v5/review/rest-angle.png),
-  [미리보기 발 확대](../../assets/items/female_knight_boots/fitted_v5/browser/feet.png).
 - [변형·해시 기록](../../assets/items/female_knight_boots/fitted_v5/side-profile.json),
   [동작 검사](../../assets/items/female_knight_boots/fitted_v5/runtime-validation.json),
   [브라우저 검사](../../assets/items/female_knight_boots/fitted_v5/browser-review.json).
@@ -189,8 +180,7 @@ Left/Right UpLeg·Leg·Foot·ToeBase 대응을 적용했다. 본 순서·계층�
 
 ## 검증과 예산
 
-최종 [형상 검사](../../assets/items/female_knight_boots/fitted_v5/geometry-validation.json)에서
-좌우 대칭 오차는 7.52e-9 이하, 노멀 길이 오차는 5.97e-8 이하다.
+최종 형상 검사에서 좌우 대칭 오차는 7.52e-9 이하, 노멀 길이 오차는 5.97e-8 이하다.
 [동작 검사](../../assets/items/female_knight_boots/fitted_v5/runtime-validation.json)와
 [예산 집계](../../assets/items/female_knight_boots/fitted_v5/assembled-budget.json)는 현재 GLB 기준이다.
 이전 v4 검사와 비교 렌더는 정리했으며, 현재 검증 결과와 문서용 측면·사선·발 확대만 보존한다.

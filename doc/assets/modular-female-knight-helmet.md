@@ -43,7 +43,6 @@
 - [텍스처 내장 Blender 원본](../../assets/items/female_knight_helmet/tripo_v1/source.blend)
 - [추출 텍스처·재질 대응](../../assets/items/female_knight_helmet/tripo_v1/source/textures.json)
 - [메시 진단](../../assets/items/female_knight_helmet/tripo_v1/review.json), [검수 스크립트](../../assets/items/female_knight_helmet/tripo_v1/review_source.py)
-- [정면 렌더](../../assets/items/female_knight_helmet/tripo_v1/review/front.png), [후면 렌더](../../assets/items/female_knight_helmet/tripo_v1/review/back.png), [사선 렌더](../../assets/items/female_knight_helmet/tripo_v1/review/angle.png)
 
 실측 2,166삼각형, 메시 1개, 컬러·노멀·ORM 각각 4096×4096이다.
 열린 바이저와 얼굴 입구, 볼 보호대·뒷목 테두리와 경첩·리벳을 렌더에서 확인했다.
@@ -59,7 +58,6 @@
 - [피팅 GLB](../../assets/items/female_knight_helmet/tripo_v1/fitted_v1/helmet_female_knight.glb)
 - [몸체·상의와 기존 동작이 포함된 Blender](../../assets/items/female_knight_helmet/tripo_v1/fitted_v1/female-knight-helmet-fitted.blend)
 - [피팅 기록](../../assets/items/female_knight_helmet/tripo_v1/fitted_v1/fitting.json), [재현 스크립트](../../tools/fit-female-knight-helmet.py)
-- [실제 착용 미리보기](../../assets/items/female_knight_helmet/tripo_v1/fitted_v1/review/browser-final.png)
 
 여성 베이스 `rig_v1/female-base.glb`의 실제 머리에 맞춰 원본의 +X 전방을 +Z로 회전했다.
 회전 후 축별 배율은 `[0.18, 0.18, 0.155]`, 이동은 `[0, 0.966, -0.002]`다.
@@ -75,9 +73,9 @@
 
 [리깅 검사](../../assets/items/female_knight_helmet/tripo_v1/fitted_v1/animation-validation.json):
 14동작 × 61시점에서 기준 자세, 원본 bind 일치, Head 연결 유지, 금속 모서리 길이 보존과
-유한 변형을 확인했다. [GLB 검사](../../assets/items/female_knight_helmet/tripo_v1/fitted_v1/gltf-validation.json)는 오류·경고 0개다.
+유한 변형을 확인했다. GLB 검사는 오류·경고 0개다.
 정지·전투 대기·달리기·베기·앉기·쓰러지기를 정면·측면·후면 렌더로 검토했다.
-[브라우저 검사](../../assets/items/female_knight_helmet/tripo_v1/fitted_v1/browser-validation.json)에서
+브라우저 검사에서
 착탈, 헤어 선택 복원, 로딩 실패·재시도, 로딩 중 투구 해제를 확인했다.
 프런트엔드 타입 검사·린트도 통과했다. 모든 연속 자세에서 목 보호대와의 무관통을 보장하는 검사는 아니다.
 

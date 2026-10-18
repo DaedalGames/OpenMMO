@@ -45,8 +45,6 @@
 - 입력은 원화 3면을 반시계 방향으로 90° 돌려 긴 축을 세운 것이다(손목 입구가 아래).
   등쪽=front, 옆=right, 손바닥쪽=back.
 
-![Tripo 원본 검토](../../assets/items/female_barbarian_bracers/tripo_v1/review/strip.png)
-
 원본은 메시 1개, **1,704 triangles**, 4K 컬러·노멀·ORM 텍스처다. 연결 성분 1개, 경계선 0개,
 비다양체 모서리 10개, 퇴화 면·UV 붕괴 0개다. 안쪽 벽이 있는 속 빈 통이며 양 끝이 열려 있다.
 철판은 원본 +X 쪽에 있다. 손바닥쪽 버클은 생성 결과에서 뚜렷하지 않다.
@@ -59,9 +57,6 @@
 | 원본 진단 | [review.json](../../assets/items/female_barbarian_bracers/tripo_v1/review.json), [재현 스크립트](../../assets/items/female_barbarian_bracers/tripo_v1/review_source.py) |
 
 ## 피팅 v1
-
-![정지 자세](../../assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/rest-strip.png)
-![동작](../../assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/review/animation-strip.png)
 
 [`tools/fit-female-barbarian-bracers.py`](../../tools/fit-female-barbarian-bracers.py)로 만든다.
 기준 몸체는 `assets/modular_human_female_01/rig_v1/female-base.glb`, 리그는 `human_female_01_local_v1` 65본이다.

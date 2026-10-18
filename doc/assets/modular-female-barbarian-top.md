@@ -35,8 +35,6 @@
   [요청·비용·작업 기록](../../assets/items/female_barbarian_top/tripo_v1/generation.json).
   재제출하지 않고 `tools/outfits/tripo.py`로 기존 작업을 조회·회수한다.
 
-![Tripo 원본 앞·뒤·옆·사선](../../assets/items/female_barbarian_top/tripo_v1/review/strip.png)
-
 | 용도 | 파일 |
 | --- | --- |
 | Tripo 원본 | [model_url.glb](../../assets/items/female_barbarian_top/tripo_v1/source/model_url.glb) |
@@ -49,8 +47,6 @@ UV 이음만 임시 용접한 진단에서 연결 성분 1개, 경계선 241개,
 착용하면 몸에 가려지지만, 피팅 때 안쪽 면 처리를 확인한다.
 
 ## 피팅 v1 — 2026-10-14
-
-![착용 앞·옆·뒤·사선](../../assets/items/female_barbarian_top/tripo_v1/fitted_v1/review/strip.png)
 
 기준 몸체 `assets/modular_human_female_01/rig_v1/female-base.glb`, 리그 `human_female_01_local_v1` 65본.
 몸체·동작은 변경하지 않았다. 삼각형 2,983개, UV·텍스처는 Tripo 원본 그대로다.
@@ -113,8 +109,6 @@ jump 44개·최대 1.5cm, slash1 96개·최대 3.2cm, dying 55개·최대 2.6cm.
 바뀐 정점은 밑띠와 가운데 보석판·고리뿐이고 컵 윗부분·끈·견갑은 그대로다.
 동작 관통 수는 jump만 37 → 38이고 나머지는 그대로다.
 남은 틈은 보석판 폭이 가슴골보다 넓어 판이 가슴골을 가로지르기 때문이다. 판을 좁히거나 아래로 내리면 더 붙지만 디자인이 바뀐다.
-
-![가운데 밀착 전후: 위 밑에서, 아래 옆에서 / 왼쪽 전, 오른쪽 후](../../assets/items/female_barbarian_top/tripo_v1/fitted_v1/review/center-before-after.png)
 
 피팅 스크립트의 ARAP 강성 색은 원래부터 몸체 텍스처(첫 `Color_` 이미지)를 읽는다.
 상의 텍스처로 바꾸면 검수된 컵 형상이 최대 4mm 움직여 그대로 두고, 고리 판별에만 상의 텍스처를 쓴다.

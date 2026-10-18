@@ -41,7 +41,6 @@
 - [텍스처 내장 Blender 원본](../../assets/items/female_knight_gloves/tripo_v1/source.blend)
 - [분리한 텍스처·재질 대응](../../assets/items/female_knight_gloves/tripo_v1/source/textures.json)
 - [메시 진단](../../assets/items/female_knight_gloves/tripo_v1/review.json), [검수 스크립트](../../assets/items/female_knight_gloves/tripo_v1/review_source.py)
-- [손등 렌더](../../assets/items/female_knight_gloves/tripo_v1/review/front.png), [손바닥 렌더](../../assets/items/female_knight_gloves/tripo_v1/review/back.png), [사선 렌더](../../assets/items/female_knight_gloves/tripo_v1/review/angle.png)
 
 실측 **2,144삼각형**, 메시 1개, UV 이음 임시 용접 기준 연결 성분 1개다. 반대편 단순 복제 시 4,288삼각형이다.
 컬러·노멀·ORM은 각각 4K이며 GLB와 Blender에 내장하고 원본 이미지 바이트도 별도로 추출했다.
@@ -113,15 +112,14 @@
 
 - 팔꿈치 보호대 최대 반경은 양쪽 모두 약 **30.3%**, 팔뚝 장갑 입구는 약 **25.9%** 줄였다.
 - 원본 세로 좌표에 따른 반경 배율을 `[.24, .32, .38, .38]`에서 `[.24, .25, .265, .265]`로 변경했다. 길이와 손가락 대응 방식은 유지하고 ARAP 및 표면 여유 보정을 다시 적용했다.
-- 4,140삼각형, 65본, UV·텍스처 바이트와 몸체·소매 가림 범위는 유지한다. 원본, 기존 피팅 Blender, 새 Blender를 각각 보존한다.
-- [치수 비교](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/size-comparison.json), [피팅 기록](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/fitting.json).
-- [현재 양손 GLB](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/gloves_female_knight.glb), [Blender 편집본](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/female-knight-gloves-fitted.blend), [브라우저 착용 화면](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/review/browser-final.png).
+- 4,140삼각형, 65본, UV·텍스처 바이트와 몸체·소매 가림 범위는 유지한다.
+- 2026-10-18 정리에서 `fitted_v2/` 중간본은 삭제했다. 이후 착용본은 `fitted_v3/`이다.
 
-양손 × 14동작 × 33시점의 [리깅·동작 검사](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/animation-validation.json)를 통과했다.
-[GLB 오류·경고](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/gltf-validation.json)는 0개다.
+양손 × 14동작 × 33시점의 리깅·동작 검사를 통과했다.
+GLB 오류·경고는 0개다.
 정지·무장 대기·달리기·베기·앉기 렌더와 실제 브라우저의 양손 확대를 확인했다.
-[브라우저 검사](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/browser-validation.json)에서 런타임 오류는 없었다.
-가림 전 피부의 내부 접촉 한계는 계속 적용하며, [축소본 측정](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/clearance-validation.json)에 별도로 기록한다.
+브라우저 검사에서 런타임 오류는 없었다.
+가림 전 피부의 내부 접촉 한계는 계속 적용한다.
 추가 유료 API 호출 없이 로컬 피팅으로 수정했다.
 
 ### 장갑 착용 시 상의 소매 끝 정리 — 2026-10-14
@@ -132,10 +130,6 @@
 장갑을 벗으면 상의 소매가 복원된다. 장갑 메시·텍스처·리그와 원본 상의 GLB는 그대로다.
 너무 높이 자른 `−0.040` 후보는 보호대 위에 틈을 만들어 채택하지 않았다.
 
-[수정 전](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/review/sleeve/before.png) ·
-[상의 제거로 원인 확인](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/review/sleeve/without-top.png) ·
-[수정 후](../../assets/items/female_knight_gloves/tripo_v1/fitted_v2/review/sleeve/after.png).
-기존 마스크와 Blender는 `fitted_v2/sleeve-before-trim/`에 비교용으로 보존했다.
 현재 Blender에 소매 가림을 반영하고 팔을 굽히는 렌더를 다시 확인했다.
 조립 표시 삼각형 수는 51,255이며, 숨김 포함 65,734와 얼굴 4,604는 유지한다.
 
@@ -154,11 +148,10 @@
 
 [현재 GLB](../../assets/items/female_knight_gloves/tripo_v1/fitted_v3/gloves_female_knight.glb) ·
 [Blender](../../assets/items/female_knight_gloves/tripo_v1/fitted_v3/female-knight-gloves-fitted.blend) ·
-[피팅 기록](../../assets/items/female_knight_gloves/tripo_v1/fitted_v3/fitting.json) ·
-[전투 대기 실제 미리보기](../../assets/items/female_knight_gloves/tripo_v1/fitted_v3/review/combat-browser/Left-1.png).
+[피팅 기록](../../assets/items/female_knight_gloves/tripo_v1/fitted_v3/fitting.json)
 
 전투 대기의 시작·중간 시점을 양팔 앞뒤에서 추가 렌더했다. 실제 브라우저에서도 같은 동작을
 양팔 앞뒤에서 확인했다. [14동작 × 33시점 검사](../../assets/items/female_knight_gloves/tripo_v1/fitted_v3/animation-validation.json),
-[착탈·로딩 실패·복원 검사](../../assets/items/female_knight_gloves/tripo_v1/fitted_v3/failure-validation.json)를 통과했다.
-[GLB 검사](../../assets/items/female_knight_gloves/tripo_v1/fitted_v3/gltf-validation.json)는 오류·경고 0개다.
+착탈·로딩 실패·복원 검사를 통과했다.
+GLB 검사는 오류·경고 0개다.
 가려진 내부 면의 접촉과 모든 연속 시점의 무관통을 보장하는 검사는 아니다.

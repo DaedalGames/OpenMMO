@@ -43,8 +43,6 @@
   [요청·비용·작업 기록](../../assets/items/female_barbarian_bottom/tripo_v1/generation.json).
   재제출하지 않고 `tools/outfits/tripo.py`로 기존 작업을 조회·회수한다.
 
-![Tripo 원본 앞·옆·뒤·사선](../../assets/items/female_barbarian_bottom/tripo_v1/review/strip.png)
-
 | 용도 | 파일 |
 | --- | --- |
 | Tripo 원본 | [model_url.glb](../../assets/items/female_barbarian_bottom/tripo_v1/source/model_url.glb) |
@@ -58,8 +56,6 @@
 옆에서 보면 앞 가운데 판의 땋은 끈이 판에서 떨어져 앞으로 늘어져 있다. 피팅 때 판에 붙이거나 다듬는다.
 
 ## 피팅 v1 — 2026-10-15
-
-![착용 앞·옆·뒤·사선·아래](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/review/strip.png)
 
 기준 몸체 `assets/modular_human_female_01/rig_v1/female-base.glb`, 리그 `human_female_01_local_v1` 65본.
 몸체·동작은 변경하지 않았다. 현재 삼각형 3,340개(원본 3,241 + 구멍 메움 15 + 벨트 연결 84)다.
@@ -108,8 +104,7 @@
 - [수정 전 모델](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_repair_v1/before.glb),
   [보정 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_repair_v2/repair.json),
   [재현 스크립트](../../tools/fix-female-barbarian-belt.py).
-- [미리보기 검사](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_repair_v2/runtime-validation.json),
-  [몸체 표면 간격](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_repair_v2/rest-clearance.json).
+- [몸체 표면 간격](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_repair_v2/rest-clearance.json).
 - 기존 Tripo 텍스처를 재사용했으며 새 생성 요청·비용은 없다.
 
 **[미사용] UV 보정 v1:** 두 면의 텍스처 좌표만 바꾼 첫 수정은 Blender 렌더에서 개선돼 보였으나 실제 미리보기에서
@@ -130,13 +125,10 @@
 
 - [보정 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/waistband_repair_v1/repair.json),
   [재현용 입력 모델](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/waistband_repair_v1/before.glb).
-- [미리보기 검증](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/waistband_repair_v1/runtime-validation.json),
-  [몸체 간격 검증](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/waistband_repair_v1/rest-clearance.json),
+- [몸체 간격 검증](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/waistband_repair_v1/rest-clearance.json),
   [재현 스크립트](../../tools/fit-female-barbarian-waistband.py).
 
 ### 전투 대기에서 모피 판 변형 보정 — 2026-10-15
-
-![전투 대기 보정 후](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_weights_v1/review/combat.png)
 
 허리띠·버클·고리, 앞 판과 땋은 끈, 뒤 판, 왼쪽 판, 오른쪽 판을 5개 스킨 메시로 나눴다.
 삼각형 3,256개, 내보낸 정점 4,845개(경계 복제 49개), 각 메시의 여성 리그는 동일한 65본이다.
@@ -153,15 +145,12 @@
 본 결합, 웨이트 정규화, 유한 변형과 물리 해제 시 원래 지오메트리 복원을 검증했다.
 클라이언트 check/lint와 모피·로브·모듈 결합 테스트 54개를 통과했다.
 
-- [기본 자세](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_weights_v1/review/rest.png),
-  [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_weights_v1/repair.json),
+- [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_weights_v1/repair.json),
   [재현용 입력](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_weights_v1/before.glb),
   [재현 스크립트](../../tools/weight-female-barbarian-panels.py).
 - 원래 Tripo 결과를 재사용했으며 새 이미지·3D 생성 요청과 비용은 없다.
 
 ### 벨트 윗선 정리 — 2026-10-15
-
-![대기 자세의 벨트 보정 후](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/review/idle.png)
 
 원본 벨트 옆 철판의 솟은 꼭짓점과 가죽 윗단을 높이 0.615m에 가까워지는 부드러운 곡선으로 눌렀다.
 0.607m 아래는 유지하고 위쪽 348정점만 최대 13.38mm 낮췄다. 낮아진 허리 단면이 넓어지는 만큼
@@ -175,9 +164,7 @@
 대기·기본 자세의 사선·앞·뒤·옆과 전투 대기를 브라우저에서 확인했다. 9동작 × 17시점 검증도 통과했다.
 가림 정보를 다시 계산했고 뒤쪽 흰 속옷이 윗단으로 보이지 않는 것을 확인했다.
 
-- [윗단 연결 확대](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/review/bridge.png),
-  [뒤쪽 확인](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/review/back.png),
-  [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/repair.json),
+- [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/repair.json),
   [재현용 입력](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_rim_repair_v1/before.glb),
   [재현 스크립트](../../tools/smooth-female-barbarian-belt.py).
 - 기존 Tripo 원본을 재사용했으며 새 생성 요청과 비용은 없다.
@@ -194,9 +181,7 @@
 9동작 × 17시점에서 모든 연결 경계의 최대 간격이 0.001mm 미만임을 확인했다.
 앞 판 폭과 모피 충돌 검사도 유지했으며 클라이언트 check/lint와 관련 테스트 56개가 통과했다.
 
-- [연결 후 확대](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_seam_repair_v1/review/seam.png),
-  [전투 대기](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_seam_repair_v1/review/combat.png),
-  [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_seam_repair_v1/repair.json),
+- [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_seam_repair_v1/repair.json),
   [재현용 입력](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_seam_repair_v1/before.glb),
   [재현 스크립트](../../tools/stitch-female-barbarian-panels.py).
 - 기존 Tripo 결과를 재사용했으며 새 생성 요청과 비용은 없다.
@@ -210,8 +195,7 @@
 기본 자세와 대기·걷기·전투 대기의 5시점을 브라우저에서 확인했다.
 문제 위치의 8개 광선이 피부 대신 의상을 먼저 맞히고, 하의를 벗으면 원래 20,799면이 복원되는 것을 검증했다.
 
-- [피부 비침 수정 후](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/panel_seam_repair_v1/review/hip.png),
-  [가림 명세](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/body-occlusion.json),
+- [가림 명세](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/body-occlusion.json),
   [재현 스크립트](../../tools/outfits/female_barbarian_bottom_occlusion.py).
 
 ### 전투 대기 옆천의 허벅지 겹침 보정 — 2026-10-15
@@ -227,9 +211,7 @@
 이는 전체 표면의 무관통을 보장하는 검사가 아니다. 9동작 × 17시점의 앞천 폭·허리 이음·리그 검사와
 클라이언트 check/lint, 관련 테스트 56개를 통과했다. 큰 동작의 겹침과 국소 늘어남은 남는다.
 
-- [전투 대기 보정 후](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/thigh_contact_v1/review/combat_idle.png),
-  [보정 전](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/thigh_contact_v1/review/before.png),
-  [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/thigh_contact_v1/repair.json),
+- [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/thigh_contact_v1/repair.json),
   [재현 스크립트](../../tools/fit-female-barbarian-thigh-contact.py),
   [측면 검사](modular-female-barbarian-thigh-contact-v1.json).
 - 기존 Tripo 결과를 재사용했으며 새 생성 요청과 비용은 없다.
@@ -244,9 +226,7 @@
 문제 부위의 34개 대표 광선에서 피부가 먼저 보이지 않으며, 하의를 벗으면 원래 몸체 인덱스 62,397개가 복원된다.
 총 피부 224면·팬티 408면을 가리고 21,543면을 표시한다. 기존 Tripo 원본을 재사용했으며 새 생성 비용은 없다.
 
-- [전투 대기 보정 후](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/combat_skin_clearance_v1/review/combat.png),
-  [보정 전](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/combat_skin_clearance_v1/review/before.png),
-  [제작·검증 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/combat_skin_clearance_v1/repair.json),
+- [제작·검증 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/combat_skin_clearance_v1/repair.json),
   [재현 스크립트](../../tools/outfits/female_barbarian_bottom_occlusion.py).
 
 ### 벨트와 모피 윗단 연결 — 2026-10-15
@@ -262,9 +242,7 @@
 9동작 × 17시점에서 벨트와 일치하는 68개 부착 경계의 최대 틈은 0.001mm 미만이다.
 앞천 폭과 원래 모피 변형 수치를 유지했고, check/lint 및 관련 테스트 57개를 통과했다.
 
-- [전투 대기 보정 후](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_fur_join_v1/review/combat.png),
-  [보정 전](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_fur_join_v1/review/before.png),
-  [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_fur_join_v1/repair.json),
+- [제작 기록](../../assets/items/female_barbarian_bottom/tripo_v1/fitted_v1/belt_fur_join_v1/repair.json),
   [재현 스크립트](../../tools/join-female-barbarian-belt.py).
 - 기존 Tripo 원본을 재사용했으며 새 생성 요청과 비용은 없다.
 

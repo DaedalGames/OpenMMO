@@ -14,8 +14,6 @@
 - 남성 귀 윗부분 피팅(2026-10-17): 아래쪽에 남았던 돌출까지 포함해 양쪽 귀 뒤쪽 524개 정점을 안쪽으로 압축해 뒤쪽 테두리 밖 돌출을 감췄다. 모든 면을 유지하고 탈착·다른 투구 착용 시 원상 복원한다. 기준 남성 얼굴에 적용한다.
 - 남녀 각각의 기준 몸체·65본에 `Head 100%`로 연결하며 두 파일 모두 3,685 triangles와 원본 4K 텍스처를 유지한다. 남성 269개·여성 467개 자세의 강체 부착 검사를 통과했다. 귀·뒤통수 등의 내부 피부 교차는 남아 있어 전 자세 무관통 판정은 하지 않는다. 조명은 아래 게임 등록 항목 참고.
   - [남성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb) · [여성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb).
-  - ![남성 균일 축소 착용](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/review/head-angle.png)
-  - ![여성 균일 축소 착용](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/review/head-angle.png)
 
 - `assets/items/helm_of_brilliance/tripo_v2/source/model_url.glb` — 사용자 결정(2026-10-17)에 따라 **앞·뒤 2장만** 넣어 재생성한 현재 검토용 원본. 사용자는 전날에도 측면 입력 시 앞면 복제 현상을 관찰했다고 기록했다. 이번에는 **뒤통수가 닫히고 수정·얼굴 구멍이 앞쪽에만 존재**하는 것을 앞·옆·뒤·아래 렌더로 확인했다. 피팅·게임 등록·조명 효과 구현 전 원본 단계다.
   - 출처: Tripo API, **유료 API 크레딧**, 생성일 **2026-10-17**. [Tripo 이용 조건](https://developers.tripo3d.ai/en/terms) 적용. 원화는 아래 OpenAI ImageGen 출처·이용 조건을 따른다.
@@ -23,7 +21,6 @@
   - 작업 ID `bfe87055-a7ff-4539-8c67-8c98ffecc234`, 사용 **120크레딧**, 사용자 충전 후 잔액 **1,080 → 960**. v1·v2 합계 **240크레딧**. 초기 잔액 부족과 사용자 충전 후 제출 이력은 [잔액 확인 기록](../../assets/items/helm_of_brilliance/tripo_v2/preflight.json)에 보존했다.
   - [제작 명세·입력 해시](../../assets/items/helm_of_brilliance/tripo_v2/build.json) · [요청·작업·비용 기록](../../assets/items/helm_of_brilliance/tripo_v2/generation.json) · [형상 진단·검토 기록](../../assets/items/helm_of_brilliance/tripo_v2/review.json).
   - [원본 GLB](../../assets/items/helm_of_brilliance/tripo_v2/source/model_url.glb) · [원본 Blender](../../assets/items/helm_of_brilliance/tripo_v2/source.blend) · [검토 재현 스크립트](../../assets/items/helm_of_brilliance/tripo_v2/review_source.py).
-  - ![Tripo v2 앞·옆·뒤·사선·아래 검토](../../assets/items/helm_of_brilliance/tripo_v2/review/strip.png)
 
 - **[미사용 · 수정 필요]** `assets/items/helm_of_brilliance/tripo_v1/source/model_url.glb` — 승인된 앞·오른쪽 옆·뒤 원화 3장으로 생성한 첫 Tripo 메시(2026-10-17). **뒤통수에 이마 수정과 얼굴 구멍이 복제되는 오류**가 있어 피팅·게임 적용을 보류했다. 원본을 보존하며 자동 재생성하지 않았다.
   - 출처: Tripo API, **유료 API 크레딧**. [Tripo 이용 조건](https://developers.tripo3d.ai/en/terms) 적용. 원화는 아래 OpenAI ImageGen 출처·이용 조건을 따른다.

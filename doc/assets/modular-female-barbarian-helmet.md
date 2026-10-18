@@ -51,8 +51,6 @@ Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, det
 [제작 명세](../../assets/items/female_barbarian_helmet/tripo_v2/build.json),
 [요청·비용·작업 기록](../../assets/items/female_barbarian_helmet/tripo_v2/generation.json).
 
-![Tripo v2 검토: 앞·옆·뒤·사선·아래](../../assets/items/female_barbarian_helmet/tripo_v2/review/strip.png)
-
 메시 1개, **2,179 triangles**, 4K 컬러·노멀·ORM 텍스처다. 정면은 원본 +X, 뿔은 ±Z 방향이다.
 뒤쪽은 원화대로 띠가 모이고 목가리개로 닫힌다. 리벳 등 작은 조각을 포함해 연결 성분 57개,
 열린 경계 417개이며 퇴화 면·UV 붕괴는 0개다. 밀폐된 솔리드로 판정하지 않는다.
@@ -65,9 +63,6 @@ Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, det
 | 원본 진단 | [review.json](../../assets/items/female_barbarian_helmet/tripo_v2/review.json), [재현 스크립트](../../assets/items/female_barbarian_helmet/tripo_v2/review_source.py) |
 
 ## 피팅 v1
-
-![머리 앞·옆·뒤·사선](../../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/review/rest-strip.png)
-![동작](../../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/review/animation-strip.png)
 
 [`tools/fit-female-barbarian-helmet.py`](../../tools/fit-female-barbarian-helmet.py)로 만든다.
 기준 몸체는 `assets/modular_human_female_01/rig_v1/female-base.glb`, 리그는 `human_female_01_local_v1` 65본이다.
@@ -97,8 +92,6 @@ Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, det
 - 7.2mm보다 깊이 뚫고 나간 경우는 잡지 못한다. 낚시·승마 등 런타임 전용 클립은 검사하지 않았다.
 
 ### 투구 아래 헤어
-
-![투구 아래 단발: 정면·옆면·후면](../../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/review/helmet-hair-strip.png)
 
 투구를 썼을 때 헤어 전체가 사라지던 처리를 바꿨다. 투구의 아래 테두리를 180개 각도 구간으로 따라가며
 가려지는 윗부분을 잘라낸 전용 헤어를 쓴다. 단발은 옆머리와 뒷머리를 남기며, 보관된 긴 헤어도 지원한다.
@@ -134,21 +127,15 @@ blender -b --python-exit-code 1 --python tools/blender-scripts/save_female_barba
 [검사 결과](../../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-animation-validation.json)는
 각 헤어의 정지 자세와 14개 클립 총 **239시점**에서 교차 **0건**이며, 최소 표본 간격은 단발 **1.19mm**,
 긴 헤어 **0.68mm**다. 연속 시점 전체나 검사하지 않은 런타임 전용 동작까지 보장하지 않는다.
-[브라우저 검사](../../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-browser-validation.json)에서
+브라우저 검사에서
 뿔 투구·기사 투구·투구 없음과 헤어 변경 시 선택·복원·표시 수를 확인했다.
 기본 몸체와 뿔 투구만 착용하면 단발은 **26,159 triangles**, 긴 헤어는 **28,061 triangles**다.
 
-![귀 뒤 헤어 1차 복원: 왼쪽 이전, 오른쪽 해당 단계](../../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/review/helmet-hair-ear-comparison.png)
-
-![볼가리개 아래 구멍 2차 복원: 왼쪽 이전, 오른쪽 해당 단계](../../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/review/helmet-hair-cheek-comparison.png)
-
-[사선 노출 검사](../../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-cheek-browser-validation.json)는
+사선 노출 검사는
 표시 영역 주변의 696개 광선을 실제 몸체·헤어·투구에 쏘아 비교했다. 원래 헤어가 덮어야 하지만 피부가 먼저 보이던
 38곳이 모두 헤어로 덮였으며, 남은 피부 노출은 0곳이다.
 [회귀 검사](../../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/hair-cheek-coverage-validation.json)는
 그 38개 몸체 지점과 같은 카메라·대기 시작 자세를 런타임에서 재현한다.
-
-![볼가리개 끝 다발 복원: 왼쪽 이전, 오른쪽 현재](../../assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/review/helmet-hair-tip-comparison.png)
 
 정면에 가까운 각도에서는 900개 광선으로 끝부분을 비교해, 안쪽 면만 남거나 피부가 보이던 다발의
 83개 표면 지점을 추가로 보존했다. 이 지점은 헤어가 먼저 보이는지와 함께 복원된 겉면 위치에서 0.001 몸체 단위
