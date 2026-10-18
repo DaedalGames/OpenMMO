@@ -133,3 +133,29 @@ fn a_cast_ends_if_barkan_dies() {
     brain.handle_death();
     assert!(strikes(&tick(&mut brain, 3000.0, &near)).is_empty());
 }
+
+#[test]
+fn the_plain_swing_waits_a_full_cooldown_after_the_cast() {
+    let mut brain = barkan_at(10.0, 10.0);
+    brain.skill_cooldown_left_ms = 0.0;
+    let near = attacker_at(10.0, 12.0);
+    tick(&mut brain, 16.0, &near);
+    let mut elapsed = 16.0;
+    let mut swung_at = None;
+    while elapsed < RUNE_SLASH.cast_ms + 4000.0 {
+        let commands = tick(&mut brain, 100.0, &near);
+        elapsed += 100.0;
+        if commands
+            .iter()
+            .any(|c| matches!(c, AiCommand::Attack { .. }))
+        {
+            swung_at = Some(elapsed);
+            break;
+        }
+    }
+    let swung_at = swung_at.expect("a plain swing follows the cast");
+    assert!(
+        swung_at >= RUNE_SLASH.cast_ms + 2800.0,
+        "swung {swung_at}ms after the cast began"
+    );
+}

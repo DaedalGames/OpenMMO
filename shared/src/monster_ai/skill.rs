@@ -11,7 +11,8 @@ pub enum MonsterSkillId {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MonsterSkill {
     pub id: MonsterSkillId,
-    /// The brain stands still and ignores staggers this long.
+    /// The skill clip's length; the brain stands still and ignores staggers
+    /// this long.
     pub cast_ms: f32,
     /// Damage lands once, when the blade starts its sideways sweep.
     pub strike_ms: f32,
@@ -32,7 +33,7 @@ pub struct MonsterSkill {
 /// 2.25s, the blade circles overhead, then sweeps right to left from 2.55s.
 pub const RUNE_SLASH: MonsterSkill = MonsterSkill {
     id: MonsterSkillId::RuneSlash,
-    cast_ms: 3900.0,
+    cast_ms: 4200.0,
     strike_ms: 2550.0,
     cooldown_ms: 15000.0,
     first_cast_ms: 6000.0,

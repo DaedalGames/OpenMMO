@@ -263,6 +263,8 @@ impl MonsterBrain {
         }
         self.skill_cooldown_left_ms = skill.cooldown_ms;
         self.cast_left_ms = skill.cast_ms;
+        // The next plain swing waits out a full cooldown after the cast.
+        self.attack_cooldown_left_ms = skill.cast_ms + self.attack_cooldown_ms;
         self.strike_pending = true;
         commands.push(self.make_move_cmd());
         commands.push(AiCommand::CastSkill {
