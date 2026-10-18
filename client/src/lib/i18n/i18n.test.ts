@@ -236,7 +236,7 @@ describe('message rendering', () => {
       '경험치 10을 얻었습니다.'
     )
     expect(translate('combat.xpLost', { amount: 12 })).toBe(
-      '사망 페널티: 경험치 12를 잃었습니다.'
+      '사망 불이익: 경험치 12를 잃었습니다.'
     )
   })
 

@@ -97,7 +97,13 @@
     timekeeper: { rotX: -Math.PI / 2 },
     phoenix_talisman: { rotX: -Math.PI / 2, lift: 0.04 },
   }
+  const FLAT_REST_BY_ID: Record<string, { rotX: number; lift?: number }> = {
+    great_sword: { rotX: -Math.PI / 2 },
+    rune_blade: { rotX: -Math.PI / 2 },
+  }
   const flatRest = $derived.by(() => {
+    const byId = def?.id ? FLAT_REST_BY_ID[def.id] : undefined
+    if (byId) return byId
     const byCategory = def?.category ? FLAT_REST[def.category] : undefined
     if (byCategory) return byCategory
     if (def?.equipSlot === 'off_hand' && def?.category === 'armor')

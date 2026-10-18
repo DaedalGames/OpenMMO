@@ -37,7 +37,7 @@ describe('localized map places', () => {
     languagePreference.set('ko')
     expect(placeName(island.id, island.name)).toBe('애시아일')
     expect(placeName('silverbight', 'Silverbight')).toBe('실버바이트')
-    expect(placeName('old_crypt', 'Old Crypt')).toBe('올드 크립트')
+    expect(placeName('old_crypt', 'Old Crypt')).toBe('오래된 지하묘지')
     languagePreference.set('ja')
     expect(placeName(island.id, island.name)).toBe('アッシュアイル')
     languagePreference.set('zh-Hans')
