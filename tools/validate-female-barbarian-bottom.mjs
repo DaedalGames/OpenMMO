@@ -8,7 +8,7 @@ const directory = 'assets/items/female_barbarian_bottom/tripo_v1/fitted_v1'
 const bottomPath = `${directory}/bottom_female_barbarian.glb`
 const runtime = 'client/public/models/characters/modular_female'
 const runtimeBase = `${runtime}/base.glb`, runtimeBottom = `${runtime}/barbarian_bottom.glb`
-const join = JSON.parse(readFileSync(`${directory}/belt_fur_join_v1/repair.json`))
+const stitchedBeltSeams = 68
 
 function seamGroups(snapshots) {
   const groups = new Map()
@@ -55,7 +55,7 @@ try {
     })
     return { mesh, points }
   })
-  assert.equal(seamGroups(sourceSnapshots).length, join.stitched_belt_seams)
+  assert.equal(seamGroups(sourceSnapshots).length, stitchedBeltSeams)
 
   // Motion runs on the packaged GLB because only it carries the robe_physics the game uses.
   const { scene: body, animations } = await load(runtimeBase)
@@ -82,7 +82,7 @@ try {
     return { mesh, geometry: mesh.geometry, points, edges }
   })
   const seams = seamGroups(snapshots)
-  assert.equal(seams.length, join.stitched_belt_seams)
+  assert.equal(seams.length, stitchedBeltSeams)
   const samples = 17
   const sample = clipSampler(body, { samples, restore: parts[0].skeleton.bones })
   const clips = []
@@ -118,7 +118,7 @@ try {
     source: { base: { path: basePath, sha256: hash(basePath) }, bottom: { path: bottomPath, sha256: hash(bottomPath) },
       triangles: sourceParts.reduce((n, mesh) => n + mesh.geometry.index.count / 3, 0),
       vertices: sourceSnapshots.reduce((n, p) => n + p.points.length, 0), bones: sourceBones.length, parts: sourceParts.length,
-      stitched_belt_seams: join.stitched_belt_seams, exact_bind_compatibility: true, normalized_weights: true,
+      stitched_belt_seams: stitchedBeltSeams, exact_bind_compatibility: true, normalized_weights: true,
       unchanged_rest_shape: true, no_upper_body_influence: true },
     runtime: { base: { path: runtimeBase, sha256: hash(runtimeBase) }, bottom: { path: runtimeBottom, sha256: hash(runtimeBottom) },
       robe_panels: panels.length, shared_robe_skeleton: true, physics_geometry_restored_on_dispose: true, clips },

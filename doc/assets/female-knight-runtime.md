@@ -74,69 +74,23 @@
 
 ## 원본 미터 단위 전환 — 2026-10-17
 
-여성 모듈러 원본을 리그 높이 1(Hips 높이 0.568)의 제작 단위에서 미터로 바꿨다.
-남성 모듈러처럼 원본이 게임 단위를 쓰므로 `prepare-female-knight.mjs`의 1.8배 변환(`bakeDimensions`),
-읽을 때의 동작 변환과 `meters_per_source_unit` 메타데이터를 없앴다. 현재 `rig_v1/female-base.glb`를 새 기준으로 고정했고,
-리깅 이전 단계와 `tools/rig-female-base.py`는 보관용이다.
+여성 모듈러 원본은 미터 단위다(키 약 1.8m, Hips 높이 약 1.02m). 제작 단위(리그 높이 1, Hips 0.568)의 원본을 1.8배해 고정했고,
+`prepare-female-knight.mjs`의 1.8배 변환(`bakeDimensions`), 읽을 때의 동작 변환과 `meters_per_source_unit` 메타데이터를 없앴다.
 
-변환은 `tools/convert-female-sources-to-meters.py`(1회용, 변환 전 해시를 확인해 두 번 적용하지 않음)가 했다.
-`bakeDimensions`와 같은 값(노드 이동, POSITION·모프 대상, 역바인드 이동, 애니메이션 이동, `pelt_physics` 기준점·길이·부착 깊이·충돌체)과
-부츠 `heel_pose` 좌표를 1.8배하고 accessor·bufferView 배치는 바이트 단위로 유지했다.
-
-- GLB 18개: 리그 `rig_v1/female-base.glb`, 헤어 `hair_female_knight_bob.glb`·`hair_female_knight.glb`와 두 헤어의 `hair-fitted-unskinned.glb`(리깅 입력),
-  기사 상의 v3·하의 v42·장갑 v3·투구 v1·부츠 v5와 부츠 v4(`shape-female-knight-boots.py` 입력),
-  야만용사 상의 v1·하의 v1·샌들 v3·손목 보호대 v1·투구 v1·투구용 헤어 2개.
-- 보조 데이터(리그 좌표만, Tripo 원본 좌표 `source`는 유지): 부츠 v4·v5 `heel-pose.json`과 `fitting.json`의
-  `posed_floor_offset`·`heel_pose`·높이 구간(v4는 `section_clearances[].height`도), 두 부츠의 `heel-animation-offsets.json`
-  (`lift`·`hips`), `underwear_fit_v1/fitting.json`(`patch_centers`·반경)과 `source-influences.npz`(`positions`),
-  `hair-cheek-coverage-anchors.json`(카메라·표적·깊이 허용치, 몸체 해시 갱신), `fit-data.npz`
-  (장갑 v3 `*_positions`, 야만용사 상의 `source`·`fitted`·`depth`, 하의 `fitted`·`depth`, 샌들 `start`·`fitted`·`left_fitted`·`depth`),
-  상의 v3 `sleeve-adjustment.npz`(`previous`·`source`·`points`).
-- 가림 JSON은 삼각형 인덱스라 그대로 둔다. 기사 부츠 `body-occlusion.json`의 `cuff_heights`는 쓰지 않는 기록값으로 제작 단위에 남는다.
-
-게임용 GLB 23개를 다시 만들어 전환 전 HF 파일과 수치로 비교했다. 메시 정점·노멀·UV·스킨·역바인드·노드·애니메이션 트랙은
-비트 단위로 같고, `animations/offhand.glb`의 횃불 동작 Hips 이동만 최대 1.19e-7m 다르다(미터 리그에서 다시 계산한 보정 동작의 부동소수 오차).
-메타데이터는 `meters_per_source_unit`이 빠지고 부츠 `heel_pose`의 좌표 기록값(런타임 미사용)이 미터가 됐다.
-보정 동작 `preview/animations.json`은 회전 트랙이 같고 이동 트랙 차이는 1.19e-7m 이하다.
-
-도구도 미터 기준으로 바꿨다. 상수를 1.8배하고 `METERS_PER_UNIT`·`CHARACTER_HEIGHT_M` 환산을 없앴다.
-
-- 피팅: `fit-female-barbarian-{bracers,helmet,boots}.py`, `fit-female-knight-{boots,gloves,helmet}.py`,
+- 변환한 원본: 리그 `rig_v1/female-base.glb`, 단발·긴 헤어와 두 헤어의 리깅 입력 `hair-fitted-unskinned.glb`,
+  기사 상의 v3·하의 v42·장갑 v3·투구 v1·부츠 v4·v5, 야만용사 상의·하의·샌들·손목 보호대·투구·투구용 헤어 2개.
+  좌표가 든 보조 데이터(`heel-pose.json`, `heel-animation-offsets.json`, `fit-data.npz`, `sleeve-adjustment.npz`,
+  `hair-cheek-coverage-anchors.json`, 피팅 기록의 높이 값)도 1.8배했다. Tripo 원본 좌표 `source`와 삼각형 인덱스인 가림 JSON은 그대로다.
+- 게임용 GLB 23개를 다시 만들어 전환 전과 비교했다. 메시·스킨·역바인드·애니메이션 트랙이 비트 단위로 같고,
+  `animations/offhand.glb` 횃불 동작의 Hips 이동만 부동소수 오차(최대 1.19e-7m)만큼 다르다.
+- 미터 기준 도구: 피팅 `fit-female-barbarian-{bracers,helmet,boots}.py`, `fit-female-knight-{boots,gloves,helmet}.py`,
   `shape-female-knight-boots.py`, `trim-female-barbarian-helmet-hair.py`,
-  `outfits/{fit_female_knight_top_surface,repair_sandal_panel,female_boot_material,female_barbarian_top_occlusion}.py`.
-  몸체 해시 확인은 전환 후 리그로 갱신했다.
-  전환된 입력으로 다시 실행해 전환된 원본과 비교했다. 손목 보호대·두 투구·장갑·기사 부츠(v4→v5)는 위치 오차 1.2e-7m 이하,
-  손목 보호대·야만용사 상의·기사 장갑의 가림 인덱스는 같다.
-  샌들은 반복 피부 밀어내기가 입력의 float32 반올림에 민감해 최대 0.94mm, 투구용 헤어 트림은 잘림 경계 삼각형 몇 개가 다르다.
-  같은 반올림만 준 입력을 전환 전 도구에 넣어도 같은 수준으로 달라진다.
-  `fix-female-underwear-clipping.py`는 상수만 미터로 바꿨다. 입력 해시가 속옷 수정 전 리그라 다시 실행하지 않는다.
-- Blender: 피팅 `fit_female_knight_{bob,hair}.py`·`fit_female_barbarian_top.py`와 이어지는 `rig-female-knight-{bob,hair,top-v2}.py`
-  (`rig-female-knight-{bob,top-v2}.py`는 단위와 무관), 검수 `review_female_{barbarian_boots,barbarian_bottom,barbarian_bracers,barbarian_helmet,barbarian_top,knight_bob,knight_boots,knight_gloves,knight_hair,knight_helmet}.py`.
-  전환 전 피팅 체인은 현재 원본을 그대로 재현했고, 미터 버전은 단발 2.4e-7m 이내로 같다. 긴 헤어는 정수리 9정점이 최대 4.3mm,
-  야만용사 상의는 최대 7.7mm 다르다. 긴 헤어는 가장 가까운 몸체 삼각형이 가늘어 면 노멀이 float32 반올림에 따라 바뀌고,
-  상의는 반올림만 준 리그를 전환 전 도구에 넣어도 같은 7.7mm 차이가 난다. 검수 스크립트는 카메라·조명 위치를 1.8배,
-  조명 세기를 3.24배 했다. 10개 스크립트의 렌더 113장이 전환 전과 겹치고(Workbench), Cycles 렌더 밝기도 같다.
-  단발·긴 헤어 검수는 `female-base.blend` 대신 리그 GLB를 연다.
-- 동작: `lib/female-seated.mjs`(앉기 재계산이 저장된 `sit_idle`과 위치 6e-8m·회전 1.2e-7 이내로 일치), `animate-female-base.mjs` 손 오프셋.
-- 검사: `validate-female-{seated,knight-boots,knight-bob,knight-hair,knight-helmet,knight-top-v2,preview}.mjs`,
-  `validate-female-barbarian-{boots,bottom,bracers,helmet,helmet-hair,helmet-hair-coverage,top}.mjs`,
-  `validate-female-barbarian-{boots-clearance,connector-clearance,ring-walls,panel-overlap,helmet-hair}.py`,
-  `export-female-barbarian-boots-poses.mjs`. 전환 전 트리에서 같은 30개 명령을 실행해 비교했다. 통과·실패가 모두 같고
-  (전체 샌들 끈 검사 2개와 왼발 뒤꿈치 끈 검사는 기록된 앞끈·뒤꿈치 끈 관통으로 전환 전부터 실패), 거리 값은 1.8배다.
-  허용치 경계의 관통 표본 수가 시점별로 ±2개, 기사 부츠 밑창 폭 표본이 489 → 488쌍 달라진 것 외에 개수는 같다.
-  전투 대기 뒤꿈치 끈의 피부 거리 최솟값 일부는 가장자리 표본 선택이 바뀌어 최대 0.044mm 다르다. 착용 자세 정점 차이는 1.7e-7m 이하다.
-- 클라이언트: `female-boot-ground.ts` 표본 높이 0.144·0.324m, `female-seat.ts`는 카탈로그 상호작용 높이를 그대로 쓴다.
-  개발 미리보기 `female-base.ts`는 손 소품에 `FEMALE_HAND_FITS`를 쓰고 카메라·바닥 값을 1.8배했다.
-  전환 전후 미리보기를 같은 시점으로 렌더링해 겹쳐 보면 화면 크기가 같다.
+  `outfits/{fit_female_knight_top_surface,repair_sandal_panel,female_boot_material,female_barbarian_top_occlusion}.py`,
+  Blender `fit_female_knight_{bob,hair}.py`·`fit_female_barbarian_top.py`·`rig-female-knight-{bob,hair}.py`·`review_female_*.py`,
+  동작 `lib/female-seated.mjs`·`animate-female-base.mjs`, 검사 `validate-female-*.{mjs,py}`·`export-female-barbarian-boots-poses.mjs`.
+  전환 전후 같은 명령의 통과·실패가 같았다(샌들 끈 관통 검사 3개는 전환 전부터 실패).
+- 전환하지 않은 파일: `.blend` 편집본(Blender에서 열면 제작 단위, 검수 스크립트를 다시 실행하면 미터로 다시 저장),
+  `catwalk-source.glb`(Mixamo 자체 단위, Hips 높이 비율로 리타기팅).
 
-보관용(전환 전 트리 `assets.lock` @ `1e291c68`에서만 재현): `rig-female-base.py`, `tune-female-{seated,catwalk}.mjs`,
-`validate-female-rig.mjs`, 기사 하의 v1–v42 체인 단계 도구와 검사(`validate-female-knight-{bottom,front-clips,strap-surface,upper-straightness,strap-bend,rear-straps,rear-leather}.mjs`,
-`validate-female-knight-*.py`), 야만용사 하의 수리 단계(`{fix,join,smooth}-female-barbarian-belt.py`,
-`{stitch,weight}-female-barbarian-panels.py`, `fit-female-barbarian-{waistband,thigh-contact}.py`, `outfits/female_barbarian_bottom_occlusion.py`),
-기사 상의 v2→v3 단계(`outfits/{export_female_knight_sleeves,assemble_female_knight_top,female_knight_top_occlusion}.py`),
-`validate-female-underwear.py`, `rig-female-knight-rear-straps.py`, `tools/blender-scripts`의 기사 하의·기사 상의 v2→v3·야만용사 하의·리깅 이전 단계 스크립트와
-`sync_female_underwear_weights.py`(머리 주석에 표시). 이 단계들은 이전 버전 파일과 비교하거나 고정 해시를 확인한다.
-
-전환하지 않은 파일: 모든 `.blend` 편집본(Blender에서 열면 제작 단위), `catwalk-source.glb`(Mixamo 자체 단위, Hips 높이 비율로 리타기팅),
-리깅 이전 GLB(`ear_normals_v2`, `eye_normals_v1` 등), 위에 적지 않은 이전 `fitted_vN`, `doc/assets`의 날짜별 피팅 기록.
-검수 스크립트를 다시 실행하면 `*-fitted.blend`를 미터로 다시 저장한다.
+2026-10-18 정리에서 제작 단위에서만 재현되던 단계 파일과 도구를 삭제했다. 리깅 이전 얼굴 보정 단계, 기사 하의 v1–v41, 상의 v2,
+야만용사 하의 수리 단계와 1회용 변환 스크립트가 여기에 해당한다. 필요하면 git `d0e3f3de`와 HF 리비전 `8b01d1fb`에서 복원한다.

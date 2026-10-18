@@ -200,7 +200,7 @@ def main(sex, uniform_scale=None, offset=None, directory=None):
     raw = io.compact(doc, raw)
     assert images == [view_bytes(doc, raw, image['bufferView']) for image in doc['images']]
     assert np.isfinite(fitted).all() and np.isfinite(normal).all() and np.isfinite(tangent).all()
-    out = (ROOT / directory).resolve() if directory else DIRECTORY / 'fitted_v1' / sex
+    out = (ROOT / directory).resolve() if directory else DIRECTORY / 'fitted_v3' / sex
     out.mkdir(parents=True, exist_ok=True)
     target = out / 'helmet_brilliance.glb'
     write_glb(target, doc, raw)

@@ -4,8 +4,8 @@ import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
 
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
-const version = process.argv[2] ?? 'v2'
-assert.ok(['v2', 'v3'].includes(version))
+const version = process.argv[2] ?? 'v3'
+assert.ok(['v3'].includes(version))
 const topPath = `assets/items/female_knight_top/tripo_v1/fitted_${version}/top_female_knight.glb`
 const { server, load } = await headlessThree()
 try {

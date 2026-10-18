@@ -1,121 +1,94 @@
-# 광휘의 투구 — 남녀 피팅·리깅
+# 광휘의 투구
 
-2026-10-17. 앞·뒤 두 장으로 생성한 Tripo 원본을 남녀 기준 몸체에 따로 맞췄다.
-두 파일 모두 기존 65본을 사용하며 투구·수정·날개·목 보호대 전체를 **Head 100%**로 연결한다.
-현재 남녀 모두 원본 비율을 복원한 균일 축소 v3를 사용한다. 남녀 몸체에 맞춰 배율·위치·리그를 따로 적용한다.
-게임 장비 등록·지능 +1·조명을 적용했다([런타임 파일과 규칙](items.md#helm-of-brilliance--광휘의-투구)).
+이마의 발광 수정, 황동 테두리·날개 장식, 강철 외피와 가죽 안감을 갖춘 개방형 투구다. 게임 등록·지능 +1·조명 규칙과
+런타임 파일은 [아이템 문서](items.md#helm-of-brilliance--광휘의-투구)에 있다.
+Tripo v2 원본을 남녀 기준 몸체에 각각 균일 축소로 맞춘 `tripo_v2/fitted_v3/{male,female}`를 쓴다.
+두 파일 모두 3,685 triangles, 원본 삼각형·UV·내장 4K 텍스처를 유지하고 투구 전체를 **Head 100%**로 연결한다.
 
-## 남성 균일 축소 v3 — 현재
+![정면·측면·후면 3면도](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/sheet.png)
 
-사용자 요청(2026-10-17): 남성도 머리와 투구 사이 간격을 줄인다. 변형된 남성 v1 대신
-Tripo 원본에서 다시 제작해 **세 축 0.33 / 0.33 / 0.33**, 위치 **(0, 1.800, -0.015)m**를 적용했다.
-첫 피팅 대비 폭 약 24%, 높이·깊이 약 19% 축소다. 보호대·돔·날개·수정에 국소 변형을 적용하지 않았다.
-
-- 원본 균일 변환과 출력 정점의 최대 오차 **0.000000060m 미만**.
-  3,685 triangles, 삼각형 인덱스·UV·내장 4K 텍스처 바이트를 보존한다.
-- 남성 65본·Head 100%, 8개 클립과 고개 회전을 포함한 269개 자세에서 강체 부착 검사를 통과했다.
-  정면·측면·후면·사선 렌더와 실제 브라우저 로딩·제공 GLB 해시를 확인했다.
-- **제한:** 귀·뒤통수 등의 피부가 투구 안쪽과 겹친다. 귀 윗부분의 돌출은 착용 시 안쪽 압축으로 처리했다.
-  귀 보정 전 FCL 검사에서는 269개 자세 모두 교차가 검출됐으며 무관통 판정은 하지 않는다.
-  투구 크기를 다시 늘리거나 피부 면을 잘라내지 않았다.
-- [남성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb) · [Blender](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helm-brilliance-male-fitted.blend) · [피팅 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/fitting.json).
-- [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/animation-validation.json) · [피부 교차 요약](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/skin-clearance-validation.json).
-- 남성 귀 보정(2026-10-17): 여성과 같은 연속 압축 방식으로 양쪽 귀 뒤쪽 524개 정점을
-  최대 약 22.95mm 안쪽으로 이동한다. 남아 있던 아래쪽 돌출까지 덮도록 보정 시작 높이를
-  1.735m에서 1.715m로 내렸다. 모든 삼각형·UV·원래 Head/Neck 가중치를 유지하고,
-  노멀·탄젠트 방향을 맞춘다. 탈착·다른 투구로 변경 시 원래 머리 지오메트리를 복원한다.
-  기준 남성 얼굴에만 적용하며 rugged/ranger 대체 얼굴에는 적용하지 않는다.
-  [귀 피팅 기록](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/ear-fitting.json).
-  재현: `.venv/bin/python tools/fit-helm-of-brilliance-ears.py male`.
-- 재현: `.venv/bin/python tools/fit-helm-of-brilliance.py male --uniform-scale 0.33 --offset 0 1.800 -0.015 --directory assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male`.
-
-## 여성 균일 축소 v3 — 현재
-
-사용자 결정(2026-10-17): 부위별 변형을 없애고 전체를 같은 비율로 줄여 머리와의 큰 틈을 줄인다.
-변형된 여성 v1·v2를 입력으로 쓰지 않고 **Tripo 원본에서 다시 제작**했다.
-
-- 세 축 배율 **0.30 / 0.30 / 0.30**, 위치 **(0, 1.710, -0.015)m**.
-  원본 노드 변환과 정면 방향 회전을 반영한 뒤 균일 스케일과 평행 이동만 적용한다.
-  볼 보호대·돔·날개·수정에 별도 변형을 적용하지 않는다.
-- 최초 여성 피팅과 비교해 전체 폭 약 25%, 높이·깊이 약 20% 축소.
-  최초 피팅은 가로 배율이 달랐으므로 해당 파일을 균일 축소하는 대신 원본 비율부터 복원했다.
-- 내보낸 전체 정점을 원본의 균일 변환 결과와 비교한 최대 오차는 **0.000000060m 미만**.
-  원본 삼각형 인덱스·UV·내장 4K 텍스처 바이트를 그대로 유지했다.
-- 실제 런타임 연결, 65본·기준 행렬, Head 100%, 14개 클립 × 33개 샘플과
-  고개 회전을 포함한 467개 자세에서 강체 부착과 유한 좌표 검사를 통과했다.
-- **제한:** 피부를 숨기지 않은 상태에서 귀·뒤통수 등 투구 안쪽 피부와의 교차가 남는다.
-  귀 보정 전 FCL 검사는 467개 자세 모두에서 교차를 검출했다. 정면·측면·후면·사선의 착용 모습을
-  검토했지만 전 자세 무관통 판정은 하지 않는다. 내부 교차를 없애려고 투구를 다시
-  늘리거나 보호대를 찌그러뜨리지 않는다. 귀 윗부분은 착용 시 안쪽 압축으로 처리했으며, 뒤통수 등 다른 내부 피부는 게임 적용 전 검토가 필요하다.
-- [여성 GLB](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb) · [Blender](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helm-brilliance-female-fitted.blend).
-- [피팅 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/fitting.json) · [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/animation-validation.json) · [피부 교차](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/skin-clearance-validation.json).
-
-## 제작 미리보기
-
-- [남성 착용](https://localhost:10004/modular-character-preview.html?helmet=brilliance&camera=face&top=none&motion=idle1&fit=male-v3-ears)
-- [여성 착용 v3](https://localhost:10004/modular-character-preview.html?character=female&helmet=brilliance&camera=face&hair=none&motion=rest&fit=v3)
-
-기존 제작 페이지의 투구 선택 목록에 광휘의 투구를 추가했다. 회전·확대·동작 재생으로 확인할 수 있다.
-착용 중 헤어를 숨기며 탈착 후 선택한 헤어를 복원한다. 귀 윗부분을 삼각형 가림으로
-처리한 시도는 구멍이 드러나 사용자 검토에서 폐기했다. 현재는 **모든 피부 삼각형을 복원**하고,
-양쪽 귀 위·뒤쪽의 736개 정점을 최대 약 15.34mm 안쪽으로 부드럽게 압축한다.
-압축 방향의 미분값이 양수가 되도록 해 접힘을 방지하고, 노멀·탄젠트 방향도 맞춘다.
-투구를 벗으면 원래 정점·노멀·삼각형을 복원한다. 투구와 몸체 원본 GLB는 변경하지 않았다.
-[귀 피팅 기록](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/ear-fitting.json).
-재현: `.venv/bin/python tools/fit-helm-of-brilliance-ears.py`.
-브라우저에서 실제 제공된 GLB의 해시와 로컬 v3 파일의 일치를 확인했다.
-
-## 파일과 기준
+## 최종 파일
 
 | 구분 | 남성 | 여성 |
 | --- | --- | --- |
 | 기준 몸체 | `assets/modular_human_male_01/fitted/base.glb` | `assets/modular_human_female_01/rig_v1/female-base.glb` |
 | 리그 ID | `human_male_01_mixamo_candidate_v2` | `human_female_01_local_v1` |
-| 현재 피팅 | v3 균일 축소 | v3 균일 축소 |
-| GLB | [남성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb) | [여성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb) |
-| Blender | [남성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helm-brilliance-male-fitted.blend) | [여성](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helm-brilliance-female-fitted.blend) |
-| 피팅·몸체 해시 | [남성 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/fitting.json) | [여성 명세](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/fitting.json) |
+| GLB | [helmet_brilliance.glb](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb) | [helmet_brilliance.glb](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb) |
+| Blender | [helm-brilliance-male-fitted.blend](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helm-brilliance-male-fitted.blend) | [helm-brilliance-female-fitted.blend](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helm-brilliance-female-fitted.blend) |
+| 피팅·몸체 해시 | [fitting.json](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/fitting.json) | [fitting.json](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/fitting.json) |
+| 귀 보정 | [ear-fitting.json](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/ear-fitting.json), [body-occlusion.json](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/body-occlusion.json) | [ear-fitting.json](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/ear-fitting.json), [body-occlusion.json](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/body-occlusion.json) |
+| 검사 | [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/animation-validation.json), [피부 교차](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/skin-clearance-validation.json) | [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/animation-validation.json), [피부 교차](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/skin-clearance-validation.json) |
 
-각 몸체의 본 계층·본 순서·inverse bind matrix를 복사한다. 남녀 파일은 리그 ID와 bind 기준이
-다르므로 교환해서 사용하지 않는다. 새 Auto Rig나 천 시뮬레이션은 사용하지 않는다.
-두 투구 모두 3,685 triangles다. 몸체와 투구의 합계는 남성 숨김 포함 17,576, 표시 16,999,
-여성은 숨김 포함·표시 모두 25,860이다. 의상·무기·망토를 포함한 게임 최종 예산과 얼굴 배분은 장비 등록 단계에서 확인한다.
+각 파일은 해당 몸체의 본 계층·순서·inverse bind matrix를 복사하므로 남녀 파일을 바꿔 쓰지 않는다.
 
-## 이전 피팅 기록
+## 남성 균일 축소 v3 — 현재
 
-- **[미사용] 남성 v1:** 방사형 머리 간격 탐색 후 아래 볼 보호대를 최대 3cm, 뒤 목 보호대를 최대 6cm
-  들어 올렸다. 실제 정점 최대 이동은 4.97cm다. 남성 8개 클립, 총 269개 검사 자세의 피부 교차 0개였으나 사용자 검토에서 간격이 커 v3로 대체했다.
-  이전 GLB·Blender 복사본·검토 이미지는 커밋 정리 때 삭제하고 피팅 수치와 검증 요약을 보존한다.
-  [리깅·동작](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/animation-validation.json) · [피부 교차](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/male/skin-clearance-validation.json).
-- **[미사용] 여성 v1:** 비균일 초기 배율과 보호대 국소 변형을 사용했다. 467개 검사 자세의 교차는
-  없었지만 사용자 검토에서 머리와 투구 사이 간격이 너무 컸다. `fitted_v1/female/fitting.json`에 수치·해시만 보존한다.
-- **[미사용] 여성 v2:** 위쪽 폭·앞쪽 테두리·돔을 따로 줄인 시도.
-  사용자가 볼 보호대의 찌그러짐과 여전히 큰 간격을 지적해 폐기했다.
-  `fitted_v2/female/` 및 `rejected-radial/`의 `fitting.json`만 실패 이력으로 보존한다.
-- [초기 교차·보정 이력](../../assets/items/helm_of_brilliance/tripo_v2/fitted_v1/fitting-history.json).
+- 세 축 배율 **0.33**, 위치 **(0, 1.800, -0.015)m**. 원본 균일 변환과 출력 정점의 최대 오차는 0.000000060m 미만이다.
+- 귀 보정: 양쪽 귀 뒤쪽 524개 정점을 안쪽으로 압축한다. 삼각형·UV·Head/Neck 가중치는 그대로이며 벗으면 원래 머리로 돌아간다.
+  기준 남성 얼굴에만 적용하고 rugged/ranger 대체 얼굴에는 적용하지 않는다.
+- 8개 클립과 고개 회전을 포함한 269개 자세에서 강체 부착 검사를 통과했다.
 
-## 재현과 출처
+## 여성 균일 축소 v3 — 현재
 
-현재 여성 피팅:
+- 세 축 배율 **0.30**, 위치 **(0, 1.710, -0.015)m**. 최대 오차는 남성과 같다.
+- 귀 보정: 양쪽 귀 위·뒤쪽 736개 정점을 안쪽으로 접힘 없이 압축하고, 모든 피부 삼각형을 유지한다. 벗으면 원래 정점·노멀·삼각형으로 돌아간다.
+- 착용 중 헤어를 숨기고 벗으면 선택한 헤어를 복원한다.
+- 14개 클립 × 33개 표본과 고개 회전을 포함한 467개 자세에서 강체 부착·유한 좌표 검사를 통과했다.
+
+## 재현
+
+`<sex>`는 `male` 또는 `female`이며, 검사 도구는 `fitted_v3/<sex>`를 기본으로 읽는다.
 
 ```sh
+.venv/bin/python tools/fit-helm-of-brilliance.py male --uniform-scale 0.33 --offset 0 1.800 -0.015 --directory assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male
 .venv/bin/python tools/fit-helm-of-brilliance.py female --uniform-scale 0.30 --offset 0 1.710 -0.015 --directory assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female
-node tools/validate-helm-of-brilliance.mjs female assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female
-.venv/bin/python tools/validate-helm-of-brilliance-clearance.py female --directory assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female
-blender -b --python-exit-code 1 -P tools/blender-scripts/review_helm_of_brilliance.py -- female --directory assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female
+.venv/bin/python tools/fit-helm-of-brilliance-ears.py <sex>
+node tools/validate-helm-of-brilliance.mjs <sex>
+.venv/bin/python tools/validate-helm-of-brilliance-clearance.py <sex>
+blender -b --python-exit-code 1 -P tools/blender-scripts/review_helm_of_brilliance.py -- <sex>
 ```
 
-피부 교차 도구는 보고서를 저장한 뒤 교차가 있으면 실패로 종료한다. 현재 v3의 알려진 제한에 해당한다.
-이전 여성 보호대 보정·밀착 변형 도구를 v3에 다시 적용하지 않는다.
-커밋 정리(2026-10-17): 실패 피팅의 GLB·Blender 복사본, 로그, 임시 스크린샷·렌더,
-대용량 포즈 덤프를 삭제했다. 원본·현재 남녀 GLB와 Blender·제작 기록·검증 요약·문서 이미지는 남겼다.
-피부 교차 보고서는 자세별 덤프를 제외한 요약이며 위 도구로 다시 생성할 수 있다.
+피부 교차 도구는 보고서를 저장한 뒤 교차가 있으면 실패로 끝난다(아래 제한). 교차 검사는 `python-fcl 0.7.0.11`, 렌더는 Blender 5.2.0 LTS를 썼다.
 
-Python은 프로젝트 `.venv`, 교차 검증은 `python-fcl 0.7.0.11`, 렌더는 Blender 5.2.0 LTS를 사용했다.
-Blender에는 기준 몸체·공유 리그·피팅 투구·검토 자세와 숨겨진 원본 참조가 있다.
+## 출처·라이선스
 
-원본: Tripo API 유료 크레딧, `P2-20260801`, 생성일 2026-10-17,
-작업 `bfe87055-a7ff-4539-8c67-8c98ffecc234`. [Tripo 이용 조건](https://developers.tripo3d.ai/en/terms) 적용.
-원화: OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**, 2026-10-17, OpenAI 출력물 이용 조건 적용.
-피팅·리깅·검토 렌더는 로컬 스크립트와 Blender로 제작했으며 추가 유료 생성은 없었다.
-몸체의 출처는 [남성](modular-human-male-01.md)·[여성](modular-human-female-01.md) 기록을 따른다.
+- 원화: OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**, 2026-10-17. OpenAI 출력물 이용 조건 적용, 별도 CC 라이선스 없음.
+  NetHack의 아이템 이름과 지능 보너스에서 착안한 새 디자인이며 원작 이미지·모델은 쓰지 않았다.
+  아래 순서로 앞 이미지를 편집 원본으로 삼았다.
+  1. [concept_v1](../../assets/items/helm_of_brilliance/concept_v1/concept.png): 첫 원화.
+     [프롬프트](../../assets/items/helm_of_brilliance/concept_v1/prompt.txt) · [생성 기록](../../assets/items/helm_of_brilliance/concept_v1/generation.json).
+  2. [concept_v2_wings](../../assets/items/helm_of_brilliance/concept_v2_wings/concept.png): 귀 양옆에 황동 깃털 날개 추가.
+     [프롬프트](../../assets/items/helm_of_brilliance/concept_v2_wings/prompt.txt) · [생성 기록](../../assets/items/helm_of_brilliance/concept_v2_wings/generation.json).
+  3. [turnaround_v1](../../assets/items/helm_of_brilliance/turnaround_v1/sheet.png): 정면·오른쪽 측면·후면 3면도. 후면은 원화에 없는 구조를 보완했다.
+     [프롬프트](../../assets/items/helm_of_brilliance/turnaround_v1/prompt.txt) · [생성 기록](../../assets/items/helm_of_brilliance/turnaround_v1/generation.json).
+  4. [turnaround_v2_strict_side](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/sheet.png): 측면에서 반대편 내부가 보이지 않게 고친 3면도.
+     [프롬프트](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/prompt.txt) · [생성 기록](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/generation.json) ·
+     [분리 영역](../../assets/items/helm_of_brilliance/turnaround_v2_strict_side/split.json)(재생성·리사이즈 없이 512×800으로 잘라 Tripo 입력으로 씀).
+- 3D: Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, 입력 조명 제거, seed `101701`,
+  목표 4,000 triangles, 2026-10-17. [API 문서](https://developers.tripo3d.ai/en/docs/generation-multiview-to-model/p),
+  [이용 조건](https://developers.tripo3d.ai/en/terms). 두 번 생성해 **240크레딧**을 썼다.
+- **v2(채택)**: 앞·뒤 2장, 작업 ID `bfe87055-a7ff-4539-8c67-8c98ffecc234`, 120크레딧(사용자 충전 후 잔액 1,080 → 960).
+  결과 3,685 triangles, 컬러·노멀·ORM 각 4096×4096.
+  [제작 명세·입력 해시](../../assets/items/helm_of_brilliance/tripo_v2/build.json) ·
+  [요청·작업·비용 기록](../../assets/items/helm_of_brilliance/tripo_v2/generation.json) ·
+  [잔액 확인](../../assets/items/helm_of_brilliance/tripo_v2/preflight.json) ·
+  [입력](../../assets/items/helm_of_brilliance/tripo_v2/inputs/) ·
+  [Tripo GLB](../../assets/items/helm_of_brilliance/tripo_v2/source/model_url.glb) ·
+  [원본 Blender](../../assets/items/helm_of_brilliance/tripo_v2/source.blend) ·
+  [형상 진단](../../assets/items/helm_of_brilliance/tripo_v2/review.json)([스크립트](../../assets/items/helm_of_brilliance/tripo_v2/review_source.py)).
+- **[미사용] v1**: 앞·옆·뒤 3장, 작업 ID `0c5ee49d-ff5b-437c-962d-ea478a3c7aa2`, 120크레딧(잔액 200 → 80), 결과 3,705 triangles.
+  뒤통수에 이마 수정과 얼굴 구멍이 복제되어 쓰지 않는다. 생성 원본으로 보존한다.
+  [제작 명세·입력 해시](../../assets/items/helm_of_brilliance/tripo_v1/build.json) ·
+  [요청·작업·비용 기록](../../assets/items/helm_of_brilliance/tripo_v1/generation.json) ·
+  [입력](../../assets/items/helm_of_brilliance/tripo_v1/inputs/) ·
+  [Tripo GLB](../../assets/items/helm_of_brilliance/tripo_v1/source/model_url.glb) ·
+  [원본 Blender](../../assets/items/helm_of_brilliance/tripo_v1/source.blend) ·
+  [형상 진단](../../assets/items/helm_of_brilliance/tripo_v1/review.json)([스크립트](../../assets/items/helm_of_brilliance/tripo_v1/review_source.py)).
+- 피팅·리깅·검토 렌더는 로컬 스크립트와 Blender로 만들었고 추가 유료 생성은 없다.
+  몸체 출처는 [남성](modular-human-male-01.md)·[여성](modular-human-female-01.md) 기록을 따른다.
+
+## 제한
+
+- 귀·뒤통수 등 투구 안쪽 피부와의 교차가 남는다. 귀 보정 전 FCL 검사는 남성 269개·여성 467개 자세 모두에서 교차를 검출했으며
+  전 자세 무관통 판정은 하지 않는다. 투구를 키우거나 보호대를 변형해 없애지 않는다.
+- 여성의 뒤통수 등 귀 외 내부 피부는 추가 검토가 필요하다.

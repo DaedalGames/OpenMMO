@@ -7,7 +7,7 @@ import { ensureFemalePreview } from './lib/ensure-female-preview.mjs'
 
 const sex = process.argv[2]
 assert.ok(['male', 'female'].includes(sex))
-const directory = process.argv[3] ?? `assets/items/helm_of_brilliance/tripo_v2/fitted_v1/${sex}`
+const directory = process.argv[3] ?? `assets/items/helm_of_brilliance/tripo_v2/fitted_v3/${sex}`
 const fitting = JSON.parse(readFileSync(`${directory}/fitting.json`))
 const basePath = fitting.body.path
 const partPath = `${directory}/helmet_brilliance.glb`
