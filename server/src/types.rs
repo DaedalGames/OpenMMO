@@ -61,6 +61,7 @@ pub fn new_player(
         mount: None,
         ready_at: crate::game_state::GameState::now_ms() + WORLD_LOADING_GRACE_MS,
         invulnerable: false,
+        invisible: false,
         max_health_bonus: 0,
         max_health_per_level: 0,
     }

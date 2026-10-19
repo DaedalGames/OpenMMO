@@ -95,6 +95,8 @@
   "golden_sturgeon.name": "황금 철갑상어",
   "great_sword.description": "양손으로 휘두르는 거대한 강철 검. 무거워서 방패나 횃불을 함께 들 수 없습니다.",
   "great_sword.name": "대검",
+  "invisibility_cloak.description": "빛을 휘게 해 걸친 이를 감추는 옅은 은빛 망토. 무언가를 공격하면 다시 입을 때까지 효력이 풀린다.",
+  "invisibility_cloak.name": "투명 망토",
   "rune_blade.description": "빛나는 각인이 새겨진 대검. 바르칸이 부서진 요새에서 휘두르던 검입니다.",
   "rune_blade.name": "각인의 대검",
   "greatclub.description": "철 가시를 박은 참나무 가지. 오거보다 작은 자가 제대로 휘두르기에는 너무 무겁습니다.",

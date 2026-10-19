@@ -375,12 +375,19 @@ impl super::GameState {
                 match effect {
                     ItemEffect::Cha(amount) => stats.cha += amount,
                     ItemEffect::Int(amount) => stats.int += amount,
-                    ItemEffect::Light | ItemEffect::Sustenance | ItemEffect::MaxHpPerLevel(_) => {}
+                    ItemEffect::Light
+                    | ItemEffect::Invisibility
+                    | ItemEffect::Sustenance
+                    | ItemEffect::MaxHpPerLevel(_) => {}
                 }
             }
         }
         stats.guard = self.abilities.read().await.guard(player_id, stats.guard);
         stats
+    }
+
+    pub fn wears_invisibility(&self, inv: &PlayerInventory) -> bool {
+        self.equipped_defs(inv).any(|d| d.has_invisibility())
     }
 
     pub fn equipped_max_health_per_level(&self, inv: &PlayerInventory) -> u32 {
@@ -762,6 +769,7 @@ impl super::GameState {
         cooldowns.insert(character_id, now);
         drop(cooldowns);
         self.cancel_concentration_if_active(player_id).await;
+        self.reveal(player_id).await;
         self.publish_nearby(
             &origin,
             floor,
@@ -946,11 +954,15 @@ impl super::GameState {
         );
 
         // Update player combat timestamp and damage logic
-        {
+        let revealed = {
             let mut players = self.players.write().await;
-            if let Some(player) = players.get_mut(player_id) {
+            players.get_mut(player_id).is_some_and(|player| {
                 player.last_combat_at = Self::now_ms();
-            }
+                self.reveal_locked(player)
+            })
+        };
+        if revealed {
+            self.notify_invisibility(player_id, false).await;
         }
 
         // Send attack result

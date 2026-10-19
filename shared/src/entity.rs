@@ -117,6 +117,11 @@ pub struct Player {
     /// Admin `/god`: blows still land but take no health. Session only.
     #[serde(skip)]
     pub invulnerable: bool,
+    /// Hidden by the invisibility cloak; the server withholds the player from
+    /// other viewers and monsters. Set on putting the cloak on, cleared by
+    /// attacking or taking it off.
+    #[serde(skip)]
+    pub invisible: bool,
     /// Gear's share of `max_health`: `max_health_per_level` × level.
     /// Level rolls and saves use the base; set it via `set_base_max_health`
     /// after any level or gear change.
@@ -313,6 +318,7 @@ mod tests {
             mount: None,
             ready_at: 0,
             invulnerable: false,
+            invisible: false,
             max_health_bonus: 0,
             max_health_per_level: 1,
             back_color: None,
@@ -366,6 +372,7 @@ mod tests {
             mount: None,
             ready_at: 0,
             invulnerable: false,
+            invisible: false,
             max_health_bonus: 0,
             max_health_per_level: 0,
             back_color: None,
@@ -424,6 +431,7 @@ mod tests {
             mount: None,
             ready_at: 0,
             invulnerable: false,
+            invisible: false,
             max_health_bonus: 0,
             max_health_per_level: 0,
             back_color: None,

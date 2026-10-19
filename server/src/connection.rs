@@ -1563,6 +1563,9 @@ async fn handle_client_message(
             player.max_health_per_level = inventory
                 .as_ref()
                 .map_or(0, |inv| game_state.equipped_max_health_per_level(inv));
+            player.invisible = inventory
+                .as_ref()
+                .is_some_and(|inv| game_state.wears_invisibility(inv));
             player.set_base_max_health(max_hp);
             player.health = selected_character
                 .health
@@ -1579,6 +1582,9 @@ async fn handle_client_message(
                 player: player.clone(),
                 is_admin: state.is_admin,
             }];
+            if player.invisible {
+                responses.push(ServerMessage::InvisibilityChanged { invisible: true });
+            }
             responses.extend(game_state.owner_state_messages(&id).await);
             responses.extend(entry_notices(game_state, state, auth_service).await);
 

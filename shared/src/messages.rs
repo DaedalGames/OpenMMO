@@ -1919,6 +1919,10 @@ pub enum ServerMessage {
         monster_id: Option<String>,
         remaining_ms: u64,
     },
+    /// Direct to the wearer: the invisibility cloak hid or revealed them.
+    InvisibilityChanged {
+        invisible: bool,
+    },
 }
 
 pub use crate::entity::PlayerId;
@@ -2084,6 +2088,7 @@ impl ServerMessage {
             | Self::Kicked { .. }
             | Self::TitleEarned { .. }
             | Self::PlayerTitles { .. }
+            | Self::InvisibilityChanged { .. }
             | Self::CapeDyePrompt { .. }
             | Self::LandClaimPrompt { .. }
             | Self::LandscapingMode { .. }

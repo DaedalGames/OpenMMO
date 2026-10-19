@@ -233,6 +233,9 @@ struct Active {
     floor_level: i8,
     position: Position,
     players: Vec<NearbyPlayer>,
+    /// An invisible player is near: tick even with no one to target, so a
+    /// chase they broke ends on their screen instead of freezing mid-run.
+    ghost_near: bool,
 }
 
 impl super::GameState {
@@ -291,11 +294,12 @@ impl super::GameState {
 
     async fn tick_monster_ai_with(&self, forced_delta_ms: Option<f32>) {
         let started = Instant::now();
-        let (mut roster, underground) = {
+        let (mut roster, underground, ghosts) = {
             let now = Self::now_ms();
             let players = self.players.read().await;
             let mut roster = Roster::default();
             let mut underground = Vec::new();
+            let mut ghosts: HashMap<super::SpatialCell, Vec<(Position, i8)>> = HashMap::new();
             for (id, p) in players.iter() {
                 if !p.is_ready(now) {
                     continue;
@@ -303,12 +307,19 @@ impl super::GameState {
                 if p.floor_level < 0 {
                     underground.push((*id, p.position, p.floor_level));
                 }
+                if p.invisible {
+                    ghosts
+                        .entry(super::SpatialCell::from_position(&p.position))
+                        .or_default()
+                        .push((p.position, p.floor_level));
+                    continue;
+                }
                 roster
                     .entry(super::SpatialCell::from_position(&p.position))
                     .or_default()
                     .push((*id, p.position, p.health, p.floor_level));
             }
-            (roster, underground)
+            (roster, underground, ghosts)
         };
         // Just arrived, or behind a shut locked door: out of every monster's sight.
         let sealed = self.players_hidden_in_stair_rooms(&underground).await;
@@ -372,6 +383,14 @@ impl super::GameState {
                 .collect()
         };
 
+        let ghost_near = |position: &Position, floor: i8| {
+            !ghosts.is_empty()
+                && super::SpatialCell::within_radius(position, radius)
+                    .filter_map(|cell| ghosts.get(&cell))
+                    .flatten()
+                    .any(|(p, f)| *f == floor && position.dist_xz_sq(p) <= radius_sq)
+        };
+
         let mut brains = self.monster_brains.lock().await;
         // Reconcile against the registry and snapshot what to tick, in one
         // pass under the read lock.
@@ -389,7 +408,8 @@ impl super::GameState {
                     continue;
                 }
                 let players = players_near(&m.position, m.floor_level);
-                if players.is_empty() {
+                let ghost_near = players.is_empty() && ghost_near(&m.position, m.floor_level);
+                if players.is_empty() && !ghost_near {
                     continue;
                 }
                 if m.state.is_stationary() {
@@ -413,6 +433,7 @@ impl super::GameState {
                     floor_level: m.floor_level,
                     position: m.position,
                     players,
+                    ghost_near,
                 });
             }
             (active, standing)
@@ -483,7 +504,7 @@ impl super::GameState {
                     }
                 }
             }
-            active.retain(|a| !a.players.is_empty());
+            active.retain(|a| !a.players.is_empty() || a.ghost_near);
         }
         active.sort_unstable_by(|a, b| a.id.cmp(&b.id));
         brains.tick_gen += 1;

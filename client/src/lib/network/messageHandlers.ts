@@ -55,6 +55,7 @@ import {
   addChatBubble,
   resetGameStore,
   isAdminUser,
+  localInvisible,
   serverNotice,
 } from '../stores/gameStore'
 import type { GameState, LocalPlayer, RemotePlayer } from '../stores/gameStore'
@@ -806,6 +807,7 @@ export function handleServerMessage(
       const serverPlayer: ServerPlayer = data.player
       console.log('Join successful, received player data:', serverPlayer)
       isAdminUser.set(data.is_admin === true)
+      localInvisible.set(false)
       const player = toLocalPlayer(serverPlayer)
       gameStore.update((state) => ({
         ...state,
@@ -2595,6 +2597,9 @@ export function handleServerMessage(
       break
     case 'BowMarkUpdate':
       updateBowMark(data.monster_id, Number(data.remaining_ms))
+      break
+    case 'InvisibilityChanged':
+      localInvisible.set(data.invisible === true)
       break
     case 'BuffUpdate': {
       const before = get(activeBuffs)

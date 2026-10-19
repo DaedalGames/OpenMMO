@@ -214,7 +214,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v122: nearby PlayerLeveledUp celebration.
 /// v123: telegraphed monster skills (`MonsterSkillStarted`).
 /// v124: gear max HP bonus in EffectiveStatsUpdated.
-pub const PROTOCOL_VERSION: u32 = 124;
+/// v125: `InvisibilityChanged` for the invisibility cloak wearer.
+pub const PROTOCOL_VERSION: u32 = 125;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from
@@ -546,6 +547,7 @@ mod tests {
             mount: None,
             ready_at: 0,
             invulnerable: false,
+            invisible: false,
             max_health_bonus: 0,
             max_health_per_level: 0,
             back_color: None,

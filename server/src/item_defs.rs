@@ -17,6 +17,9 @@ pub enum ItemEffect {
     Cha(i32),
     /// INT bonus. No rule reads INT yet; the stats panel shows it.
     Int(i32),
+    /// Hides the wearer from players and monsters until they attack
+    /// (doc/INVISIBILITY.md).
+    Invisibility,
     /// Lights the wearer's surroundings; drawn by clients only.
     Light,
     /// Max HP bonus per character level (doc/TIER5_FIELD_RAID.md).
@@ -42,6 +45,7 @@ impl ItemEffect {
         match token {
             "sustenance" => Some(ItemEffect::Sustenance),
             "light" => Some(ItemEffect::Light),
+            "invisibility" => Some(ItemEffect::Invisibility),
             _ => None,
         }
     }
@@ -285,6 +289,10 @@ impl ItemDefinition {
 
     pub fn has_sustenance(&self) -> bool {
         self.effects.contains(&ItemEffect::Sustenance)
+    }
+
+    pub fn has_invisibility(&self) -> bool {
+        self.effects.contains(&ItemEffect::Invisibility)
     }
 
     pub fn max_hp_per_level(&self) -> u32 {
@@ -742,6 +750,20 @@ mod tests {
         assert_eq!(amulet.effects, vec![ItemEffect::MaxHpPerLevel(1)]);
         let table: HashMap<_, _> = defs.chest_roll_table(5).into_iter().collect();
         assert_eq!(table["earth_amulet"], 0.1);
+    }
+
+    #[test]
+    fn invisibility_cloak_is_an_untradeable_back_item_outside_chests() {
+        let defs = ItemDefs::load();
+        let cloak = defs.get("invisibility_cloak").expect("cloak def");
+        assert_eq!(cloak.equip_slot, Some(EquipSlot::Back));
+        assert!(cloak.has_invisibility());
+        assert!(cloak.untradeable);
+        assert!(cloak.cape_color.is_some());
+        assert!((1..=5).all(|tier| defs
+            .chest_roll_table(tier)
+            .iter()
+            .all(|(id, _)| id != "invisibility_cloak")));
     }
 
     /// The three ranged columns come off items.csv, and an empty `range`

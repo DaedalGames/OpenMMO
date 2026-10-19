@@ -22,6 +22,17 @@
   - 3D: Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, seed `102019`, 목표 4,000 triangles, 2026-10-19, **120크레딧**. [이용 조건](https://developers.tripo3d.ai/en/terms).
   - [제작 명세](../../assets/items/earth_amulet/tripo_v1/build.json) · [요청·작업·비용 기록](../../assets/items/earth_amulet/tripo_v1/generation.json) · [Tripo GLB](../../assets/items/earth_amulet/tripo_v1/source/model_url.glb) · [바닥 모델 스크립트](../../assets/items/earth_amulet/tripo_v1/floor/build_floor.py) · [Blender](../../assets/items/earth_amulet/tripo_v1/floor/earth_amulet.blend) · [검수 렌더](../../assets/items/earth_amulet/tripo_v1/floor/review.png).
 
+## Cloak of Invisibility — 투명 망토 (가칭)
+
+- **확정** [concept_v1](../../assets/items/invisibility_cloak/concept_v1/concept.png) — 입으면 투명해지고 공격하면 풀리는 운영자용 망토 원화. 후드 없는 테이퍼 시트(입은 망토 프로시저럴 시트와 같은 형태), 진줏빛 은회색 천·짙은 청회색 안감, 밑단 은사 자수, 감은 눈 모양 은 브로치. 상자·드롭 목록에 넣지 않는다.
+  - OpenAI Codex built-in ImageGen(`codex exec`, codex-cli 0.162.1), **ChatGPT Pro 20x**, 2026-10-19. OpenAI 출력물 이용 조건 적용, 별도 CC 라이선스 없음.
+  - [프롬프트](../../assets/items/invisibility_cloak/concept_v1/prompt.txt) · [생성 기록](../../assets/items/invisibility_cloak/concept_v1/generation.json).
+- 바닥 모델 `client/public/models/armor/invisibility_cloak.glb` — concept_v1 한 장으로 Tripo에서 생성했다. Tripo 정면 +X를 위로 눕히고(칼라 +Y) 칼라~밑단 0.70m로 균일 축소한 뒤, 속이 빈 껍데기를 높이 0.16m로 눌러 떨어진 망토처럼 만들었다(0.49×0.70×0.16m), 원점=바닥 중심, 텍스처 512² WebP q90, 3,622 triangles, emissive 없음.
+  - 투명감: Tripo는 불투명 PBR만 내므로 서 있는 자세의 높이로 알파를 구워 base color 알파 채널에 넣었다(칼라 0.60 → 밑단 0.30, 브로치 반경 3.5cm는 불투명). glTF `alphaMode: BLEND`, 단면.
+  - 아이콘 `client/public/items/armor/invisibility_cloak.png` — 바닥 GLB를 `tools/blender-scripts/rerender_item_icon.py --name invisibility_cloak --category armor` 기본 각도로 Cycles 512²→128² 렌더. 투명 배경이라 천이 반투명하게 보인다.
+  - 3D: Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, seed `102020`, 목표 4,000 triangles, 2026-10-19, **120크레딧**. [이용 조건](https://developers.tripo3d.ai/en/terms).
+  - [제작 명세](../../assets/items/invisibility_cloak/tripo_v1/build.json) · [요청·작업·비용 기록](../../assets/items/invisibility_cloak/tripo_v1/generation.json) · [Tripo GLB](../../assets/items/invisibility_cloak/tripo_v1/source/model_url.glb) · [바닥 모델 스크립트](../../assets/items/invisibility_cloak/tripo_v1/floor/build_floor.py) · [Blender](../../assets/items/invisibility_cloak/tripo_v1/floor/invisibility_cloak.blend) · [검수 렌더](../../assets/items/invisibility_cloak/tripo_v1/floor/review.png).
+
 ## Stethoscope
 
 - `doc/images/items/stethoscope.png` — 플레이어·몬스터 조사용 청진기의 3D 제작 원화. 낡은 황동 귀관·흉부 접촉부, 짙은 갈색 가죽 피복관, 밝은 뿔 재질 이어팁으로 구성한 단독 소품 이미지.

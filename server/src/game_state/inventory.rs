@@ -885,6 +885,12 @@ impl super::GameState {
         {
             return;
         }
+        let in_combat = self
+            .players
+            .read()
+            .await
+            .get(player_id)
+            .is_some_and(Self::in_combat);
         let (snapshot, torch_on) = {
             let mut inventories = self.inventories.write().await;
             let inv = match inventories.get_mut(player_id) {
@@ -906,7 +912,8 @@ impl super::GameState {
             };
 
             let item_def_id = inv.bag[bag_idx].item_def_id.clone();
-            let equip_slot = match self.item_defs.get(&item_def_id).and_then(|d| d.equip_slot) {
+            let def = self.item_defs.get(&item_def_id);
+            let equip_slot = match def.and_then(|d| d.equip_slot) {
                 Some(slot) => slot,
                 None => {
                     drop(inventories);
@@ -918,6 +925,19 @@ impl super::GameState {
                     return;
                 }
             };
+            // Hiding mid-fight would shake off monsters already on the wearer.
+            if in_combat && def.is_some_and(|d| d.has_invisibility()) {
+                drop(inventories);
+                self.send_system_message(
+                    player_id,
+                    localized(
+                        "server.cloakInCombat",
+                        "You cannot put on the cloak during combat",
+                    ),
+                )
+                .await;
+                return;
+            }
 
             if equip_slot == EquipSlot::OffHand && self.main_hand_is_two_handed(inv) {
                 if TORCH_ITEM_IDS.contains(&item_def_id.as_str()) {

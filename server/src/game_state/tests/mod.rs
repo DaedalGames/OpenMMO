@@ -36,6 +36,7 @@ mod house_building_tests;
 mod hunger_tests;
 mod instrument_tests;
 mod inventory_tests;
+mod invisibility_tests;
 mod land_tests;
 mod landscaping_tests;
 mod mana_tests;
@@ -142,6 +143,7 @@ pub(super) fn make_player(id: &str, x: f32, z: f32) -> Player {
         mount: None,
         ready_at: 0,
         invulnerable: false,
+        invisible: false,
         max_health_bonus: 0,
         max_health_per_level: 0,
     }

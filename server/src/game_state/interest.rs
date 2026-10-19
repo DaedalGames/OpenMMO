@@ -70,6 +70,8 @@ pub(super) struct Interest {
     views: HashMap<PlayerId, View>,
     viewers: super::SpatialIndex<PlayerId>,
     pub(super) blocked_names: HashMap<PlayerId, HashSet<String>>,
+    /// Subjects only their owner may see: an invisible player and their line.
+    hidden: HashMap<String, PlayerId>,
     pub(super) stall_owners: HashMap<u64, String>,
     pending_tiles: HashSet<(i32, i32)>,
 }
@@ -85,6 +87,7 @@ impl Default for Interest {
             views: HashMap::new(),
             viewers: Default::default(),
             blocked_names: HashMap::new(),
+            hidden: HashMap::new(),
             stall_owners: HashMap::new(),
             pending_tiles: HashSet::new(),
         }
@@ -121,6 +124,10 @@ fn area_cells(areas: &[SubjectArea], margin: f32) -> HashSet<SpatialCell> {
     cells
 }
 
+fn hidden_from(hidden: &HashMap<String, PlayerId>, id: &str, viewer: PlayerId) -> bool {
+    !hidden.is_empty() && hidden.get(id).is_some_and(|owner| *owner != viewer)
+}
+
 impl Interest {
     pub(super) fn refresh_player(&mut self, player: &onlinerpg_shared::Player) {
         if let Some(subject) = self.subjects.get_mut(&format!("player:{}", player.id)) {
@@ -143,6 +150,21 @@ impl Interest {
             }
             self.revision += 1;
             subject.revision = self.revision;
+        }
+    }
+
+    /// Withhold the player and their fishing line from everyone else, or
+    /// show them again; current viewers get Leave/Enter.
+    pub(super) fn set_hidden(&mut self, player: PlayerId, hidden: bool) {
+        for id in [format!("player:{player}"), format!("fishing:{player}")] {
+            let changed = if hidden {
+                self.hidden.insert(id.clone(), player).is_none()
+            } else {
+                self.hidden.remove(&id).is_some()
+            };
+            if changed {
+                self.republish(&id, |_| {}, vec![]);
+            }
         }
     }
 
@@ -284,6 +306,15 @@ impl Interest {
         message: ServerMessage,
         update: impl FnOnce(&mut Vec<ServerMessage>),
     ) {
+        self.republish(id, update, vec![message]);
+    }
+
+    fn republish(
+        &mut self,
+        id: &str,
+        update: impl FnOnce(&mut Vec<ServerMessage>),
+        changes: Vec<ServerMessage>,
+    ) {
         let Some(subject) = self.subjects.get_mut(id) else {
             return;
         };
@@ -294,7 +325,7 @@ impl Interest {
             subject.snapshot.clone(),
             subject.leave.clone(),
         );
-        self.publish(id.to_owned(), areas, snapshot, leave, vec![message]);
+        self.publish(id.to_owned(), areas, snapshot, leave, changes);
     }
 
     pub(super) fn stop_movement(&mut self, id: &str) {
@@ -326,6 +357,19 @@ impl Interest {
                 }),
             _ => None,
         };
+        let hidden_actor = match message {
+            ServerMessage::PlayerTeleportEffect { player_id, .. }
+            | ServerMessage::PlayerLeveledUp { player_id }
+            | ServerMessage::EquipmentEnchantSucceeded { player_id, .. }
+            | ServerMessage::PlayerInstrumentNotes { player_id, .. }
+            | ServerMessage::AbilityUsed { player_id, .. }
+                if !self.hidden.is_empty() =>
+            {
+                Some(*player_id)
+                    .filter(|actor| self.hidden.contains_key(&format!("player:{actor}")))
+            }
+            _ => None,
+        };
         let Some(bytes) = encode_server_msg(message) else {
             return;
         };
@@ -334,6 +378,7 @@ impl Interest {
             if let Some(ids) = self.viewers.cells.get(&cell) {
                 for id in ids {
                     if skip == Some(id)
+                        || hidden_actor.is_some_and(|actor| actor != *id)
                         || !sent.insert(*id)
                         || speaker.is_some_and(|name| {
                             self.blocked_names
@@ -462,10 +507,11 @@ impl Interest {
                 continue;
             };
             let visible = id == format!("player:{viewer}")
-                || subject
-                    .areas
-                    .iter()
-                    .any(|area| area.contains(&position, &view.space));
+                || (!hidden_from(&self.hidden, &id, viewer)
+                    && subject
+                        .areas
+                        .iter()
+                        .any(|area| area.contains(&position, &view.space)));
             let was = view.subjects.contains(&id);
             if visible && !was {
                 subject.subscribers.insert(viewer);
@@ -575,10 +621,11 @@ impl Interest {
                 continue;
             };
             let visible = id == format!("player:{viewer}")
-                || subject
-                    .areas
-                    .iter()
-                    .any(|area| area.contains(&view.position, &view.space));
+                || (!hidden_from(&self.hidden, &id, viewer)
+                    && subject
+                        .areas
+                        .iter()
+                        .any(|area| area.contains(&view.position, &view.space)));
             let was = view.subjects.contains(&id);
             let change = match (was, visible) {
                 (false, true) => InterestChange::Enter,
@@ -621,6 +668,10 @@ impl Interest {
     }
 
     pub fn remove(&mut self, id: &str, messages: Vec<ServerMessage>) {
+        if let Some(player) = id.strip_prefix("player:") {
+            self.hidden.remove(id);
+            self.hidden.remove(&format!("fishing:{player}"));
+        }
         let Some(subject) = self.subjects.remove(id) else {
             return;
         };

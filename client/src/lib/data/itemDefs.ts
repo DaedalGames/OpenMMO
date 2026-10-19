@@ -53,7 +53,7 @@ export interface ItemDefinition {
   basePrice?: number
   /** Guard (AC) bonus granted while equipped. Summed across equipped items. */
   guard?: number
-  /** Special effects while equipped: `;`-separated tokens (`cha+1`, `int+1`, `maxhp+1/lv`, `sustenance`, `light`). */
+  /** Special effects while equipped: `;`-separated tokens (`cha+1`, `int+1`, `maxhp+1/lv`, `sustenance`, `light`, `invisibility`). */
   effects?: string
   /** Usable from the bag — the items.csv flag, which the server validates
    * against its `use_effect` dispatch at boot. */
@@ -254,6 +254,8 @@ export function statLabels(
       lines.push(translate('item.sustenance', {}, language))
     else if (token === 'light')
       lines.push(translate('item.light', {}, language))
+    else if (token === 'invisibility')
+      lines.push(translate('item.invisibility', {}, language))
     else lines.push(token)
   }
   return lines

@@ -207,6 +207,7 @@ impl GameState {
         self.stop_bed_rest(player_id).await;
         match self.try_bow_mark(player_id, monster_id).await {
             Ok(()) => {
+                self.reveal(player_id).await;
                 self.send_bow_mark_state(player_id).await;
                 self.send_buff_state(player_id).await;
             }
@@ -305,7 +306,7 @@ impl GameState {
             InspectionTarget::Player { player_id: id } => {
                 let player = players
                     .get(id)
-                    .filter(|p| p.is_damageable(Self::now_ms()))
+                    .filter(|p| p.is_damageable(Self::now_ms()) && !p.invisible)
                     .ok_or(AbilityRejectReason::Unavailable)?;
                 let inv = inventories.get(id);
                 let equipment = inv

@@ -137,6 +137,7 @@ pub(crate) fn test_player(x: f32, z: f32) -> Player {
         mount: None,
         ready_at: 0,
         invulnerable: false,
+        invisible: false,
         max_health_bonus: 0,
         max_health_per_level: 0,
         back_color: None,

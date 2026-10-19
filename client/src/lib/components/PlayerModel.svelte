@@ -191,7 +191,12 @@
   import ChatBubble from './ChatBubble.svelte'
   import { DamageTextEmitter } from '../effects/damage-text-pool'
   import type { PlayerDamageInfo, PlayerGoldInfo } from '../stores/gameStore'
-  import { addChatMessage, hoveredPlayerId } from '../stores/gameStore'
+  import {
+    addChatMessage,
+    hoveredPlayerId,
+    localInvisible,
+  } from '../stores/gameStore'
+  import { SeeThrough } from '../effects/see-through'
   import type { TerrainHeightManager } from '../managers/terrainHeightManager'
   import TargetRing from './TargetRing.svelte'
   import {
@@ -497,6 +502,8 @@
   })
   let modelGroup = $state<THREE.Group | undefined>(undefined)
   const movementRotation = new MovementRotation()
+  const seeThrough = new SeeThrough()
+  onDestroy(() => seeThrough.restore())
   const smoothRotation = $derived(
     isCurrentPlayer &&
       playerState === 'moving' &&
@@ -1681,6 +1688,7 @@
     )
     const onScreen = !teleportHidden && position.y > OFFSCREEN_Y / 2
     if (capeRig) capeRig.root.visible = onScreen
+    if (isCurrentPlayer) seeThrough.update(modelGroup, $localInvisible)
     const physics = secondaryMotion.next(deltaTime, onScreen, isCurrentPlayer)
     if (!physics) return
     const { deltaTime: dt, reset, step } = physics

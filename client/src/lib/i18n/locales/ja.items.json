@@ -95,6 +95,8 @@
   "golden_sturgeon.name": "黄金チョウザメ",
   "great_sword.description": "両手で振るう巨大な鋼の剣。重いため、盾や松明を同時には持てません。",
   "great_sword.name": "大剣",
+  "invisibility_cloak.description": "光を曲げて着る者の姿を隠す、淡い銀色のマント。何かを攻撃すると、着直すまで効き目が切れる。",
+  "invisibility_cloak.name": "透明のマント",
   "rune_blade.description": "輝くルーンが刻まれた大剣。バルカンがサンダード・バスティオンで振るっていた剣です。",
   "rune_blade.name": "ルーンブレード",
   "greatclub.description": "鉄の棘を打ち込んだ樫の枝。オーガより小さな者には重すぎて扱えません。",

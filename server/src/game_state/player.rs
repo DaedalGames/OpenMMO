@@ -852,8 +852,13 @@ impl super::GameState {
             player_name, player_id, player_number
         );
 
-        self.interest_lock()
-            .publish_state(&ServerMessage::PlayerJoined { player });
+        {
+            let mut interest = self.interest_lock();
+            if player.invisible {
+                interest.set_hidden(player_id, true);
+            }
+            interest.publish_state(&ServerMessage::PlayerJoined { player });
+        }
         self.reset_world_view(&player_id).await;
     }
 
@@ -1358,6 +1363,42 @@ impl super::GameState {
         }
     }
 
+    /// Attacking breaks the cloak's invisibility until it is put on again.
+    pub(super) fn reveal_locked(&self, player: &mut Player) -> bool {
+        if !player.invisible {
+            return false;
+        }
+        player.invisible = false;
+        self.interest_lock().set_hidden(player.id, false);
+        true
+    }
+
+    pub(super) async fn reveal(&self, player_id: &PlayerId) {
+        if !self
+            .players
+            .read()
+            .await
+            .get(player_id)
+            .is_some_and(|p| p.invisible)
+        {
+            return;
+        }
+        let revealed = self
+            .players
+            .write()
+            .await
+            .get_mut(player_id)
+            .is_some_and(|player| self.reveal_locked(player));
+        if revealed {
+            self.notify_invisibility(player_id, false).await;
+        }
+    }
+
+    pub(super) async fn notify_invisibility(&self, player_id: &PlayerId, invisible: bool) {
+        self.send_direct_message(player_id, ServerMessage::InvisibilityChanged { invisible })
+            .await;
+    }
+
     /// Broadcast changed gear, including armor and cape customization.
     pub async fn set_player_gear(&self, player_id: &PlayerId, inventory: &PlayerInventory) {
         let main_hand = inventory.equipped_def_id(EquipSlot::MainHand);
@@ -1366,6 +1407,7 @@ impl super::GameState {
         let back_texture = inventory.equipped_cape_texture();
         let armor = inventory.equipped_armor();
         let max_hp_per_level = self.equipped_max_health_per_level(inventory);
+        let cloaked = self.wears_invisibility(inventory);
         let changed = {
             let mut players = self.players.write().await;
             let Some(player) = players.get_mut(player_id) else {
@@ -1404,6 +1446,12 @@ impl super::GameState {
                     item_def_id: main_hand,
                 });
             }
+            // Only a new back item re-cloaks: dye and transfer kits keep the id.
+            let invisibility_changed = player.back != back && player.invisible != cloaked;
+            if invisibility_changed {
+                player.invisible = cloaked;
+                self.interest_lock().set_hidden(*player_id, cloaked);
+            }
             if player.back != back
                 || player.back_color != back_color
                 || player.back_texture != back_texture
@@ -1426,10 +1474,14 @@ impl super::GameState {
                 player.floor_level,
                 messages,
                 health_changed,
+                invisibility_changed,
             )
         };
 
-        let (position, floor_level, messages, health_changed) = changed;
+        let (position, floor_level, messages, health_changed, invisibility_changed) = changed;
+        if invisibility_changed {
+            self.notify_invisibility(player_id, cloaked).await;
+        }
         if health_changed {
             self.mark_dirty(player_id).await;
             self.mark_party_vitals_dirty(player_id).await;
