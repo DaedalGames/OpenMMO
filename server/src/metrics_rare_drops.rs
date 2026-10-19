@@ -3,10 +3,12 @@ use axum::{extract::State, response::Response};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-const TRACKED_ITEMS: [&str; 3] = [
+const TRACKED_ITEMS: [&str; 5] = [
     "scroll_of_enchant_weapon",
     "scroll_of_enchant_armor",
     "stethoscope",
+    "rune_blade",
+    "earth_amulet",
 ];
 
 /// Counts keyed by hour, waiting for the next save.
@@ -56,16 +58,24 @@ struct MonsterDropChance {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+struct ChestDropChance {
+    dungeon: String,
+    chance: f32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 struct RareDropItem {
     item_def_id: String,
     name: String,
     world_drop: Option<WorldDropChance>,
     monster_drops: Vec<MonsterDropChance>,
+    /// Final-floor dungeon chests; the signature drop is 1.0.
+    chest_drops: Vec<ChestDropChance>,
     /// Kills that could roll this item.
     kills: u64,
     expected_kill_drops: f64,
     kill_drops: u64,
-    /// World drops from treasure chests, barrels and crates.
+    /// Drops from treasure chests, barrels and crates.
     other_drops: u64,
     holdings: ItemHoldings,
 }
@@ -85,7 +95,7 @@ pub(super) async fn rare_drops(State(state): State<MetricsState>) -> Response {
     metrics_response(
         auth_db(move || {
             let stored = state.auth.loot_tally(&TRACKED_ITEMS)?;
-            let (world, monsters) = state.game.loot_defs();
+            let (world, monsters, dungeons) = state.game.loot_defs();
             let item_defs = crate::item_defs::item_defs();
             let mut monster_drops_by_item: HashMap<&str, Vec<MonsterDropChance>> = HashMap::new();
             for monster_type in monsters.ids() {
@@ -103,11 +113,25 @@ pub(super) async fn rare_drops(State(state): State<MetricsState>) -> Response {
                         });
                 }
             }
+            let chest_tables: Vec<_> = dungeons
+                .all()
+                .map(|d| (d, item_defs.dungeon_chest_chances(d)))
+                .collect();
             let items = TRACKED_ITEMS
                 .iter()
                 .map(|&id| {
                     let world_entry = world.entry(id);
                     let monster_drops = monster_drops_by_item.remove(id).unwrap_or_default();
+                    let chest_drops = chest_tables
+                        .iter()
+                        .filter_map(|(dungeon, table)| {
+                            let (_, chance) = table.iter().find(|(item, _)| item == id)?;
+                            Some(ChestDropChance {
+                                dungeon: dungeon.name.clone(),
+                                chance: *chance,
+                            })
+                        })
+                        .collect();
                     let mut kills = 0;
                     let mut expected_kill_drops = 0.0;
                     for (monster_type, level, count) in &stored.kills {
@@ -138,6 +162,7 @@ pub(super) async fn rare_drops(State(state): State<MetricsState>) -> Response {
                             low_level_max_level: e.low_level_max_level,
                         }),
                         monster_drops,
+                        chest_drops,
                         kills,
                         expected_kill_drops,
                         kill_drops,
@@ -199,7 +224,7 @@ mod tests {
         let data: RareDrops = response.json().await.unwrap();
         assert_eq!(data.total_kills, 250);
 
-        let (world, monsters) = game.loot_defs();
+        let (world, monsters, _) = game.loot_defs();
         let weapon = &data.items[0];
         let entry = world.entry("scroll_of_enchant_weapon").unwrap();
         assert_eq!(weapon.kills, 250);
@@ -225,5 +250,16 @@ mod tests {
         assert_eq!(stethoscope.kills, 200);
         assert_eq!(stethoscope.kill_drops, 1);
         assert!((stethoscope.expected_kill_drops - 200.0 * f64::from(goblin_chance)).abs() < 1e-9);
+        assert!(stethoscope.chest_drops.is_empty());
+
+        let amulet = data
+            .items
+            .iter()
+            .find(|item| item.item_def_id == "earth_amulet")
+            .unwrap();
+        assert_eq!(amulet.kills, 0);
+        assert_eq!(amulet.chest_drops.len(), 1);
+        assert_eq!(amulet.chest_drops[0].dungeon, "Sundered Bastion");
+        assert_eq!(amulet.chest_drops[0].chance, 0.1);
     }
 }

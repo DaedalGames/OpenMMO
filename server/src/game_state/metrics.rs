@@ -89,8 +89,13 @@ impl super::GameState {
     ) -> (
         &crate::world_drop_defs::WorldDropDefs,
         &crate::monster_defs::MonsterDefs,
+        &crate::dungeon_defs::DungeonDefs,
     ) {
-        (&self.world_drop_defs, &self.monster_defs)
+        (
+            &self.world_drop_defs,
+            &self.monster_defs,
+            &self.dungeon_defs,
+        )
     }
 
     pub(super) async fn record_gold_sink(&self, sink: GoldSink, quantity: u32, gold: i64) {

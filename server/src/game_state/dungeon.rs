@@ -856,19 +856,18 @@ impl GameState {
         let (item_def_ids, gold) = {
             use rand::Rng;
             let mut rng = rand::thread_rng();
-            let mut items = entrance.chest_drops.clone();
-            let table = self.item_defs.chest_roll_table(entrance.chest_tier);
-            items.extend(crate::world_drop_defs::roll_independent(
-                table
+            let items = crate::world_drop_defs::roll_independent(
+                self.item_defs
+                    .dungeon_chest_chances(entrance)
                     .iter()
-                    .filter(|(id, _)| !entrance.chest_drops.contains(id))
                     .map(|(id, chance)| (id.as_str(), *chance)),
                 &mut rng,
-            ));
+            );
             let gold = rng.gen_range(depth * 500..=depth * 1500);
             (items, gold)
         };
 
+        self.record_item_drops(&item_def_ids, false);
         self.eject_chest_loot(item_def_ids.clone(), chest_pos, player_floor, *player_id);
         let new_gold = {
             let mut gold_map = self.player_gold.write().await;

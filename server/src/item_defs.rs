@@ -665,6 +665,19 @@ impl ItemDefs {
         rows
     }
 
+    /// Final-floor chest loot: signature drops at 1.0, then the tier roll table.
+    pub fn dungeon_chest_chances(
+        &self,
+        entrance: &crate::dungeon_defs::DungeonEntranceDef,
+    ) -> Vec<(String, f32)> {
+        let signatures = entrance.chest_drops.iter().map(|id| (id.clone(), 1.0));
+        let rolls = self
+            .chest_roll_table(entrance.chest_tier)
+            .into_iter()
+            .filter(|(id, _)| !entrance.chest_drops.contains(id));
+        signatures.chain(rolls).collect()
+    }
+
     pub fn weight(&self, item_def_id: &str) -> f32 {
         self.weight_with(item_def_id, 1.0)
     }
