@@ -1303,9 +1303,11 @@
   })
 </script>
 
+<!-- manual: Threlte's resize would reset the frustum to pixel units. -->
 <T.OrthographicCamera
   bind:ref={camera}
   makeDefault
+  manual
   zoom={ORTHOGRAPHIC_DEFAULT_ZOOM}
 >
   <OrbitControls
