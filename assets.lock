@@ -1,5 +1,5 @@
 repo jake-song-openmmo/onlinerpg-assets
-revision c169e6d1fa2d9db7834ff0854f68300a2c624a7a
+revision 2882bed0be975954c0992ba5c7901103d52fe450
 file 7804c65c05edce3a98c10f019560fbf0a1e0d2a467d47e5ff98f75f639782dce assets/all_animation.blend
 file 1043a18aae65ebfcca9aeb7ba70acd97be2886d2b9f51c608624372f2417ba86 assets/animations/Annoyed Head Shake.fbx
 file 5edac6dfec09f450747fa2d9ad9dc64b10e717f2fa5a01729f0d4ebc00396cdd assets/animations/Clapping.fbx
@@ -821,7 +821,7 @@ file e2fc05452c2358b916b92c85d031f1a332ade9863f2fc85c7956a0005114573e client/pub
 file c0bda28945ef64e0e44e09ecf4ce41ecd777a50a6e316c17181050a2a8d39209 client/public/bgm/Dawn Over the Kingdom.mp3
 file 5497dd9a4804b83cd4cad6369a583c64d6cf523e8a489794cd61bc75d9febd20 client/public/bgm/Dawn Watch at the Gate.mp3
 file ffa0a55f75d1bce1aaf25db42d1267fd01e7512c08df00c76cdcd2fa21bff309 client/public/bgm/Dies of the Dragon King.mp3
-file a797a4088bb34b6e910713fcb653fbdacf0140bcdd76ca7da4dab052313e48d6 client/public/bgm/Drums of Valor.mp3
+file 99527f23fa7f8ea392786ce5fd4561f2714793315ae5868859d2e10535b0aa39 client/public/bgm/Drums of Valor.m4a
 file e010dcf36533028c32c3ee4fe25b945c596d8d61668278e3598b1bf2ea4b3475 client/public/bgm/Echoes of a Distant Summer.mp3
 file 6a20d9dd06c6c7a77a908450e8b85f56779473eaf173c4a4ad6c51d65ae065fe client/public/bgm/Echoes of the Horizon.m4a
 file 7c6a3e04f0789345e635954839776c1c2d5540a7c63ff8fd313045e22ec7e490 client/public/bgm/Echoes of the Old Realm.m4a

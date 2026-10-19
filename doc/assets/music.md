@@ -119,6 +119,10 @@ seamless loop, game BGM
   끝 3 s 페이드아웃(`afade curve=qua`, 시작은 10 ms 페이드인), libmp3lame `-q:a 2`로 재인코딩했다. 원본(6분 15초, 9.1 MB)은
   `~/assets_original/bgm/`에 있다. `Blood and Bronze (Full)`이라는 이름으로 Field BGM에서 재생되다가 2026-10-16 목록에서 뺐다 **[미사용]**.
 
+  Drums of Valor는 2026-10-19 전송량을 줄이려고 AAC-LC 112 kbps .m4a로 재인코딩했다
+  (`ffmpeg -c:a aac -b:a 112k`, 6.5 MB → 3.7 MB, 커버 이미지 제거). 원본 mp3는
+  `~/assets_original/bgm/`와 HF 이력(sha256 `a797a408…`)에 있다.
+
 ### Google Flow Music BGM (.m4a)
 
 아래 .m4a 파일들은 [Google Flow Music](https://www.flowmusic.app/)으로 생성했다.

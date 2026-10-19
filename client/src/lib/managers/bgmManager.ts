@@ -56,7 +56,7 @@ async function attachTrack(
 const BATTLE_BGM_FILES = [
   'Blood and Bronze.mp3',
   'Blood and Bronze (1).mp3',
-  'Drums of Valor.mp3',
+  'Drums of Valor.m4a',
   'Clash of the Iron Realm.m4a',
   'Radiant Vanguard Overdrive.m4a',
   'The Abyssal March.m4a',
