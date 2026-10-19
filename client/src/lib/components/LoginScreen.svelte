@@ -60,6 +60,12 @@
   }
 
   onMount(async () => {
+    const devLogin = import.meta.env.DEV && import.meta.env.VITE_DEV_LOGIN
+    if (devLogin && new URLSearchParams(location.search).has('dev_login')) {
+      await handleCredential({ credential: devLogin as string })
+      return
+    }
+
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined
     // Comparing against the container build's placeholder is not possible here:
     // Vite inlines this, so the check would fold to a constant and let the

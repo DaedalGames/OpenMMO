@@ -60,6 +60,13 @@ impl AuthContext {
     }
 }
 
+/// Debug builds only: lets local testing skip Google.
+#[cfg(debug_assertions)]
+fn parse_dev_login<'a>(token: &'a str, npc_token: &str) -> Option<&'a str> {
+    let (account, secret) = token.strip_prefix("dev:")?.split_once(':')?;
+    token_matches(secret, npc_token).then_some(account)
+}
+
 /// Constant-time equality so the NPC token can't be probed byte by byte.
 pub fn token_matches(provided: &str, expected: &str) -> bool {
     provided.len() == expected.len()
@@ -1057,6 +1064,23 @@ async fn handle_client_message(
 
     match client_msg {
         ClientMessage::Authenticate { google_id_token } => {
+            #[cfg(debug_assertions)]
+            if let Some(account) = parse_dev_login(&google_id_token, &auth_ctx.npc_token)
+                .filter(|_| state.client_ip.is_loopback())
+            {
+                let account_name = match auth_service.dev_login(account) {
+                    Ok(name) => name,
+                    Err(err) => {
+                        return Ok(vec![ServerMessage::AuthError {
+                            message: err.client_message().to_string(),
+                        }]);
+                    }
+                };
+                warn!(account = account_name, "Dev login (debug build)");
+                state.admin_eligible = true;
+                return Ok(finish_auth(game_state, auth_service, state, account_name, false).await);
+            }
+
             let Some(verifier) = &auth_ctx.google else {
                 warn!(ip = %state.client_ip, "Google login attempted but no --google-client-id is configured");
                 return Ok(vec![ServerMessage::AuthError {
@@ -3422,6 +3446,19 @@ mod tests {
             assert!(state.must_close);
             assert!(state.client_kind.is_none());
         }
+    }
+
+    #[cfg(debug_assertions)]
+    #[test]
+    fn dev_login_requires_the_npc_token() {
+        let secret = "0123456789abcdef";
+        assert_eq!(
+            parse_dev_login("dev:jake:0123456789abcdef", secret),
+            Some("jake")
+        );
+        assert_eq!(parse_dev_login("dev:jake:wrong", secret), None);
+        assert_eq!(parse_dev_login("dev:jake", secret), None);
+        assert_eq!(parse_dev_login("jake:0123456789abcdef", secret), None);
     }
 
     #[test]

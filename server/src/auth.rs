@@ -1578,6 +1578,19 @@ impl AuthService {
         ))
     }
 
+    /// Debug-build dev login into an existing account (token checked by the caller).
+    #[cfg(debug_assertions)]
+    pub fn dev_login(&self, account_name: &str) -> Result<String, AuthError> {
+        self.open_connection()?
+            .query_row(
+                "SELECT player_name FROM accounts WHERE player_name = ?1",
+                params![account_name],
+                |row| row.get(0),
+            )
+            .optional()?
+            .ok_or(AuthError::InvalidInput("Unknown account"))
+    }
+
     /// Log in a headless NPC account (token already checked by the caller),
     /// creating it on first use. Returns the canonical (trimmed) name.
     ///

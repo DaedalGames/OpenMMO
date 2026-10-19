@@ -9,6 +9,10 @@ Automates the login flow for the OpenMMO online RPG against the dev server using
 
 Auth is Google Sign-In (GSI), not a password form — see [dc3e2467].
 
+## Preferred: dev login (no Google)
+
+Open `https://localhost:10004/?dev_login` (needs `VITE_DEV_LOGIN`, see `client/.env.example`), pick the character, click Start (click again if the first click does nothing). Use the Google flow below only to test Google sign-in.
+
 ## Browser surface: real Chrome only
 
 Use the `mcp__claude-in-chrome__*` tools. **The in-app Browser pane (`mcp__Claude_Browser__*`) cannot complete this login.** GSI falls back to `ux_mode=popup`, and the pane returns `null` from `window.open` even with a real user gesture (`navigator.userActivation.isActive: true`), so the console fills with `[GSI_LOGGER]: Failed to open popup window ... Maybe blocked by the browser?` and `auto_select` retries forever.
