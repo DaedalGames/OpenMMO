@@ -87,6 +87,9 @@ fn reply(protocol: MiniMaxProtocol, text: &str) -> Value {
 async fn thinking_configuration_respects_model_capabilities_in_both_protocols() {
     for protocol in [MiniMaxProtocol::Anthropic, MiniMaxProtocol::Openai] {
         for (model, thinking) in [
+            ("MiniMax-M3.1-Flash", None),
+            ("MiniMax-M3.1-Flash", Some(MiniMaxThinking::Adaptive)),
+            ("custom-model", Some(MiniMaxThinking::Disabled)),
             ("MiniMax-M2.7", None),
             ("MiniMax-M3", None),
             ("MiniMax-M3", Some(MiniMaxThinking::Adaptive)),
@@ -105,6 +108,12 @@ async fn thinking_configuration_respects_model_capabilities_in_both_protocols() 
             assert_eq!(api.invoker.send_message("hello").await.unwrap(), "ok");
             let request = api.requests.recv().await.unwrap();
             assert_eq!(request["model"], model);
+            assert!(request.get("reasoning_effort").is_none());
+            assert!(request.get("output_config").is_none());
+            assert!(request.get("service_tier").is_none());
+            if protocol == MiniMaxProtocol::Openai {
+                assert_eq!(request["reasoning_split"], true);
+            }
             match thinking {
                 Some(value) => assert_eq!(request["thinking"]["type"], value.as_str()),
                 None => assert!(request.get("thinking").is_none()),
