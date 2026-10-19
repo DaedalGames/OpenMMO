@@ -31,7 +31,15 @@ export function warmupPipelines(
       .then(async () => {
         await renderer.init()
         await yieldTask()
-        return compileDetached(renderer, object, ctx.camera.current, ctx.scene)
+        // A clone that is never disposed keeps the compiled pipelines cached
+        // after every real instance of this model has been disposed.
+        let keeper = object
+        try {
+          keeper = object.clone(true)
+        } catch (error) {
+          console.warn(`Pipeline warmup clone failed for ${key}`, error)
+        }
+        return compileDetached(renderer, keeper, ctx.camera.current, ctx.scene)
       })
       .catch((error: unknown) =>
         console.warn(`Pipeline warmup failed for ${key}`, error)

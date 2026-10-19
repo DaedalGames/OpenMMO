@@ -37,6 +37,7 @@
   import { pushPassabilityEdges } from '../../utils/passability-wireframe'
   import { generateDungeonPuddles } from '../../utils/dungeon-puddles'
   import { DungeonPuddles } from '../../effects/dungeon-puddles'
+  import { disposeObjectTree } from '../../utils/disposeObjectTree'
   import {
     playDungeonDripSound,
     stopDungeonDripSounds,
@@ -220,24 +221,21 @@
     upShaftAABB = null
     upShaftOccluded = false
     wallRuns = []
-    // Door leaves live in this persistent sibling group, so disposeDungeonGroup
-    // (which only walks currentGroup) won't reach them — dispose here. Materials
-    // are shared (never disposed), like disposeDungeonGroup.
+    // Door leaves live in this persistent sibling group, outside currentGroup.
     for (const c of [...interiorDoorGroup.children]) {
-      c.traverse((o) => {
-        if (o instanceof THREE.Mesh) o.geometry.dispose()
-      })
+      disposeDungeonGroup(c)
       interiorDoorGroup.remove(c)
     }
     interiorDoors = []
   }
 
   /** Detach the current floor's props. Their GLB geometry/materials are shared
-   *  via the module-level gltfCache, so (unlike disposeDungeonGroup) we only
-   *  drop the clones and let GC reclaim them — disposing would corrupt the
-   *  cache and every other instance. */
+   *  via the module-level gltfCache, so only the clones are released. */
   function clearProps() {
-    for (const c of [...propsGroup.children]) propsGroup.remove(c)
+    for (const c of [...propsGroup.children]) {
+      propsGroup.remove(c)
+      disposeObjectTree(c)
+    }
     propEntries = new Map()
     wallTorchPositions = []
     for (const m of propMixers) m.stopAllAction()

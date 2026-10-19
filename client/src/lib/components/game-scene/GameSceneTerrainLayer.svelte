@@ -4,7 +4,6 @@
   import type { MeshStandardNodeMaterial, WebGPURenderer } from 'three/webgpu'
   import { SvelteMap } from 'svelte/reactivity'
   import { onDestroy } from 'svelte'
-  import SplatTerrain from '../SplatTerrain.svelte'
   import {
     makeSplatStandardMaterial,
     createSplatBrushUniforms,
@@ -107,7 +106,7 @@
     const samples = puddleTracker.update(seconds, sampleRain, restoreHistory)
     const blend = -Math.expm1(-Math.max(0, seconds) / 0.35)
     for (const tile of terrainTiles) {
-      const uniforms = materialMap.get(tile.id)?.userData.rainPuddles
+      const uniforms = meshMap.get(tile.id)?.material.userData.rainPuddles
       if (!uniforms) continue
       const x = tile.position[0] - TERRAIN_TILE_SIZE / 2
       const z = tile.position[2] - TERRAIN_TILE_SIZE / 2
@@ -151,9 +150,10 @@
   // Starts false for faster initial pipeline compilation; upgraded on first editor use.
   let editorOverlayCompiled = false
 
-  // ── Material + Geometry pools (created on demand, reused across tile lifecycles) ──
-  const materialPool: THREE.Material[] = []
-  const geometryPool: THREE.BufferGeometry[] = []
+  // ── Tile mesh pool (created on demand, reused across tile lifecycles) ──
+  // Meshes are pooled with their geometry and material: the renderer keeps
+  // compiled shader state per object, so a fresh mesh per tile recompiles it.
+  const meshPool: THREE.Mesh[] = []
   // Template arrays for fast geometry reset (flat plane positions/normals)
   let templatePositions: Float32Array | null = null
   let templateNormals: Float32Array | null = null
@@ -169,9 +169,9 @@
   // Every new MeshStandardNodeMaterial produces a distinct WebGPU pipeline that
   // gets compiled lazily on its first render. When the player moves and new
   // tiles appear, this lazy compile stalls the main thread for 100–1000ms per
-  // hitch. We preseed the pool with enough materials+geometries to cover tile
-  // cycling, then precompile them for every render target (main, refraction,
-  // reflection) before they're ever needed.
+  // hitch. We preseed the pool with enough meshes to cover tile cycling, then
+  // precompile them for every render target (main, refraction, reflection)
+  // before they're ever needed.
   const precompileScene = new THREE.Scene()
   let poolPrecompiled = false
 
@@ -181,16 +181,14 @@
     if (!defaultAtlas || !_defaultLayers) return
     poolPrecompiled = true
 
-    // Preseed pool with N ready-to-use material+geometry pairs.
+    // Preseed the mesh pool with N ready-to-use tile meshes.
     const twins: THREE.Mesh[] = []
     const poolSize = Math.max(1, terrainMaterialPrecompilePoolSize)
     for (let i = 0; i < poolSize; i++) {
-      const mat = createDefaultMaterial()
-      const geo = terrainGeometry.clone()
-      materialPool.push(mat)
-      geometryPool.push(geo)
-      const twin = new THREE.Mesh(geo, mat)
-      twin.frustumCulled = false
+      const twin = createTileMesh(
+        createDefaultMaterial(),
+        terrainGeometry.clone()
+      )
       // Spread twins apart so they remain individually visible to the compiler's
       // traversal (some three.js paths merge identical transforms).
       twin.position.set(i * 1000, -10000, 0)
@@ -219,8 +217,10 @@
       console.warn('[TerrainLayer] pipeline precompile failed', e)
     }
 
-    // Remove twins but keep the materials/geometries in their pools for reuse.
-    for (const twin of twins) precompileScene.remove(twin)
+    for (const twin of twins) {
+      precompileScene.remove(twin)
+      meshPool.push(twin)
+    }
   }
 
   $effect(() => {
@@ -258,11 +258,15 @@
   function upgradeToEditorMaterials() {
     if (editorOverlayCompiled) return
     editorOverlayCompiled = true
-    // Dispose and flush pool — pooled materials lack editor overlay
-    for (const m of materialPool) m.dispose()
-    materialPool.length = 0
-    for (const tileId of [...materialMap.keys()]) {
-      const oldMat = materialMap.get(tileId)!
+    // Pooled meshes lack editor overlay; new ones are built on demand
+    for (const mesh of meshPool) {
+      ;(mesh.material as THREE.Material).dispose()
+      mesh.geometry.dispose()
+      mesh.dispose()
+    }
+    meshPool.length = 0
+    for (const mesh of meshMap.values()) {
+      const oldMat = mesh.material as THREE.Material
       const newMat = createDefaultMaterial()
       const oldU = oldMat.userData.uniforms
       const newU = newMat.userData.uniforms
@@ -280,60 +284,51 @@
       }
       newU.uTileScales.array = oldU.uTileScales.array
       newU.uTileSwapUvs.array = oldU.uTileSwapUvs.array
-      materialMap.set(tileId, newMat)
-      if (terrainGroup) {
-        for (const child of terrainGroup.children) {
-          if (child instanceof THREE.Mesh && child.userData.tileId === tileId) {
-            child.material = newMat
-            break
-          }
-        }
-      }
-      // Old material uses the non-overlay TSL variant — dispose rather than
-      // return to pool, so the pool stays homogeneous with the overlay variant.
+      mesh.material = newMat
       oldMat.dispose()
     }
   }
 
-  /** Take a material from the pool, or create one on demand. */
-  function acquireMaterial(): THREE.Material | null {
-    const mat = materialPool.pop()
-    if (mat) {
-      resetMaterialToDefaults(mat)
-      return mat
+  /** Fast memcpy reset to flat plane — avoids full clone cost. */
+  function resetGeometry(geo: THREE.BufferGeometry) {
+    if (!templatePositions || !templateNormals) return
+    ;(geo.getAttribute('position').array as Float32Array).set(templatePositions)
+    geo.getAttribute('position').needsUpdate = true
+    ;(geo.getAttribute('normal').array as Float32Array).set(templateNormals)
+    geo.getAttribute('normal').needsUpdate = true
+  }
+
+  function createTileMesh(
+    mat: THREE.Material,
+    geo: THREE.BufferGeometry
+  ): THREE.Mesh {
+    const mesh = new THREE.Mesh(geo, mat)
+    mesh.receiveShadow = true
+    mesh.frustumCulled = false
+    return mesh
+  }
+
+  /** Take a tile mesh from the pool (reset to defaults), or build one. */
+  function acquireMesh(): THREE.Mesh | null {
+    const pooled = meshPool.pop()
+    if (pooled) {
+      resetGeometry(pooled.geometry)
+      resetMaterialToDefaults(pooled.material as THREE.Material)
+      return pooled
     }
-    // Create on demand — spreads TSL construction across frames. The 9th
-    // tile on first load hits this path (pool is preseeded to 8); it stalls
-    // once for TSL→WGSL compile, then cycles back through the pool.
+    // Past the preseeded pool a new mesh stalls once for TSL→WGSL compile,
+    // then cycles back through the pool.
     if (!defaultAtlas || !_defaultLayers) return null
-    return createDefaultMaterial()
+    return createTileMesh(createDefaultMaterial(), terrainGeometry!.clone())
   }
 
-  /** Return a material to the pool for reuse. */
-  function releaseMaterial(mat: THREE.Material) {
-    materialPool.push(mat)
-  }
-
-  /** Take a geometry from the pool (reset to flat), or clone if pool empty. */
-  function acquireGeometry(): THREE.BufferGeometry {
-    const geo = geometryPool.pop()
-    if (geo && templatePositions && templateNormals) {
-      // Fast memcpy reset to flat plane — avoids full clone cost
-      ;(geo.getAttribute('position').array as Float32Array).set(
-        templatePositions
-      )
-      geo.getAttribute('position').needsUpdate = true
-      ;(geo.getAttribute('normal').array as Float32Array).set(templateNormals)
-      geo.getAttribute('normal').needsUpdate = true
-      return geo
-    }
-    return terrainGeometry!.clone()
-  }
-
-  function releaseGeometry(tileId: string, geo: THREE.BufferGeometry) {
+  function releaseTile(tileId: string) {
+    const mesh = meshMap.get(tileId)
+    if (!mesh) return
     const [tileX, tileZ] = tileId.split('_').map(Number)
     heightManager?.unregisterGeometry(tileX, tileZ)
-    geometryPool.push(geo)
+    meshMap.delete(tileId)
+    meshPool.push(mesh)
   }
 
   /** Reset a pooled material's uniforms back to defaults. */
@@ -420,21 +415,14 @@
     brushUnsubs.forEach((u) => u())
     brushUnsubs = []
     holeUnsub()
-    for (const [id, geo] of geoMap) releaseGeometry(id, geo)
-    geoMap.clear()
-    materialMap.clear()
+    for (const id of [...meshMap.keys()]) releaseTile(id)
+    for (const mesh of meshPool) mesh.dispose()
   })
 
-  // ── Geometry management (SvelteMap, needed for template) ──────
-  const geoMap = new SvelteMap<string, THREE.BufferGeometry>()
-
-  // ── Per-tile materials (SvelteMap for template reactivity) ──
-  const materialMap = new SvelteMap<string, THREE.Material>()
-
   // Keyed by tile id: an index-bound array drifts when streaming evicts tiles
-  const meshById = $state<Record<string, THREE.Mesh | undefined>>({})
+  const meshMap = new SvelteMap<string, THREE.Mesh>()
   $effect(() => {
-    terrainMeshes = terrainTiles.map((t) => meshById[t.id])
+    terrainMeshes = terrainTiles.map((t) => meshMap.get(t.id))
   })
 
   function getTileCoords(tile: TerrainTile): {
@@ -463,7 +451,7 @@
         const nz = tileZ + dz
         const key = `${nx},${nz}`
         if (edgeRefreshQueued.has(key)) continue
-        const geo = geoMap.get(`${nx}_${nz}`)
+        const geo = meshMap.get(`${nx}_${nz}`)?.geometry
         if (geo && heightManager.getHeightmap(nx, nz)) {
           edgeRefreshQueued.add(key)
           enqueueTileWork(() => {
@@ -490,29 +478,21 @@
     const currentTileIds = new Set(terrainTiles.map((t) => t.id))
 
     // Remove data for tiles no longer in the list, return to pools
-    for (const [id, geo] of geoMap) {
-      if (!currentTileIds.has(id)) {
-        releaseGeometry(id, geo)
-        geoMap.delete(id)
-        delete meshById[id]
-        const mat = materialMap.get(id)
-        if (mat) releaseMaterial(mat)
-        materialMap.delete(id)
-      }
+    for (const id of [...meshMap.keys()]) {
+      if (!currentTileIds.has(id)) releaseTile(id)
     }
 
     // Create geometries + assign pooled material + kick off async loads for new tiles
     const mgr = heightManager
     const sMgr = splatManager
     for (const tile of terrainTiles) {
-      if (geoMap.has(tile.id)) continue
+      if (meshMap.has(tile.id)) continue
 
-      const tileMat = acquireMaterial()
-      if (!tileMat) continue // pool exhausted (shouldn't happen)
-
-      const geo = acquireGeometry()
-      geoMap.set(tile.id, geo)
-      materialMap.set(tile.id, tileMat)
+      const mesh = acquireMesh()
+      if (!mesh) continue // pool exhausted (shouldn't happen)
+      const geo = mesh.geometry
+      mesh.position.set(...tile.position)
+      meshMap.set(tile.id, mesh)
 
       const { tileX, tileZ } = getTileCoords(tile)
       mgr.registerGeometry(tileX, tileZ, geo)
@@ -535,7 +515,9 @@
         sMgr
           .loadSplatmap(tileX, tileZ)
           .then((tex) => {
-            const mat = materialMap.get(tileId)
+            const mat = meshMap.get(tileId)?.material as
+              | THREE.Material
+              | undefined
             if (!mat) return
             // Mutate the pool material's splatmap uniform in place instead
             // of creating a fresh MeshStandardNodeMaterial — creating a new
@@ -555,16 +537,9 @@
 {#if terrainGeometry && materialsReady}
   <T.Group bind:ref={terrainGroup}>
     {#each terrainTiles as tile (tile.id)}
-      {@const geo = geoMap.get(tile.id) ?? null}
-      {@const tileMat = materialMap.get(tile.id) ?? null}
-      {#if geo && tileMat}
-        <SplatTerrain
-          geometry={geo}
-          material={tileMat}
-          tileId={tile.id}
-          position={tile.position}
-          bind:mesh={meshById[tile.id]}
-        />
+      {@const mesh = meshMap.get(tile.id)}
+      {#if mesh}
+        <T is={mesh} dispose={false} />
       {/if}
     {/each}
   </T.Group>

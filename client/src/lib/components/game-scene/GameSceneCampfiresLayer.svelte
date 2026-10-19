@@ -1,5 +1,6 @@
 <script lang="ts">
   import { T } from '@threlte/core'
+  import ModelClone from '../ModelClone.svelte'
   import { onDestroy, onMount } from 'svelte'
   import * as THREE from 'three'
   import { campfireManager } from '../../managers/campfireManager'
@@ -71,7 +72,7 @@
   {#if campfireModel}
     {#each fireEntries as [id, position] (id)}
       <T.Group position={[position.x, position.y, position.z]}>
-        <T is={campfireModel.clone(true)} />
+        <ModelClone source={campfireModel} />
       </T.Group>
     {/each}
   {/if}

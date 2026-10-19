@@ -40,6 +40,7 @@
   import { entityGroundY } from '../managers/entity-ground'
   import TargetRing from './TargetRing.svelte'
   import { playPropSound } from '../managers/sfxManager'
+  import { disposeObjectTree } from '../utils/disposeObjectTree'
   import {
     evaluateSpawnAnimation,
     type GroundItemData,
@@ -276,6 +277,7 @@
       selfMixer?.stopAllAction()
       selfMixer = undefined
       if (loadedScene?.parent) loadedScene.parent.remove(loadedScene)
+      if (loadedScene) disposeObjectTree(loadedScene)
     }
   })
 

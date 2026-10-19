@@ -6,6 +6,7 @@
   import type { ArrowShot } from '../stores/arrowStore'
   import { landArrow } from '../stores/arrowStore'
   import { unwrapWorldXNear } from '../terrain/world-wrap'
+  import ModelClone from './ModelClone.svelte'
 
   interface Props {
     shot: ArrowShot
@@ -17,7 +18,6 @@
   }
 
   let { shot, playerId, model, targetOf }: Props = $props()
-  const arrowModel = $derived(model?.clone())
 
   /** How far past the target a miss carries before it is dropped. */
   const OVERSHOOT_METERS = 3
@@ -87,8 +87,8 @@
   })
 </script>
 
-{#if arrowModel}
+{#if model}
   <T is={Group} bind:ref={group}>
-    <T is={arrowModel} dispose={false} />
+    <ModelClone source={model} />
   </T>
 {/if}

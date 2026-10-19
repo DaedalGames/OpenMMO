@@ -3,6 +3,7 @@ import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { angleDelta } from './horseMovement'
 import { shortestWrappedDeltaX } from '../terrain/world-wrap'
+import { disposeObjectTree } from './disposeObjectTree'
 
 export const HORSE_MODEL_PATH = '/models/mounts/horse.glb'
 export const RIDING_ANIMATION_PATH = '/models/animations/riding.glb'
@@ -196,5 +197,6 @@ export class HorseMount {
   dispose() {
     this.mixer.stopAllAction()
     this.mixer.uncacheRoot(this.root)
+    disposeObjectTree(this.root)
   }
 }

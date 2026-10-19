@@ -1,5 +1,6 @@
 <script lang="ts">
   import { T } from '@threlte/core'
+  import ModelClone from '../ModelClone.svelte'
   import * as THREE from 'three'
   import { SvelteMap, SvelteSet } from 'svelte/reactivity'
   import { mealManager } from '../../managers/mealManager'
@@ -86,7 +87,7 @@
           hoverDrape: 0,
         }}
       >
-        <T is={dish.model.clone(true)} />
+        <ModelClone source={dish.model} />
       </T.Group>
     {/if}
   {/each}

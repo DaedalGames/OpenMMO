@@ -588,6 +588,14 @@ export class TerrainSplatManager {
     this.refreshNeighborBorders(tileX, tileZ)
   }
 
+  evictExcept(keepKeys: Set<string>): void {
+    for (const key of [...this.splatmaps.keys()]) {
+      if (keepKeys.has(key)) continue
+      const [x, z] = key.split(',').map(Number)
+      this.evictCachedData(x, z)
+    }
+  }
+
   async destroy() {
     if (this.saveTimer !== null) {
       clearTimeout(this.saveTimer)

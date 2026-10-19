@@ -95,6 +95,21 @@ export function heightPrefetchTiles(
   return [...tiles.filter(isRender), ...tiles.filter((t) => !isRender(t))]
 }
 
+/** Tiles whose cached terrain data survives a recenter: the prefetch ring
+ *  plus one, so walking along a tile border doesn't refetch. */
+export function terrainRetainTiles(
+  floorChunkX: number,
+  floorChunkZ: number
+): TerrainChunk[] {
+  const tiles: TerrainChunk[] = []
+  for (let dz = -2; dz <= 3; dz++) {
+    for (let dx = -2; dx <= 3; dx++) {
+      tiles.push({ x: floorChunkX + dx, z: floorChunkZ + dz })
+    }
+  }
+  return tiles
+}
+
 /** Inverse of `createTerrainTiles`'s id format. Returns null on a malformed id. */
 export function parseTileId(
   id: string

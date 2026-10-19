@@ -85,6 +85,7 @@
   import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
   import { onDestroy, onMount, untrack } from 'svelte'
   import { BoatMount, ROWBOAT_MODEL_PATH } from '../utils/boatMount'
+  import { disposeObjectTree } from '../utils/disposeObjectTree'
   import { BoatWaterEffects } from '../effects/boat-water'
   import { seatedFishingClip } from '../utils/seatedFishing'
   import type { MountKind } from '../network/networkTypes'
@@ -433,11 +434,12 @@
     const root = modelRoot
     if (!boating || !root) return
     let cancelled = false
+    let boat: BoatMount | null = null
     // Load the seated pose before choosing the boat's first animation.
     void Promise.all([loadGLB(ROWBOAT_MODEL_PATH), loadSocialAnimations()])
       .then(async ([gltf]) => {
         if (cancelled) return
-        const boat = new BoatMount(gltf)
+        boat = new BoatMount(gltf)
         await warmupPipelines(threlte, 'mount:rowboat', boat.root)
         if (cancelled) return
         boatMount = boat
@@ -450,6 +452,7 @@
       cancelled = true
       rowingMotion?.restore()
       rowingMotion = null
+      if (boat) disposeObjectTree(boat.root)
       boatMount = null
       if (riderGroup) {
         riderGroup.position.set(0, 0, 0)
@@ -632,8 +635,9 @@
     enchantGrip?.update(0)
     enchantGrip = null
     weaponGrip = null
-    if (weaponObject && weaponObject.parent) {
-      weaponObject.parent.remove(weaponObject)
+    if (weaponObject) {
+      weaponObject.removeFromParent()
+      disposeObjectTree(weaponObject)
     }
     weaponObject = null
     rodTipNode = null
@@ -665,8 +669,9 @@
   }
 
   function detachOffhand() {
-    if (offhandObject && offhandObject.parent) {
-      offhandObject.parent.remove(offhandObject)
+    if (offhandObject) {
+      offhandObject.removeFromParent()
+      disposeObjectTree(offhandObject)
     }
     offhandObject = null
     torchTipNode = null
@@ -923,7 +928,10 @@
   let musicPropGeneration = 0
 
   function detachMusicProp() {
-    musicPropObject?.parent?.remove(musicPropObject)
+    if (musicPropObject) {
+      musicPropObject.removeFromParent()
+      disposeObjectTree(musicPropObject)
+    }
     musicPropObject = null
   }
 
@@ -1546,6 +1554,7 @@
       hitAction = null
       if (modelRoot) {
         disposeCharacterSkeletons(modelRoot)
+        disposeObjectTree(modelRoot)
         modelRoot = null
       }
       clonedScene = null

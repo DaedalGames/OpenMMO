@@ -1,5 +1,6 @@
 <script lang="ts">
   import { T } from '@threlte/core'
+  import ModelClone from '../ModelClone.svelte'
   import { onMount } from 'svelte'
   import { t } from '../../i18n'
   import * as THREE from 'three'
@@ -63,7 +64,7 @@
           hoverFloorLevel: stall.floor_level,
         }}
       >
-        <T is={stallModel.clone(true)} />
+        <ModelClone source={stallModel} />
         {#if stall.sign}
           <StallSign text={stall.sign} topY={stallHover.topY} />
         {/if}

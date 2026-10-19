@@ -24,8 +24,9 @@ export { buildDungeonEntranceGroup } from './dungeon-geo-entrance'
 export type { DungeonEntranceGroup } from './dungeon-geo-entrance'
 
 /** Dispose merged geometries (materials are shared — never disposed). */
-export function disposeDungeonGroup(group: THREE.Group) {
+export function disposeDungeonGroup(group: THREE.Object3D) {
   group.traverse((obj) => {
     if (obj instanceof THREE.Mesh) obj.geometry.dispose()
+    obj.dispose()
   })
 }

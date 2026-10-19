@@ -1,5 +1,6 @@
 <script lang="ts">
   import { T } from '@threlte/core'
+  import ModelClone from '../ModelClone.svelte'
   import { onMount } from 'svelte'
   import * as THREE from 'three'
   import { tipHatManager } from '../../managers/tipHatManager'
@@ -56,7 +57,7 @@
           hoverFloorLevel: hat.floor_level,
         }}
       >
-        <T is={hatModel.clone(true)} />
+        <ModelClone source={hatModel} />
       </T.Group>
     {/each}
   {/if}

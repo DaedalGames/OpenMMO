@@ -21,10 +21,11 @@ export interface TextBadge {
   height: number
 }
 
-/** Cache mirroring iconTextureCache: badge texts are a finite set (item names,
- *  stack sizes), so each gets one rasterize + GPU upload for the process
- *  lifetime. Cached textures are shared — never dispose them. */
+/** LRU of rasterized badges. Texts are open-ended (stack sizes, stall owner
+ *  names), so old entries are dropped; a dropped texture may still be on
+ *  screen, so it is left to GC rather than disposed. */
 const cache = new Map<string, TextBadge>()
+const CACHE_LIMIT = 256
 
 /** Stroke-then-fill `text` centred on (cx, cy) with the context's current font. */
 export function drawOutlinedText(
@@ -48,7 +49,11 @@ export function drawOutlinedText(
 export function makeTextBadge(text: string, style: BadgeStyle): TextBadge {
   const key = `${style.id}|${text}`
   const cached = cache.get(key)
-  if (cached) return cached
+  if (cached) {
+    cache.delete(key)
+    cache.set(key, cached)
+    return cached
+  }
 
   const font = `${style.bold ? 'bold ' : ''}${style.fontPx}px sans-serif`
   const pad = Math.ceil(style.outlineWidth) + 4
@@ -68,6 +73,7 @@ export function makeTextBadge(text: string, style: BadgeStyle): TextBadge {
     height: c.height / style.pixelsPerUnit,
   }
   cache.set(key, badge)
+  if (cache.size > CACHE_LIMIT) cache.delete(cache.keys().next().value!)
   return badge
 }
 

@@ -9,6 +9,7 @@
   // white line connects the angler's rod tip to the float. All motion
   // mutates refs directly — no per-frame reactive state.
   import { T, useTask } from '@threlte/core'
+  import { onDestroy } from 'svelte'
   import {
     BufferGeometry,
     Float32BufferAttribute,
@@ -58,6 +59,10 @@
     3
   )
   lineGeometry.setAttribute('position', linePositions)
+  onDestroy(() => {
+    splashGeometry.dispose()
+    lineGeometry.dispose()
+  })
 
   let t = 0
   useTask((delta) => {

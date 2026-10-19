@@ -3,7 +3,7 @@
   import { ServerMovement } from './player-control/server-movement'
   import { syncOwnFloor, ownPlayerFloor } from '../network/ownFloor'
   import { translate } from '../i18n'
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { localTeleportActive } from '../stores/teleportEffectStore'
   import {
     inspectionTargeting,
@@ -592,35 +592,37 @@
     setPlayerState(nextState)
   }
 
-  gameStore.subscribe((state) => {
-    const previousPlayerId = currentPlayer?.id ?? null
-    currentPlayer = state.currentPlayer
-    if (!currentPlayer) return
+  onDestroy(
+    gameStore.subscribe((state) => {
+      const previousPlayerId = currentPlayer?.id ?? null
+      currentPlayer = state.currentPlayer
+      if (!currentPlayer) return
 
-    const position = {
-      x: currentPlayer.position.x,
-      y: currentPlayer.position.y,
-      z: currentPlayer.position.z,
-    }
-    if (currentPlayer.id === previousPlayerId) {
-      playerState.position = position
-      return
-    }
+      const position = {
+        x: currentPlayer.position.x,
+        y: currentPlayer.position.y,
+        z: currentPlayer.position.z,
+      }
+      if (currentPlayer.id === previousPlayerId) {
+        playerState.position = position
+        return
+      }
 
-    if (previousPlayerId !== null) {
-      serverMovement.clear(false)
-      if (playerControlMachine.stateName === 'moving') transitionTo('idle')
-    }
-    officialPosition = { ...position }
-    playerRotation = currentPlayer.rotation
-    currentSpeed = 0
-    setPlayerState({
-      state: currentPlayer.health > 0 ? 'idle' : 'dead',
-      speed: 0,
-      rotation: currentPlayer.rotation,
-      position,
+      if (previousPlayerId !== null) {
+        serverMovement.clear(false)
+        if (playerControlMachine.stateName === 'moving') transitionTo('idle')
+      }
+      officialPosition = { ...position }
+      playerRotation = currentPlayer.rotation
+      currentSpeed = 0
+      setPlayerState({
+        state: currentPlayer.health > 0 ? 'idle' : 'dead',
+        speed: 0,
+        rotation: currentPlayer.rotation,
+        position,
+      })
     })
-  })
+  )
 
   // Update player state and notify parent
   function updatePlayerState(totalDistance?: number) {
@@ -2143,7 +2145,7 @@
   // a resting cursor would otherwise keep a stale snapshot hover. Subscribed
   // below the hover state it clears: subscribe fires its callback right here,
   // and the `let`s above are TDZ until their declarations run.
-  currentDungeonDepth.subscribe(() => clearHover())
+  onDestroy(currentDungeonDepth.subscribe(() => clearHover()))
 
   onMount(() => {
     const unsubscribeAttackStop = combatController.attackStopRequested.on(

@@ -600,6 +600,9 @@ const terrainDownloads = new TerrainSnapshots(
   },
   () => resyncWorld()
 )
+export function terrainSnapshotKeys(): Iterable<string> {
+  return terrainSnapshots.keys()
+}
 export function resetTerrainDownloads() {
   terrainDownloads.reset()
   terrainSnapshots.clear()

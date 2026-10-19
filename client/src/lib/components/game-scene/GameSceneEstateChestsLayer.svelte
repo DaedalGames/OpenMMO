@@ -22,6 +22,7 @@
     beginEstateFurniturePlacementSave,
   } from '../../stores/estateFurniturePlacementStore'
   import { isTypingTarget } from '../../utils/dom'
+  import { disposeObjectTree } from '../../utils/disposeObjectTree'
   import {
     TorchFireParticles,
     CampfireFireParticles,
@@ -250,6 +251,7 @@
     lastWrapX = player.position.x
     lastFloorLevel = floorLevel
     lastMovingFurnitureId = movingFurnitureId
+    for (const visual of chestGroup.children) disposeObjectTree(visual)
     chestGroup.clear()
     clearSavedPositionMaterials()
     for (const fire of fires) {
@@ -431,6 +433,7 @@
       canvas.removeEventListener('mousedown', click, true)
       window.removeEventListener('keydown', escape, true)
       clearSavedPositionMaterials()
+      for (const visual of chestGroup.children) disposeObjectTree(visual)
       for (const fire of fires) fire.dispose()
       for (const text of signTexts.values()) {
         text.geometry.dispose()

@@ -27,6 +27,7 @@
   import { enqueueTileWork } from '../../utils/tileWorkQueue'
   import type { ObjectPlacement } from '../../stores/editorStore'
   import { WATER_FIELD_GRID } from '../../utils/water-field-data'
+  import { disposeObjectTree } from '../../utils/disposeObjectTree'
 
   /**
    * Decorative river rocks derived from the baked turbulence channel:
@@ -167,9 +168,9 @@
   function releaseTile(id: string) {
     const tg = tileGroups.get(id)
     if (tg) {
-      // Rocks share GLTF-cache geometry/materials — remove only, never
-      // dispose.
+      // Rocks share GLTF-cache geometry/materials; release only the meshes.
       group.remove(tg)
+      disposeObjectTree(tg)
       tileGroups.delete(id)
     }
     tileEmitters.delete(id)

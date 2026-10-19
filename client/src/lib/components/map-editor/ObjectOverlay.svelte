@@ -46,6 +46,7 @@
   } from '../../utils/shop-sign'
   import type { Unsubscriber } from 'svelte/store'
   import { SvelteMap, SvelteSet } from 'svelte/reactivity'
+  import { disposeObjectTree } from '../../utils/disposeObjectTree'
 
   const PREVIEW_OPACITY = 0.5
   const GHOST_OPACITY = 0.3
@@ -226,7 +227,7 @@
   let previewGroup: THREE.Group | null = null
   let previewType: string | null = null
 
-  function disposeClonedMaterials(obj: THREE.Object3D) {
+  function disposeClone(obj: THREE.Object3D) {
     obj.traverse((child) => {
       // Shop-sign text uses MeshBasicNodeMaterial + CanvasTexture, whose sampler
       // bindings crash the WebGPU backend if disposed (see TextLabel.svelte and
@@ -242,6 +243,7 @@
         ;(child.material as THREE.Material).dispose()
       }
     })
+    disposeObjectTree(obj)
   }
 
   function translucentClone(m: THREE.Material, opacity: number) {
@@ -432,7 +434,7 @@
 
     for (const [id, clone] of cloneById) {
       if (_idShown.has(id)) continue
-      disposeClonedMaterials(clone)
+      disposeClone(clone)
       group.remove(clone)
       cloneById.delete(id)
     }
@@ -442,7 +444,7 @@
       const show = _idShown.get(p.id)
       let clone = cloneById.get(p.id)
       if (clone && show && clone.userData.structKey !== structKeyOf(p)) {
-        disposeClonedMaterials(clone)
+        disposeClone(clone)
         group.remove(clone)
         cloneById.delete(p.id)
         clone = undefined
@@ -475,7 +477,7 @@
   function updatePreview() {
     if (!isEditing() || !previewPos || !selectedType) {
       if (previewGroup) {
-        disposeClonedMaterials(previewGroup)
+        disposeClone(previewGroup)
         group.remove(previewGroup)
         previewGroup = null
         previewType = null
@@ -485,7 +487,7 @@
 
     if (previewType !== selectedType) {
       if (previewGroup) {
-        disposeClonedMaterials(previewGroup)
+        disposeClone(previewGroup)
         group.remove(previewGroup)
       }
       const template = modelCache.get(selectedType)
@@ -592,8 +594,8 @@
   onDestroy(() => {
     for (const e of fireSystems.values()) e.system.dispose()
     fireSystems.clear()
-    for (const child of [...group.children]) {
-      disposeClonedMaterials(child)
+    for (const obj of new Set([...group.children, ...cloneById.values()])) {
+      disposeClone(obj)
     }
     group.clear()
     modelCache.clear()

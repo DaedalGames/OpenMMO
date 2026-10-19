@@ -9,7 +9,7 @@
     updateRainPuddleLighting,
   } from '../shaders/rain-puddle-nodes'
   import { weather_snow_cover_at } from '../wasm/onlinerpg_shared'
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import {
     gameStore,
     resetGameStore,
@@ -28,6 +28,7 @@
   } from '../managers/chatBubbleManager'
   import { remotePlayerManager } from '../managers/remotePlayerManager'
   import { networkManager } from '../network/socket'
+  import { terrainSnapshotKeys } from '../network/messageHandlers'
   import { monsterManager } from '../managers/monsterManager'
   import type PlayerModel from './PlayerModel.svelte'
   import type PlayerControl from './PlayerControl.svelte'
@@ -165,7 +166,11 @@
     updateCameraWithOffset as applyCameraOffset,
     updateOrthographicFrustum,
   } from './game-scene/camera-utils'
-  import { type TerrainTile } from './game-scene/terrain-utils'
+  import {
+    type TerrainTile,
+    terrainRetainTiles,
+  } from './game-scene/terrain-utils'
+  import { tileKey } from '../managers/terrain-height-types'
   import { createLoopProfiler } from './game-scene/loop-profiler'
   import { createRenderProfiler } from './game-scene/render-profiler'
   import { installSceneMatrixReuse } from './game-scene/scene-matrix-reuse'
@@ -594,11 +599,26 @@
     }
   })
 
-  gameStore.subscribe((state) => {
-    currentPlayer = state.currentPlayer
-    otherPlayers = state.otherPlayers
-    chatBubbles = state.chatBubbles
+  // Without this, data for every tile ever visited stays cached.
+  $effect(() => {
+    const { x, z } = terrainCenterChunk
+    if ($mapEditorMode || $housingEditorMode) return
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
+    const keep = new Set(terrainSnapshotKeys())
+    for (const t of terrainRetainTiles(x, z)) keep.add(tileKey(t.x, t.z))
+    terrainHeightManager.evictExcept(keep)
+    terrainSplatManager.evictExcept(keep)
+    terrainGrassDataManager.evictExcept(keep)
+    terrainTreeDataManager.evictExcept(keep)
   })
+
+  onDestroy(
+    gameStore.subscribe((state) => {
+      currentPlayer = state.currentPlayer
+      otherPlayers = state.otherPlayers
+      chatBubbles = state.chatBubbles
+    })
+  )
 
   // Monster models reference
   let monsterModels = $state<(Monster | undefined)[]>([])

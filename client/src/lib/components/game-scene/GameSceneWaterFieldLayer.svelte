@@ -178,6 +178,7 @@
     if (mesh) {
       removeWireframeForTile(id)
       group.remove(mesh)
+      mesh.dispose()
       meshes.delete(id)
     }
     const mat = matMap.get(id)

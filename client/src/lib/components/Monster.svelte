@@ -48,6 +48,10 @@
   import type { TerrainHeightManager } from '../managers/terrainHeightManager'
   import TargetRing from './TargetRing.svelte'
   import { warmupPipelines } from '../utils/pipelineWarmup'
+  import {
+    disposeMeshMaterials,
+    disposeObjectTree,
+  } from '../utils/disposeObjectTree'
 
   interface Props {
     position: { x: number; y: number; z: number }
@@ -202,6 +206,12 @@
   onDestroy(() => skillEffects?.effects.dispose())
   const damageText = new DamageTextEmitter()
   onDestroy(() => damageText.dispose())
+  onDestroy(() => {
+    if (weaponObject) disposeMeshMaterials(weaponObject)
+    if (!model) return
+    if (materialsCloned) disposeMeshMaterials(model)
+    disposeObjectTree(model)
+  })
   let lastAppliedOpacity = 1
   let materialsCloned = false
   let deadGroundApplied = false
@@ -605,6 +615,8 @@
     if (monsterState === 'dead' && droppedWeaponItemDefId) {
       if (weaponObject) {
         weaponObject.removeFromParent()
+        disposeMeshMaterials(weaponObject)
+        disposeObjectTree(weaponObject)
         weaponObject = undefined
         weaponAttached = false
       }

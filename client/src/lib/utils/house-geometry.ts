@@ -283,5 +283,6 @@ export function disposeHouseGroup(group: THREE.Group) {
     if (obj instanceof THREE.Mesh) {
       obj.geometry?.dispose()
     }
+    obj.dispose()
   })
 }
