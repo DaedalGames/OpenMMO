@@ -1,0 +1,53 @@
+{
+  "generation_date": "2026-10-20",
+  "service": "OpenAI Codex built-in ImageGen (codex exec, codex-cli 0.162.1)",
+  "tier": "ChatGPT Pro 20x",
+  "license": "OpenAI generated output terms.",
+  "status": "Final concept; no 3D generation yet.",
+  "images": [
+    {
+      "output": {
+        "path": "doc/images/monsters/terraclash-concept.png",
+        "sha256": "07dd5961a97eba0a75b4af943cf87dfa75725b053d780d08f83cb67e204c058b",
+        "width": 1312,
+        "height": 1199
+      },
+      "description": "Awake Terraclash, final concept. Edit of a three-variant first pass (variant A, titan torso) with the arm gaps filled and proportions from the user sketch.",
+      "references": [
+        "concept_a.png (variant A first pass, edit target)",
+        "user in-game screenshot with red size sketch (proportion guide)"
+      ],
+      "codex_output": "~/.codex/generated_images/01a15827-af27-78e1-a09f-abda7ec9f819/exec-4aab5a3b-c34b-4939-bbb2-36e216f561cf.png",
+      "prompt": "Use case: precise concept edit. Edit target: the supplied Terraclash titan-torso concept (image 1). The second image is a gameplay screenshot with a red sketch showing the intended silhouette and proportions; use it only as a proportion guide, do not copy its grass or UI.\n\nChanges:\n1. Fill the open arch gaps between the torso and both arms with solid fused bedrock, rubble and rock slabs, so that from the waist down the body, arms and ground form one continuous solid mass with no see-through holes or tunnels. The arms stay visibly distinct as massive rock limbs planted on the ground on either side of the chest, as in the red sketch.\n2. Proportions per the red sketch: overall width about equal to overall height; a relatively small head sitting on top between broad high shoulders; a wide chest with the empty heart socket in the center; both arms coming down to the ground at the left and right, fists planted slightly forward.\n3. Scale: the creature is about 9 meters tall and 9 meters wide. Make the small human adventurer at its base about one fifth of the creature's height (larger than in the current image), standing a few meters in front of it.\n\nKeep unchanged: the dark grey-brown granite body with mountain-peak ridges on the shoulders, molten-orange magma fissures, moss and small sprouts, the empty glowing heart socket, the iron seal bands and the seal rune (angular circle with a vertical split), the glowing eyes, the full moon dusk lighting and painting style. Three-quarter front view from slightly above. No text, no labels, no watermark, no UI."
+    },
+    {
+      "output": {
+        "path": "doc/images/monsters/terraclash-ingame-awake.png",
+        "sha256": "95d2ef0e23960b1a30d9b06810fec45a1fca0e7330940176e85435f8a2a4c810",
+        "width": 1218,
+        "height": 1291
+      },
+      "description": "Awake Terraclash painted into a game screenshot at the user-sketched size (about 9 m tall and wide). Minimap blurred after generation.",
+      "references": [
+        "user in-game screenshot with red size sketch (edit target)",
+        "terraclash-concept.png"
+      ],
+      "codex_output": "~/.codex/generated_images/01a1582c-1c54-7fa0-b068-75d76bb2a25e/exec-53274c30-e180-434f-a326-bcfe6f47cbda.png",
+      "prompt": "Use case: in-game mockup edit. Edit target: image 1, a screenshot of our isometric fantasy MMORPG (orthographic camera looking down at about 35 degrees from the south-west). Image 2 is the concept art of the field boss Terraclash.\n\nPaint Terraclash into image 1 exactly where the red sketch outlines it, at that size: the head inside the small red circle at the top, the broad shoulders and chest across the wide red outline with the empty glowing heart socket where the red star is, and the two massive rock arms coming down to the ground at the left and right red lobes, fists planted on the grass. The upper body rises from the ground; below the waist it merges into broken bedrock and rubble on the grass. Remove all red lines.\n\nMatch the game's camera: seen from high above at the game's isometric angle, so we see the top of the head, the tops of the shoulders with their jagged mountain-peak ridges, and the chest facing toward the camera (toward the lower-left of the screen), foreshortened like the knight character. Match the game's look: same soft daylight from the scene, same rendering style and texture detail level as the grass and the knight, a contact shadow on the grass consistent with the knight's shadow. Keep the creature's design from image 2: dark grey-brown granite, molten-orange magma cracks (glowing faintly in daylight), moss and sprouts, iron seal bands and the seal rune near the heart socket, glowing eyes.\n\nKeep everything else in image 1 pixel-identical: the knight character named jake5 and its name and health bar, the grass, tree, flowers, the minimap, the sky bar, all HUD elements, hotbar and chat box. Same image size and framing. No added text."
+    },
+    {
+      "output": {
+        "path": "doc/images/monsters/terraclash-ingame-dormant.png",
+        "sha256": "cae298604822b53b8aef5f54ee0f6e7e8ed122f356d9f7274ed91752b421f60a",
+        "width": 1218,
+        "height": 1292
+      },
+      "description": "Dormant, petrified Terraclash before the amulet offering: an ordinary mossy rock outcrop at the same spot and size. Second pass of a dormant edit made from terraclash-ingame-awake. Minimap blurred after generation.",
+      "references": [
+        "first dormant pass (edit target, not kept)"
+      ],
+      "codex_output": "~/.codex/generated_images/01a15833-0ee1-77a2-a11b-c3e6e94d0771/exec-f73197f4-8571-4c97-b5ca-998e0058aa5c.png",
+      "prompt": "Use case: in-game mockup edit. Edit target: image 1, an in-game screenshot of our isometric fantasy MMORPG showing a dormant petrified guardian as a mossy rock outcrop. It still reads too much like a covered statue. Make it much better hidden, so that a first-time player sees only an ordinary natural rocky outcrop / low crag, while keeping the same position, overall size and footprint.\n\nChanges:\n- Head: erase the head shape entirely; replace it with an irregular natural rock peak that has no face, brow, eyes or symmetric features.\n- Chest: remove the round seal-rune disc and the iron bands completely from view (fully buried under soil, moss and grass). The heart socket becomes just an irregular dark rock overhang or small natural cave mouth, partly hidden by shrubs, not centered and not heart-shaped.\n- Fists and arms: break up the fist shapes; no knuckles or finger-like segments. They become irregular boulder piles and rock spurs of varied sizes, slightly asymmetric between left and right, half sunk into the grass with scree around them.\n- Overall: break the bilateral symmetry. Vary the peak heights, add a leaning slab or two, uneven layering and natural fractures, more grass, shrubs, small saplings and wildflowers on ledges and in crevices. Rock colors and textures should match natural terrain rocks rather than carved stone blocks; avoid the regular chiseled block pattern.\n- Keep a subtle hint only for someone who already knows: the broad outline is still a high central mass with two lower lobes reaching forward on the left and right.\n\nNo glow, no magma, no orange, no eyes, no visible metal, no runes.\n\nMatch the game's camera and look exactly as in image 1: same high isometric angle from the south-west, same soft daylight, same texture detail level, contact shadows consistent with the knight's shadow.\n\nKeep everything else in image 1 identical: the knight jake5 with name and health bar, the grass, tree, flowers, minimap, sky bar, HUD, hotbar and chat box. Same image size and framing. No added text."
+    }
+  ]
+}

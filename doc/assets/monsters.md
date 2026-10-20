@@ -185,6 +185,15 @@
     재현: `.venv/bin/python tools/rig-barkan.py` →
     `blender -b --python-exit-code 1 --python tools/blender-scripts/animate_barkan.py -- assets/monsters/barkan/rig_v1/barkan.glb` →
     `node tools/validate-barkan-rig.mjs`.
+- terraclash — 티어 5 필드 보스 대지파괴자 테라클래시, 원화만 2026-10-20 확정. 3D는 아직 없다. [설계](../TIER5_FIELD_RAID.md).
+  - OpenAI Codex built-in ImageGen(`codex exec`, codex-cli 0.162.1), **ChatGPT Pro 20x**, 2026-10-20.
+    OpenAI 생성 출력물 이용 조건 적용. [프롬프트·해시](terraclash-concept-sources.json).
+  - [원화](../images/monsters/terraclash-concept.png): 땅에서 상반신만 솟은 화강암 거인이다. 두 주먹으로 땅을 짚었고,
+    가슴 가운데에 심장이 뜯긴 빈 구멍과 봉인 룬이 있다. 용암빛 균열과 이끼가 있으며, 어깨는 산봉우리 능선이다.
+    세 방향(거인 상반신·고대 짐승·살아 있는 절벽)으로 그린 첫 시안 중 거인 상반신을 골라, 팔과 몸 사이 틈을 메워 다듬었다.
+  - [게임 화면 깨어난 상태](../images/monsters/terraclash-ingame-awake.png): 사용자 스크린샷에 높이·폭 약 9m 크기로 그려 넣은 목업.
+  - [게임 화면 잠든 상태](../images/monsters/terraclash-ingame-dormant.png): 봉헌 전, 같은 자리·같은 크기의 평범한 바위 언덕.
+    얼굴·룬·주먹 마디를 없애고 큰 윤곽만 남겼다. 두 목업 모두 생성 후 미니맵을 흐렸다.
 - SCP939 https://sketchfab.com/3d-models/scp939-79a749a5073b453d9d85875797bf45d7
   - 전송량 최적화 (2026-10-16): `scp939.edf348b1.glb`를 **5,776,536 → 1,395,636바이트(75.84% 감소)**로 줄였다.
     gzip level 6 예상 전송량은 **4,032,324 → 994,918바이트(75.33% 감소)**이며 다음 빌드 파일명은 `scp939.79bd676e.glb`다.
