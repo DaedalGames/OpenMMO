@@ -16,7 +16,7 @@ pub(super) fn is_bed(object_type: &str) -> bool {
     )
 }
 
-fn within_reach(player: &Player, position: Position, floor: i8) -> bool {
+pub(super) fn within_reach(player: &Player, position: Position, floor: i8) -> bool {
     player.floor_level == floor
         && player.position.dist_xz_sq(&position) <= (INTERACTION_RANGE + 0.5).powi(2)
         && (player.position.y - position.y).abs() <= 2.0

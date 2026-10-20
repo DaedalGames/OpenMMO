@@ -213,6 +213,7 @@ mod estate_storage;
 pub(crate) use estate_storage::EstateFurnitureMove;
 mod bed_rest;
 mod fence;
+mod field_raid;
 mod friends;
 mod furniture_shop;
 mod goal_movement;
@@ -337,8 +338,8 @@ impl ServerGroundItem {
 /// Lock order for guards held together, outermost first:
 /// `character_session_lock` → `persistence_lock` → `lingering_bodies` → `players` →
 /// `player_characters` → `stalls`/`fences` → `player_gold` → `hunger` →
-/// `inventories` → `mana`. tokio's fair `RwLock` turns one inversion into a
-/// server-wide stall.
+/// `field_raid` → `inventories` → `mana`. tokio's fair `RwLock` turns one
+/// inversion into a server-wide stall.
 #[derive(Clone)]
 pub struct GameState {
     interest: Arc<std::sync::Mutex<interest::Interest>>,
@@ -466,6 +467,8 @@ pub struct GameState {
     respawn_beds: Arc<std::sync::RwLock<Vec<onlinerpg_shared::furniture::FurniturePlacement>>>,
     beds: Arc<std::sync::RwLock<bed_rest::BedIndex>>,
     interaction_furniture: Arc<std::sync::RwLock<player_interaction::FurnitureIndex>>,
+    /// The one altar-summoned raid allowed at a time; lost on restart.
+    field_raid: Arc<tokio::sync::Mutex<Option<field_raid::FieldRaid>>>,
     bed_rest_started: Arc<RwLock<HashMap<PlayerId, tokio::time::Instant>>>,
     /// Chairs and tables by region, so a served plate lands on a table top.
     dining: Arc<std::sync::RwLock<meal::DiningIndex>>,
@@ -761,6 +764,7 @@ impl GameState {
             respawn_beds: Arc::new(std::sync::RwLock::new(Vec::new())),
             beds: Arc::new(std::sync::RwLock::new(HashMap::new())),
             interaction_furniture: Arc::new(std::sync::RwLock::new(HashMap::new())),
+            field_raid: Arc::new(tokio::sync::Mutex::new(None)),
             bed_rest_started: Arc::new(RwLock::new(HashMap::new())),
             dining: Arc::new(std::sync::RwLock::new(HashMap::new())),
             no_spawn_zones,

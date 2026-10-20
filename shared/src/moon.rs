@@ -1,6 +1,7 @@
-//! Serin, the swift moon. Mirrors `getMoonPhaseState` in client
-//! `celestialSimulation.ts`; its dark evening hosts the merchants' price
-//! meeting (doc/PRICING.md).
+//! Eldor and Serin. Mirrors `getMoonPhaseState` in client
+//! `celestialSimulation.ts`. Serin's dark evening hosts the merchants' price
+//! meeting (doc/PRICING.md); a full moon in the sky opens the Terraclash
+//! altar (doc/TIER5_FIELD_RAID.md).
 
 use crate::world::GameDateTime;
 
@@ -9,6 +10,10 @@ pub const GAME_DAYS_PER_MONTH: i64 = 30;
 pub const GAME_MONTHS_PER_YEAR: i64 = 12;
 const SERIN_PERIOD_DAYS: i64 = 20;
 const SERIN_PHASE_OFFSET_DAYS: i64 = 5;
+const ELDOR_PERIOD_DAYS: i64 = 30;
+const ELDOR_PHASE_OFFSET_DAYS: i64 = 0;
+/// The client's "Full" phase label threshold.
+const FULL_ILLUMINATION: f64 = 0.95;
 
 /// Days since the calendar epoch (year 217, month 1, day 1).
 pub fn game_day_index(datetime: &GameDateTime) -> i64 {
@@ -29,6 +34,47 @@ pub fn is_serin_dark_day(game_day: i64) -> bool {
 pub fn days_until_serin_dark(game_day: i64) -> i64 {
     (SERIN_PERIOD_DAYS - 1 - (game_day + SERIN_PHASE_OFFSET_DAYS).rem_euclid(SERIN_PERIOD_DAYS))
         .rem_euclid(SERIN_PERIOD_DAYS)
+}
+
+/// Illumination (0–1) and whether the moon is above the horizon.
+fn moon_phase(period_days: i64, phase_offset_days: i64, game_day: i64, hour: f64) -> (f64, bool) {
+    let period = period_days as f64;
+    let cycle_day =
+        (game_day as f64 + hour / 24.0 + phase_offset_days as f64).rem_euclid(period) + 1.0;
+    let full = period / 2.0;
+    let waxing = cycle_day <= full;
+    let (illumination, orbital) = if waxing {
+        let t = (cycle_day - 1.0) / (full - 1.0).max(1.0);
+        (t, t * 0.5)
+    } else {
+        let t = (cycle_day - full) / (period - full).max(1.0);
+        (1.0 - t, 0.5 + t * 0.5)
+    };
+    let transit = (12.0 + orbital * 24.0).rem_euclid(24.0);
+    let rise = (transit - 6.0).rem_euclid(24.0);
+    let above_horizon = (hour - rise).rem_euclid(24.0) <= 12.0;
+    (illumination.clamp(0.0, 1.0), above_horizon)
+}
+
+/// Whether Eldor or Serin is full and above the horizon.
+fn is_full_moon_up(datetime: &GameDateTime) -> bool {
+    let day = game_day_index(datetime);
+    let hour = crate::celestial::hour_of_day(datetime);
+    [
+        (ELDOR_PERIOD_DAYS, ELDOR_PHASE_OFFSET_DAYS),
+        (SERIN_PERIOD_DAYS, SERIN_PHASE_OFFSET_DAYS),
+    ]
+    .into_iter()
+    .any(|(period, offset)| {
+        let (illumination, up) = moon_phase(period, offset, day, hour);
+        illumination >= FULL_ILLUMINATION && up
+    })
+}
+
+/// A full moon the player can see: in the sky after sunset. A summer full
+/// moon rises before the sun sets, still hidden in the daylit sky.
+pub fn is_full_moon_night(datetime: &GameDateTime) -> bool {
+    crate::celestial::is_night(datetime) && is_full_moon_up(datetime)
 }
 
 #[cfg(test)]
@@ -63,6 +109,72 @@ mod tests {
         assert_eq!(days_until_serin_dark(14), 0);
         assert_eq!(days_until_serin_dark(15), 19);
         assert_eq!(days_until_serin_dark(10), 4);
+    }
+
+    #[test]
+    fn moon_phase_matches_the_client() {
+        // (day, hour, Eldor illumination, up, Serin illumination, up) from
+        // `getMoonPhaseState` in celestialSimulation.ts.
+        let cases = [
+            (14, 0.0, 1.0, true, 0.0, false),
+            (14, 18.5, 0.9486, false, 0.0, true),
+            (14, 23.0, 0.9361, true, 0.0, false),
+            (15, 5.5, 0.9181, true, 0.0255, false),
+            (15, 6.5, 0.9153, true, 0.0301, true),
+            (9, 0.0, 0.6429, true, 0.5, true),
+            (9, 19.0, 0.6994, true, 0.4208, false),
+            (10, 4.0, 0.7262, false, 0.3833, true),
+            (0, 12.0, 0.0357, true, 0.6111, false),
+            (29, 21.25, 0.0, false, 0.4115, false),
+            (44, 1.0, 0.9972, true, 0.9958, true),
+        ];
+        for (day, hour, eldor, eldor_up, serin, serin_up) in cases {
+            let e = moon_phase(ELDOR_PERIOD_DAYS, ELDOR_PHASE_OFFSET_DAYS, day, hour);
+            let s = moon_phase(SERIN_PERIOD_DAYS, SERIN_PHASE_OFFSET_DAYS, day, hour);
+            assert!(
+                (e.0 - eldor).abs() < 1e-3 && e.1 == eldor_up,
+                "Eldor {day} {hour}: {e:?}"
+            );
+            assert!(
+                (s.0 - serin).abs() < 1e-3 && s.1 == serin_up,
+                "Serin {day} {hour}: {s:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn full_moon_windows_match_the_client() {
+        // The client counts 3026 full-moon minutes in 4 windows over 60 days.
+        let (mut minutes, mut runs, mut prev) = (0, 0, false);
+        for m in 0..60 * 24 * 60 {
+            let day = m / 1440;
+            let dt = GameDateTime {
+                year: GAME_START_YEAR as u32 + (day / 360) as u32,
+                month: ((day % 360) / 30 + 1) as u8,
+                day: (day % 30 + 1) as u8,
+                hour: ((m % 1440) / 60) as u8,
+                minute: (m % 60) as u8,
+            };
+            let up = is_full_moon_up(&dt);
+            minutes += i32::from(up);
+            runs += i32::from(up && !prev);
+            prev = up;
+        }
+        assert_eq!((minutes, runs), (3026, 4));
+    }
+
+    #[test]
+    fn a_full_moon_before_sunset_does_not_count() {
+        let dt = |hour, minute| GameDateTime {
+            year: 222,
+            month: 7,
+            day: 14,
+            hour,
+            minute,
+        };
+        assert!(is_full_moon_up(&dt(17, 47)));
+        assert!(!is_full_moon_night(&dt(17, 47)));
+        assert!(is_full_moon_night(&dt(23, 0)));
     }
 
     #[test]

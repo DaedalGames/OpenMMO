@@ -41,6 +41,8 @@
   import CapeDyeDialog from './CapeDyeDialog.svelte'
   import LandClaimDialog from './LandClaimDialog.svelte'
   import HouseDemolitionDialog from './HouseDemolitionDialog.svelte'
+  import AltarOfferingDialog from './AltarOfferingDialog.svelte'
+  import { altarOffering } from '../stores/altarStore'
   import { landClaimDialog } from '../stores/landClaimStore'
   import { capeDyeDialog } from '../stores/capeDyeStore'
   import CapeTextureDialog from './CapeTextureDialog.svelte'
@@ -148,6 +150,11 @@
   function toggleFromSocialMenu(panel: Writable<boolean>) {
     socialMenuOpen = false
     panel.update((v) => !v)
+  }
+
+  function confirmAltarOffering(objectId: number) {
+    altarOffering.set(null)
+    networkManager.sendOfferAtAltar(objectId)
   }
 
   function cancelHouseDemolition() {
@@ -448,6 +455,14 @@
 
 {#if $landClaimDialog}
   <LandClaimDialog />
+{/if}
+
+{#if $altarOffering}
+  <AltarOfferingDialog
+    offering={$altarOffering}
+    onConfirm={confirmAltarOffering}
+    onCancel={() => altarOffering.set(null)}
+  />
 {/if}
 
 {#if $houseDemolitionConfirmation}

@@ -5,6 +5,7 @@
 //! type now lives.
 
 pub mod ability;
+pub mod altar;
 pub mod bridge;
 pub mod celestial;
 pub mod character;
@@ -216,7 +217,9 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v123: telegraphed monster skills (`MonsterSkillStarted`).
 /// v124: gear max HP bonus in EffectiveStatsUpdated.
 /// v125: `InvisibilityChanged` for the invisibility cloak wearer.
-pub const PROTOCOL_VERSION: u32 = 125;
+/// v126: offering altars (`InspectAltar`/`OfferAtAltar`, `AltarStatus`,
+/// `FieldRaidNotice`).
+pub const PROTOCOL_VERSION: u32 = 126;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from

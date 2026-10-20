@@ -272,6 +272,8 @@ export type ClientMessage =
       }
     }
   | { InteractObject: { object_type: string; object_id: number } }
+  | { InspectAltar: { object_id: number } }
+  | { OfferAtAltar: { object_id: number } }
   | 'StopInteraction'
   | 'Heartbeat'
   | 'ResyncWorld'

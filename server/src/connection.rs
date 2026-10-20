@@ -1907,6 +1907,18 @@ async fn handle_client_message(
             }
         }
 
+        ClientMessage::InspectAltar { object_id } => {
+            if let Some(id) = &state.require_in_game("inspect altar") {
+                game_state.inspect_altar(id, object_id).await;
+            }
+        }
+
+        ClientMessage::OfferAtAltar { object_id } => {
+            if let Some(id) = &state.require_in_game("offer at altar") {
+                game_state.offer_at_altar(id, object_id).await;
+            }
+        }
+
         ClientMessage::StartInstrument => {
             if let Some(id) = state.require_in_game("instrument start") {
                 game_state.start_live_instrument(&id).await;

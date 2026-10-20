@@ -145,6 +145,11 @@ export interface ObjectDef {
   shopSignStyle?: ShopSignStyleId
   interaction?: string
   interactOffset?: Position
+  /** A sleeping boss's stand-in, hidden while that monster is up on it;
+   *  it blocks where the boss body will. */
+  dormantMonster?: string
+  /** Offering altar; shared/src/altar.rs reads the fields. */
+  altar?: object
   /** Absolute world Y to spawn new placements at, overriding the terrain-based
    *  default (e.g. a shop sign that hangs above a door). Fine-tune per placement
    *  with the editor's Y slider. */

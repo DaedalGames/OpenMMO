@@ -77,6 +77,33 @@ pub enum TeleportPhase {
     Cancelled,
 }
 
+/// What an altar would do with the clicker's offering right now.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AltarStatus {
+    Ready {
+        offering: String,
+        monster: String,
+    },
+    NoOffering,
+    /// Only a worn copy; it must be taken off first.
+    OfferingEquipped {
+        offering: String,
+    },
+    NotFullMoon,
+    RaidActive,
+}
+
+/// How a field raid ended.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum FieldRaidOutcome {
+    Defeated,
+    MoonSet,
+    /// No living character left in the battle zone.
+    Wiped,
+}
+
 /// Why a `PlayerAttack` request was dropped. Deliberately coarse: a stale id
 /// must not reveal hidden monster state such as its floor.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -533,6 +560,14 @@ pub enum ClientMessage {
     },
     InteractObject {
         object_type: String,
+        object_id: u32,
+    },
+    /// Clicked an offering altar; answered with `AltarStatus`.
+    InspectAltar {
+        object_id: u32,
+    },
+    /// Confirmed the offering after a `Ready` `AltarStatus`.
+    OfferAtAltar {
         object_id: u32,
     },
     StartInstrument,
@@ -1601,6 +1636,14 @@ pub enum ServerMessage {
     InteractionRejected {
         reason: String,
     },
+    AltarStatus {
+        object_id: u32,
+        status: AltarStatus,
+    },
+    FieldRaidNotice {
+        monster: String,
+        outcome: FieldRaidOutcome,
+    },
     HouseSpawned {
         house: housing::HouseData,
     },
@@ -2105,6 +2148,8 @@ impl ServerMessage {
             | Self::LandAccountState { .. }
             | Self::CapeTexturePrompt { .. }
             | Self::InteractionRejected { .. }
+            | Self::AltarStatus { .. }
+            | Self::FieldRaidNotice { .. }
             | Self::HousePlacementStarted { .. }
             | Self::HousePlacementResult { .. }
             | Self::HouseDemolitionResult { .. }

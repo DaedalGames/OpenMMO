@@ -243,6 +243,8 @@ pub enum MonsterLifecycle {
     Ambient,
     /// A dungeon floor slot owns its removal (floor exit, slot respawn).
     DungeonSlot,
+    /// An altar-summoned field boss; the raid removes it when it ends.
+    FieldRaid,
 }
 
 impl MonsterLifecycle {

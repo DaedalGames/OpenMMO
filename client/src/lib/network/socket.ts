@@ -640,6 +640,14 @@ class NetworkManager {
     return this.sendAndSerialize({ EnvReport: report })
   }
 
+  sendInspectAltar(objectId: number) {
+    this.sendMessage({ InspectAltar: { object_id: objectId } })
+  }
+
+  sendOfferAtAltar(objectId: number) {
+    this.sendMessage({ OfferAtAltar: { object_id: objectId } })
+  }
+
   sendInteractObject(objectType: string, objectId: number) {
     this.sendMessage({
       InteractObject: {

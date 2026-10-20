@@ -9,7 +9,7 @@ use onlinerpg_shared::{shortest_world_delta_x, wrap_world_x};
 
 pub(super) type FurnitureIndex = std::collections::HashMap<(i32, i32), Vec<FurniturePlacement>>;
 
-fn placement_position(placement: &FurniturePlacement) -> Position {
+pub(super) fn placement_position(placement: &FurniturePlacement) -> Position {
     Position {
         x: wrap_world_x(placement.x),
         y: placement.y,

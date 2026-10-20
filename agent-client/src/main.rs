@@ -554,6 +554,8 @@ pub fn msg_name(msg: &onlinerpg_shared::ServerMessage) -> &'static str {
         ServerMessage::PlayerInstrumentStarted { .. } => "PlayerInstrumentStarted",
         ServerMessage::PlayerInstrumentNotes { .. } => "PlayerInstrumentNotes",
         ServerMessage::InteractionRejected { .. } => "InteractionRejected",
+        ServerMessage::AltarStatus { .. } => "AltarStatus",
+        ServerMessage::FieldRaidNotice { .. } => "FieldRaidNotice",
         ServerMessage::InventoryState { .. } => "InventoryState",
         ServerMessage::InventoryUpdated { .. } => "InventoryUpdated",
         ServerMessage::GroundItemSpawned { .. } => "GroundItemSpawned",

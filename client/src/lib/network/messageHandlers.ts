@@ -5,6 +5,7 @@ import {
 } from '../stores/announcementStore'
 import { translate, type MessageKey } from '../i18n'
 import { isCoinPileJackpot } from './coinPileJackpot'
+import { handleAltarStatus, handleFieldRaidNotice } from './altarMessages'
 import {
   playTeleportEffect,
   finishTeleportArrival,
@@ -1993,6 +1994,14 @@ export function handleServerMessage(
       }
       break
     }
+
+    case 'AltarStatus':
+      handleAltarStatus(data)
+      break
+
+    case 'FieldRaidNotice':
+      handleFieldRaidNotice(data)
+      break
 
     case 'InteractionRejected': {
       // The event only cancels an in-flight interaction animation, so the

@@ -71,6 +71,12 @@
     "minZ": -0.215,
     "maxZ": 0.215
   },
+  "terraclash_dormant": {
+    "minX": -4.8,
+    "maxX": 4.8,
+    "minZ": -3,
+    "maxZ": 3.2
+  },
   "terraclash_altar": {
     "minX": -0.772,
     "maxX": 0.772,

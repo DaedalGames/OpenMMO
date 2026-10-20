@@ -310,12 +310,19 @@
   {
     "id": "terraclash_dormant",
     "name": "Terraclash (dormant)",
-    "model": "monsters/terraclash_dormant.glb"
+    "model": "monsters/terraclash_dormant.glb",
+    "solid": true,
+    "dormantMonster": "terraclash"
   },
   {
     "id": "terraclash_altar",
     "name": "Terraclash Altar",
     "model": "objects/terraclash_altar.glb",
-    "solid": true
+    "solid": true,
+    "altar": {
+      "offering": "earth_amulet",
+      "monster": "terraclash",
+      "spawn": { "x": 3.1, "z": -13.7, "rotation": 0 }
+    }
   }
 ]

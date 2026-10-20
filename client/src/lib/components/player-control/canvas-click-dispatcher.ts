@@ -12,6 +12,7 @@ type CastFishingIntent = Extract<ClickIntent, { type: 'cast_fishing' }>
 type TipHatIntent = Extract<ClickIntent, { type: 'tip_hat' }>
 type StallIntent = Extract<ClickIntent, { type: 'stall' }>
 type MealIntent = Extract<ClickIntent, { type: 'meal' }>
+type AltarIntent = Extract<ClickIntent, { type: 'altar' }>
 
 export interface CanvasClickActions {
   /** Player is within the weapon's reach — attack immediately. */
@@ -46,6 +47,8 @@ export interface CanvasClickActions {
   tradeAtStall(intent: StallIntent): void
   /** Eat a served plate without moving — only from the chair it was served to. */
   eatMeal(intent: MealIntent): void
+  /** Walk up to a clicked altar and ask the server about an offering. */
+  inspectAltar(intent: AltarIntent): void
 }
 
 /** `attackRange` is the equipped weapon's reach (`weaponRangeMeters`), so a
@@ -105,6 +108,9 @@ export function dispatchCanvasClickIntent(
       return
     case 'meal':
       actions.eatMeal(intent)
+      return
+    case 'altar':
+      actions.inspectAltar(intent)
       return
     case 'none':
       return

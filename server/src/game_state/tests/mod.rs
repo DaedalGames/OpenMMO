@@ -30,6 +30,7 @@ mod dungeon_tests;
 mod enchant_tests;
 mod estate_storage_tests;
 mod fence_tests;
+mod field_raid_tests;
 mod fishing_tests;
 mod friend_tests;
 mod house_building_tests;

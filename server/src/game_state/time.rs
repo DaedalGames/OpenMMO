@@ -89,7 +89,22 @@ impl super::GameState {
 
         let current = self.current_total_game_seconds();
         let target = next_game_seconds_at(current, (hour * GAME_MINUTES_PER_HOUR + minute) * 60);
+        self.debug_jump_clock(target)
+    }
 
+    /// Debug: move the game clock forward to the altar's next window, within
+    /// the next 60 game days.
+    pub fn debug_jump_to_full_moon(&self) -> Option<GameDateTime> {
+        let current = self.current_total_game_seconds();
+        let start = current - current.rem_euclid(60) + 60;
+        let target = (0..60 * 24 * 60).map(|m| start + m * 60).find(|&t| {
+            let datetime = Self::total_game_seconds_to_datetime(t);
+            onlinerpg_shared::moon::is_full_moon_night(&datetime)
+        })?;
+        Some(self.debug_jump_clock(target))
+    }
+
+    fn debug_jump_clock(&self, target: i64) -> GameDateTime {
         // The write guard must drop before broadcast_game_time, which
         // re-acquires the clock lock for reading.
         {

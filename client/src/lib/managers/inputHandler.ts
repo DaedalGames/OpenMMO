@@ -112,6 +112,12 @@ export type ClickIntent =
       position: Position
     }
   | {
+      /** Clicked an offering altar: asks the server what it would take. */
+      type: 'altar'
+      objectId: number
+      position: Position
+    }
+  | {
       /** Clicked someone's tip hat: opens the tip dialog once in range. */
       type: 'tip_hat'
       hatId: number
@@ -561,6 +567,17 @@ class InputHandler {
         let obj: THREE.Object3D | null = objectHits[0].object
         while (obj) {
           const d = obj.userData
+          if (d && d.objectId != null && d.objectAltar) {
+            return {
+              type: 'altar',
+              objectId: d.objectId as number,
+              position: {
+                x: obj.position.x,
+                y: obj.position.y,
+                z: obj.position.z,
+              },
+            }
+          }
           if (d && d.objectId != null && d.objectType && d.objectInteraction) {
             return {
               type: 'interact_object',

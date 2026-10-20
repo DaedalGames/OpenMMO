@@ -698,5 +698,19 @@
   "landClaim.reason.otherCharacter": "同一帳號的其他角色已擁有開拓地。",
   "landClaim.reason.plotLimit": "你的領地已達到16塊土地的上限。",
   "landClaim.reason.adjacentRequired": "請選擇與現有領地共用一條邊的土地。",
-  "landClaim.reason.areaLimit": "整個領地必須位於8 × 8塊土地的範圍內。"
+  "landClaim.reason.areaLimit": "整個領地必須位於8 × 8塊土地的範圍內。",
+  "altar.eyebrow": "獻祭祭壇",
+  "altar.title": "要獻上{{item}}嗎？",
+  "altar.lost": "護符將會消失，即使討伐失敗也不會退還。",
+  "altar.wakes": "獻祭後{{monster}}會立刻甦醒。請先召集同伴。",
+  "altar.confirm": "獻上",
+  "altar.cancel": "算了",
+  "altar.noOffering": "心形的凹槽空空如也，似乎正好能放進什麼東西。",
+  "altar.offeringEquipped": "請先卸下{{item}}再獻上。",
+  "altar.notFullMoon": "祭壇一片沉寂。滿月升起時或許會有反應。",
+  "altar.raidActive": "祭壇已經甦醒了。",
+  "fieldRaid.defeated": "{{monster}}倒下了，再次陷入沉睡。",
+  "fieldRaid.moonSet": "滿月落下了。{{monster}}重新陷入沉睡。",
+  "fieldRaid.wiped": "已無人站立。{{monster}}重新陷入沉睡。",
+  "monsterName.terraclash": "泰拉克拉什"
 }

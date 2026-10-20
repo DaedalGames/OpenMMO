@@ -740,6 +740,19 @@ async fn main() -> ExitCode {
         },
     ));
 
+    let game_state_for_raid = Arc::clone(&game_state);
+    background.spawn(run_ticks(
+        "field_raid",
+        Duration::from_secs(1),
+        drain_shutdown.clone(),
+        &health,
+        health::Deadline::FromPeriod,
+        move || {
+            let game_state = Arc::clone(&game_state_for_raid);
+            async move { game_state.tick_field_raid().await }
+        },
+    ));
+
     let game_state_for_ground = Arc::clone(&game_state);
     background.spawn(run_ticks(
         "ground_item_despawn",

@@ -55,3 +55,6 @@ export const PROP_APPROACH: ApproachRange = { range: 1.6, stopShort: 1.6 }
 export const NPC_TRADE_APPROACH = reach(NPC_TRADE_RANGE_METERS)
 export const TIP_HAT_APPROACH = reach(TIP_HAT_RANGE_METERS)
 export const STALL_TRADE_APPROACH = reach(STALL_TRADE_RANGE_METERS)
+/** Inside INTERACTION_RANGE + 0.5 (field_raid.rs), measured from the altar's
+ *  centre; stops clear of its 0.8 m half-width. */
+export const ALTAR_APPROACH: ApproachRange = { range: 2.5, stopShort: 1.7 }

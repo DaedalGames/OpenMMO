@@ -23,6 +23,8 @@
   import { TERRAIN_TILE_SIZE } from '../game-scene/terrain-utils'
   import { objectManager } from '../../managers/objectManager'
   import { objectDefsById } from '../../data/objectCatalog'
+  import { monsterManager } from '../../managers/monsterManager'
+  import { shortestWrappedDeltaX } from '../../terrain/world-wrap'
   import { worldView } from '../../network/worldView'
   import { bridgeManager } from '../../managers/bridgeManager'
   import { furnitureManager } from '../../managers/furnitureManager'
@@ -364,10 +366,44 @@
     )
   }
 
+  /** The woken boss stands where its dormant stand-in lay. */
+  const WOKEN_RADIUS_M = 8
+
+  const standIns = $derived(
+    placements.flatMap((p) => {
+      const kind = objectDefsById.get(p.type)?.dormantMonster
+      return kind ? [{ p, kind }] : []
+    })
+  )
+
+  /** Stand-ins whose monster is up on them, keyed as a string so monster
+   *  moves rebuild only when the set changes. Regions without one never read
+   *  the monster map. */
+  const wokenKey = $derived.by(() => {
+    if (standIns.length === 0) return ''
+    const ids: number[] = []
+    for (const { p, kind } of standIns) {
+      for (const m of monsterManager.monsters.values()) {
+        if (m.type !== kind) continue
+        const dx = shortestWrappedDeltaX(p.x, m.position.x)
+        const dz = m.position.z - p.z
+        if (dx * dx + dz * dz <= WOKEN_RADIUS_M ** 2) {
+          ids.push(p.id)
+          break
+        }
+      }
+    }
+    return ids.join(',')
+  })
+  const wokenIds = $derived(
+    new Set(wokenKey ? wokenKey.split(',').map(Number) : [])
+  )
+
   /** Placements currently shown, after floor + house filtering. */
   function visiblePlacements(visibleFloor: number): ObjectPlacement[] {
     return placements.filter((p) => {
       if (p.floorLevel !== visibleFloor) return false
+      if (!isEditorMode && wokenIds.has(p.id)) return false
       const pHouse = housingManager.findHouseAtPoint(p.x, p.y, p.z)
       return currentHouseId ? pHouse?.id === currentHouseId : pHouse == null
     })
@@ -410,6 +446,7 @@
       clone.userData.objectInteractOffset = catDef.interactOffset
     }
     if (catDef?.kind) clone.userData.objectKind = catDef.kind
+    if (catDef?.altar) clone.userData.objectAltar = true
     return clone
   }
 
@@ -517,6 +554,7 @@
     void tool
     void isEditorMode
     void currentFloor
+    void wokenKey
     rebuild()
   })
 

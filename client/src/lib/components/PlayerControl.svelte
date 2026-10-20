@@ -117,6 +117,7 @@
     approachForInteraction,
     PICKUP_APPROACH,
     PROP_APPROACH,
+    ALTAR_APPROACH,
     STALL_TRADE_APPROACH,
     TIP_HAT_APPROACH,
   } from '../data/approachRanges'
@@ -1578,6 +1579,12 @@
     }
   }
 
+  function inspectAltar(intent: Extract<ClickIntent, { type: 'altar' }>) {
+    approachAndAct({ position: intent.position, ...ALTAR_APPROACH }, () =>
+      networkManager.sendInspectAltar(intent.objectId)
+    )
+  }
+
   /** Step up to the table; the server decides shop front or stall panel. */
   function tradeAtStall(intent: Extract<ClickIntent, { type: 'stall' }>) {
     approachAndAct({ position: intent.position, ...STALL_TRADE_APPROACH }, () =>
@@ -1935,6 +1942,7 @@
       tipHat,
       tradeAtStall,
       eatMeal,
+      inspectAltar,
       breakProp,
       openProp,
       moveToGround: (position, sprinting, viaHousingStair) => {

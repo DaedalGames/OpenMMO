@@ -238,6 +238,7 @@ pub(crate) enum AdminCommand<'a> {
     Summon(&'a str),
     Goto(&'a str),
     Weather(&'a str),
+    FullMoon,
     God,
     Spawnmob {
         monster_type: &'a str,
@@ -283,6 +284,9 @@ pub(crate) fn parse_admin_command(message: &str) -> Option<AdminCommand<'_>> {
     }
     if strip_command(message, "/god").is_some() {
         return Some(AdminCommand::God);
+    }
+    if strip_command(message, "/fullmoon").is_some() {
+        return Some(AdminCommand::FullMoon);
     }
     if let Some(rest) = strip_command(message, "/weather") {
         return Some(AdminCommand::Weather(rest));
@@ -982,6 +986,7 @@ impl super::GameState {
             AdminCommand::Goto(name) => self.goto_command(admin_id, name).await,
             AdminCommand::Weather(args) => self.weather_command(admin_id, args),
             AdminCommand::God => self.god_command(admin_id).await,
+            AdminCommand::FullMoon => self.full_moon_command(),
             AdminCommand::Spawnmob {
                 monster_type,
                 count,

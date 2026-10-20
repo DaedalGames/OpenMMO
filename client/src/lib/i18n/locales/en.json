@@ -698,5 +698,19 @@
   "landClaim.reason.otherCharacter": "Another character on your account already owns a homestead.",
   "landClaim.reason.plotLimit": "Your homestead has reached its limit of 16 plots.",
   "landClaim.reason.adjacentRequired": "Choose a plot that shares an edge with your homestead.",
-  "landClaim.reason.areaLimit": "Your homestead must fit within an 8 by 8 plot area."
+  "landClaim.reason.areaLimit": "Your homestead must fit within an 8 by 8 plot area.",
+  "altar.eyebrow": "OFFERING ALTAR",
+  "altar.title": "Offer the {{item}}?",
+  "altar.lost": "The amulet will be consumed and is not returned if the raid fails.",
+  "altar.wakes": "Offering wakes {{monster}} at once. Gather others before you offer.",
+  "altar.confirm": "Offer",
+  "altar.cancel": "Keep it",
+  "altar.noOffering": "The heart-shaped hollow is empty. Something seems meant to fit it.",
+  "altar.offeringEquipped": "Take off the {{item}} before offering it.",
+  "altar.notFullMoon": "The altar lies quiet. It may stir under a full moon.",
+  "altar.raidActive": "The altar has already awakened.",
+  "fieldRaid.defeated": "{{monster}} has fallen and sleeps once more.",
+  "fieldRaid.moonSet": "The full moon has set. {{monster}} sinks back into sleep.",
+  "fieldRaid.wiped": "No one is left standing. {{monster}} sinks back into sleep.",
+  "monsterName.terraclash": "Terraclash"
 }

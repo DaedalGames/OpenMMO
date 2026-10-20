@@ -698,5 +698,19 @@
   "landClaim.reason.otherCharacter": "同じアカウントの別のキャラクターがすでに開拓地を所有しています。",
   "landClaim.reason.plotLimit": "領地が上限の16区画に達しています。",
   "landClaim.reason.adjacentRequired": "自分の領地と辺で接している土地を選択してください。",
-  "landClaim.reason.areaLimit": "領地全体が8 × 8区画の範囲内に収まる必要があります。"
+  "landClaim.reason.areaLimit": "領地全体が8 × 8区画の範囲内に収まる必要があります。",
+  "altar.eyebrow": "奉納の祭壇",
+  "altar.title": "{{item}}を捧げますか？",
+  "altar.lost": "アミュレットは失われ、レイドに失敗しても戻りません。",
+  "altar.wakes": "奉納するとすぐに{{monster}}が目覚めます。先に仲間を集めましょう。",
+  "altar.confirm": "捧げる",
+  "altar.cancel": "やめる",
+  "altar.noOffering": "心臓の形をした窪みは空だ。何かがぴったり収まりそうだ。",
+  "altar.offeringEquipped": "{{item}}を外してから捧げてください。",
+  "altar.notFullMoon": "祭壇は静まり返っている。満月の下なら応えるかもしれない。",
+  "altar.raidActive": "祭壇はすでに目覚めている。",
+  "fieldRaid.defeated": "{{monster}}は倒れ、再び眠りについた。",
+  "fieldRaid.moonSet": "満月が沈んだ。{{monster}}は再び眠りにつく。",
+  "fieldRaid.wiped": "立っている者はもういない。{{monster}}は再び眠りにつく。",
+  "monsterName.terraclash": "テラクラッシュ"
 }
