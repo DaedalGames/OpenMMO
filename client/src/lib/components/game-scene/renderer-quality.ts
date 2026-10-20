@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import type { WebGPURenderer } from 'three/webgpu'
 import { CSMShadowNode } from 'three/addons/csm/CSMShadowNode.js'
 import type { GraphicsPreset } from '../../stores/graphicsSettings'
+import { pcfShadowFilter } from '../../utils/pointShadow'
 
 const CSM_MAX_FAR = 200
 const CSM_CASCADES = 2
@@ -14,6 +15,22 @@ export function setupCsmShadow(light: THREE.DirectionalLight): void {
     lightMargin: 100,
   })
   csm.fade = true
+  // Same render-group uniform churn as pointShadow.ts: three@0.186.1 rebuilds
+  // the fade graph on every shader build, and the cascades' cloned shadows
+  // drop filterNode, so they fall back to the per-build PCF filter.
+  const internals = csm as unknown as {
+    _setupFade(): unknown
+    _init(builder: unknown): void
+  }
+  const setupFade = internals._setupFade.bind(csm)
+  let fadeNode: unknown
+  internals._setupFade = () => (fadeNode ??= setupFade())
+  const init = internals._init.bind(csm)
+  internals._init = (builder) => {
+    init(builder)
+    for (const cascade of csm.lights)
+      cascade.shadow!.filterNode = pcfShadowFilter
+  }
   light.shadow.shadowNode = csm
 }
 

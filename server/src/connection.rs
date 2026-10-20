@@ -64,7 +64,15 @@ impl AuthContext {
 #[cfg(debug_assertions)]
 fn parse_dev_login<'a>(token: &'a str, npc_token: &str) -> Option<&'a str> {
     let (account, secret) = token.strip_prefix("dev:")?.split_once(':')?;
-    token_matches(secret, npc_token).then_some(account)
+    token_matches(secret, &dev_login_secret(npc_token)).then_some(account)
+}
+
+/// A hash of the NPC token, so the dev client bundle never carries the token
+/// itself (it also authorizes REST writes).
+#[cfg(debug_assertions)]
+fn dev_login_secret(npc_token: &str) -> String {
+    use sha2::{Digest, Sha256};
+    format!("{:x}", Sha256::digest(format!("dev-login:{npc_token}")))
 }
 
 /// Constant-time equality so the NPC token can't be probed byte by byte.
@@ -3451,14 +3459,18 @@ mod tests {
     #[cfg(debug_assertions)]
     #[test]
     fn dev_login_requires_the_npc_token() {
-        let secret = "0123456789abcdef";
+        let npc_token = "0123456789abcdef";
+        let secret = dev_login_secret(npc_token);
         assert_eq!(
-            parse_dev_login("dev:jake:0123456789abcdef", secret),
+            parse_dev_login(&format!("dev:jake:{secret}"), npc_token),
             Some("jake")
         );
-        assert_eq!(parse_dev_login("dev:jake:wrong", secret), None);
-        assert_eq!(parse_dev_login("dev:jake", secret), None);
-        assert_eq!(parse_dev_login("jake:0123456789abcdef", secret), None);
+        assert_eq!(
+            parse_dev_login(&format!("dev:jake:{npc_token}"), npc_token),
+            None
+        );
+        assert_eq!(parse_dev_login("dev:jake", npc_token), None);
+        assert_eq!(parse_dev_login(&format!("jake:{secret}"), npc_token), None);
     }
 
     #[test]
