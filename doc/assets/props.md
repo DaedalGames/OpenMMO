@@ -14,6 +14,15 @@
 
 ## Objects
 
+- Altar of the Earth Heart / 대지 심장의 제단 (가칭) — 테라클래시를 깨우는 봉헌 제단. [설계](../TIER5_FIELD_RAID.md).
+  - OpenAI Codex built-in ImageGen(`codex exec`, codex-cli 0.162.1), **ChatGPT Pro 20x**, 2026-10-21. OpenAI 출력물 이용 조건 적용, 별도 CC 라이선스 없음.
+  - [원화](../../assets/objects/terraclash_altar/concept_v3/concept.png) — 아뮬렛·테라클래시 원화를 참고로 시안 3종(사각 블록·원통·바위)을 그려 바위안을 골랐고, 홈 안을 테라클래시 가슴 구멍과 같은 용암빛으로 채운 뒤 바위·이끼·균열·청동판 색을 게임 모델 `terraclash.glb` 가슴 렌더에 맞췄다. 홈의 용암빛이 밝은 돌 위에서 멀리서도 보인다. 중간 시안은 지웠고 프롬프트·해시만 생성 기록에 남겼다. [프롬프트](../../assets/objects/terraclash_altar/concept_v3/prompt.txt) · [생성 기록](../../assets/objects/terraclash_altar/concept_v3/generation.json).
+  - 3D: Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, 목표 5,000 faces, seed `102101`, 2026-10-21, **120크레딧**. Tripo 이용 약관 적용.
+    원화 한 장을 넣었다. 원본은 `assets/objects/terraclash_altar/tripo_v1/source/model_url.glb`, 요청·작업 기록은 `tripo_v1/build.json`·`generation.json`.
+    Tripo는 홈의 하트 모양을 살리지 못하고 윗면에 주황 얼룩만 칠했다.
+  - 게임 모델 `client/public/models/objects/terraclash_altar.glb` — `tools/blender-scripts/prepare_terraclash_altar.py`가 정면을 +Z로 돌리고 폭 1.6m·높이 1.0m로 맞춘 뒤(1.54×1.6×1.0m), 원점을 바닥 중심에 둔다.
+    `earth_amulet.glb` 펜던트를 위에서 본 실루엣(체인·고리 제외)으로 길이 0.5m, 깊이 0.1m 홈을 boolean으로 파고, 바닥과 벽에 발광 재질 `altar_heart_core`·`altar_heart_wall`을 준다.
+    펜던트 끝이 정면을 향한다. 바위 재질은 발광 없음, 텍스처 1024² WebP q90, 5,858 triangles. Blender 파일은 `assets/objects/terraclash_altar/game_v1/`.
 - Shop Sign 변형 (`shop_sign_plank`, `shop_sign_oval`, `shop_sign_weathered`) — `client/src/lib/utils/shop-sign.ts`에서 생성하는 각진 판형·타원형·완만한 아치형 메시 (2026-09-06). 메시 출처: 프로젝트 자체 코드, 프로젝트와 동일 라이선스. 텍스처는 기존 Poly Haven `wood_planks`, `dark_wooden_planks`, `weathered_planks` 재사용 (CC0, 아래 House 항목). 간판 문구는 맵에디터에서 수정하며 형태에 맞춰 렌더링한다.
   - `client/public/items/objects/shop_sign.png`, `shop_sign_plank.png`, `shop_sign_oval.png`, `shop_sign_weathered.png` — ORKEA 간판 4종 아이콘 (2026-09-19). 게임의 `buildShopSignBoard`가 만든 메시·UV와 각 스타일의 기존 Poly Haven 나무 텍스처를 그대로 사용해 Blender 5.2.0 LTS에서 투명 128² PNG로 렌더. 메시·렌더 스크립트는 프로젝트와 동일 라이선스, `wood_shutter`, `wood_planks`, `dark_wooden_planks`, `weathered_planks` 텍스처는 CC0. `node tools/export-shop-sign-icons.mjs` 실행 후 `blender -b -P tools/blender-scripts/render_furniture_icon.py -- MODEL --geometry assets/shop-sign-icons/MODEL.json --yaw -10 --tilt -80`으로 재생성한다. 간판 문구는 포함하지 않는다. `assets/shop-sign-icons/`의 중간 메시 JSON 4개는 2026-10-09 삭제했으며, 아이콘 재생성 시 내보내기 도구로 다시 만든다.
 - empty_plate.glb — Meshy AI "Sunlit Ceramic Plate" (Pro 요금제, 2026-09-02 생성, 소스 `assets/objects/empty_plate/Meshy_AI_Sunlit_Ceramic_Plate_0902163541_texture.glb`). 완전 소유권·상업 OK (characters.md License 참조). 여관 테이블에서 손님이 다 먹은 접시 — `Meal.eaten`이면 클라이언트가 요리 모델 대신 이걸 그린다 (HUNGER.md "여관 식사"). Blender에서 chicken_rice.glb와 같은 지름 0.35m로 스케일 적용(0.35×0.03×0.35 W×H×D), 원점=바닥 중심, 텍스처 2048→512 축소, 검은 emissive 제거 (2026-09-03). 아이콘 없음(월드 전용)

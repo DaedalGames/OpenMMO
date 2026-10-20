@@ -311,5 +311,11 @@
     "id": "terraclash_dormant",
     "name": "Terraclash (dormant)",
     "model": "monsters/terraclash_dormant.glb"
+  },
+  {
+    "id": "terraclash_altar",
+    "name": "Terraclash Altar",
+    "model": "objects/terraclash_altar.glb",
+    "solid": true
   }
 ]
