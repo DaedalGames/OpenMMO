@@ -116,6 +116,10 @@ function modularCharacterPreview(): Plugin {
       '../assets/monsters/barkan/rig_v1/barkan.glb',
       import.meta.url
     ),
+    terraclash: new URL(
+      '../assets/monsters/terraclash/rig_v1/terraclash.glb',
+      import.meta.url
+    ),
     helmet_brilliance: new URL(
       '../assets/items/helm_of_brilliance/tripo_v2/fitted_v3/male/helmet_brilliance.glb',
       import.meta.url

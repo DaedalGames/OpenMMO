@@ -205,6 +205,12 @@
     `tools/blender-scripts/prepare_terraclash.py`로 정면을 +Z로 돌리고 높이 9m에 맞춘 뒤, 원점을 바닥 중심에 두었다.
     텍스처는 4096²에서 2048²로 줄여 WebP q90으로 저장했고, emissive는 끄고 용암 균열은 base color만 쓴다.
     깨어남 9.6×9.0×6.2m, 잠듦 10.2×9.0×10.9m. Blender 파일은 `assets/monsters/terraclash/game_v1/`.
+  - 리깅 1차(2026-10-20): `tools/blender-scripts/rig_terraclash.py`가 깨어남 게임 GLB에 뼈 13개를 심고, 클립 6개
+    (Idle·Attack·Roar·Hit·Death·Dead, 30fps)를 키프레임으로 만든다.
+    뼈 위치는 메시 단면에서 잡은 어깨·팔꿈치·손목·머리 좌표다. 웨이트는 뼈 선분까지 거리의 역6제곱이며,
+    팔·어깨·머리·몸통 영역별로 쓸 수 있는 뼈를 제한한다. 지면에서 주먹과 몸통 바위를 잇는 면 19개는 팔을 들 때
+    늘어나므로 잘라냈다. 결과는 `assets/monsters/terraclash/rig_v1/terraclash.{glb,blend}`이며, 같은 GLB를 `client/public/models/monsters/terraclash.glb`로
+    써서 `monsters.csv`의 `terraclash`(제자리 고정, 임시 능력치)로 등록했다. 미리보기: `modular-character-preview.html?character=terraclash`.
 - SCP939 https://sketchfab.com/3d-models/scp939-79a749a5073b453d9d85875797bf45d7
   - 전송량 최적화 (2026-10-16): `scp939.edf348b1.glb`를 **5,776,536 → 1,395,636바이트(75.84% 감소)**로 줄였다.
     gzip level 6 예상 전송량은 **4,032,324 → 994,918바이트(75.33% 감소)**이며 다음 빌드 파일명은 `scp939.79bd676e.glb`다.
