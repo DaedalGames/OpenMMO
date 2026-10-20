@@ -194,6 +194,17 @@
   - [게임 화면 깨어난 상태](../images/monsters/terraclash-ingame-awake.png): 사용자 스크린샷에 높이·폭 약 9m 크기로 그려 넣은 목업.
   - [게임 화면 잠든 상태](../images/monsters/terraclash-ingame-dormant.png): 봉헌 전, 같은 자리·같은 크기의 평범한 바위 언덕.
     얼굴·룬·주먹 마디를 없애고 큰 윤곽만 남겼다. 두 목업 모두 생성 후 미니맵을 흐렸다.
+  - Tripo 입력 원화: [깨어남](../images/monsters/terraclash-tripo-awake.png)·[잠듦](../images/monsters/terraclash-tripo-dormant.png).
+    회색 배경 정면 한 장이다. 깨어남은 리깅을 위해 팔과 몸통 사이를 띄웠다.
+    잠듦은 팔을 띄우기 전 깨어남 원화와 외곽선이 같아, 같은 자리에서 메시를 바꿔 끼울 수 있다.
+  - 3D: Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, 목표 10,000 faces, 2026-10-20.
+    깨어남 seed `102021`(11,261 triangles), 잠듦 seed `102022`(10,539 triangles), 각 **120크레딧**. Tripo 이용 약관 적용.
+    원본은 `assets/monsters/terraclash/tripo_v1_{awake,dormant}/model_url.glb`, 요청·작업 기록은 같은 폴더의 `build.json`·`generation.json`.
+    깨어남은 팔이 어깨에서만 몸통과 이어지고, 중간 높이 단면에서 팔과 몸통 사이에 틈이 있다.
+  - 게임 모델 `client/public/models/monsters/terraclash_{awake,dormant}.glb`(리깅 전, 크기 확인용).
+    `tools/blender-scripts/prepare_terraclash.py`로 정면을 +Z로 돌리고 높이 9m에 맞춘 뒤, 원점을 바닥 중심에 두었다.
+    텍스처는 4096²에서 2048²로 줄여 WebP q90으로 저장했고, emissive는 끄고 용암 균열은 base color만 쓴다.
+    깨어남 9.6×9.0×6.2m, 잠듦 10.2×9.0×10.9m. Blender 파일은 `assets/monsters/terraclash/game_v1/`.
 - SCP939 https://sketchfab.com/3d-models/scp939-79a749a5073b453d9d85875797bf45d7
   - 전송량 최적화 (2026-10-16): `scp939.edf348b1.glb`를 **5,776,536 → 1,395,636바이트(75.84% 감소)**로 줄였다.
     gzip level 6 예상 전송량은 **4,032,324 → 994,918바이트(75.33% 감소)**이며 다음 빌드 파일명은 `scp939.79bd676e.glb`다.

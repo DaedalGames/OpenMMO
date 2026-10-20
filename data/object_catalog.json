@@ -301,5 +301,15 @@
     "id": "torch",
     "name": "Torch",
     "model": "weapons/torch.glb"
+  },
+  {
+    "id": "terraclash_awake",
+    "name": "Terraclash (awake)",
+    "model": "monsters/terraclash_awake.glb"
+  },
+  {
+    "id": "terraclash_dormant",
+    "name": "Terraclash (dormant)",
+    "model": "monsters/terraclash_dormant.glb"
   }
 ]

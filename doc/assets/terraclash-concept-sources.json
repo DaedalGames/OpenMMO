@@ -3,7 +3,7 @@
   "service": "OpenAI Codex built-in ImageGen (codex exec, codex-cli 0.162.1)",
   "tier": "ChatGPT Pro 20x",
   "license": "OpenAI generated output terms.",
-  "status": "Final concept; no 3D generation yet.",
+  "status": "Final concept; Tripo meshes generated 2026-10-20 (assets/monsters/terraclash/tripo_v1_*).",
   "images": [
     {
       "output": {
@@ -48,6 +48,35 @@
       ],
       "codex_output": "~/.codex/generated_images/01a15833-0ee1-77a2-a11b-c3e6e94d0771/exec-f73197f4-8571-4c97-b5ca-998e0058aa5c.png",
       "prompt": "Use case: in-game mockup edit. Edit target: image 1, an in-game screenshot of our isometric fantasy MMORPG showing a dormant petrified guardian as a mossy rock outcrop. It still reads too much like a covered statue. Make it much better hidden, so that a first-time player sees only an ordinary natural rocky outcrop / low crag, while keeping the same position, overall size and footprint.\n\nChanges:\n- Head: erase the head shape entirely; replace it with an irregular natural rock peak that has no face, brow, eyes or symmetric features.\n- Chest: remove the round seal-rune disc and the iron bands completely from view (fully buried under soil, moss and grass). The heart socket becomes just an irregular dark rock overhang or small natural cave mouth, partly hidden by shrubs, not centered and not heart-shaped.\n- Fists and arms: break up the fist shapes; no knuckles or finger-like segments. They become irregular boulder piles and rock spurs of varied sizes, slightly asymmetric between left and right, half sunk into the grass with scree around them.\n- Overall: break the bilateral symmetry. Vary the peak heights, add a leaning slab or two, uneven layering and natural fractures, more grass, shrubs, small saplings and wildflowers on ledges and in crevices. Rock colors and textures should match natural terrain rocks rather than carved stone blocks; avoid the regular chiseled block pattern.\n- Keep a subtle hint only for someone who already knows: the broad outline is still a high central mass with two lower lobes reaching forward on the left and right.\n\nNo glow, no magma, no orange, no eyes, no visible metal, no runes.\n\nMatch the game's camera and look exactly as in image 1: same high isometric angle from the south-west, same soft daylight, same texture detail level, contact shadows consistent with the knight's shadow.\n\nKeep everything else in image 1 identical: the knight jake5 with name and health bar, the grass, tree, flowers, minimap, sky bar, HUD, hotbar and chat box. Same image size and framing. No added text."
+    },
+    {
+      "output": {
+        "path": "doc/images/monsters/terraclash-tripo-awake.png",
+        "sha256": "7fea0891c598b690414f8508cb89f772db838794821d5c6660f37dea251fafda",
+        "width": 1254,
+        "height": 1254
+      },
+      "description": "Tripo input, awake. Front view on plain grey with the arms drawn apart from the torso for rigging. Edit of a first Tripo-ready pass whose arms were fused to the body.",
+      "references": [
+        "first Tripo-ready awake pass (edit target, not kept), drawn from terraclash-ingame-awake.png and terraclash-concept.png"
+      ],
+      "codex_output": "~/.codex/generated_images/01a15840-35e8-7980-88a2-c2cb5f6c0b33/exec-d6e0cd78-37cd-4d19-84c5-8cf5f21ccd28.png",
+      "prompt": "Use case: 3D-generation reference sheet (single front view) for image-to-3D (Tripo), prepared for rigging. Edit target: image 1, the front-view model reference of the awake field boss Terraclash.\n\nProblem: the arms are fused to the torso and the rubble base, so the generated mesh will be one welded lump and the arms cannot be rigged. Redraw so that each arm is a clearly separate limb:\n- Move both arms slightly outward, away from the torso. From the armpit all the way down to the wrist there must be a clear gap showing the plain grey background between the inner side of each arm and the side of the torso and its base. No rock, rubble, moss or bridges spanning the gap.\n- The shoulders connect to the torso only at the shoulder joint; upper arm, elbow, forearm and wrist read as distinct segments, slightly bent at the elbow.\n- Each fist rests on the ground plane on its own, beside the torso base, touching only the ground line at the bottom; the fist is a separate shape and is not merged into the torso's rubble base. Keep a gap between each fist and the torso base.\n- The torso's rubble base is narrower, only under the torso, ending in a flat bottom edge.\n- The head stays a distinct shape above the chest with a visible neck/collar gap where possible.\n\nKeep everything else unchanged: the same creature design, the granite material, mountain-peak ridges on the shoulders, molten-orange cracks painted flat with almost no glow, moss, the empty heart socket, the iron seal bands and the seal rune disc on the upper left of the chest, glowing eyes, overall width about equal to height. Same front view slightly elevated, nearly orthographic, plain flat light grey background, soft even neutral lighting, no cast shadows on the background, no sky or fog or particles, square 1024x1024. One object only, no human, no ground plane or landscape, no text, no watermark."
+    },
+    {
+      "output": {
+        "path": "doc/images/monsters/terraclash-tripo-dormant.png",
+        "sha256": "9d36c6f93db849e9f0671a5470769757403ad5a445fc2e5b62b12e94e8c37753",
+        "width": 1254,
+        "height": 1254
+      },
+      "description": "Tripo input, dormant. Same outline as the first Tripo-ready awake pass so the meshes swap in place.",
+      "references": [
+        "first Tripo-ready awake pass (edit target, not kept)",
+        "terraclash-ingame-dormant.png (look reference)"
+      ],
+      "codex_output": "~/.codex/generated_images/01a1583b-ff97-7323-af1f-9d5229a1327c/exec-62d202e9-4701-4502-9ffe-810a062c77e7.png",
+      "prompt": "Use case: 3D-generation reference sheet (single front view) for image-to-3D (Tripo). Edit target: image 1, the front-view model reference of the awake field boss Terraclash on a plain grey background. Image 2 is the in-game mockup of its dormant state, used only as the look reference.\n\nRedraw image 1 as the dormant, petrified state: an ordinary natural mossy rock outcrop, keeping EXACTLY the same camera, framing, overall silhouette outline, size, footprint and flat bottom edge as image 1, so the two meshes can be swapped in place.\n\nChanges: no glow anywhere, no magma, no orange, no eyes, no visible metal or runes. The head becomes an irregular natural rock peak with no face. The heart socket becomes an irregular dark rock overhang off-center, partly covered by grass and shrubs. The fists lose their knuckles and become irregular boulder piles, slightly asymmetric between left and right. Break the symmetry with natural fractures, uneven layering and a leaning slab; dense moss and grass covering most upper surfaces, a few small shrubs and saplings growing from crevices, as in image 2. Rock looks like natural weathered terrain rock, not carved blocks.\n\nKeep: plain flat light grey background, soft even neutral studio lighting, no cast shadows on the background, no sky, no fog, no particles. Square 1024x1024 composition. One object only, no human, no ground plane or landscape, no text, no labels, no watermark."
     }
   ]
 }
