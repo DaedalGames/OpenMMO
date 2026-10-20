@@ -1280,15 +1280,31 @@ impl super::GameState {
             return Err("Spawnmob: server error, try again.".to_string());
         };
 
+        // A body would land on the admin; stand it in front, facing back.
+        let body = self.monster_defs.get(monster_type).and_then(|d| d.body);
         let mut spawned = 0u32;
         for i in 0..count {
             let angle = i as f32 / count as f32 * std::f32::consts::TAU;
-            let position = self.open_spot_beside(&center, angle, SPAWNMOB_RING_RADIUS);
+            let (position, facing) = match body {
+                Some(body) => {
+                    let ahead = body.back + 3.0;
+                    let position = onlinerpg_shared::Position {
+                        x: onlinerpg_shared::world::wrap_world_x(center.x + rotation.sin() * ahead),
+                        y: center.y,
+                        z: center.z + rotation.cos() * ahead,
+                    };
+                    (position, rotation + std::f32::consts::PI)
+                }
+                None => (
+                    self.open_spot_beside(&center, angle, SPAWNMOB_RING_RADIUS),
+                    rotation,
+                ),
+            };
             let Some(_) = self
                 .spawn_monster(
                     monster_type.to_string(),
                     position,
-                    rotation,
+                    facing,
                     floor,
                     crate::types::MonsterLifecycle::Ambient,
                     None,

@@ -230,6 +230,63 @@ pub fn passability_set_furniture(key: &str, val: JsValue) -> Result<JsValue, JsE
     to_js(&debug)
 }
 
+thread_local! {
+    /// Living monster bodies: footprint, centre x/z and fixed facing.
+    static MONSTER_BODIES: RefCell<HashMap<String, (crate::monster_body::BodyFootprint, f32, f32, f32)>> =
+        RefCell::new(HashMap::new());
+}
+
+/// Seal a monster's body cells, as the server does at spawn; false when the
+/// footprint is malformed or covers nothing.
+#[wasm_bindgen]
+pub fn passability_set_monster_body(
+    monster_id: &str,
+    footprint: &str,
+    x: f32,
+    y: f32,
+    z: f32,
+    rotation: f32,
+) -> bool {
+    let Some(body) = crate::monster_body::BodyFootprint::parse(footprint) else {
+        return false;
+    };
+    let Some(entry) = body.passability(x, y, z, rotation) else {
+        return false;
+    };
+    with_cache_mut(|c| {
+        c.insert(crate::monster_body::cache_key(monster_id), entry);
+    });
+    MONSTER_BODIES.with(|b| {
+        b.borrow_mut()
+            .insert(monster_id.to_string(), (body, x, z, rotation))
+    });
+    true
+}
+
+/// Lift a monster's body cells; false when it had none.
+#[wasm_bindgen]
+pub fn passability_remove_monster_body(monster_id: &str) -> bool {
+    let had = MONSTER_BODIES.with(|b| b.borrow_mut().remove(monster_id).is_some());
+    if had {
+        with_cache_mut(|c| {
+            c.remove(&crate::monster_body::cache_key(monster_id));
+        });
+    }
+    had
+}
+
+/// `[x, z]` just outside the body nearest `(px, pz)`, where the server
+/// measures reach; `None` for a monster without a body.
+#[wasm_bindgen]
+pub fn monster_body_engage_point(monster_id: &str, px: f32, pz: f32) -> Option<Vec<f32>> {
+    MONSTER_BODIES.with(|b| {
+        b.borrow().get(monster_id).map(|(body, x, z, rotation)| {
+            let (ex, ez) = body.engage_point(*x, *z, *rotation, px, pz);
+            vec![ex, ez]
+        })
+    })
+}
+
 #[wasm_bindgen]
 pub fn passability_remove_furniture(key: &str) {
     with_cache_mut(|c| {

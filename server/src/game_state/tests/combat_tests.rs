@@ -1153,6 +1153,40 @@ async fn a_melee_weapon_keeps_its_hardcoded_reach() {
     expect_attack_rejected(&mut rx, "far", AttackRejectReason::OutOfRange);
 }
 
+/// A body is struck at its surface: the dagger reaches a 9m boss whose
+/// centre sits far beyond 2m, and never through it from the far side.
+#[tokio::test]
+async fn melee_reach_is_measured_at_a_body_surface() {
+    for (center_x, rotation, reached) in [
+        (6.5, -std::f32::consts::FRAC_PI_2, true),
+        (8.0, -std::f32::consts::FRAC_PI_2, false),
+    ] {
+        let game_state = make_test_game_state(&format!("body_reach_{center_x}"));
+        let mut rx = setup_archer(&game_state, "dagger", attrs_with(30, 10)).await;
+        let boss = game_state
+            .spawn_monster(
+                "terraclash".into(),
+                at(center_x),
+                rotation,
+                0,
+                MonsterLifecycle::Ambient,
+                None,
+                false,
+            )
+            .await
+            .unwrap();
+        while rx.try_recv().is_ok() {}
+        game_state
+            .broadcast_player_attack(&pid("archer"), boss.id.clone())
+            .await;
+        if reached {
+            expect_attacked(&mut rx, &boss.id);
+        } else {
+            expect_attack_rejected(&mut rx, &boss.id, AttackRejectReason::OutOfRange);
+        }
+    }
+}
+
 #[tokio::test]
 async fn a_bow_shoots_over_a_fence_at_close_and_long_range() {
     for distance in [1.5, 8.5] {

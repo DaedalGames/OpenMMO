@@ -695,9 +695,13 @@
   }
 
   /** Take the monster as a target and walk at it, attacking on arrival. */
+  /** A solid body's centre is sealed, so walk to its surface instead. */
   function chaseAndAttack(monsterId: string, goal: Position) {
     combatController.beginCombat(monsterId, false)
-    handleClickToMove(goal, { preserveCombatTarget: true })
+    const aim = currentPlayer
+      ? monsterManager.engagePosition(monsterId, currentPlayer.position, goal)
+      : goal
+    handleClickToMove(aim, { preserveCombatTarget: true })
   }
 
   let lastQueuedDaggerSkill = false
@@ -733,7 +737,11 @@
       currentPlayer &&
       attackLineBlocked(
         currentPlayer.position,
-        monsterInfo.position,
+        monsterManager.engagePosition(
+          monsterId,
+          currentPlayer.position,
+          monsterInfo.position
+        ),
         currentPassabilityFloor()
       )
     ) {
@@ -873,7 +881,9 @@
     const targetId = combatController.targetMonsterId
     if (!targetId || !officialPosition) return
     const monster = monsterManager.monsters.get(targetId)
-    const target = monsterManager.findMeshPosition(targetId, monsterMeshes)
+    const mesh = monsterManager.findMeshPosition(targetId, monsterMeshes)
+    const target =
+      mesh && monsterManager.engagePosition(targetId, officialPosition, mesh)
     const blocked =
       !!target &&
       attackLineBlocked(officialPosition, target, currentPassabilityFloor())
@@ -1667,12 +1677,17 @@
     const monster = monsterManager.monsters.get(hover.monsterId)
     if (!monster || !currentPlayer) return null
     const p = currentPlayer.position
-    const dx = shortestWrappedDeltaX(p.x, monster.position.x)
-    const dz = monster.position.z - p.z
+    const aim = monsterManager.engagePosition(
+      hover.monsterId,
+      p,
+      monster.position
+    )
+    const dx = shortestWrappedDeltaX(p.x, aim.x)
+    const dz = aim.z - p.z
     return {
       type: 'attack_monster',
       monsterId: hover.monsterId,
-      hitPoint: { x: p.x + dx, y: monster.position.y, z: monster.position.z },
+      hitPoint: { x: p.x + dx, y: aim.y, z: aim.z },
       distance: Math.sqrt(dx * dx + dz * dz),
     }
   }

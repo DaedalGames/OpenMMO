@@ -26,6 +26,11 @@ import {
   playSwordMissSound,
 } from './sfxManager'
 import { clearXpArrival, releaseXpArrival } from './xpArrival'
+import {
+  monster_body_engage_point,
+  passability_remove_monster_body,
+  passability_set_monster_body,
+} from '../wasm/onlinerpg_shared'
 import { MONSTER_SKILLS } from '../effects/monster-skills'
 import {
   shortestWrappedDeltaX,
@@ -57,6 +62,28 @@ const DEAD_PENDING_TIMEOUT_MS = 2000
 class MonsterManager {
   monsters = new SvelteMap<string, MonsterData>()
   heightManager: TerrainHeightManager | null = null
+  /** Living solid bodies, sealed in the wasm passability cache like the
+   *  server's. Their facing never changes. */
+  private bodies = new Set<string>()
+
+  private removeBody(id: string) {
+    if (this.bodies.delete(id)) passability_remove_monster_body(id)
+  }
+
+  /** Where reach to `monsterId` is measured from `from`: the point just
+   *  outside a solid body, else `meshPosition`. */
+  engagePosition(
+    monsterId: string,
+    from: Position,
+    meshPosition: Position
+  ): Position {
+    const point =
+      this.bodies.has(monsterId) &&
+      monster_body_engage_point(monsterId, from.x, from.z)
+    return point
+      ? { x: point[0], y: meshPosition.y, z: point[1] }
+      : meshPosition
+  }
 
   /** Keep the current height until terrain is available. */
   private monsterGroundYOrNull(
@@ -131,7 +158,7 @@ class MonsterManager {
       id: monster.id,
       type,
       position: monster.position,
-      rotation: 0,
+      rotation: def?.footprint ? monster.rotation : 0,
       state: spawnDead ? 'dead' : 'idle',
       moveSpeed: def?.walkSpeed ?? 1,
       attackCounter: 0,
@@ -141,10 +168,26 @@ class MonsterManager {
       floorLevel: monster.floor_level ?? 0,
     }
     this.monsters.set(monster.id, record)
+    const { x, y, z } = monster.position
+    if (
+      def?.footprint &&
+      !spawnDead &&
+      record.floorLevel === 0 &&
+      passability_set_monster_body(
+        monster.id,
+        def.footprint,
+        x,
+        y,
+        z,
+        monster.rotation
+      )
+    )
+      this.bodies.add(monster.id)
   }
 
   remove(id: string) {
     this.monsters.delete(id)
+    this.removeBody(id)
   }
 
   // Whether a killing blow should play the hit reaction before the death clip.
@@ -173,6 +216,7 @@ class MonsterManager {
   }
 
   handleMonsterDead(id: string, droppedWeaponItemDefId?: string | null) {
+    this.removeBody(id)
     const monster = this.monsters.get(id)
     if (monster) {
       monster.droppedWeaponItemDefId = droppedWeaponItemDefId ?? undefined
@@ -408,6 +452,7 @@ class MonsterManager {
   }
 
   reset() {
+    for (const id of [...this.bodies]) this.removeBody(id)
     this.monsters.clear()
     clearXpArrival()
   }
@@ -546,7 +591,7 @@ class MonsterManager {
       if (falling) releaseXpArrival(monster.id)
     }
 
-    if (update.rotation !== undefined) {
+    if (update.rotation !== undefined && !this.bodies.has(monster.id)) {
       monster.rotation = update.rotation
     }
 
@@ -684,7 +729,11 @@ class MonsterManager {
     const dx = shortestWrappedDeltaX(monster.position.x, target.x)
     const dz = target.z - monster.position.z
     const distance = Math.sqrt(dx * dx + dz * dz)
-    if (face && distance > MONSTER_POSITION_EPSILON) {
+    if (
+      face &&
+      distance > MONSTER_POSITION_EPSILON &&
+      !this.bodies.has(monster.id)
+    ) {
       monster.rotation = Math.atan2(dx, dz)
     }
 

@@ -24,6 +24,7 @@ use crate::types::{
     AttackRejectReason, CharacterClass, MonsterState, PlayerId, Position, ServerMessage,
 };
 use onlinerpg_shared::inventory::{EquipSlot, GroundItem, ItemInstance, PlayerInventory};
+use onlinerpg_shared::monster_body::reach_point;
 use onlinerpg_shared::xp;
 use rand::Rng;
 use std::f32::consts::TAU;
@@ -104,6 +105,8 @@ struct MonsterAttackSnapshot {
     attack_range: f32,
     hit_debuff: Option<String>,
     monster_type: String,
+    rotation: f32,
+    body: Option<onlinerpg_shared::monster_body::BodyFootprint>,
 }
 
 #[derive(Clone, Copy)]
@@ -226,6 +229,7 @@ struct PlayerAttackTarget {
     state: MonsterState,
     monster_type: String,
     position: Position,
+    rotation: f32,
     floor_level: i8,
     level_override: Option<u8>,
 }
@@ -467,6 +471,7 @@ impl super::GameState {
                 state: monster.state,
                 monster_type: monster.monster_type.clone(),
                 position: monster.position,
+                rotation: monster.rotation,
                 floor_level: monster.floor_level,
                 level_override: monster.level_override,
             })
@@ -520,6 +525,11 @@ impl super::GameState {
         let weapon = self.equipped_weapon(player_id).await;
         let attack_range = PLAYER_MELEE_ATTACK_RANGE_METERS.max(weapon.range.unwrap_or(0.0))
             + PLAYER_RANGE_TOLERANCE_METERS;
+        let body = self
+            .monster_defs
+            .get(&monster.monster_type)
+            .and_then(|d| d.body);
+        let surface = |at: Position| reach_point(body, at, monster.rotation, &player_position);
         let reach = |target: Position| {
             reachable_dist_sq(player_position, player_floor, target, monster.floor_level)
         };
@@ -529,7 +539,7 @@ impl super::GameState {
                 monster.monster_type, player_position.x, player_position.z, monster.floor_level, target.x, target.z
             )
         };
-        let Some(mut distance_sq) = reach(monster.position) else {
+        let Some(mut distance_sq) = reach(surface(monster.position)) else {
             return Err((
                 AttackRejectReason::InvalidTarget,
                 unreachable_detail("registry", monster.position),
@@ -537,9 +547,10 @@ impl super::GameState {
         };
         // The registry trails a running monster by up to a sync interval, so
         // a swing it refuses is re-judged where the brain has the monster.
-        let mut gate_position = monster.position;
+        let mut gate_position = surface(monster.position);
         if distance_sq > attack_range.powi(2) {
             if let Some(now) = self.brain_position_now(monster_id).await {
+                let now = surface(now);
                 let Some(d) = reach(now) else {
                     return Err((
                         AttackRejectReason::InvalidTarget,
@@ -1031,6 +1042,7 @@ impl super::GameState {
                     .brain_position_now(&monster_id)
                     .await
                     .unwrap_or(monster_position);
+                self.release_body(&monster_id, &monster_type);
                 self.brain_death(&monster_id).await;
                 let def = self.monster_defs.get(&monster_type);
                 // Depth-scaled dungeon monsters count as their effective level.
@@ -1329,6 +1341,8 @@ impl super::GameState {
                 .unwrap_or(onlinerpg_shared::monster_ai::DEFAULT_ATTACK_RANGE),
             hit_debuff: def.and_then(|d| d.hit_debuff.clone()),
             monster_type: monster.monster_type.clone(),
+            rotation: monster.rotation,
+            body: def.and_then(|d| d.body),
         }
     }
 
@@ -1414,6 +1428,8 @@ impl super::GameState {
             floor_level: monster_floor_level,
             ref hit_debuff,
             ref monster_type,
+            rotation: monster_rotation,
+            body,
             ..
         } = *snapshot;
         let now = Self::now_ms();
@@ -1431,6 +1447,8 @@ impl super::GameState {
             }
         }
 
+        let monster_position =
+            reach_point(body, monster_position, monster_rotation, &target_position);
         audit.reason = "unreachable_floor";
         let Some(distance_sq) = reachable_dist_sq(
             monster_position,

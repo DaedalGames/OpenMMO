@@ -28,6 +28,7 @@ pub mod mana;
 pub mod meal;
 pub mod messages;
 pub mod monster_ai;
+pub mod monster_body;
 pub mod moon;
 pub mod mount;
 pub mod mount_movement;

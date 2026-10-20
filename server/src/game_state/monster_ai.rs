@@ -278,6 +278,7 @@ impl super::GameState {
         );
         brain.path_floor = passability_floor_for_level(monster.floor_level);
         brain.rotation = monster.rotation;
+        brain.body = def.and_then(|d| d.body);
         brain
     }
 

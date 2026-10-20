@@ -45,6 +45,9 @@ export interface MonsterDefinition {
    * overstates the body (stone_golem).
    */
   hoverRadius?: number
+  /** Solid body as `halfWidth|front|back` meters; fixes the facing and moves
+   *  reach to the body surface (shared `monster_body`). */
+  footprint?: string
   material?: string
   /**
    * When true (default), a killing blow plays the hit reaction before the death

@@ -211,3 +211,40 @@ async fn server_movement_despawns_a_monster_that_leaves_every_player() {
     .await;
     assert!(game.monsters.read().await.get(&monster.id).is_none());
 }
+
+#[tokio::test]
+async fn a_body_seals_its_cells_until_the_monster_leaves() {
+    let game = make_flat_world_game_state("monster_body_lifecycle");
+    let monster = game
+        .spawn_monster(
+            "terraclash".into(),
+            Position {
+                x: 20.0,
+                y: 0.0,
+                z: 20.0,
+            },
+            -std::f32::consts::FRAC_PI_2,
+            0,
+            MonsterLifecycle::Ambient,
+            None,
+            false,
+        )
+        .await
+        .unwrap();
+    let key = onlinerpg_shared::monster_body::cache_key(&monster.id);
+    let blocked = |game: &GameState| {
+        onlinerpg_shared::pathfinding::is_circle_blocked_on_floor(
+            &game.passability_read(),
+            20.0,
+            20.0,
+            0.3,
+            0,
+            Some(0.0),
+        )
+    };
+    assert!(game.passability_read().contains_key(&key));
+    assert!(blocked(&game));
+    game.despawn_monsters(vec![monster.id.clone()]).await;
+    assert!(!game.passability_read().contains_key(&key));
+    assert!(!blocked(&game));
+}

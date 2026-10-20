@@ -178,6 +178,13 @@ impl super::GameState {
         let id = monster.id.clone();
         monsters.insert(id.clone(), monster.clone());
         let total = monsters.len();
+        drop(monsters);
+        if let Some(body) = def.and_then(|d| d.body).filter(|_| floor_level == 0) {
+            if let Some(entry) = body.passability(position.x, position.y, position.z, rotation) {
+                self.passability_write()
+                    .insert(onlinerpg_shared::monster_body::cache_key(&id), entry);
+            }
+        }
         info!(
             "Spawned {} {} at ({:.1},{:.1}) (total: {})",
             monster_type, id, position.x, position.z, total
@@ -274,11 +281,12 @@ impl super::GameState {
                         monster_id: id.clone(),
                     });
                     debug!("Despawned unattended monster {}", monster.id);
-                    Some(id)
+                    Some((id, monster.monster_type))
                 })
                 .collect::<Vec<_>>()
         };
-        for id in removed {
+        for (id, monster_type) in removed {
+            self.release_body(&id, &monster_type);
             self.brain_death(&id).await;
         }
     }
@@ -308,16 +316,29 @@ impl super::GameState {
             expired
                 .into_iter()
                 .filter_map(|id| {
-                    monsters.remove(&id)?;
+                    let monster = monsters.remove(&id)?;
                     self.publish_subject_change(ServerMessage::MonsterRemoved {
                         monster_id: id.clone(),
                     });
-                    Some(id)
+                    Some((id, monster.monster_type))
                 })
                 .collect::<Vec<_>>()
         };
-        for id in removed {
+        for (id, monster_type) in removed {
+            self.release_body(&id, &monster_type);
             self.brain_death(&id).await;
+        }
+    }
+
+    /// Lift a body's sealed cells once its monster dies or leaves.
+    pub(super) fn release_body(&self, monster_id: &str, monster_type: &str) {
+        if self
+            .monster_defs
+            .get(monster_type)
+            .is_some_and(|d| d.body.is_some())
+        {
+            self.passability_write()
+                .remove(&onlinerpg_shared::monster_body::cache_key(monster_id));
         }
     }
 }

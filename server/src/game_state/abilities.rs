@@ -393,13 +393,22 @@ impl GameState {
         use crate::types::MonsterState;
 
         let monster_id = monster_id.ok_or(AbilityRejectReason::Unavailable)?;
-        let (mut target_position, target_floor) = self
+        let (mut target_position, target_floor, target_rotation, target_body) = self
             .monsters
             .read()
             .await
             .get(monster_id)
             .filter(|monster| monster.state != MonsterState::Dead && monster.health > 0)
-            .map(|monster| (monster.position, monster.floor_level))
+            .map(|monster| {
+                (
+                    monster.position,
+                    monster.floor_level,
+                    monster.rotation,
+                    self.monster_defs
+                        .get(&monster.monster_type)
+                        .and_then(|d| d.body),
+                )
+            })
             .ok_or(AbilityRejectReason::Unavailable)?;
         if let Some(position) = self.brain_position_now(monster_id).await {
             target_position = position;
@@ -424,6 +433,12 @@ impl GameState {
         let range = weapon
             .weapon_range()
             .ok_or(AbilityRejectReason::Equipment)?;
+        let target_position = onlinerpg_shared::monster_body::reach_point(
+            target_body,
+            target_position,
+            target_rotation,
+            &caster.position,
+        );
         let distance = reachable_dist_sq(
             caster.position,
             caster.floor_level,

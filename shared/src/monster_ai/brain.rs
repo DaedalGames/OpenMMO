@@ -79,6 +79,8 @@ pub struct MonsterBrain {
     pub(super) reslotting: bool,
     /// Detour goal; repaths keep avoiding standers until arrival.
     pub(super) detour_goal: Option<(f32, f32)>,
+    /// A solid body fixes the facing and moves every reach to its surface.
+    pub body: Option<crate::monster_body::BodyFootprint>,
 }
 
 impl MonsterBrain {
@@ -147,6 +149,7 @@ impl MonsterBrain {
             cell_yield: false,
             reslotting: false,
             detour_goal: None,
+            body: None,
         }
     }
 
@@ -285,6 +288,18 @@ impl MonsterBrain {
                 position: self.position,
                 rotation: self.rotation,
             });
+        }
+    }
+
+    /// Where this monster's reach to `target` is measured from.
+    pub fn strike_origin(&self, target: &Position) -> Position {
+        crate::monster_body::reach_point(self.body, self.position, self.rotation, target)
+    }
+
+    /// Turn to `bearing`; a solid body keeps the facing it spawned with.
+    pub(super) fn set_facing(&mut self, bearing: Option<f32>) {
+        if let (None, Some(bearing)) = (self.body, bearing) {
+            self.rotation = bearing;
         }
     }
 

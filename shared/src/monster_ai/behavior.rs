@@ -342,24 +342,23 @@ impl MonsterBrain {
         // A swing already under way finishes; see `swing_left_ms`. A wall
         // between the two refuses the blow the way distance does, so the chase
         // is the only way left to reach the target.
-        if self.swing_left_ms <= 0.0
-            && (self.position.dist_xz_sq(&target.position) > limit * limit
+        if self.swing_left_ms <= 0.0 {
+            let origin = self.strike_origin(&target.position);
+            if origin.dist_xz_sq(&target.position) > limit * limit
                 || path_provider.attack_line_blocked(
-                    self.position.x,
-                    self.position.z,
+                    origin.x,
+                    origin.z,
                     target.position.x,
                     target.position.z,
                     self.path_floor,
-                ))
-        {
-            return BehaviorStatus::Failure;
+                )
+            {
+                return BehaviorStatus::Failure;
+            }
         }
 
         let target_id = target.id;
-        self.rotation = self
-            .position
-            .bearing_xz_to(&target.position)
-            .unwrap_or(self.rotation);
+        self.set_facing(self.position.bearing_xz_to(&target.position));
         if self.state != AiState::Attack {
             self.state = AiState::Attack;
             self.state_timer_ms = 0.0;

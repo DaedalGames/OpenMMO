@@ -4,6 +4,7 @@ use std::sync::Arc;
 use tracing::info;
 
 use crate::game::combat;
+use onlinerpg_shared::monster_body::BodyFootprint;
 
 fn default_weapon_drop_chance() -> f32 {
     1.0
@@ -98,6 +99,21 @@ pub struct MonsterDefinition {
     /// `drops` parsed once at load; handlers never re-split the string.
     #[serde(skip)]
     drop_entries: Vec<(String, f32)>,
+    /// Solid body, csv `footprint` "halfWidth|front|back" meters; see `monster_body`.
+    #[serde(rename = "footprint", default, deserialize_with = "parse_footprint")]
+    pub body: Option<BodyFootprint>,
+}
+
+fn parse_footprint<'de, D: serde::Deserializer<'de>>(
+    d: D,
+) -> Result<Option<BodyFootprint>, D::Error> {
+    Option::<String>::deserialize(d)?
+        .map(|text| {
+            BodyFootprint::parse(&text).ok_or_else(|| {
+                serde::de::Error::custom(format!("footprint '{text}' must be halfWidth|front|back"))
+            })
+        })
+        .transpose()
 }
 
 impl MonsterDefinition {

@@ -138,11 +138,10 @@ impl MonsterBrain {
     /// periodic delta. `PathWaypoint` isn't a `Position`, hence not
     /// `Position::bearing_xz_to`.
     fn face_toward(&mut self, x: f32, z: f32) {
-        self.rotation = bearing_xz(
+        self.set_facing(bearing_xz(
             shortest_world_delta_x(self.position.x, x),
             z - self.position.z,
-        )
-        .unwrap_or(self.rotation);
+        ));
     }
 
     pub(super) fn face_first_waypoint(&mut self) {
@@ -390,7 +389,7 @@ impl MonsterBrain {
             let (x, z) = (next.x, next.z);
             self.face_toward(x, z);
         } else {
-            self.rotation = bearing_xz(dx, dz).unwrap_or(self.rotation);
+            self.set_facing(bearing_xz(dx, dz));
         }
 
         (false, false)
