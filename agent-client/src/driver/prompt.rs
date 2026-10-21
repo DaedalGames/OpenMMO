@@ -438,6 +438,20 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
                 "[MonsterSkill] {monster_id} winds up {skill:?}: it strikes the {range:.0}m fan in front of it in {strike_s:.1}s. Step behind it or out of range."
             ))
         }
+        ServerMessage::MonsterGroundStrike {
+            monster_id,
+            target_player_id,
+            position,
+            radius,
+            impact_ms,
+            ..
+        } => Some(format!(
+            "[MonsterGroundStrike] {monster_id} slams at {}: the ground at ({:.1}, {:.1}) erupts in {:.1}s, hitting anyone within {radius:.1}m. Step out of it.",
+            player_name(state, target_player_id),
+            position.x,
+            position.z,
+            *impact_ms as f32 / 1000.0
+        )),
         ServerMessage::MonsterAttackedPlayer {
             monster_id,
             player_id,

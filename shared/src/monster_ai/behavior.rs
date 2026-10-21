@@ -342,17 +342,34 @@ impl MonsterBrain {
         // A swing already under way finishes; see `swing_left_ms`. A wall
         // between the two refuses the blow the way distance does, so the chase
         // is the only way left to reach the target.
+        let mut ranged = false;
         if self.swing_left_ms <= 0.0 {
             let origin = self.strike_origin(&target.position);
-            if origin.dist_xz_sq(&target.position) > limit * limit
-                || path_provider.attack_line_blocked(
+            let (to, dist_sq) = (target.position, origin.dist_xz_sq(&target.position));
+            let melee = dist_sq <= limit * limit
+                && !path_provider.attack_line_blocked(
                     origin.x,
                     origin.z,
-                    target.position.x,
-                    target.position.z,
+                    to.x,
+                    to.z,
                     self.path_floor,
-                )
-            {
+                );
+            let reach = if self.state == AiState::Attack {
+                self.ranged_range + ATTACK_RELEASE_MARGIN_METERS
+            } else {
+                self.ranged_range
+            };
+            ranged = !melee
+                && self.ranged_range > 0.0
+                && dist_sq <= reach * reach
+                && !path_provider.ranged_line_blocked(
+                    origin.x,
+                    origin.z,
+                    to.x,
+                    to.z,
+                    self.path_floor,
+                );
+            if !melee && !ranged {
                 return BehaviorStatus::Failure;
             }
         }
@@ -376,6 +393,7 @@ impl MonsterBrain {
             commands.push(self.make_move_cmd());
             commands.push(AiCommand::Attack {
                 target_player_id: target_id,
+                ranged,
             });
         }
 

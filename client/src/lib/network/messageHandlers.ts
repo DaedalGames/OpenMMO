@@ -17,6 +17,7 @@ import {
   deferRemoteTeleportUpdate,
   cancelLocalTeleportRequest,
 } from '../stores/teleportEffectStore'
+import { playGroundEruption } from '../stores/groundEruptionStore'
 import {
   inspectionResult,
   type InspectionResult,
@@ -1485,6 +1486,21 @@ export function handleServerMessage(
       )
       break
 
+    case 'MonsterGroundStrike':
+      monsterManager.handleMonsterAttackStarted(
+        data.monster_id,
+        250,
+        data.position
+      )
+      playGroundEruption({
+        position: data.position,
+        floorLevel: data.floor_level,
+        radius: data.radius,
+        startedAt: Date.now(),
+        impactMs: data.impact_ms,
+      })
+      break
+
     case 'MonsterAttackedPlayer': {
       const gameState = get(gameStore)
       const isCurrentPlayer = gameState.currentPlayer?.id === data.player_id
@@ -1495,11 +1511,18 @@ export function handleServerMessage(
         ? gameState.currentPlayer?.position
         : remotePlayerManager.players.get(data.player_id)?.position
       const monster = monsterManager.monsters.get(data.monster_id)
-      monsterManager.handleMonsterAttackStarted(data.monster_id, 250, targetPos)
+      // A ground strike's swing and eruption already played; this is its impact.
+      if (!data.ranged) {
+        monsterManager.handleMonsterAttackStarted(
+          data.monster_id,
+          250,
+          targetPos
+        )
+      }
 
-      const impactDelayMs = monsterManager.getMonsterAttackDamageTextDelayMs(
-        data.monster_id
-      )
+      const impactDelayMs = data.ranged
+        ? 0
+        : monsterManager.getMonsterAttackDamageTextDelayMs(data.monster_id)
 
       if (isCurrentPlayer) {
         emitCurrentPlayerDamageInfo(
@@ -1511,7 +1534,7 @@ export function handleServerMessage(
         )
       }
 
-      if (!data.hit) {
+      if (!data.hit && !data.ranged) {
         // Whoosh with the monster's weapon material; unarmed types fall
         // through to the default miss sound.
         const monsterWeapon = monster && getMonsterDef(monster.type)?.weapon

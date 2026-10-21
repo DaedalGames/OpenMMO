@@ -24,7 +24,9 @@ use crate::types::{
     AttackRejectReason, CharacterClass, MonsterLifecycle, MonsterState, PlayerId, Position,
     ServerMessage,
 };
+use onlinerpg_shared::interest::{Bounds, Space, SubjectArea};
 use onlinerpg_shared::inventory::{EquipSlot, GroundItem, ItemInstance, PlayerInventory};
+use onlinerpg_shared::monster_ai::GROUND_STRIKE_RADIUS;
 use onlinerpg_shared::monster_body::reach_point;
 use onlinerpg_shared::xp;
 use rand::Rng;
@@ -47,6 +49,8 @@ const PLAYER_RANGE_TOLERANCE_METERS: f32 = 1.0;
 pub(super) const PLAYER_ATTACK_PROVOKE_RANGE_METERS: f32 = 10.0;
 // Allow for positions changing between the brain tick and attack resolution.
 const MONSTER_ATTACK_RANGE_TOLERANCE_METERS: f32 = 4.0;
+/// A body straddling the eruption's edge is still caught.
+const GROUND_STRIKE_REACH_M: f32 = GROUND_STRIKE_RADIUS + 0.3;
 // Authored timing data the clients also import (data-src/player_anim_timing.csv),
 // so server delays can never drift from the animations.
 static PLAYER_ANIM_TIMING: LazyLock<serde_json::Value> = LazyLock::new(|| {
@@ -104,6 +108,8 @@ struct MonsterAttackSnapshot {
     position: Position,
     floor_level: i8,
     attack_range: f32,
+    ranged_attack_range: f32,
+    attack_impact_delay: u32,
     hit_debuff: Option<String>,
     monster_type: String,
     rotation: f32,
@@ -113,6 +119,10 @@ struct MonsterAttackSnapshot {
 #[derive(Clone, Copy)]
 enum MonsterReach<'a> {
     Melee(f32),
+    /// A ranged swing's eruption: whoever stands in it, walls aside.
+    Ground {
+        origin: Position,
+    },
     Fan {
         skill: &'a onlinerpg_shared::monster_ai::MonsterSkill,
         origin: Position,
@@ -1344,6 +1354,8 @@ impl super::GameState {
             attack_range: def
                 .map(|d| d.attack_range)
                 .unwrap_or(onlinerpg_shared::monster_ai::DEFAULT_ATTACK_RANGE),
+            ranged_attack_range: def.map_or(0.0, |d| d.ranged_attack_range),
+            attack_impact_delay: def.map_or(0, |d| d.attack_impact_delay),
             hit_debuff: def.and_then(|d| d.hit_debuff.clone()),
             monster_type: monster.monster_type.clone(),
             rotation: monster.rotation,
@@ -1351,39 +1363,144 @@ impl super::GameState {
         }
     }
 
-    pub(super) async fn monster_attack(&self, monster_id: &str, target_player_id: &PlayerId) {
+    /// The monster's snapshot if its swing is off cooldown, which it then starts.
+    async fn ready_swing(
+        &self,
+        monster_id: &str,
+        target_player_id: &PlayerId,
+    ) -> Option<(MonsterAttackSnapshot, super::combat_audit::Attack<'_>)> {
         let now = Self::now_ms();
-        let mut monster_data = None;
         let mut audit = self.combat_audit.attack(*target_player_id);
-
-        {
-            let mut monsters = self.monsters.write().await;
-            if let Some(monster) = monsters.get_mut(monster_id) {
-                audit.monster(monster_id, &monster.monster_type);
-                audit.reason = "dead";
-                if monster.state != MonsterState::Dead {
-                    audit.reason = "cooldown";
-                    let attack_cooldown_ms = self
-                        .monster_defs
-                        .get(&monster.monster_type)
-                        .map(|d| u64::from(d.attack_cooldown))
-                        .unwrap_or(1500);
-
-                    if now.saturating_sub(monster.last_attack_at) >= attack_cooldown_ms {
-                        monster.last_attack_at = now;
-                        monster_data = Some(self.monster_attack_snapshot(monster));
-                    }
-                }
-            }
+        let mut monsters = self.monsters.write().await;
+        let monster = monsters.get_mut(monster_id)?;
+        audit.monster(monster_id, &monster.monster_type);
+        audit.reason = "dead";
+        if monster.state == MonsterState::Dead {
+            return None;
         }
+        audit.reason = "cooldown";
+        let attack_cooldown_ms = self
+            .monster_defs
+            .get(&monster.monster_type)
+            .map(|d| u64::from(d.attack_cooldown))
+            .unwrap_or(1500);
+        if now.saturating_sub(monster.last_attack_at) < attack_cooldown_ms {
+            return None;
+        }
+        monster.last_attack_at = now;
+        Some((self.monster_attack_snapshot(monster), audit))
+    }
 
-        let Some(snapshot) = monster_data else {
+    pub(super) async fn monster_attack(&self, monster_id: &str, target_player_id: &PlayerId) {
+        let Some((snapshot, audit)) = self.ready_swing(monster_id, target_player_id).await else {
             return;
         };
         let reach =
             MonsterReach::Melee(snapshot.attack_range + MONSTER_ATTACK_RANGE_TOLERANCE_METERS);
         self.monster_hit_player(monster_id, &snapshot, target_player_id, reach, audit)
             .await;
+    }
+
+    /// Mark the ground under a distant target; it erupts after the swing's
+    /// impact delay, so stepping off the mark dodges it.
+    pub(super) async fn monster_ground_strike(
+        &self,
+        monster_id: &str,
+        target_player_id: &PlayerId,
+    ) {
+        let Some((snapshot, mut audit)) = self.ready_swing(monster_id, target_player_id).await
+        else {
+            return;
+        };
+        let now = Self::now_ms();
+        audit.reason = "target_not_damageable";
+        let Some((position, floor_level)) = self
+            .players
+            .read()
+            .await
+            .get(target_player_id)
+            .filter(|p| p.is_damageable(now))
+            .map(|p| (p.position, p.floor_level))
+        else {
+            return;
+        };
+        let origin = reach_point(
+            snapshot.body,
+            snapshot.position,
+            snapshot.rotation,
+            &position,
+        );
+        audit.reason = "out_of_range";
+        let max_range = snapshot.ranged_attack_range + MONSTER_ATTACK_RANGE_TOLERANCE_METERS;
+        if !reachable_dist_sq(origin, snapshot.floor_level, position, floor_level)
+            .is_some_and(|d| d <= max_range.powi(2))
+        {
+            return;
+        }
+        audit.reason = "wall";
+        if wall_between(
+            &self.passability_read(),
+            origin,
+            position,
+            snapshot.floor_level,
+            true,
+        ) {
+            return;
+        }
+        audit.deferred();
+
+        let impact_ms = snapshot.attack_impact_delay;
+        self.interest_lock().publish_effect(
+            SubjectArea {
+                bounds: Bounds::Segment(origin, position),
+                space: Space::at(&position, floor_level),
+            },
+            &ServerMessage::MonsterGroundStrike {
+                monster_id: monster_id.to_string(),
+                target_player_id: *target_player_id,
+                position,
+                floor_level,
+                radius: GROUND_STRIKE_RADIUS,
+                impact_ms,
+            },
+            None,
+        );
+        let game_state = self.clone();
+        let monster_id = monster_id.to_string();
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(u64::from(impact_ms))).await;
+            game_state
+                .erupt_ground(&monster_id, &snapshot, position, floor_level)
+                .await;
+        });
+    }
+
+    async fn erupt_ground(
+        &self,
+        monster_id: &str,
+        snapshot: &MonsterAttackSnapshot,
+        origin: Position,
+        floor_level: i8,
+    ) {
+        if !self
+            .monsters
+            .read()
+            .await
+            .get(monster_id)
+            .is_some_and(|m| m.state != MonsterState::Dead)
+        {
+            return;
+        }
+        let reach = MonsterReach::Ground { origin };
+        for (victim, _) in self
+            .players_within_position(&origin, floor_level, GROUND_STRIKE_REACH_M, None)
+            .await
+        {
+            let mut audit = self.combat_audit.attack(victim);
+            audit.monster(monster_id, &snapshot.monster_type);
+            self.monster_hit_player(monster_id, snapshot, &victim, reach, audit)
+                .await;
+        }
     }
 
     /// Land a cast's strike on everyone standing in its fan.
@@ -1463,8 +1580,12 @@ impl super::GameState {
         ) else {
             return;
         };
+        let ranged = matches!(reach, MonsterReach::Ground { .. });
         let in_reach = match reach {
             MonsterReach::Melee(max_range) => distance_sq <= max_range.powi(2),
+            MonsterReach::Ground { origin } => {
+                origin.dist_xz_sq(&target_position) <= GROUND_STRIKE_REACH_M.powi(2)
+            }
             MonsterReach::Fan {
                 skill,
                 origin,
@@ -1481,13 +1602,15 @@ impl super::GameState {
             );
             return;
         }
-        if wall_between(
-            &self.passability_read(),
-            monster_position,
-            target_position,
-            monster_floor_level,
-            false,
-        ) {
+        if !ranged
+            && wall_between(
+                &self.passability_read(),
+                monster_position,
+                target_position,
+                monster_floor_level,
+                false,
+            )
+        {
             audit.reason = "wall";
             debug!(
                 "Rejected monster attack through a wall: monster {} -> player {}",
@@ -1500,7 +1623,7 @@ impl super::GameState {
             combat::place_attack_bonus(monster_floor_level, self.town_distance(&monster_position));
 
         let (damage_multiplier, ignores_guard) = match reach {
-            MonsterReach::Melee(_) => (1, false),
+            MonsterReach::Melee(_) | MonsterReach::Ground { .. } => (1, false),
             MonsterReach::Fan { skill, .. } => (skill.damage_multiplier, skill.ignores_guard),
         };
         let mut result = combat::roll_attack_with_accuracy(
@@ -1563,6 +1686,7 @@ impl super::GameState {
             roll: result.roll,
             damage: result.damage,
             current_health,
+            ranged,
         };
         if let Some((target_position, target_floor)) = target_loc {
             if let Some(player) = self.players.read().await.get(target_player_id) {

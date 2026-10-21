@@ -23,6 +23,18 @@ pub trait PathProvider {
         floor: u8,
     ) -> bool;
 
+    /// Like [`Self::attack_line_blocked`], letting through what arrows clear.
+    fn ranged_line_blocked(
+        &self,
+        from_x: f32,
+        from_z: f32,
+        to_x: f32,
+        to_z: f32,
+        floor: u8,
+    ) -> bool {
+        self.attack_line_blocked(from_x, from_z, to_x, to_z, floor)
+    }
+
     /// Reject sealed standing cells before searching for a route.
     fn cell_passable(&self, _x: f32, _z: f32, _floor: u8) -> bool {
         true
@@ -90,6 +102,17 @@ impl<'a> PathProvider for CachePathProvider<'a> {
         floor: u8,
     ) -> bool {
         pathfinding::attack_line_blocked(self.cache, from_x, from_z, to_x, to_z, floor)
+    }
+
+    fn ranged_line_blocked(
+        &self,
+        from_x: f32,
+        from_z: f32,
+        to_x: f32,
+        to_z: f32,
+        floor: u8,
+    ) -> bool {
+        pathfinding::ranged_attack_line_blocked(self.cache, from_x, from_z, to_x, to_z, floor)
     }
 
     fn cell_passable(&self, x: f32, z: f32, floor: u8) -> bool {

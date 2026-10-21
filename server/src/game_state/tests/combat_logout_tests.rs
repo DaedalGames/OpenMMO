@@ -139,6 +139,30 @@ async fn a_resumed_body_keeps_its_id_and_no_longer_times_out() {
 }
 
 #[tokio::test]
+async fn a_resumed_body_takes_move_requests_numbered_afresh() {
+    let game = make_test_game_state("linger_resume_moves");
+    let o = online(&game, "linger_resume_moves", true).await;
+    game.request_move_goal(o.id, 50, 9.0, 0.0, false).await;
+    disconnect(&game, &o).await;
+
+    let (tx, _rx) = tokio::sync::mpsc::unbounded_channel();
+    let session = game.register_account_session(&o.account, tx, &o.auth).await;
+    game.resume_lingering_body(o.id, &o.account, session)
+        .await
+        .unwrap();
+    let mut rx = game.register_connection_channel(&o.id).await;
+    game.request_move_goal(o.id, 1, 9.0, 0.0, false).await;
+    let mut accepted = false;
+    while let Ok(bytes) = rx.try_recv() {
+        accepted |= matches!(
+            onlinerpg_shared::deserialize_server_msg(&bytes).unwrap(),
+            ServerMessage::PlayerMoveProgress { request_id: 1, .. }
+        );
+    }
+    assert!(accepted, "the reloaded client's first move is not stale");
+}
+
+#[tokio::test]
 async fn replacement_login_mid_fight_leaves_a_body() {
     let game = make_test_game_state("linger_replaced");
     let o = online(&game, "linger_replaced", true).await;

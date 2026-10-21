@@ -9,6 +9,7 @@
   import GameSceneEnchantSuccessLayer from './GameSceneEnchantSuccessLayer.svelte'
   import GameSceneLevelUpLayer from './GameSceneLevelUpLayer.svelte'
   import GameSceneTeleportLayer from './GameSceneTeleportLayer.svelte'
+  import GameSceneGroundEruptionLayer from './GameSceneGroundEruptionLayer.svelte'
   import { teleportHiddenPlayers } from '../../stores/teleportEffectStore'
   import type { EnchantSuccess } from '../../stores/enchantSuccessStore'
   import type { EnchantEffectAnchor } from '../../utils/playerEffectAnchors'
@@ -306,6 +307,7 @@
   let enchantLayer: GameSceneEnchantSuccessLayer | undefined
   let levelUpLayer: GameSceneLevelUpLayer | undefined
   let teleportLayer: GameSceneTeleportLayer | undefined
+  let groundEruptionLayer: GameSceneGroundEruptionLayer | undefined
   // One shadow light: enchantment, fire, local light, then nearby light.
   let unifiedTorchLight = $state<THREE.PointLight | undefined>(undefined)
 
@@ -573,6 +575,7 @@
 
   export function updateUnifiedTorchFlicker(deltaTime: number) {
     teleportLayer?.update()
+    groundEruptionLayer?.update()
     enchantLayer?.update()
     levelUpLayer?.update()
     if (currentPlayer) updateRadianceStrength(currentPlayer, deltaTime)
@@ -625,6 +628,7 @@
 </script>
 
 <GameSceneTeleportLayer bind:this={teleportLayer} {currentPlayer} />
+<GameSceneGroundEruptionLayer bind:this={groundEruptionLayer} {currentPlayer} />
 <GameSceneEnchantSuccessLayer
   bind:this={enchantLayer}
   {currentPlayer}

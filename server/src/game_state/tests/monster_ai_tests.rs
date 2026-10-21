@@ -488,3 +488,111 @@ async fn barkans_rune_slash_strikes_the_fan_in_front_after_the_windup() {
         "/god takes the blow without losing health"
     );
 }
+
+async fn terraclash_facing(game_state: &GameState, player_z: f32) -> (PlayerId, DirectRx, String) {
+    let player_id = pid("archer");
+    game_state
+        .add_player(make_player("archer", 0.0, player_z))
+        .await;
+    {
+        let mut players = game_state.players.write().await;
+        let player = players.get_mut(&player_id).unwrap();
+        player.health = 100_000;
+        player.max_health = 100_000;
+    }
+    let rx = game_state.register_direct_channel(&player_id).await;
+    let boss = game_state
+        .spawn_monster(
+            "terraclash".into(),
+            Position {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
+            0.0,
+            0,
+            MonsterLifecycle::Ambient,
+            None,
+            false,
+        )
+        .await
+        .unwrap()
+        .id;
+    game_state.tick_monster_ai_by(200.0).await;
+    game_state
+        .broadcast_player_attack(&player_id, boss.clone())
+        .await;
+    (player_id, rx, boss)
+}
+
+fn boss_blows(messages: &[ServerMessage], boss: &str) -> (Option<Position>, Vec<bool>) {
+    let strike = messages.iter().find_map(|m| match m {
+        ServerMessage::MonsterGroundStrike {
+            monster_id,
+            position,
+            ..
+        } if monster_id == boss => Some(*position),
+        _ => None,
+    });
+    let hits = messages
+        .iter()
+        .filter_map(|m| match m {
+            ServerMessage::MonsterAttackedPlayer {
+                monster_id, ranged, ..
+            } if monster_id == boss => Some(*ranged),
+            _ => None,
+        })
+        .collect();
+    (strike, hits)
+}
+
+/// Terraclash cannot walk: a target past its 3m reach but within 7.5m gets
+/// the ground it stood on struck after the slam lands; anyone farther is safe.
+#[tokio::test(start_paused = true)]
+async fn terraclash_strikes_the_ground_under_a_distant_target() {
+    // Its reach starts 4m in front of the centre.
+    for (z, ground) in [(5.5, false), (9.0, true)] {
+        let game_state = make_flat_world_game_state(&format!("terraclash_swing_{z}"));
+        let (_, mut rx, boss) = terraclash_facing(&game_state, z).await;
+        let mut messages = Vec::new();
+        for _ in 0..6 {
+            game_state.tick_monster_ai_by(200.0).await;
+            messages.extend(drain(&mut rx));
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
+        messages.extend(drain(&mut rx));
+        let (strike, hits) = boss_blows(&messages, &boss);
+        assert_eq!(strike.is_some(), ground, "target at z={z}");
+        assert_eq!(hits.first(), Some(&ground), "target at z={z}");
+    }
+
+    let game_state = make_flat_world_game_state("terraclash_swing_far");
+    let (_, mut rx, boss) = terraclash_facing(&game_state, 12.5).await;
+    for _ in 0..10 {
+        game_state.tick_monster_ai_by(200.0).await;
+    }
+    tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
+    assert_eq!(boss_blows(&drain(&mut rx), &boss), (None, vec![]));
+}
+
+#[tokio::test(start_paused = true)]
+async fn stepping_off_the_mark_dodges_the_ground_strike() {
+    let game_state = make_flat_world_game_state("terraclash_dodge");
+    let (player_id, mut rx, boss) = terraclash_facing(&game_state, 9.0).await;
+    let mut strike = None;
+    for _ in 0..6 {
+        game_state.tick_monster_ai_by(200.0).await;
+        strike = strike.or(boss_blows(&drain(&mut rx), &boss).0);
+    }
+    let strike = strike.expect("ground strike launched");
+    game_state
+        .players
+        .write()
+        .await
+        .get_mut(&player_id)
+        .unwrap()
+        .position
+        .x = strike.x + 2.5;
+    tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
+    assert_eq!(boss_blows(&drain(&mut rx), &boss).1, Vec::<bool>::new());
+}

@@ -279,6 +279,7 @@ impl super::GameState {
         brain.path_floor = passability_floor_for_level(monster.floor_level);
         brain.rotation = monster.rotation;
         brain.body = def.and_then(|d| d.body);
+        brain.ranged_range = def.map_or(0.0, |d| d.ranged_attack_range);
         brain
     }
 
@@ -665,6 +666,13 @@ impl super::GameState {
                     chasing,
                 )
                 .await
+            }
+            AiCommand::Attack {
+                target_player_id,
+                ranged,
+            } if ranged => {
+                self.monster_ground_strike(monster_id, &target_player_id)
+                    .await
             }
             AiCommand::Attack {
                 target_player_id, ..

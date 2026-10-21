@@ -63,7 +63,7 @@ impl GameState {
         self.cancel_concentration_if_active(id).await;
         self.stop_player_attack(id).await;
         self.stop_bed_rest(id).await;
-        self.clear_player_movement(id, "disconnect").await;
+        self.forget_goal_movement(id).await;
         self.drop_player_trade(id, "They left.").await;
         self.clear_shops_for_player(id).await;
         self.unregister_connection_channel(id).await;

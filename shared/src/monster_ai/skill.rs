@@ -43,6 +43,9 @@ pub const RUNE_SLASH: MonsterSkill = MonsterSkill {
     ignores_guard: true,
 };
 
+/// Eruption radius of a ranged plain swing (`MonsterGroundStrike`).
+pub const GROUND_STRIKE_RADIUS: f32 = 1.5;
+
 pub fn skill_by_id(id: MonsterSkillId) -> &'static MonsterSkill {
     match id {
         MonsterSkillId::RuneSlash => &RUNE_SLASH,

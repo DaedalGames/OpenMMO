@@ -16,7 +16,7 @@ const DORMANT_WAKE_TAIL_MS = 5000
 /** The stand-in sinks over this long from the collapse. */
 export const DORMANT_SINK_MS = 700
 
-const GRAVITY = 18
+export const GRAVITY = 18
 const LOW_DUST = 36
 const BIG_DUST = 56
 const PEBBLES = 34
@@ -50,7 +50,7 @@ interface Dust {
   roll: number
 }
 
-interface Rock {
+export interface Rock {
   at: number
   x: number
   y: number
@@ -75,10 +75,57 @@ interface Ember {
   size: number
 }
 
-const ZERO_SCALE = new THREE.Matrix4().makeScale(0, 0, 0)
+export const ZERO_SCALE = new THREE.Matrix4().makeScale(0, 0, 0)
+
+/** Per-frame particles: every instance hidden, colour (1, 1, 1). */
+export function instancedMesh(
+  geometry: THREE.BufferGeometry,
+  material: THREE.Material,
+  count: number
+) {
+  const mesh = new THREE.InstancedMesh(geometry, material, count)
+  mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
+  mesh.instanceColor = new THREE.InstancedBufferAttribute(
+    new Float32Array(count * 3).fill(1),
+    3
+  ).setUsage(THREE.DynamicDrawUsage)
+  mesh.frustumCulled = false
+  for (let i = 0; i < count; i++) mesh.setMatrixAt(i, ZERO_SCALE)
+  return mesh
+}
+
+/** Seconds until a chunk launched from `r.y` first touches the ground. */
+export function landTime(r: Rock) {
+  return (r.vy + Math.sqrt(r.vy * r.vy + 2 * GRAVITY * r.y)) / GRAVITY
+}
+
+/** Soft billboard puffs; per-instance colour is (alpha, noise seed, shade). */
+export function dustMaterial() {
+  const material = new MeshStandardNodeMaterial()
+  material.transparent = true
+  material.depthWrite = false
+  material.roughness = 1
+  material.metalness = 0
+  // instanceColor multiplies the colour on its own; dividing it back out
+  // keeps only the shade.
+  const ic = instanceColor
+  const r = uv().sub(0.5).length().mul(2)
+  const lumps = mx_noise_float(vec3(uv().mul(3.2), ic.y.mul(37)))
+    .mul(0.5)
+    .add(0.5)
+  material.colorNode = color('#8a7a62').mul(ic.z).div(ic.max(0.001))
+  material.opacityNode = float(1)
+    .sub(r)
+    .clamp(0, 1)
+    .pow(1.6)
+    .mul(mix(0.35, 1.25, lumps))
+    .clamp(0, 1)
+    .mul(ic.x)
+  return material
+}
 
 /** A lumpy chunk; per-instance stretch makes the variety. */
-function rubble(): THREE.BufferGeometry {
+export function rubble(): THREE.BufferGeometry {
   const geometry = new THREE.IcosahedronGeometry(0.5, 0)
   const pos = geometry.getAttribute('position')
   const rand = createRng(7)
@@ -96,7 +143,7 @@ function rubble(): THREE.BufferGeometry {
 
 /** Where a ballistic chunk is `t` s after launch from height `y` above the
  *  ground, with one damped bounce, then at rest. */
-function ballistic(r: Rock, t: number, out: THREE.Vector3): number {
+export function ballistic(r: Rock, t: number, out: THREE.Vector3): number {
   const land = r.land
   if (t < land) {
     out.set(
@@ -126,7 +173,7 @@ export class DormantWakeEffect {
   readonly group = new THREE.Group()
   private planeGeometry = new THREE.PlaneGeometry(1, 1)
   private rockGeometry = rubble()
-  private dustMaterial = new MeshStandardNodeMaterial()
+  private dustMaterial = dustMaterial()
   private rockMaterial = new MeshStandardNodeMaterial()
   private emberMaterial = new MeshBasicNodeMaterial()
   private dustMesh: THREE.InstancedMesh
@@ -143,25 +190,7 @@ export class DormantWakeEffect {
   private tint = new THREE.Color()
 
   constructor() {
-    this.dustMaterial.transparent = true
-    this.dustMaterial.depthWrite = false
-    this.dustMaterial.roughness = 1
-    this.dustMaterial.metalness = 0
-    // instanceColor carries (alpha, noise seed, shade) and multiplies the
-    // colour on its own; dividing it back out keeps only the shade.
-    const ic = instanceColor
     const r = uv().sub(0.5).length().mul(2)
-    const lumps = mx_noise_float(vec3(uv().mul(3.2), ic.y.mul(37)))
-      .mul(0.5)
-      .add(0.5)
-    this.dustMaterial.colorNode = color('#8a7a62').mul(ic.z).div(ic.max(0.001))
-    this.dustMaterial.opacityNode = float(1)
-      .sub(r)
-      .clamp(0, 1)
-      .pow(1.6)
-      .mul(mix(0.35, 1.25, lumps))
-      .clamp(0, 1)
-      .mul(ic.x)
     this.rockMaterial.color = new THREE.Color('#ffffff')
     this.rockMaterial.roughness = 0.95
     this.rockMaterial.metalness = 0
@@ -177,17 +206,17 @@ export class DormantWakeEffect {
     )
     this.emberMaterial.opacityNode = float(1).sub(r).clamp(0, 1).pow(2)
 
-    this.dustMesh = this.instanced(
+    this.dustMesh = instancedMesh(
       this.planeGeometry,
       this.dustMaterial,
       LOW_DUST + BIG_DUST
     )
-    this.rockMesh = this.instanced(
+    this.rockMesh = instancedMesh(
       this.rockGeometry,
       this.rockMaterial,
       PEBBLES + ROCKS
     )
-    this.emberMesh = this.instanced(
+    this.emberMesh = instancedMesh(
       this.planeGeometry,
       this.emberMaterial,
       EMBERS
@@ -195,22 +224,6 @@ export class DormantWakeEffect {
     this.rockMesh.castShadow = true
     this.group.add(this.dustMesh, this.rockMesh, this.emberMesh)
     this.clear()
-  }
-
-  private instanced(
-    geometry: THREE.BufferGeometry,
-    material: THREE.Material,
-    count: number
-  ) {
-    const mesh = new THREE.InstancedMesh(geometry, material, count)
-    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
-    mesh.instanceColor = new THREE.InstancedBufferAttribute(
-      new Float32Array(count * 3).fill(1),
-      3
-    ).setUsage(THREE.DynamicDrawUsage)
-    mesh.frustumCulled = false
-    for (let i = 0; i < count; i++) this.hide(mesh, i)
-    return mesh
   }
 
   /** Lay out every particle for one wake around `b`. */
@@ -311,8 +324,7 @@ export class DormantWakeEffect {
         spin: new THREE.Vector3(rand(), rand(), rand()).multiplyScalar(6),
       })
     }
-    for (const r of this.rocks)
-      r.land = (r.vy + Math.sqrt(r.vy * r.vy + 2 * GRAVITY * r.y)) / GRAVITY
+    for (const r of this.rocks) r.land = landTime(r)
     for (let i = 0; i < this.rocks.length; i++) {
       // Granite with some of the shell's moss.
       const v = 0.75 + rand() * 0.35

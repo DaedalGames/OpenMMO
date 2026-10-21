@@ -101,6 +101,8 @@ pub enum AiCommand {
     },
     Attack {
         target_player_id: PlayerId,
+        /// Past melee reach, struck from where the monster stands.
+        ranged: bool,
     },
     /// A skill wound up facing `rotation`; viewers play it from now.
     CastSkill {

@@ -81,6 +81,8 @@ pub struct MonsterBrain {
     pub(super) detour_goal: Option<(f32, f32)>,
     /// A solid body fixes the facing and moves every reach to its surface.
     pub body: Option<crate::monster_body::BodyFootprint>,
+    /// Plain swings past melee reach land this far out; 0 for none.
+    pub ranged_range: f32,
 }
 
 impl MonsterBrain {
@@ -150,6 +152,7 @@ impl MonsterBrain {
             reslotting: false,
             detour_goal: None,
             body: None,
+            ranged_range: 0.0,
         }
     }
 

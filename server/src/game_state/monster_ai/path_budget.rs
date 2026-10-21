@@ -125,6 +125,10 @@ impl PathProvider for CountingPath<'_> {
         self.inner.attack_line_blocked(fx, fz, tx, tz, floor)
     }
 
+    fn ranged_line_blocked(&self, fx: f32, fz: f32, tx: f32, tz: f32, floor: u8) -> bool {
+        self.inner.ranged_line_blocked(fx, fz, tx, tz, floor)
+    }
+
     fn cell_passable(&self, x: f32, z: f32, floor: u8) -> bool {
         self.inner.cell_passable(x, z, floor)
     }

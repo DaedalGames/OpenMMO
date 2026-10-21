@@ -346,6 +346,7 @@ fn monster_damage_and_death_update_local_health() {
         roll: 18,
         damage: 7,
         current_health: 3,
+        ranged: false,
     });
     assert_eq!(s.self_player.as_ref().unwrap().health, 3);
 
@@ -356,6 +357,7 @@ fn monster_damage_and_death_update_local_health() {
         roll: 18,
         damage: 6,
         current_health: 4,
+        ranged: false,
     });
     assert_eq!(s.nearby_players[&PlayerId::from(2)].health, 4);
 

@@ -1367,6 +1367,16 @@ pub enum ServerMessage {
         range: f32,
         half_angle: f32,
     },
+    /// A plain swing at a distant target: the ground where it stood erupts
+    /// after `impact_ms`, striking whoever is still within `radius`.
+    MonsterGroundStrike {
+        monster_id: String,
+        target_player_id: PlayerId,
+        position: Position,
+        floor_level: i8,
+        radius: f32,
+        impact_ms: u32,
+    },
     MonsterAttackedPlayer {
         monster_id: String,
         player_id: PlayerId,
@@ -1374,6 +1384,8 @@ pub enum ServerMessage {
         roll: u8,
         damage: u32,
         current_health: u32,
+        /// Struck by a `MonsterGroundStrike` eruption, already shown.
+        ranged: bool,
     },
     PlayerDead {
         player_id: PlayerId,
@@ -2089,6 +2101,7 @@ impl ServerMessage {
             | Self::EquipmentEnchantSucceeded { .. }
             | Self::PlayerLeveledUp { .. }
             | Self::MonsterSkillStarted { .. }
+            | Self::MonsterGroundStrike { .. }
             | Self::MonsterAttackedPlayer { .. }
             | Self::PlayerInstrumentNotes { .. }
             | Self::AbilityUsed { .. } => DeliveryClass::NearbyEffect,

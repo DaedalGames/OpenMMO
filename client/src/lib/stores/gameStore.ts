@@ -1,6 +1,7 @@
 import { manaState } from './manaStore'
 import type { LocalizedMessage } from '../i18n'
 import { resetTeleportEffects } from './teleportEffectStore'
+import { resetGroundEruptions } from './groundEruptionStore'
 import { playerHealthDisplay } from './playerHealthDisplay'
 import { derived, get, writable } from 'svelte/store'
 import { SvelteMap } from 'svelte/reactivity'
@@ -197,6 +198,7 @@ export const visibleMana = derived(
 
 export const resetGameStore = () => {
   resetTeleportEffects()
+  resetGroundEruptions()
   manaState.set(null)
   resetDaggerSkill()
   resetLandClaimPreview()

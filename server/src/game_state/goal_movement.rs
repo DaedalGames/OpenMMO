@@ -250,6 +250,14 @@ impl GameState {
         self.cancel_goal_movement_locked(id, &mut goals).await;
     }
 
+    /// Cancel and drop the state with the connection that numbered its move
+    /// requests; the next one counts from 1 again.
+    pub(super) async fn forget_goal_movement(&self, id: &PlayerId) {
+        let mut goals = self.goal_moves.lock(*id).await;
+        self.cancel_goal_movement_locked(id, &mut goals).await;
+        *goals = None;
+    }
+
     pub(super) async fn cancel_goal_movement_locked(
         &self,
         id: &PlayerId,

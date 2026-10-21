@@ -866,10 +866,7 @@ impl super::GameState {
         self.stop_player_attack(player_id).await;
         self.auto_attacks.write().await.remove(player_id);
         self.bed_rest_started.write().await.remove(player_id);
-        let mut movement = self.goal_moves.lock(*player_id).await;
-        self.cancel_goal_movement_locked(player_id, &mut movement)
-            .await;
-        *movement = None;
+        self.forget_goal_movement(player_id).await;
         self.player_action_versions.write().await.remove(player_id);
         self.music_performances.write().await.remove(player_id);
         self.remove_live_instrument(player_id).await;

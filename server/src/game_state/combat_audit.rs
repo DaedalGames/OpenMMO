@@ -459,6 +459,11 @@ impl Attack<'_> {
         }
     }
 
+    /// The blow lands later and is audited per victim then.
+    pub(super) fn deferred(mut self) {
+        self.finished = true;
+    }
+
     pub(super) fn resolved(&mut self, old: u32, p: &Player, hit: bool) {
         self.finished = true;
         if !self.audit.active.load(Ordering::Relaxed) {
