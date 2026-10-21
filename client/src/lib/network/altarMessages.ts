@@ -2,7 +2,11 @@ import { translate, type MessageKey } from '../i18n'
 import { itemDisplayName } from '../data/itemDefs'
 import { addChatMessage } from '../stores/gameStore'
 import { altarOffering } from '../stores/altarStore'
-import { pushFieldBossWake } from '../stores/fieldBossWakeStore'
+import {
+  pushFieldBossSleep,
+  pushFieldBossWake,
+} from '../stores/fieldBossWakeStore'
+import { monsterManager } from '../managers/monsterManager'
 import type { Position } from './networkTypes'
 
 /** `AltarStatus` in shared/src/messages.rs, serde externally tagged. */
@@ -13,11 +17,12 @@ type AltarStatus =
   | { ready: { offering: string; monster: string } }
   | { offering_equipped: { offering: string } }
 
-type FieldRaidOutcome = 'defeated' | 'moon_set' | 'wiped'
+type FieldRaidOutcome = 'defeated' | 'moon_set' | 'dawn' | 'wiped'
 
 const OUTCOME_KEYS: Record<FieldRaidOutcome, MessageKey> = {
   defeated: 'fieldRaid.defeated',
   moon_set: 'fieldRaid.moonSet',
+  dawn: 'fieldRaid.dawn',
   wiped: 'fieldRaid.wiped',
 }
 
@@ -77,5 +82,19 @@ export function handleFieldBossWaking(data: {
     position: data.position,
     startedAt: Date.now(),
     collapseMs: data.wake_in_ms,
+  })
+}
+
+export function handleFieldBossSleeping(data: {
+  monster_id: string
+  monster: string
+  position: Position
+}) {
+  const startedAt = Date.now()
+  monsterManager.beginSleep(data.monster_id, startedAt)
+  pushFieldBossSleep({
+    monster: data.monster,
+    position: data.position,
+    startedAt,
   })
 }

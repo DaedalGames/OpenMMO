@@ -40,4 +40,7 @@ export interface MonsterData {
   maxHealth: number
   /** Wire floor_level: 0 = overworld, 1..3 housing, negative = dungeon depth. */
   floorLevel?: number
+  /** A raid boss sinking back to sleep since this `Date.now()`; the server
+   *  has already removed it, so it stays only until the sink ends. */
+  sleepStartedAt?: number
 }

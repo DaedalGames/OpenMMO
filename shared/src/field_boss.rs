@@ -16,7 +16,7 @@ static CATALOG_JSON: &str = include_str!("../../data/object_catalog.json");
 /// file, so the editor can neither collide with nor save them.
 const PLACEMENT_ID_BASE: u32 = 2_000_000_000;
 
-/// What must hold for a raid to open and keep going.
+/// What must hold for a raid to open.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum FieldBossCondition {

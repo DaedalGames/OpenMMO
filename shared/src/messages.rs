@@ -100,6 +100,8 @@ pub enum AltarStatus {
 pub enum FieldRaidOutcome {
     Defeated,
     MoonSet,
+    /// The morning twilight gave way to full daylight.
+    Dawn,
     /// No living character left in the battle zone.
     Wiped,
 }
@@ -1665,6 +1667,13 @@ pub enum ServerMessage {
         position: Position,
         wake_in_ms: u32,
     },
+    /// The raid failed and the boss at `position` sinks back into its
+    /// dormant stand-in; its removal follows.
+    FieldBossSleeping {
+        monster_id: String,
+        monster: String,
+        position: Position,
+    },
     HouseSpawned {
         house: housing::HouseData,
     },
@@ -2173,6 +2182,7 @@ impl ServerMessage {
             | Self::AltarStatus { .. }
             | Self::FieldRaidNotice { .. }
             | Self::FieldBossWaking { .. }
+            | Self::FieldBossSleeping { .. }
             | Self::HousePlacementStarted { .. }
             | Self::HousePlacementResult { .. }
             | Self::HouseDemolitionResult { .. }

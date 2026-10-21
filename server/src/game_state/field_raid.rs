@@ -8,9 +8,12 @@ use super::passability::regions_around;
 use super::player_interaction::placement_position;
 use super::GameState;
 use crate::types::{MonsterLifecycle, PlayerId};
+use onlinerpg_shared::celestial::is_full_daylight;
 use onlinerpg_shared::field_boss::{field_boss_by_altar, field_boss_defs, AltarDef, FieldBossDef};
 use onlinerpg_shared::furniture::FurniturePlacement;
 use onlinerpg_shared::messages::{AltarStatus, FieldRaidOutcome};
+use onlinerpg_shared::moon::{full_moons_up, Moon};
+use onlinerpg_shared::world::GameDateTime;
 use onlinerpg_shared::{MonsterState, Position, ServerMessage};
 use std::borrow::Cow;
 use std::time::Duration;
@@ -44,6 +47,24 @@ pub(crate) struct FieldRaid {
     /// the player id mid-raid.
     summoner: Option<i64>,
     summoner_hit: bool,
+    /// The full moons in the sky at the offering; the raid lasts until all
+    /// have set or the sky turns fully blue, through the dawn glow and the
+    /// waning past full.
+    moons: Vec<Moon>,
+}
+
+impl FieldRaid {
+    /// How the sky ends the raid, if it has.
+    fn sky_outcome(&self, now: &GameDateTime) -> Option<FieldRaidOutcome> {
+        self.boss.condition?;
+        if !self.moons.iter().any(|m| m.is_up(now)) {
+            Some(FieldRaidOutcome::MoonSet)
+        } else if is_full_daylight(now) {
+            Some(FieldRaidOutcome::Dawn)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -234,6 +255,7 @@ impl GameState {
             return;
         }
         let summoner = self.character_id_of(player_id).await;
+        let moons = full_moons_up(&self.current_game_datetime()).collect();
         // Raid state and the item go together, so a valid offering always
         // opens exactly one raid and a refused one keeps its item.
         let snapshot = {
@@ -257,6 +279,7 @@ impl GameState {
                     },
                     summoner,
                     summoner_hit: false,
+                    moons,
                 });
             }
             consumed
@@ -343,8 +366,8 @@ impl GameState {
                     .is_some_and(|m| m.state != MonsterState::Dead);
                 let outcome = if !alive {
                     FieldRaidOutcome::Defeated
-                } else if !raid.boss.condition_holds(&self.current_game_datetime()) {
-                    FieldRaidOutcome::MoonSet
+                } else if let Some(outcome) = raid.sky_outcome(&self.current_game_datetime()) {
+                    outcome
                 } else if self.living_near(&raid.position).await.is_empty() {
                     FieldRaidOutcome::Wiped
                 } else {
@@ -414,22 +437,34 @@ impl GameState {
         .map(|m| m.id)
     }
 
-    /// A defeated boss is left to the kill's own corpse timer.
+    /// A defeated boss is left to the kill's own corpse timer; any other
+    /// sinks back into its stand-in.
     async fn end_field_raid(&self, raid: &FieldRaid, monster_id: &str, outcome: FieldRaidOutcome) {
         *self.field_raid.lock().await = None;
-        self.set_stand_in_woken(raid.boss, false);
+        // The raiders gathered before the offering; only those around hear it.
+        let nearby = self
+            .player_ids_within_position(&raid.position, 0, NOTICE_RADIUS_M)
+            .await;
         if outcome != FieldRaidOutcome::Defeated {
+            // Sent ahead of the removal so the client can hold the body for
+            // its sink instead of dropping it.
+            self.send_direct_message_to_players(
+                &nearby,
+                ServerMessage::FieldBossSleeping {
+                    monster_id: monster_id.to_string(),
+                    monster: raid.boss.monster.clone(),
+                    position: raid.position,
+                },
+            )
+            .await;
             self.despawn_monsters(vec![monster_id.to_string()]).await;
         }
+        self.set_stand_in_woken(raid.boss, false);
         info!("Field raid {} ended: {outcome:?}", raid.boss.monster);
         let rewarded = match outcome {
             FieldRaidOutcome::Defeated => self.grant_summoner_reward(raid).await,
             _ => None,
         };
-        // The raiders gathered before the offering; only those around hear it.
-        let nearby = self
-            .player_ids_within_position(&raid.position, 0, NOTICE_RADIUS_M)
-            .await;
         let notice = |reward| ServerMessage::FieldRaidNotice {
             monster: raid.boss.monster.clone(),
             outcome,

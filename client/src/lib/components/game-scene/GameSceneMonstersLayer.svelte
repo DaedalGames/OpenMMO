@@ -131,6 +131,7 @@
     hitCounter={monster.hitCounter}
     lastDamageInfo={monster.lastDamageInfo}
     droppedWeaponItemDefId={monster.droppedWeaponItemDefId}
+    sleepStartedAt={monster.sleepStartedAt}
     onHitFinished={() => monsterManager.handleMonsterHitFinished(monster.id)}
   />
 {/each}

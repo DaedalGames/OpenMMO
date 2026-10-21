@@ -56,19 +56,40 @@ fn moon_phase(period_days: i64, phase_offset_days: i64, game_day: i64, hour: f64
     (illumination.clamp(0.0, 1.0), above_horizon)
 }
 
-/// Whether Eldor or Serin is full and above the horizon.
-fn is_full_moon_up(datetime: &GameDateTime) -> bool {
-    let day = game_day_index(datetime);
-    let hour = crate::celestial::hour_of_day(datetime);
-    [
-        (ELDOR_PERIOD_DAYS, ELDOR_PHASE_OFFSET_DAYS),
-        (SERIN_PERIOD_DAYS, SERIN_PHASE_OFFSET_DAYS),
-    ]
-    .into_iter()
-    .any(|(period, offset)| {
-        let (illumination, up) = moon_phase(period, offset, day, hour);
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Moon {
+    Eldor,
+    Serin,
+}
+
+impl Moon {
+    const ALL: [Self; 2] = [Self::Eldor, Self::Serin];
+
+    fn phase(self, datetime: &GameDateTime) -> (f64, bool) {
+        let (period, offset) = match self {
+            Self::Eldor => (ELDOR_PERIOD_DAYS, ELDOR_PHASE_OFFSET_DAYS),
+            Self::Serin => (SERIN_PERIOD_DAYS, SERIN_PHASE_OFFSET_DAYS),
+        };
+        let hour = crate::celestial::hour_of_day(datetime);
+        moon_phase(period, offset, game_day_index(datetime), hour)
+    }
+
+    /// Above the horizon; the sky widget hides the disc the moment this ends.
+    pub fn is_up(self, datetime: &GameDateTime) -> bool {
+        self.phase(datetime).1
+    }
+}
+
+/// The moons full and above the horizon.
+pub fn full_moons_up(datetime: &GameDateTime) -> impl Iterator<Item = Moon> + '_ {
+    Moon::ALL.into_iter().filter(|m| {
+        let (illumination, up) = m.phase(datetime);
         illumination >= FULL_ILLUMINATION && up
     })
+}
+
+fn is_full_moon_up(datetime: &GameDateTime) -> bool {
+    full_moons_up(datetime).next().is_some()
 }
 
 /// A full moon the player can see: in the sky after sunset. A summer full

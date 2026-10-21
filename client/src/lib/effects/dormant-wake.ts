@@ -10,12 +10,12 @@ import {
   vec3,
 } from 'three/tsl'
 import { createRng } from '../utils/simplex-noise'
+import { SLEEP_SINK_MS, sleepSink } from './dormant-sleep'
 
 /** Dust lingers this long after the collapse, hiding the boss's arrival. */
 const DORMANT_WAKE_TAIL_MS = 5000
 /** The stand-in sinks over this long from the collapse. */
 export const DORMANT_SINK_MS = 700
-
 export const GRAVITY = 18
 const LOW_DUST = 36
 const BIG_DUST = 56
@@ -168,7 +168,8 @@ export function ballistic(r: Rock, t: number, out: THREE.Vector3): number {
 
 /** Dust, falling stones and embers as a dormant boss shakes off its rock
  *  shell: a rumble up to `collapseMs`, then the shell bursts. Times are ms
- *  from the offering. */
+ *  from the offering. `startSleep` plays it the other way: the boss grinds
+ *  down into the ground and the shell closes over it. */
 export class DormantWakeEffect {
   readonly group = new THREE.Group()
   private planeGeometry = new THREE.PlaneGeometry(1, 1)
@@ -226,8 +227,7 @@ export class DormantWakeEffect {
     this.clear()
   }
 
-  /** Lay out every particle for one wake around `b`. */
-  start(b: WakeBounds, collapseMs: number) {
+  private begin(b: WakeBounds, collapseMs: number) {
     const rand = createRng(Math.floor(b.x * 131 + b.z * 17))
     this.collapseMs = collapseMs
     this.group.position.set(b.x, b.y, b.z)
@@ -241,6 +241,12 @@ export class DormantWakeEffect {
       (rand() * 2 - 1) * b.halfX * k,
       (rand() * 2 - 1) * b.halfZ * k,
     ]
+    return { rand, rim, inside }
+  }
+
+  /** Lay out every particle for one wake around `b`. */
+  start(b: WakeBounds, collapseMs: number) {
+    const { rand, rim, inside } = this.begin(b, collapseMs)
 
     this.dust.length = 0
     for (let i = 0; i < LOW_DUST; i++) {
@@ -324,20 +330,7 @@ export class DormantWakeEffect {
         spin: new THREE.Vector3(rand(), rand(), rand()).multiplyScalar(6),
       })
     }
-    for (const r of this.rocks) r.land = landTime(r)
-    for (let i = 0; i < this.rocks.length; i++) {
-      // Granite with some of the shell's moss.
-      const v = 0.75 + rand() * 0.35
-      const moss = rand() < 0.3
-      this.tint.setRGB(
-        (moss ? 0.34 : 0.46) * v,
-        (moss ? 0.37 : 0.41) * v,
-        (moss ? 0.2 : 0.35) * v,
-        THREE.SRGBColorSpace
-      )
-      this.rockMesh.setColorAt(i, this.tint)
-    }
-    this.rockMesh.instanceColor!.needsUpdate = true
+    this.finishRocks(rand)
 
     this.embers.length = 0
     for (let i = 0; i < EMBERS; i++) {
@@ -352,6 +345,112 @@ export class DormantWakeEffect {
         size: 0.12 + rand() * 0.18,
       })
     }
+  }
+
+  /** Lay out a boss sinking back under its shell at `b`: grinding dust and
+   *  scree while it sinks, a choking cloud as it goes under, its fire dying. */
+  startSleep(b: WakeBounds) {
+    const sinkMs = SLEEP_SINK_MS
+    const { rand, rim, inside } = this.begin(b, sinkMs)
+
+    this.dust.length = 0
+    for (let i = 0; i < LOW_DUST; i++) {
+      const [x, z, a] = rim()
+      const out = 0.5 + rand() * 0.8
+      this.dust.push({
+        at: (i / LOW_DUST) * sinkMs * 0.9,
+        life: 1600 + rand() * 1000,
+        x,
+        y: 0.2,
+        z,
+        vx: Math.cos(a) * out,
+        vy: 0.5 + rand() * 0.6,
+        vz: Math.sin(a) * out,
+        size: 1.8 + rand() * 1.4,
+        grow: 2.6 + rand() * 1.8,
+        peak: 0.75 + rand() * 0.2,
+        seed: rand(),
+        shade: 0.75 + rand() * 0.2,
+        roll: rand() * Math.PI * 2,
+      })
+    }
+    for (let i = 0; i < BIG_DUST; i++) {
+      // Rolling in from the rim and billowing up as the ground closes.
+      const [x, z, a] = rim()
+      const out = 0.8 + rand() * 1.6
+      this.dust.push({
+        at: sinkMs * 0.45 + rand() * sinkMs * 0.6,
+        life: 3000 + rand() * 1800,
+        x: x * 0.8,
+        y: rand() * b.height * 0.4,
+        z: z * 0.8,
+        vx: Math.cos(a) * out,
+        vy: 0.8 + rand() * 1.4,
+        vz: Math.sin(a) * out,
+        size: 4 + rand() * 3,
+        grow: 4 + rand() * 4,
+        peak: 0.8 + rand() * 0.2,
+        seed: rand(),
+        shade: 0.85 + rand() * 0.25,
+        roll: rand() * Math.PI * 2,
+      })
+    }
+
+    this.rocks.length = 0
+    for (let i = 0; i < PEBBLES + ROCKS; i++) {
+      // Scree shed off the flanks of the sinking body.
+      const h = 0.15 + rand() * 0.75
+      const a = rand() * Math.PI * 2
+      const ox = Math.cos(a) * (1.05 - h * 0.6)
+      const oz = Math.sin(a) * (1.05 - h * 0.6)
+      const big = i >= PEBBLES
+      const at = rand() * sinkMs * 0.85
+      this.rocks.push({
+        at,
+        x: ox * b.halfX,
+        y: b.height * h * (1 - sleepSink(at)),
+        z: oz * b.halfZ,
+        vx: ox * (1 + rand() * 1.5),
+        vy: rand() * 1.2,
+        vz: oz * (1 + rand() * 1.5),
+        size: big ? 0.45 + rand() * 0.6 : 0.2 + rand() * 0.3,
+        land: 0,
+        stretch: new THREE.Vector3(1 + rand() * 0.6, 0.6 + rand() * 0.4, 1),
+        spin: new THREE.Vector3(rand(), rand(), rand()).multiplyScalar(6),
+      })
+    }
+    this.finishRocks(rand)
+
+    this.embers.length = 0
+    for (let i = 0; i < EMBERS; i++) {
+      const [x, z] = inside(0.7)
+      this.embers.push({
+        at: rand() * sinkMs * 0.9,
+        life: 700 + rand() * 700,
+        x,
+        z,
+        rise: 1 + rand() * 1.5,
+        drift: (rand() - 0.5) * 0.8,
+        size: 0.1 + rand() * 0.14,
+      })
+    }
+  }
+
+  private finishRocks(rand: () => number) {
+    for (const r of this.rocks) r.land = landTime(r)
+    for (let i = 0; i < this.rocks.length; i++) {
+      // Granite with some of the shell's moss.
+      const v = 0.75 + rand() * 0.35
+      const moss = rand() < 0.3
+      this.tint.setRGB(
+        (moss ? 0.34 : 0.46) * v,
+        (moss ? 0.37 : 0.41) * v,
+        (moss ? 0.2 : 0.35) * v,
+        THREE.SRGBColorSpace
+      )
+      this.rockMesh.setColorAt(i, this.tint)
+    }
+    this.rockMesh.instanceColor!.needsUpdate = true
   }
 
   /** False once the dust has settled. */

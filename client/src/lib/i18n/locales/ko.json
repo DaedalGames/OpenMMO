@@ -711,6 +711,7 @@
   "altar.raidActive": "제단은 이미 깨어나 있다.",
   "fieldRaid.defeated": "{{monster}}$이 쓰러져 다시 잠들었습니다.",
   "fieldRaid.moonSet": "보름달이 졌습니다. {{monster}}$이 다시 잠듭니다.",
+  "fieldRaid.dawn": "날이 밝았습니다. {{monster}}$이 다시 잠듭니다.",
   "fieldRaid.wiped": "싸울 사람이 남지 않았습니다. {{monster}}$이 다시 잠듭니다.",
   "fieldRaid.reward": "소환의 보상으로 {{item}}$을 받았습니다.",
   "monsterName.terraclash": "테라클래시"

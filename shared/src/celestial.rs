@@ -60,6 +60,24 @@ pub fn get_solar_daylight_window(month: u8, day: u8) -> SolarDaylightWindow {
     }
 }
 
+/// Sun height as the sine of its altitude; `sunElevation` in the client's
+/// GameTimeWidget.
+pub fn sun_elevation(datetime: &GameDateTime) -> f64 {
+    let latitude = LATITUDE_DEG.to_radians();
+    let declination = get_declination_rad(day_of_year(datetime.month, datetime.day));
+    let hour_angle = 2.0 * PI * (hour_of_day(datetime) - 12.0) / HOURS_PER_DAY;
+    latitude.sin() * declination.sin() + latitude.cos() * declination.cos() * hour_angle.cos()
+}
+
+/// `SUN_TWILIGHT_ELEVATION_THRESHOLD` in the client: above it the sky widget
+/// has lost its twilight colours.
+const FULL_DAYLIGHT_ELEVATION: f64 = 0.07;
+
+/// The sky has gone fully blue.
+pub fn is_full_daylight(datetime: &GameDateTime) -> bool {
+    sun_elevation(datetime) >= FULL_DAYLIGHT_ELEVATION
+}
+
 pub fn hour_of_day(datetime: &GameDateTime) -> f64 {
     f64::from(datetime.hour) + f64::from(datetime.minute) / 60.0
 }
@@ -71,4 +89,26 @@ pub fn is_night(datetime: &GameDateTime) -> bool {
 
 pub fn is_after_sunset(datetime: &GameDateTime) -> bool {
     hour_of_day(datetime) >= get_solar_daylight_window(datetime.month, datetime.day).sunset_hour
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_sun_crosses_the_horizon_at_sunrise() {
+        for month in [1, 4, 7, 10] {
+            let window = get_solar_daylight_window(month, 15);
+            let at = |minutes: f64| GameDateTime {
+                year: 217,
+                month,
+                day: 15,
+                hour: (minutes / 60.0) as u8,
+                minute: (minutes % 60.0) as u8,
+            };
+            let sunrise = window.sunrise_hour * 60.0;
+            assert!(sun_elevation(&at(sunrise - 1.0)) < 0.0, "month {month}");
+            assert!(sun_elevation(&at(sunrise + 1.0)) > 0.0, "month {month}");
+        }
+    }
 }

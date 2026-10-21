@@ -15,6 +15,7 @@ import {
   getMaterialMissSoundUrl,
 } from '../data/materialImpactSounds'
 import { dungeonManager } from './dungeonManager'
+import { SLEEP_SINK_MS } from '../effects/dormant-sleep'
 import { housingManager } from './housingManager'
 import { computeChaseAim } from './chase-aim'
 import type { Position } from '../utils/movementUtils'
@@ -240,7 +241,12 @@ class MonsterManager {
       this.bodies.add(monster.id)
   }
 
+  /** A sleeping boss outlives its removal until its sink ends. */
   remove(id: string) {
+    if (this.monsters.get(id)?.sleepStartedAt === undefined) this.drop(id)
+  }
+
+  private drop(id: string) {
     this.monsters.delete(id)
     this.removeBody(id)
     this.bodyGround.delete(id)
@@ -518,10 +524,24 @@ class MonsterManager {
     clearXpArrival()
   }
 
+  /** A raid boss sinks back to sleep: bodiless at once, like the server's,
+   *  and gone once the sink ends. */
+  beginSleep(id: string, startedAt: number) {
+    const monster = this.monsters.get(id)
+    if (!monster) return
+    this.removeBody(id)
+    this.monsters.set(id, { ...monster, sleepStartedAt: startedAt })
+  }
+
   update(deltaTime: number) {
     // FSM & Movement Logic
     const gameState = get(gameStore)
+    const now = Date.now()
     for (const monster of this.monsters.values()) {
+      if (monster.sleepStartedAt !== undefined) {
+        if (now - monster.sleepStartedAt >= SLEEP_SINK_MS) this.drop(monster.id)
+        continue
+      }
       const terrainY = this.monsterGroundY(
         monster,
         monster.position.x,

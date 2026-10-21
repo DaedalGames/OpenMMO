@@ -3,7 +3,8 @@
 use super::*;
 use onlinerpg_shared::field_boss::{field_boss_defs, AltarDef, FieldBossDef};
 use onlinerpg_shared::inventory::EquipSlot;
-use onlinerpg_shared::messages::AltarStatus;
+use onlinerpg_shared::messages::{AltarStatus, FieldRaidOutcome};
+use onlinerpg_shared::moon::Moon;
 use onlinerpg_shared::pathfinding::is_movement_blocked;
 use onlinerpg_shared::world::GameDateTime;
 
@@ -278,4 +279,76 @@ async fn an_empty_battle_zone_puts_the_boss_back_to_sleep() {
         0,
         "a failed raid keeps the offering"
     );
+}
+
+/// Full moon on the 15th of `month`, at `hour:minute`.
+fn full_moon_at(month: u8, hour: u8, minute: u8) -> GameDateTime {
+    GameDateTime {
+        month,
+        hour,
+        minute,
+        ..full_moon()
+    }
+}
+
+/// Offer at midnight on `month`'s full moon and wake the boss.
+async fn raid_in(month: u8) -> (GameState, DirectRx) {
+    let (game, id, mut rx) = setup(full_moon_at(month, 0, 0), 1).await;
+    wake(&game, &id).await;
+    drain(&mut rx);
+    (game, rx)
+}
+
+async fn tick_at(game: &GameState, at: GameDateTime) {
+    game.debug_set_datetime(&at);
+    game.tick_field_raid().await;
+}
+
+/// The raid's last messages: whether the boss was put to sleep, then how
+/// the raid ended.
+fn ending(rx: &mut DirectRx) -> (bool, Option<FieldRaidOutcome>) {
+    let (mut slept, mut outcome) = (false, None);
+    for m in drain(rx) {
+        match m {
+            ServerMessage::FieldBossSleeping { .. } => slept = outcome.is_none(),
+            ServerMessage::FieldRaidNotice { outcome: o, .. } => outcome = Some(o),
+            _ => {}
+        }
+    }
+    (slept, outcome)
+}
+
+#[tokio::test]
+async fn the_raid_lasts_through_the_dawn_glow_until_the_sky_turns_blue() {
+    use onlinerpg_shared::celestial::{is_full_daylight, sun_elevation};
+    let (game, mut rx) = raid_in(4).await;
+
+    let glow = full_moon_at(4, 5, 50);
+    assert!(sun_elevation(&glow) > 0.0 && !is_full_daylight(&glow));
+    tick_at(&game, glow).await;
+    assert!(
+        game.field_raid.lock().await.is_some(),
+        "the sun is still rising"
+    );
+
+    let day = full_moon_at(4, 6, 5);
+    assert!(is_full_daylight(&day) && Moon::Eldor.is_up(&day));
+    tick_at(&game, day).await;
+    assert!(game.field_raid.lock().await.is_none());
+    assert!(bosses(&game).await.is_empty());
+    assert_eq!(ending(&mut rx), (true, Some(FieldRaidOutcome::Dawn)));
+}
+
+#[tokio::test]
+async fn a_winter_raid_ends_when_its_moon_sets_before_sunrise() {
+    let (game, mut rx) = raid_in(1).await;
+
+    tick_at(&game, full_moon_at(1, 6, 0)).await;
+    assert!(game.field_raid.lock().await.is_some());
+
+    let set = full_moon_at(1, 6, 20);
+    assert!(!Moon::Eldor.is_up(&set) && GameState::is_night(&set));
+    tick_at(&game, set).await;
+    assert!(game.field_raid.lock().await.is_none());
+    assert_eq!(ending(&mut rx), (true, Some(FieldRaidOutcome::MoonSet)));
 }

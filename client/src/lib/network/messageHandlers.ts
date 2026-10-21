@@ -7,6 +7,7 @@ import { translate, type MessageKey } from '../i18n'
 import { isCoinPileJackpot } from './coinPileJackpot'
 import {
   handleAltarStatus,
+  handleFieldBossSleeping,
   handleFieldBossWaking,
   handleFieldRaidNotice,
 } from './altarMessages'
@@ -2032,6 +2033,10 @@ export function handleServerMessage(
 
     case 'FieldBossWaking':
       handleFieldBossWaking(data)
+      break
+
+    case 'FieldBossSleeping':
+      handleFieldBossSleeping(data)
       break
 
     case 'InteractionRejected': {

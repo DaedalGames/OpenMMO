@@ -48,6 +48,7 @@
   import type { TerrainHeightManager } from '../managers/terrainHeightManager'
   import TargetRing from './TargetRing.svelte'
   import { warmupPipelines } from '../utils/pipelineWarmup'
+  import { shake, sleepSink } from '../effects/dormant-sleep'
   import {
     disposeMeshMaterials,
     disposeObjectTree,
@@ -67,6 +68,7 @@
     heightManager?: TerrainHeightManager | null
     lastDamageInfo?: MonsterData['lastDamageInfo']
     droppedWeaponItemDefId?: string
+    sleepStartedAt?: number
     onHitFinished?: () => void
   }
 
@@ -84,6 +86,7 @@
     heightManager = null,
     lastDamageInfo,
     droppedWeaponItemDefId,
+    sleepStartedAt,
     onHitFinished,
   }: Props = $props()
 
@@ -419,12 +422,17 @@
     // 0. Sync Three.js group position imperatively so the refraction render
     //    (which runs during the game loop, before Svelte's reactive updates)
     //    sees the monster at its current position.
+    // A sleeping boss grinds down into the ground, nameplate and all.
+    const slept = sleepStartedAt === undefined ? 0 : Date.now() - sleepStartedAt
+    const sink = sleepSink(slept)
+    const sunk = sink * nametagHeight
     if (group) {
-      group.position.set(position.x, position.y, position.z)
+      group.position.set(position.x, position.y - sunk, position.z)
       group.rotation.y = rotation
+      if (sink > 0) shake(group, slept / 1000, 0.12 * (1 - sink))
     }
     if (hoverProxyGroup) {
-      hoverProxyGroup.position.set(position.x, position.y, position.z)
+      hoverProxyGroup.position.set(position.x, position.y - sunk, position.z)
       hoverProxyGroup.rotation.y = rotation
     }
 
@@ -516,7 +524,7 @@
     if (camera && nametagGroup) {
       nametagGroup.position.set(
         position.x,
-        position.y + nametagHeight,
+        position.y + nametagHeight - sunk,
         position.z
       )
       const s = billboardScale(
