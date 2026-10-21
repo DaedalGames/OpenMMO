@@ -15,7 +15,6 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CATALOG_PATH = join(ROOT, "data/object_catalog.json");
 const MODELS_DIR = join(ROOT, "client/public/models");
 const OUT_PATH = join(ROOT, "data/furniture_footprints.json");
-const MONSTERS_PATH = join(ROOT, "data/monsters.json");
 
 function multiply(a, b) {
   const out = new Array(16);
@@ -80,16 +79,6 @@ const FORCE = process.argv.includes("--force");
 const catalog = JSON.parse(await readFile(CATALOG_PATH, "utf8"));
 const solidDefs = catalog.filter((d) => d.solid && d.model);
 
-/** A sleeping boss's stand-in blocks only where its awake body will:
- *  monsters.csv `footprint` is `halfWidth|front|back`, +Z = front. */
-async function dormantBodyRect(monsterId) {
-  const monsters = JSON.parse(await readFile(MONSTERS_PATH, "utf8"));
-  const [halfWidth, front, back] = monsters[monsterId].footprint
-    .split("|")
-    .map(Number);
-  return { minX: -halfWidth, maxX: halfWidth, minZ: -back, maxZ: front };
-}
-
 async function mtimeMs(path) {
   try {
     return (await stat(path)).mtimeMs;
@@ -107,7 +96,6 @@ if (!FORCE) {
   if (outM > -Infinity) {
     const inputs = [
       CATALOG_PATH,
-      MONSTERS_PATH,
       ...solidDefs.map((d) => `${MODELS_DIR}/${d.model}`),
     ];
     const newestInput = Math.max(...(await Promise.all(inputs.map(mtimeMs))));
@@ -155,9 +143,7 @@ const round = (v) => +v.toFixed(3);
 
 const out = {};
 for (const def of solidDefs) {
-  const b = def.dormantMonster
-    ? await dormantBodyRect(def.dormantMonster)
-    : await measureXZ(io, `${MODELS_DIR}/${def.model}`);
+  const b = await measureXZ(io, `${MODELS_DIR}/${def.model}`);
   out[def.id] = {
     minX: round(b.minX),
     maxX: round(b.maxX),

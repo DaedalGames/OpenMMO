@@ -4,9 +4,12 @@ use super::*;
 use onlinerpg_shared::furniture::FurniturePlacement;
 use onlinerpg_shared::inventory::EquipSlot;
 use onlinerpg_shared::messages::AltarStatus;
+use onlinerpg_shared::pathfinding::is_movement_blocked;
 use onlinerpg_shared::world::GameDateTime;
 
 const ALTAR_ID: u32 = 7;
+const SUMMONER_CHARACTER: i64 = 11;
+const STAND_IN_ID: u32 = 8;
 
 /// Day 14 of the calendar, midnight: Eldor is full and overhead.
 fn full_moon() -> GameDateTime {
@@ -29,24 +32,38 @@ fn half_moon() -> GameDateTime {
 
 async fn setup(when: GameDateTime, amulets: u32) -> (GameState, PlayerId, DirectRx) {
     let game = make_test_game_state("field_raid");
+    let def = onlinerpg_shared::altar::altar_def("terraclash_altar").unwrap();
     game.debug_set_datetime(&when);
     game.sync_region_furniture(
         0,
         0,
-        &[FurniturePlacement {
-            id: ALTAR_ID,
-            type_id: "terraclash_altar".into(),
-            x: 100.0,
-            y: 5.0,
-            z: 50.0,
-            rotation_deg: 0.0,
-            floor_level: 0,
-        }],
+        &[
+            FurniturePlacement {
+                id: ALTAR_ID,
+                type_id: "terraclash_altar".into(),
+                x: 100.0,
+                y: 5.0,
+                z: 50.0,
+                rotation_deg: 0.0,
+                floor_level: 0,
+            },
+            FurniturePlacement {
+                id: STAND_IN_ID,
+                type_id: "terraclash_dormant".into(),
+                x: 100.0 + def.spawn.x,
+                y: 5.0,
+                z: 50.0 + def.spawn.z,
+                rotation_deg: 0.0,
+                floor_level: 0,
+            },
+        ],
     );
     let mut player = make_player("summoner", 100.0, 51.5);
     player.position.y = 5.0;
     let id = player.id;
     game.add_player(player).await;
+    game.register_player_character(&id, SUMMONER_CHARACTER, 0, attrs_with_cha(10), 0, None)
+        .await;
     let rx = game.register_direct_channel(&id).await;
     let mut inv = PlayerInventory::default();
     if amulets > 0 {
@@ -70,6 +87,39 @@ fn statuses(rx: &mut DirectRx) -> Vec<AltarStatus> {
         .into_iter()
         .filter_map(|m| match m {
             ServerMessage::AltarStatus { status, .. } => Some(status),
+            _ => None,
+        })
+        .collect()
+}
+
+fn helms(inv: &PlayerInventory) -> usize {
+    inv.bag
+        .iter()
+        .filter(|i| i.item_def_id == "helm_of_brilliance")
+        .count()
+}
+
+/// Offer, then tick until the boss stands.
+async fn wake(game: &GameState, id: &PlayerId) -> crate::types::Monster {
+    game.offer_at_altar(id, ALTAR_ID).await;
+    for _ in 1..super::super::field_raid::WAKE_TICKS {
+        game.tick_field_raid().await;
+        assert!(bosses(game).await.is_empty(), "still crumbling");
+    }
+    game.tick_field_raid().await;
+    bosses(game).await.pop().expect("terraclash awake")
+}
+
+async fn kill(game: &GameState, boss: &crate::types::Monster) {
+    game.monsters.write().await.get_mut(&boss.id).unwrap().state = MonsterState::Dead;
+    game.tick_field_raid().await;
+}
+
+fn notices(rx: &mut DirectRx) -> Vec<Option<String>> {
+    drain(rx)
+        .into_iter()
+        .filter_map(|m| match m {
+            ServerMessage::FieldRaidNotice { reward, .. } => Some(reward),
             _ => None,
         })
         .collect()
@@ -150,24 +200,82 @@ async fn the_boss_wakes_at_the_altar_spawn_and_its_death_ends_the_raid() {
     let def = onlinerpg_shared::altar::altar_def("terraclash_altar").unwrap();
     let (wx, wz) = (100.0 + def.spawn.x, 50.0 + def.spawn.z);
 
-    game.offer_at_altar(&id, ALTAR_ID).await;
-    assert!(bosses(&game).await.is_empty(), "the tick spawns it");
-    game.tick_field_raid().await;
-    let boss = bosses(&game).await.pop().expect("terraclash awake");
+    let boss = wake(&game, &id).await;
     assert_eq!(boss.lifecycle, crate::types::MonsterLifecycle::FieldRaid);
     assert!((boss.position.x - wx).abs() < 0.01 && (boss.position.z - wz).abs() < 0.01);
 
-    game.monsters.write().await.get_mut(&boss.id).unwrap().state = MonsterState::Dead;
-    game.tick_field_raid().await;
+    kill(&game, &boss).await;
     assert!(game.field_raid.lock().await.is_none());
+}
+
+#[tokio::test]
+async fn the_stand_in_stops_blocking_while_its_boss_is_up() {
+    let (game, id, _rx) = setup(full_moon(), 1).await;
+    let def = onlinerpg_shared::altar::altar_def("terraclash_altar").unwrap();
+    // In the stand-in's measured extent, beyond the awake body's front.
+    let (x, z) = (100.0 + def.spawn.x, 50.0 + def.spawn.z + 4.5);
+    let blocked = |game: &GameState| {
+        is_movement_blocked(&game.passability_read(), x, z, x, z + 1.0, 0, Some(5.0))
+    };
+    assert!(blocked(&game));
+
+    let boss = wake(&game, &id).await;
+    assert!(!blocked(&game));
+    let placements = game.interaction_furniture.read().unwrap()[&(0, 0)].clone();
+    game.sync_region_furniture(0, 0, &placements);
+    assert!(!blocked(&game), "a region resync keeps it lifted");
+
+    kill(&game, &boss).await;
+    assert!(blocked(&game));
+}
+
+#[tokio::test]
+async fn the_offering_tells_those_around_the_boss_is_waking() {
+    let (game, id, mut rx) = setup(full_moon(), 1).await;
+    game.offer_at_altar(&id, ALTAR_ID).await;
+    assert!(drain(&mut rx).iter().any(
+        |m| matches!(m, ServerMessage::FieldBossWaking { monster, .. } if monster == "terraclash")
+    ));
+}
+
+#[tokio::test]
+async fn a_summoner_who_fought_to_the_end_gets_the_helm_once() {
+    let (game, id, mut rx) = setup(full_moon(), 1).await;
+    let boss = wake(&game, &id).await;
+    game.record_field_raid_hit(&id, 40).await;
+    drain(&mut rx);
+    kill(&game, &boss).await;
+    assert_eq!(helms(&game.inventories.read().await[&id]), 1);
+    assert_eq!(
+        notices(&mut rx),
+        vec![Some("helm_of_brilliance".to_string())]
+    );
+
+    game.tick_field_raid().await;
+    assert_eq!(helms(&game.inventories.read().await[&id]), 1);
+}
+
+#[tokio::test]
+async fn a_summoner_who_never_hit_or_lay_dead_gets_no_helm() {
+    let (game, id, mut rx) = setup(full_moon(), 1).await;
+    let boss = wake(&game, &id).await;
+    drain(&mut rx);
+    kill(&game, &boss).await;
+    assert_eq!(helms(&game.inventories.read().await[&id]), 0);
+    assert_eq!(notices(&mut rx), vec![None]);
+
+    let (game, id, _rx) = setup(full_moon(), 1).await;
+    let boss = wake(&game, &id).await;
+    game.record_field_raid_hit(&id, 40).await;
+    game.players.write().await.get_mut(&id).unwrap().health = 0;
+    kill(&game, &boss).await;
+    assert_eq!(helms(&game.inventories.read().await[&id]), 0);
 }
 
 #[tokio::test]
 async fn an_empty_battle_zone_puts_the_boss_back_to_sleep() {
     let (game, id, _rx) = setup(full_moon(), 1).await;
-    game.offer_at_altar(&id, ALTAR_ID).await;
-    game.tick_field_raid().await;
-    assert_eq!(bosses(&game).await.len(), 1);
+    wake(&game, &id).await;
 
     game.teleport_player(&id, pos3(300.0, 5.0, 50.0), 0.0, 0)
         .await;

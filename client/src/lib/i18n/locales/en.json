@@ -712,5 +712,6 @@
   "fieldRaid.defeated": "{{monster}} has fallen and sleeps once more.",
   "fieldRaid.moonSet": "The full moon has set. {{monster}} sinks back into sleep.",
   "fieldRaid.wiped": "No one is left standing. {{monster}} sinks back into sleep.",
+  "fieldRaid.reward": "You received the {{item}} for summoning it.",
   "monsterName.terraclash": "Terraclash"
 }

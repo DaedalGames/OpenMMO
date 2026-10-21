@@ -712,5 +712,6 @@
   "fieldRaid.defeated": "{{monster}}は倒れ、再び眠りについた。",
   "fieldRaid.moonSet": "満月が沈んだ。{{monster}}は再び眠りにつく。",
   "fieldRaid.wiped": "立っている者はもういない。{{monster}}は再び眠りにつく。",
+  "fieldRaid.reward": "召喚の報酬として{{item}}を受け取った。",
   "monsterName.terraclash": "テラクラッシュ"
 }

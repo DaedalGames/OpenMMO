@@ -219,7 +219,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v125: `InvisibilityChanged` for the invisibility cloak wearer.
 /// v126: offering altars (`InspectAltar`/`OfferAtAltar`, `AltarStatus`,
 /// `FieldRaidNotice`).
-pub const PROTOCOL_VERSION: u32 = 126;
+/// v127: `FieldBossWaking` and the raid reward in `FieldRaidNotice`.
+pub const PROTOCOL_VERSION: u32 = 127;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from

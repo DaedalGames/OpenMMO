@@ -1643,6 +1643,15 @@ pub enum ServerMessage {
     FieldRaidNotice {
         monster: String,
         outcome: FieldRaidOutcome,
+        /// Item granted to this recipient for the raid.
+        reward: Option<String>,
+    },
+    /// An offering took; the boss rises from its dormant stand-in at
+    /// `position` once `wake_in_ms` has passed.
+    FieldBossWaking {
+        monster: String,
+        position: Position,
+        wake_in_ms: u32,
     },
     HouseSpawned {
         house: housing::HouseData,
@@ -2150,6 +2159,7 @@ impl ServerMessage {
             | Self::InteractionRejected { .. }
             | Self::AltarStatus { .. }
             | Self::FieldRaidNotice { .. }
+            | Self::FieldBossWaking { .. }
             | Self::HousePlacementStarted { .. }
             | Self::HousePlacementResult { .. }
             | Self::HouseDemolitionResult { .. }

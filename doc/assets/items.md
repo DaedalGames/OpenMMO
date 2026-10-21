@@ -2,7 +2,7 @@
 
 ## Helm of Brilliance — 광휘의 투구
 
-- 게임 등록(2026-10-17): `helm_of_brilliance` 머리 장비, 지능 +1(`int+1`), 조명(`light`), 방어 2, 무게 3, 기준가 30000. 상자·드롭 목록에 넣지 않았다(티어 5 레이드 소환자 보상 예정, [설계](../TIER5_FIELD_RAID.md)).
+- 게임 등록(2026-10-17): `helm_of_brilliance` 머리 장비, 지능 +1(`int+1`), 조명(`light`), 방어 2, 무게 3, 기준가 30000. 상자·드롭 목록에 넣지 않았다. 테라클래시 토벌 시 소환자에게 지급한다(2026-10-21, [설계](../TIER5_FIELD_RAID.md)).
   - 조명: 착용자 머리 위 3m에 Radiance와 같은 흔들림 없는 광원을 켠다. 횃불·Radiance·투구는 하나의 통합 광원을 공유해 밝기가 합산되지 않는다. 다른 플레이어에게는 방송되는 머리 장비로 판정한다.
   - 남성 착용: `client/public/models/characters/modular_male/helmet_brilliance.glb` — 남성 v3 피팅을 `tools/prepare-modular-character.mjs --part helmet_brilliance`로 KTX2 512²·meshopt 압축, 귀 보정(`body-occlusion.json`)을 scene extras `body_mask`로 넣었다. 기준 얼굴에만 적용한다. 착용 시에만 받는다.
   - 여성 착용: `client/public/models/characters/modular_female/brilliance_helmet.glb` — 여성 v3 피팅을 `tools/prepare-female-knight.mjs --part brilliance_helmet`로 WebP 2048²·귀 보정 포함 변환. 착용 시에만 받으며 머리카락을 숨긴다.

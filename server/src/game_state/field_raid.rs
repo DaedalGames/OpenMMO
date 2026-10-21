@@ -6,17 +6,29 @@ use super::passability::regions_around;
 use super::player_interaction::placement_position;
 use super::GameState;
 use crate::types::{MonsterLifecycle, PlayerId};
-use onlinerpg_shared::altar::{altar_def, AltarDef};
+use onlinerpg_shared::altar::{altar_def, is_stand_in, AltarDef};
 use onlinerpg_shared::furniture::FurniturePlacement;
 use onlinerpg_shared::messages::{AltarStatus, FieldRaidOutcome};
 use onlinerpg_shared::moon::is_full_moon_night;
 use onlinerpg_shared::{MonsterState, Position, ServerMessage};
+use std::borrow::Cow;
+use std::time::Duration;
 use tracing::{info, warn};
 
 /// Living characters within this of the boss keep the raid going.
 const BATTLE_ZONE_RADIUS_M: f32 = 40.0;
 /// Who hears how the raid ended.
 const NOTICE_RADIUS_M: f32 = 100.0;
+pub(crate) const FIELD_RAID_TICK: Duration = Duration::from_secs(1);
+/// Raid ticks from the offering to the boss standing up, so the client's
+/// crumbling stand-in has time to play.
+pub(super) const WAKE_TICKS: u8 = 3;
+/// When the client collapses the stand-in. The spawn lands on the last wake
+/// tick, up to one tick period later, inside the dust.
+const WAKE_IN_MS: u32 = (WAKE_TICKS as u32 - 1) * FIELD_RAID_TICK.as_millis() as u32;
+/// A stand-in this close to the boss is the one it rose from
+/// (`WOKEN_RADIUS_M` in the client's ObjectOverlay).
+const STAND_IN_RADIUS_M: f32 = 8.0;
 
 #[derive(Clone)]
 pub(crate) struct FieldRaid {
@@ -24,12 +36,20 @@ pub(crate) struct FieldRaid {
     position: Position,
     rotation: f32,
     phase: Phase,
+    /// The offering character, by character id since a reconnect changes
+    /// the player id mid-raid.
+    summoner: Option<i64>,
+    reward: Option<String>,
+    summoner_hit: bool,
 }
 
 #[derive(Clone)]
 enum Phase {
-    /// Offered; the next tick spawns the boss outside the offering's locks.
-    Waking,
+    /// Offered; the boss spawns outside the offering's locks on the tick
+    /// that brings this to zero.
+    Waking {
+        ticks_left: u8,
+    },
     Fighting {
         monster_id: String,
     },
@@ -125,6 +145,13 @@ impl GameState {
             return;
         }
         let (x, z, rotation) = def.spawn_pose(&altar);
+        // Ground, not the stand-in's base: that sits sunk into a slope.
+        let y = match self.ground_and_depth_at(x, z).await {
+            Some((ground, _)) => ground,
+            None => altar.y,
+        };
+        let position = Position { x, y, z };
+        let summoner = self.character_id_of(player_id).await;
         // Raid state and the item go together, so a valid offering always
         // opens exactly one raid and a refused one keeps its item.
         let snapshot = {
@@ -142,9 +169,14 @@ impl GameState {
             if consumed.is_some() {
                 *raid = Some(FieldRaid {
                     monster_type: def.monster.clone(),
-                    position: Position { x, y: altar.y, z },
+                    position,
                     rotation,
-                    phase: Phase::Waking,
+                    phase: Phase::Waking {
+                        ticks_left: WAKE_TICKS,
+                    },
+                    summoner,
+                    reward: def.reward.clone(),
+                    summoner_hit: false,
                 });
             }
             consumed
@@ -161,6 +193,35 @@ impl GameState {
             "{player_id} offered at {} ({:.1},{:.1}); {} wakes at ({x:.1},{z:.1})",
             altar.type_id, altar.x, altar.z, def.monster,
         );
+        let nearby = self
+            .player_ids_within_position(&position, 0, NOTICE_RADIUS_M)
+            .await;
+        self.send_direct_message_to_players(
+            &nearby,
+            ServerMessage::FieldBossWaking {
+                monster: def.monster.clone(),
+                position,
+                wake_in_ms: WAKE_IN_MS,
+            },
+        )
+        .await;
+    }
+
+    /// A damaging hit on the raid boss; only the summoner's first one matters.
+    pub(super) async fn record_field_raid_hit(&self, player_id: &PlayerId, damage: u32) {
+        if damage == 0 {
+            return;
+        }
+        let summoner = match self.field_raid.lock().await.as_ref() {
+            Some(raid) if !raid.summoner_hit => raid.summoner,
+            _ => return,
+        };
+        if summoner.is_none() || self.character_id_of(player_id).await != summoner {
+            return;
+        }
+        if let Some(raid) = self.field_raid.lock().await.as_mut() {
+            raid.summoner_hit = true;
+        }
     }
 
     /// Wake the boss after an offering; end the raid on a kill, a set moon or
@@ -171,11 +232,19 @@ impl GameState {
             return;
         };
         match raid.phase {
-            Phase::Waking => match self.wake_field_boss(&raid).await {
+            Phase::Waking { ticks_left } if ticks_left > 1 => {
+                if let Some(raid) = self.field_raid.lock().await.as_mut() {
+                    raid.phase = Phase::Waking {
+                        ticks_left: ticks_left - 1,
+                    };
+                }
+            }
+            Phase::Waking { .. } => match self.wake_field_boss(&raid).await {
                 Some(monster_id) => {
                     if let Some(raid) = self.field_raid.lock().await.as_mut() {
                         raid.phase = Phase::Fighting { monster_id };
                     }
+                    self.set_field_boss_up_at(raid.position, true);
                 }
                 None => {
                     warn!(
@@ -196,7 +265,7 @@ impl GameState {
                     FieldRaidOutcome::Defeated
                 } else if !is_full_moon_night(&self.current_game_datetime()) {
                     FieldRaidOutcome::MoonSet
-                } else if !self.anyone_alive_near(&raid.position).await {
+                } else if self.living_near(&raid.position).await.is_empty() {
                     FieldRaidOutcome::Wiped
                 } else {
                     return;
@@ -206,23 +275,64 @@ impl GameState {
         }
     }
 
-    async fn anyone_alive_near(&self, center: &Position) -> bool {
-        let ids = self
+    /// `placements` minus a stand-in the raid boss stands on.
+    pub(super) fn without_woken_stand_in<'a>(
+        &self,
+        placements: &'a [FurniturePlacement],
+    ) -> Cow<'a, [FurniturePlacement]> {
+        let Some(at) = *self
+            .field_boss_up_at
+            .read()
+            .unwrap_or_else(|e| e.into_inner())
+        else {
+            return Cow::Borrowed(placements);
+        };
+        let woken = |p: &FurniturePlacement| {
+            is_stand_in(&p.type_id)
+                && placement_position(p).dist_xz_sq(&at) <= STAND_IN_RADIUS_M * STAND_IN_RADIUS_M
+        };
+        if !placements.iter().any(woken) {
+            return Cow::Borrowed(placements);
+        }
+        placements.iter().filter(|p| !woken(p)).cloned().collect()
+    }
+
+    /// Record the boss up or down and rebuild the stand-in regions' collision.
+    fn set_field_boss_up_at(&self, at: Position, up: bool) {
+        *self
+            .field_boss_up_at
+            .write()
+            .unwrap_or_else(|e| e.into_inner()) = up.then_some(at);
+        let regions: Vec<_> = {
+            let index = self
+                .interaction_furniture
+                .read()
+                .unwrap_or_else(|e| e.into_inner());
+            regions_around(at.x, at.z)
+                .filter_map(|key| Some((key, index.get(&key)?)))
+                .filter(|(_, placements)| placements.iter().any(|p| is_stand_in(&p.type_id)))
+                .map(|(key, placements)| (key, placements.clone()))
+                .collect()
+        };
+        for ((rx, rz), placements) in regions {
+            self.sync_region_furniture(rx, rz, &placements);
+        }
+    }
+
+    /// Living characters in the battle zone.
+    async fn living_near(&self, center: &Position) -> Vec<PlayerId> {
+        let mut ids = self
             .player_ids_within_position(center, 0, BATTLE_ZONE_RADIUS_M)
             .await;
         let players = self.players.read().await;
-        ids.iter()
-            .any(|id| players.get(id).is_some_and(|p| p.health > 0))
+        ids.retain(|id| players.get(id).is_some_and(|p| p.health > 0));
+        ids
     }
 
     async fn wake_field_boss(&self, raid: &FieldRaid) -> Option<String> {
-        let mut position = raid.position;
-        if let Some((ground, _)) = self.ground_and_depth_at(position.x, position.z).await {
-            position.y = ground;
-        }
         self.spawn_monster(
             raid.monster_type.clone(),
-            position,
+            raid.position,
             raid.rotation,
             0,
             MonsterLifecycle::FieldRaid,
@@ -236,22 +346,50 @@ impl GameState {
     /// A defeated boss is left to the kill's own corpse timer.
     async fn end_field_raid(&self, raid: &FieldRaid, monster_id: &str, outcome: FieldRaidOutcome) {
         *self.field_raid.lock().await = None;
+        self.set_field_boss_up_at(raid.position, false);
         if outcome != FieldRaidOutcome::Defeated {
             self.despawn_monsters(vec![monster_id.to_string()]).await;
         }
         info!("Field raid {} ended: {outcome:?}", raid.monster_type);
+        let rewarded = match outcome {
+            FieldRaidOutcome::Defeated => self.grant_summoner_reward(raid).await,
+            _ => None,
+        };
         // The raiders gathered before the offering; only those around hear it.
         let nearby = self
             .player_ids_within_position(&raid.position, 0, NOTICE_RADIUS_M)
             .await;
-        self.send_direct_message_to_players(
-            &nearby,
-            ServerMessage::FieldRaidNotice {
-                monster: raid.monster_type.clone(),
-                outcome,
-            },
-        )
-        .await;
+        let notice = |reward| ServerMessage::FieldRaidNotice {
+            monster: raid.monster_type.clone(),
+            outcome,
+            reward,
+        };
+        self.send_direct_message_to_players_except(&nearby, notice(None), rewarded.as_ref())
+            .await;
+        if let Some(summoner) = rewarded {
+            self.send_direct_message(&summoner, notice(raid.reward.clone()))
+                .await;
+        }
+    }
+
+    /// The summoner earns the altar's reward by hitting the boss and standing
+    /// alive in the battle zone when it falls (doc/TIER5_FIELD_RAID.md).
+    async fn grant_summoner_reward(&self, raid: &FieldRaid) -> Option<PlayerId> {
+        let reward = raid.reward.as_deref()?;
+        if !raid.summoner_hit {
+            return None;
+        }
+        let player_id = self.player_id_of_character(raid.summoner?).await?;
+        if !self.living_near(&raid.position).await.contains(&player_id) {
+            return None;
+        }
+        self.award_item(&player_id, reward).await;
+        info!(
+            "Field raid {}: summoner {} earned {reward}",
+            raid.monster_type,
+            self.player_name_of(&player_id).await
+        );
+        Some(player_id)
     }
 
     pub(super) fn full_moon_command(&self) -> Result<String, String> {

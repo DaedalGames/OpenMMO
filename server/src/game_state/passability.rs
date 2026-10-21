@@ -396,8 +396,9 @@ impl super::GameState {
         self.sync_beds(rx, rz, placements);
         self.sync_dining(rx, rz, placements);
         let key = furniture::region_cache_key(rx, rz);
+        let solid = self.without_woken_stand_in(placements);
         let mut cache = self.passability_write();
-        match furniture::build_furniture_passability_for_placements(placements) {
+        match furniture::build_furniture_passability_for_placements(&solid) {
             Some(rp) => {
                 cache.insert(key, rp);
                 true

@@ -97,7 +97,62 @@ class MonsterManager {
       return dungeonManager.floorHeightAt(-fl, x, z) ?? fallbackY
     }
     if (!this.heightManager) return fallbackY
-    return this.heightManager.groundYOrNull(x, z)
+    const y = this.heightManager.groundYOrNull(x, z)
+    const footprint = getMonsterDef(monster.type)?.footprint
+    if (y === null || fl !== 0 || !footprint) return y
+    return this.lowestUnderBody(monster, footprint, x, z, y)
+  }
+
+  /** `halfWidth|front|back` → body-frame sample points (corners, edge
+   *  midpoints), parsed once per footprint. */
+  private bodySamples = new Map<string, [number, number][]>()
+  /** Last settled height per bodied monster; they rarely move or turn. */
+  private bodyGround = new Map<
+    string,
+    { x: number; z: number; rotation: number; y: number }
+  >()
+
+  /** A body on a slope settles to its lowest corner, so no edge floats over
+   *  the downhill side. `footprint` is `halfWidth|front|back` (monsters.csv). */
+  private lowestUnderBody(
+    monster: MonsterData,
+    footprint: string,
+    x: number,
+    z: number,
+    centerY: number
+  ): number {
+    const { rotation } = monster
+    const cached = this.bodyGround.get(monster.id)
+    if (
+      cached &&
+      cached.x === x &&
+      cached.z === z &&
+      cached.rotation === rotation
+    )
+      return cached.y
+    let samples = this.bodySamples.get(footprint)
+    if (!samples) {
+      const [halfWidth, front, back] = footprint.split('|').map(Number)
+      samples = [-halfWidth, 0, halfWidth].flatMap((lx) =>
+        [front, 0, -back].map((lz): [number, number] => [lx, lz])
+      )
+      this.bodySamples.set(footprint, samples)
+    }
+    const s = Math.sin(rotation)
+    const c = Math.cos(rotation)
+    let lowest = centerY
+    let complete = true
+    for (const [lx, lz] of samples) {
+      const y = this.heightManager!.groundYOrNull(
+        wrapWorldX(x + lx * c + lz * s),
+        z - lx * s + lz * c
+      )
+      if (y === null) complete = false
+      else if (y < lowest) lowest = y
+    }
+    // Unloaded tiles may hold a lower corner; ask again next frame.
+    if (complete) this.bodyGround.set(monster.id, { x, z, rotation, y: lowest })
+    return lowest
   }
 
   private monsterGroundY(monster: MonsterData, x: number, z: number): number {
@@ -188,6 +243,7 @@ class MonsterManager {
   remove(id: string) {
     this.monsters.delete(id)
     this.removeBody(id)
+    this.bodyGround.delete(id)
   }
 
   // Whether a killing blow should play the hit reaction before the death clip.
@@ -453,6 +509,7 @@ class MonsterManager {
 
   reset() {
     for (const id of [...this.bodies]) this.removeBody(id)
+    this.bodyGround.clear()
     this.monsters.clear()
     clearXpArrival()
   }

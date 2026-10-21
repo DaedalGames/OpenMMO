@@ -2,6 +2,8 @@ import { translate, type MessageKey } from '../i18n'
 import { itemDisplayName } from '../data/itemDefs'
 import { addChatMessage } from '../stores/gameStore'
 import { altarOffering } from '../stores/altarStore'
+import { pushFieldBossWake } from '../stores/fieldBossWakeStore'
+import type { Position } from './networkTypes'
 
 /** `AltarStatus` in shared/src/messages.rs, serde externally tagged. */
 type AltarStatus =
@@ -51,10 +53,29 @@ export function handleAltarStatus(data: {
 export function handleFieldRaidNotice(data: {
   monster: string
   outcome: FieldRaidOutcome
+  reward: string | null
 }) {
   systemLine(
     translate(OUTCOME_KEYS[data.outcome], {
       monster: monsterName(data.monster),
     })
   )
+  if (data.reward) {
+    systemLine(
+      translate('fieldRaid.reward', { item: itemDisplayName(data.reward) })
+    )
+  }
+}
+
+export function handleFieldBossWaking(data: {
+  monster: string
+  position: Position
+  wake_in_ms: number
+}) {
+  pushFieldBossWake({
+    monster: data.monster,
+    position: data.position,
+    startedAt: Date.now(),
+    collapseMs: data.wake_in_ms,
+  })
 }

@@ -21,7 +21,8 @@ impl From<EffectiveStats> for ServerMessage {
     }
 }
 use crate::types::{
-    AttackRejectReason, CharacterClass, MonsterState, PlayerId, Position, ServerMessage,
+    AttackRejectReason, CharacterClass, MonsterLifecycle, MonsterState, PlayerId, Position,
+    ServerMessage,
 };
 use onlinerpg_shared::inventory::{EquipSlot, GroundItem, ItemInstance, PlayerInventory};
 use onlinerpg_shared::monster_body::reach_point;
@@ -999,6 +1000,7 @@ impl super::GameState {
             // Damage and the kill claim share one guard, so a second attacker
             // landing at the same instant sees Dead and stops.
             let mut dealt = 0;
+            let mut field_raid_boss = false;
             let is_dead = {
                 let mut monsters = self.monsters.write().await;
                 let mut died = false;
@@ -1009,6 +1011,7 @@ impl super::GameState {
                     }
 
                     dealt = result_damage.min(monster.health);
+                    field_raid_boss = monster.lifecycle == MonsterLifecycle::FieldRaid;
                     monster.health = monster.health.saturating_sub(result_damage);
                     self.interest_lock().refresh_monster(monster);
                     debug!(
@@ -1029,6 +1032,8 @@ impl super::GameState {
             };
             if monster_floor_level < 0 {
                 self.record_boss_damage(&monster_id, player_id, dealt).await;
+            } else if field_raid_boss {
+                self.record_field_raid_hit(player_id, dealt).await;
             }
             if !is_dead {
                 self.brain_hit(&monster_id, player_id, true, result_damage)

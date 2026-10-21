@@ -1,5 +1,5 @@
-//! Offering altars: catalog objects that consume an item to wake a field boss
-//! (doc/TIER5_FIELD_RAID.md).
+//! Offering altars: catalog objects that consume an item to wake a field boss,
+//! and the dormant stand-ins the boss rises from (doc/TIER5_FIELD_RAID.md).
 
 use std::collections::HashMap;
 use std::sync::OnceLock;
@@ -16,6 +16,9 @@ pub struct AltarDef {
     /// Boss position in the altar's frame (+Z = altar front), so moving or
     /// turning the altar in the editor carries the wake spot with it.
     pub spawn: AltarSpawn,
+    /// Granted to the summoner when the raid is won with them in it.
+    #[serde(default)]
+    pub reward: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, serde::Deserialize)]
@@ -28,21 +31,42 @@ pub struct AltarSpawn {
 }
 
 #[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct CatalogEntry {
     id: String,
     altar: Option<AltarDef>,
+    dormant_monster: Option<String>,
+}
+
+fn catalog() -> &'static [CatalogEntry] {
+    static ENTRIES: OnceLock<Vec<CatalogEntry>> = OnceLock::new();
+    ENTRIES.get_or_init(|| {
+        serde_json::from_str(CATALOG_JSON).expect("data/object_catalog.json is malformed")
+    })
 }
 
 fn altars() -> &'static HashMap<String, AltarDef> {
     static TABLE: OnceLock<HashMap<String, AltarDef>> = OnceLock::new();
     TABLE.get_or_init(|| {
-        let entries: Vec<CatalogEntry> =
-            serde_json::from_str(CATALOG_JSON).expect("data/object_catalog.json is malformed");
-        entries
-            .into_iter()
-            .filter_map(|e| Some((e.id, e.altar?)))
+        catalog()
+            .iter()
+            .filter_map(|e| Some((e.id.clone(), e.altar.clone()?)))
             .collect()
     })
+}
+
+/// Catalog objects a dormant boss lies as (`dormantMonster`). A woken one
+/// stops being solid so only the boss body blocks.
+pub fn is_stand_in(type_id: &str) -> bool {
+    static IDS: OnceLock<Vec<&'static str>> = OnceLock::new();
+    IDS.get_or_init(|| {
+        catalog()
+            .iter()
+            .filter(|e| e.dormant_monster.is_some())
+            .map(|e| e.id.as_str())
+            .collect()
+    })
+    .contains(&type_id)
 }
 
 pub fn altar_def(type_id: &str) -> Option<&'static AltarDef> {

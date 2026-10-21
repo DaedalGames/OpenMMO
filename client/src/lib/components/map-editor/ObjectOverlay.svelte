@@ -1,7 +1,11 @@
 <script lang="ts">
   import * as THREE from 'three'
-  import { T } from '@threlte/core'
-  import { onDestroy } from 'svelte'
+  import { T, useLoader, useThrelte } from '@threlte/core'
+  import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+  import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
+  import { getMonsterDef } from '../../data/monsterDefs'
+  import { onDestroy, untrack } from 'svelte'
+  import type { WebGPURenderer } from 'three/webgpu'
   import {
     editorTool,
     currentObjectData,
@@ -39,6 +43,14 @@
     TorchFireParticles,
     type FireParticles,
   } from '../../effects/fire-particles'
+  import {
+    DORMANT_SINK_MS,
+    DormantWakeEffect,
+  } from '../../effects/dormant-wake'
+  import {
+    takeFieldBossWakes,
+    type FieldBossWake,
+  } from '../../stores/fieldBossWakeStore'
   import { getObjectModelPath } from '../../utils/modelPaths'
   import { createSelectionBox } from '../../utils/objectSelectionBox'
   import {
@@ -78,7 +90,7 @@
       const { rx, rz } = lastLoadedRegion
       if (Number.isNaN(rx)) return
       bridgeManager.syncRegion(rx, rz, v.placements, objectDefsById)
-      furnitureManager.syncRegion(rx, rz, v.placements)
+      syncFurniture(v.placements)
     }),
     selectedObjectPlacementId.subscribe((v) => (selectedId = v)),
     objectPreviewPos.subscribe((v) => (previewPos = v)),
@@ -343,6 +355,8 @@
   }
 
   export function update(deltaTime: number, camera: THREE.Camera | undefined) {
+    for (const w of takeFieldBossWakes()) startWake(w)
+    if (wake && camera) stepWake(camera)
     if (!fireRoot.visible) return
     for (const s of _activeFires) s.update(deltaTime, camera)
   }
@@ -382,13 +396,10 @@
   const wokenKey = $derived.by(() => {
     if (standIns.length === 0) return ''
     const ids: number[] = []
-    for (const { p, kind } of standIns) {
+    for (const standIn of standIns) {
       for (const m of monsterManager.monsters.values()) {
-        if (m.type !== kind) continue
-        const dx = shortestWrappedDeltaX(p.x, m.position.x)
-        const dz = m.position.z - p.z
-        if (dx * dx + dz * dz <= WOKEN_RADIUS_M ** 2) {
-          ids.push(p.id)
+        if (risesFrom(standIn, m.type, m.position)) {
+          ids.push(standIn.p.id)
           break
         }
       }
@@ -398,6 +409,128 @@
   const wokenIds = $derived(
     new Set(wokenKey ? wokenKey.split(',').map(Number) : [])
   )
+
+  function risesFrom(
+    standIn: { p: ObjectPlacement; kind: string },
+    monster: string,
+    at: Position
+  ) {
+    if (standIn.kind !== monster) return false
+    const dx = shortestWrappedDeltaX(standIn.p.x, at.x)
+    const dz = at.z - standIn.p.z
+    return dx * dx + dz * dz <= WOKEN_RADIUS_M ** 2
+  }
+
+  /** A woken stand-in is not solid, so only the boss body blocks. */
+  let unsolidIds: Set<number> = new Set()
+  function syncFurniture(all: ObjectPlacement[]) {
+    const { rx, rz } = lastLoadedRegion
+    if (Number.isNaN(rx)) return
+    const solid = unsolidIds.size
+      ? all.filter((p) => !unsolidIds.has(p.id))
+      : all
+    furnitureManager.syncRegion(rx, rz, solid)
+  }
+  $effect(() => {
+    const ids = wokenIds
+    if (ids.size === 0 && unsolidIds.size === 0) return
+    unsolidIds = ids
+    untrack(() => syncFurniture(placements))
+  })
+
+  const wakeEffect = new DormantWakeEffect()
+  const { renderer, camera: sceneCamera, scene } = useThrelte()
+  let wake: {
+    p: ObjectPlacement
+    startedAt: number
+    collapseMs: number
+    height: number
+  } | null = null
+  const _wakeBox = new THREE.Box3()
+  // Same loader and key as Monster.svelte, so the boss model is cached by
+  // the time it spawns inside the dust.
+  const monsterLoader = useLoader(GLTFLoader, {
+    extend: (loader) => loader.setMeshoptDecoder(MeshoptDecoder),
+  })
+
+  // Compile once a stand-in is near: the wake plays at its most watched moment.
+  let wakeWarmed = false
+  $effect(() => {
+    if (wakeWarmed || standIns.length === 0) return
+    wakeWarmed = true
+    wakeEffect.group.visible = true
+    void (renderer as unknown as WebGPURenderer)
+      .compileAsync(wakeEffect.group, $sceneCamera, scene)
+      .catch((error) => console.error('Wake shader warmup failed', error))
+      .finally(() => {
+        if (!wake) wakeEffect.clear()
+      })
+  })
+
+  function startWake(w: FieldBossWake) {
+    const model = getMonsterDef(w.monster)?.model
+    if (model) monsterLoader.load(`/models/${model}`)
+    const standIn = standIns.find((s) => risesFrom(s, w.monster, w.position))
+    const clone = standIn && cloneById.get(standIn.p.id)
+    if (!standIn || !clone?.parent) return
+    if (wake) endWake()
+    const { p } = standIn
+    applyPlacementTransform(clone, p)
+    _wakeBox.setFromObject(clone)
+    const ground = w.position.y
+    const height = Math.max(1, _wakeBox.max.y - ground)
+    wakeEffect.start(
+      {
+        x: (_wakeBox.min.x + _wakeBox.max.x) / 2,
+        y: ground,
+        z: (_wakeBox.min.z + _wakeBox.max.z) / 2,
+        halfX: ((_wakeBox.max.x - _wakeBox.min.x) / 2) * 0.9,
+        halfZ: ((_wakeBox.max.z - _wakeBox.min.z) / 2) * 0.9,
+        height,
+      },
+      w.collapseMs
+    )
+    wake = { p, startedAt: w.startedAt, collapseMs: w.collapseMs, height }
+  }
+
+  function stepWake(camera: THREE.Camera) {
+    if (!wake) return
+    const elapsed = Date.now() - wake.startedAt
+    if (!wakeEffect.update(elapsed, camera)) {
+      endWake()
+      return
+    }
+    const { p, collapseMs, height } = wake
+    const clone = cloneById.get(p.id)
+    if (!clone) return
+    if (elapsed >= collapseMs + DORMANT_SINK_MS) {
+      // Hidden directly: a reactive flag would rebuild every placement.
+      clone.visible = false
+    } else {
+      const rumble = Math.min(1, elapsed / collapseMs)
+      const sink = Math.max(0, (elapsed - collapseMs) / DORMANT_SINK_MS)
+      const amp = 0.03 + 0.12 * rumble * rumble
+      const t = elapsed / 1000
+      applyPlacementTransform(clone, p)
+      clone.position.x += Math.sin(t * 53) * amp
+      clone.position.z += Math.sin(t * 47 + 1.3) * amp
+      clone.position.y +=
+        Math.sin(t * 61) * amp * 0.3 - sink * sink * height * 0.6
+      clone.rotation.z += Math.sin(t * 29) * amp * 0.02
+    }
+  }
+
+  /** The boss stands on the stand-in by now, which keeps it hidden. */
+  function endWake() {
+    if (!wake) return
+    const { p } = wake
+    wake = null
+    wakeEffect.clear()
+    const clone = cloneById.get(p.id)
+    if (!clone) return
+    applyPlacementTransform(clone, p)
+    clone.visible = true
+  }
 
   /** Placements currently shown, after floor + house filtering. */
   function visiblePlacements(visibleFloor: number): ObjectPlacement[] {
@@ -627,9 +760,11 @@
   export function setVisible(visible: boolean) {
     group.visible = visible
     fireRoot.visible = visible
+    if (!visible) endWake()
   }
 
   onDestroy(() => {
+    wakeEffect.dispose()
     for (const e of fireSystems.values()) e.system.dispose()
     fireSystems.clear()
     for (const obj of new Set([...group.children, ...cloneById.values()])) {
@@ -645,3 +780,4 @@
 
 <T is={group} />
 <T is={fireRoot} />
+<T is={wakeEffect.group} />

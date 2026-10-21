@@ -5,7 +5,11 @@ import {
 } from '../stores/announcementStore'
 import { translate, type MessageKey } from '../i18n'
 import { isCoinPileJackpot } from './coinPileJackpot'
-import { handleAltarStatus, handleFieldRaidNotice } from './altarMessages'
+import {
+  handleAltarStatus,
+  handleFieldBossWaking,
+  handleFieldRaidNotice,
+} from './altarMessages'
 import {
   playTeleportEffect,
   finishTeleportArrival,
@@ -2001,6 +2005,10 @@ export function handleServerMessage(
 
     case 'FieldRaidNotice':
       handleFieldRaidNotice(data)
+      break
+
+    case 'FieldBossWaking':
+      handleFieldBossWaking(data)
       break
 
     case 'InteractionRejected': {

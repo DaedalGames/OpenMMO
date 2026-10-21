@@ -743,7 +743,7 @@ async fn main() -> ExitCode {
     let game_state_for_raid = Arc::clone(&game_state);
     background.spawn(run_ticks(
         "field_raid",
-        Duration::from_secs(1),
+        game_state::FIELD_RAID_TICK,
         drain_shutdown.clone(),
         &health,
         health::Deadline::FromPeriod,

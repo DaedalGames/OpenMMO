@@ -322,7 +322,8 @@
     "altar": {
       "offering": "earth_amulet",
       "monster": "terraclash",
-      "spawn": { "x": 3.1, "z": -13.7, "rotation": 0 }
+      "spawn": { "x": 3.1, "z": -13.7, "rotation": 0 },
+      "reward": "helm_of_brilliance"
     }
   }
 ]

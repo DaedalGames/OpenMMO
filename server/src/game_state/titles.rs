@@ -182,7 +182,7 @@ impl GameState {
         }
     }
 
-    async fn player_id_of_character(&self, character_id: i64) -> Option<PlayerId> {
+    pub(super) async fn player_id_of_character(&self, character_id: i64) -> Option<PlayerId> {
         let characters = self.player_characters.read().await;
         characters
             .iter()
