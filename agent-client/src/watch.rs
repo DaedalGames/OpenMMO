@@ -516,6 +516,7 @@ pub fn feed_kind(msg: &onlinerpg_shared::ServerMessage) -> Option<&'static str> 
         M::ChatMessage { .. } | M::PartyChatMessage { .. } | M::PlayerMusicStarted { .. } => "chat",
         M::PlayerAttacked { .. }
         | M::MonsterAttackedPlayer { .. }
+        | M::MonsterSkillStruck { .. }
         | M::MonsterDead { .. }
         | M::PlayerDead { .. }
         | M::PlayerRespawned { .. }

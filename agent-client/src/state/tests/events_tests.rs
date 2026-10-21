@@ -1,4 +1,5 @@
 use super::*;
+use onlinerpg_shared::messages::SkillVictim;
 
 #[test]
 fn mana_updates_are_tracked_at_zero_and_cleared_on_character_change() {
@@ -326,9 +327,10 @@ fn a_fresh_drop_is_sighted_immediately() {
     );
 }
 
-/// Monster damage arrives only via MonsterAttackedPlayer/PlayerDead; both
-/// must land in the local health mirrors, or a dead body reads as alive to
-/// everything gated on it (auto-respawn, own-monster targeting).
+/// Monster damage arrives only via MonsterAttackedPlayer, MonsterSkillStruck
+/// and PlayerDead; each must land in the local health mirrors, or a dead body
+/// reads as alive to everything gated on it (auto-respawn, own-monster
+/// targeting).
 #[test]
 fn monster_damage_and_death_update_local_health() {
     let (mut s, _rx) = test_state();
@@ -360,6 +362,25 @@ fn monster_damage_and_death_update_local_health() {
         ranged: false,
     });
     assert_eq!(s.nearby_players[&PlayerId::from(2)].health, 4);
+
+    s.push_event(ServerMessage::MonsterSkillStruck {
+        monster_id: "m1".to_string(),
+        skill: onlinerpg_shared::monster_ai::MonsterSkillId::EarthRoar,
+        victims: vec![
+            SkillVictim {
+                player_id: PlayerId::from(1),
+                damage: 165,
+                current_health: 2,
+            },
+            SkillVictim {
+                player_id: PlayerId::from(2),
+                damage: 165,
+                current_health: 1,
+            },
+        ],
+    });
+    assert_eq!(s.self_player.as_ref().unwrap().health, 2);
+    assert_eq!(s.nearby_players[&PlayerId::from(2)].health, 1);
 
     s.push_event(ServerMessage::PlayerDead {
         player_id: PlayerId::from(1),

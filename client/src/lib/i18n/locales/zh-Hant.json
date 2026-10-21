@@ -445,6 +445,8 @@
   "system.grillInterrupted": "燒烤已中斷。",
   "combat.monster": "怪物",
   "combat.monsterHit": "擲出{{roll}}：命中{{name}}，造成{{damage}}點傷害！",
+  "combat.skillStruck": "命中{{count}}人！",
+  "combat.skillStruckYou": "命中{{count}}人！你受到{{damage}}點傷害！",
   "combat.youSlain": "你被擊殺了！",
   "combat.playerSlain": "{{name}}被擊殺了！",
   "combat.attackRejected": "無法攻擊：{{reason}}",

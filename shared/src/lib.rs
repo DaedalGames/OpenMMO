@@ -220,7 +220,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v126: offering altars (`InspectAltar`/`OfferAtAltar`, `AltarStatus`,
 /// `FieldRaidNotice`).
 /// v127: `FieldBossWaking`, `FieldBossSleeping`, the raid reward in
-/// `FieldRaidNotice`, `MonsterGroundStrike`, and Terraclash's `EarthRoar`.
+/// `FieldRaidNotice`, `MonsterGroundStrike`, Terraclash's `EarthRoar`, and
+/// `MonsterSkillStruck` in place of a `MonsterAttackedPlayer` per skill victim.
 pub const PROTOCOL_VERSION: u32 = 127;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by

@@ -264,9 +264,9 @@ const RECITAL_BUBBLE_MS = 12000
 // scream never doubles; deaths with no blow behind them (debuff ticks) still
 // cry on PlayerDead alone.
 const DEATH_CRY_WINDOW_MS = 2000
-const deathCriedAt = new Map<string, number>()
+const deathCriedAt = new Map<number, number>()
 
-function claimPlayerDeath(playerId: string) {
+function claimPlayerDeath(playerId: number) {
   const now = performance.now()
   for (const [id, at] of deathCriedAt) {
     if (now - at >= DEATH_CRY_WINDOW_MS) deathCriedAt.delete(id)
@@ -1504,6 +1504,10 @@ export function handleServerMessage(
       })
       break
 
+    case 'MonsterSkillStruck':
+      handleMonsterSkillStruck(data.victims)
+      break
+
     case 'MonsterAttackedPlayer': {
       const gameState = get(gameStore)
       const isCurrentPlayer = gameState.currentPlayer?.id === data.player_id
@@ -1527,16 +1531,13 @@ export function handleServerMessage(
         ? 0
         : monsterManager.getMonsterAttackDamageTextDelayMs(data.monster_id)
 
-      if (isCurrentPlayer) {
-        emitCurrentPlayerDamageInfo(
-          data.player_id,
-          data.damage,
-          data.hit,
-          data.current_health,
-          impactDelayMs
-        )
-      }
-
+      reactToMonsterBlow(
+        data.player_id,
+        data.hit,
+        data.damage,
+        data.current_health,
+        impactDelayMs
+      )
       if (!data.hit && !data.ranged) {
         // Whoosh with the monster's weapon material; unarmed types fall
         // through to the default miss sound.
@@ -1548,17 +1549,6 @@ export function handleServerMessage(
           impactDelayMs
         )
       }
-      if (data.hit && data.damage > 0 && target) {
-        if (data.current_health <= 0) {
-          if (claimPlayerDeath(data.player_id)) {
-            playPlayerDeathSound(target.gender)
-          }
-        } else {
-          playPlayerHurtSound(target.gender, impactDelayMs)
-          emitPlayerHit(data.player_id, isCurrentPlayer, impactDelayMs)
-        }
-      }
-
       updatePlayer(data.player_id, {
         health: data.current_health,
       })
@@ -2831,4 +2821,65 @@ const ATTACK_REJECTION_MESSAGES: Record<string, MessageKey> = {
   out_of_range: 'combat.out_of_range',
   attacker_dead: 'combat.attackerDead',
   out_of_ammo: 'combat.outOfAmmo',
+}
+
+/** A monster's blow on one player: the local damage readout, then the
+ *  target's cry and flinch. `groan` false keeps a crowd hit to a few voices. */
+function reactToMonsterBlow(
+  playerId: number,
+  hit: boolean,
+  damage: number,
+  currentHealth: number,
+  delayMs: number,
+  groan = true
+) {
+  const gameState = get(gameStore)
+  const isCurrentPlayer = gameState.currentPlayer?.id === playerId
+  const target = isCurrentPlayer
+    ? gameState.currentPlayer
+    : gameState.otherPlayers.get(playerId)
+  if (isCurrentPlayer) {
+    emitCurrentPlayerDamageInfo(playerId, damage, hit, currentHealth, delayMs)
+  }
+  if (!hit || damage <= 0 || !target) return
+  if (currentHealth <= 0) {
+    if (claimPlayerDeath(playerId)) playPlayerDeathSound(target.gender)
+  } else {
+    if (groan) playPlayerHurtSound(target.gender, delayMs)
+    emitPlayerHit(playerId, isCurrentPlayer, delayMs)
+  }
+}
+
+// A crowd hit at once groans as a few voices, not dozens.
+const SKILL_HURT_SOUNDS = 3
+
+/** One strike on many players, with a single combat line instead of one per
+ *  victim. Their HP comes in each victim's `PlayerHealthUpdate`. */
+function handleMonsterSkillStruck(
+  victims: { player_id: number; damage: number; current_health: number }[]
+) {
+  const selfId = get(gameStore).currentPlayer?.id
+  const own = victims.find((v) => v.player_id === selfId)
+  let groans = own ? 1 : 0
+  for (const v of victims) {
+    reactToMonsterBlow(
+      v.player_id,
+      true,
+      v.damage,
+      v.current_health,
+      0,
+      v === own || groans++ < SKILL_HURT_SOUNDS
+    )
+  }
+  addCombatMessage({
+    text: own
+      ? translate('combat.skillStruckYou', {
+          count: victims.length,
+          damage: own.damage,
+        })
+      : translate('combat.skillStruck', { count: victims.length }),
+    sender: 'system',
+    name: translate('combat.monster'),
+    hit: true,
+  })
 }

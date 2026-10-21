@@ -445,6 +445,8 @@
   "system.grillInterrupted": "調理が中断されました。",
   "combat.monster": "モンスター",
   "combat.monsterHit": "出目{{roll}}：{{name}}に命中！{{damage}}ダメージ！",
+  "combat.skillStruck": "{{count}}人に命中！",
+  "combat.skillStruckYou": "{{count}}人に命中！あなたに{{damage}}のダメージ！",
   "combat.youSlain": "倒されました！",
   "combat.playerSlain": "{{name}}が倒されました！",
   "combat.attackRejected": "攻撃不可：{{reason}}",

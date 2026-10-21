@@ -445,6 +445,8 @@
   "system.grillInterrupted": "Your grilling was interrupted.",
   "combat.monster": "Monster",
   "combat.monsterHit": "rolled {{roll}}: HIT {{name}} for {{damage}} damage!",
+  "combat.skillStruck": "HIT {{count}} players!",
+  "combat.skillStruckYou": "HIT {{count}} players, you for {{damage}} damage!",
   "combat.youSlain": "You have been slain!",
   "combat.playerSlain": "{{name}} has been slain!",
   "combat.attackRejected": "attack rejected: {{reason}}",

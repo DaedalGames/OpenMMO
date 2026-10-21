@@ -456,13 +456,13 @@ async fn barkans_rune_slash_strikes_the_fan_in_front_after_the_windup() {
     let struck = |messages: &[ServerMessage]| -> Vec<PlayerId> {
         messages
             .iter()
-            .filter_map(|m| match m {
-                ServerMessage::MonsterAttackedPlayer {
+            .flat_map(|m| match m {
+                ServerMessage::MonsterSkillStruck {
                     monster_id,
-                    player_id,
+                    victims,
                     ..
-                } if monster_id == &barkan => Some(*player_id),
-                _ => None,
+                } if monster_id == &barkan => victims.iter().map(|v| v.player_id).collect(),
+                _ => Vec::new(),
             })
             .collect()
     };
@@ -541,7 +541,7 @@ async fn terraclashs_roar_strikes_around_its_body_for_a_fixed_amount() {
         "the roar reaches as far as the ranged swing"
     );
     let mut warned = HashSet::new();
-    let mut struck = Vec::new();
+    let mut batches = Vec::new();
     let mut elapsed = 0.0;
     let mut cast_at = None;
     while elapsed < roar.first_cast_ms + roar.cast_ms + 1000.0 {
@@ -557,11 +557,9 @@ async fn terraclashs_roar_strikes_around_its_body_for_a_fixed_amount() {
                         warned.insert(name);
                         cast_at.get_or_insert(elapsed);
                     }
-                    ServerMessage::MonsterAttackedPlayer {
-                        player_id,
-                        damage: 165,
-                        ..
-                    } if player_id == pid(name) => struck.push((name, elapsed)),
+                    ServerMessage::MonsterSkillStruck { victims, .. } => {
+                        batches.push((name, elapsed, victims))
+                    }
                     _ => {}
                 }
             }
@@ -569,14 +567,19 @@ async fn terraclashs_roar_strikes_around_its_body_for_a_fixed_amount() {
     }
     let cast_at = cast_at.expect("terraclash roars once its first cast is due");
     assert_eq!(warned, HashSet::from(["near", "edge", "god", "far"]));
-    let names: HashSet<_> = struck.iter().map(|(name, _)| *name).collect();
-    assert_eq!(names, HashSet::from(["near", "edge", "god"]));
-    for (name, at) in &struck {
+    // One message per viewer, listing everyone the roar hit.
+    let mut viewers: Vec<_> = batches.iter().map(|(name, ..)| *name).collect();
+    viewers.sort_unstable();
+    assert_eq!(viewers, ["edge", "far", "god", "near"]);
+    for (name, at, victims) in &batches {
         assert!(
             at - cast_at >= roar.strike_ms - 200.0,
-            "{name} struck {}ms into the cast",
+            "{name} heard of it {}ms into the cast",
             at - cast_at
         );
+        let hit: HashSet<_> = victims.iter().map(|v| v.player_id).collect();
+        assert_eq!(hit, HashSet::from([pid("near"), pid("edge"), pid("god")]));
+        assert!(victims.iter().all(|v| v.damage == 165));
     }
     assert_eq!(health_of(&game_state, &pid("god")).await, 100_000);
     assert_eq!(health_of(&game_state, &pid("far")).await, 100_000);

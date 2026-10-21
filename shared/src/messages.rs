@@ -40,6 +40,14 @@ pub enum MoveStatus {
     NodeLimit,
 }
 
+/// One player a skill's strike hit, as it stands after the blow.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SkillVictim {
+    pub player_id: PlayerId,
+    pub damage: u32,
+    pub current_health: u32,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct LocalizedMessage {
     pub code: String,
@@ -1360,8 +1368,8 @@ pub enum ServerMessage {
         monster_id: String,
         request_id: u32,
     },
-    /// A telegraphed skill began; its damage arrives later as
-    /// `MonsterAttackedPlayer` for each player still in its area. A zone
+    /// A telegraphed skill began; its damage arrives later in one
+    /// `MonsterSkillStruck` for the players still in its area. A zone
     /// skill sends a `half_angle` of pi.
     MonsterSkillStarted {
         monster_id: String,
@@ -1369,6 +1377,13 @@ pub enum ServerMessage {
         rotation: f32,
         range: f32,
         half_angle: f32,
+    },
+    /// A skill's strike, once for everyone it hit; misses are not listed.
+    /// Each victim's `PlayerHealthUpdate` and death still go out on their own.
+    MonsterSkillStruck {
+        monster_id: String,
+        skill: crate::monster_ai::MonsterSkillId,
+        victims: Vec<SkillVictim>,
     },
     /// A plain swing at a distant target: the ground where it stood erupts
     /// after `impact_ms`, striking whoever is still within `radius`.
@@ -2111,6 +2126,7 @@ impl ServerMessage {
             | Self::EquipmentEnchantSucceeded { .. }
             | Self::PlayerLeveledUp { .. }
             | Self::MonsterSkillStarted { .. }
+            | Self::MonsterSkillStruck { .. }
             | Self::MonsterGroundStrike { .. }
             | Self::MonsterAttackedPlayer { .. }
             | Self::PlayerInstrumentNotes { .. }

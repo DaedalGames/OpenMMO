@@ -26,6 +26,7 @@ use crate::types::{
 };
 use onlinerpg_shared::interest::{Bounds, Space, SubjectArea};
 use onlinerpg_shared::inventory::{EquipSlot, GroundItem, ItemInstance, PlayerInventory};
+use onlinerpg_shared::messages::SkillVictim;
 use onlinerpg_shared::monster_ai::{SkillArea, SkillDamage, GROUND_STRIKE_RADIUS};
 use onlinerpg_shared::monster_body::reach_point;
 use onlinerpg_shared::xp;
@@ -137,6 +138,22 @@ impl MonsterReach<'_> {
             Self::Skill { skill, .. } => matches!(skill.area, SkillArea::Zone { .. }),
             Self::Melee(_) => false,
         }
+    }
+}
+
+/// A monster's blow that reached its target, HP already applied.
+struct LandedHit {
+    player_id: PlayerId,
+    result: combat::AttackResult,
+    current_health: u32,
+    /// Where the target stood, unless it left mid-blow.
+    at: Option<(Position, i8)>,
+}
+
+impl LandedHit {
+    /// A target already down is never landed on, so zero means this blow.
+    fn died(&self) -> bool {
+        self.at.is_some() && self.current_health == 0
     }
 }
 
@@ -1537,11 +1554,45 @@ impl super::GameState {
             origin,
             rotation,
         };
+        let mut landed = Vec::new();
         for (victim, _) in nearby {
             let mut audit = self.combat_audit.attack(victim);
             audit.monster(monster_id, &snapshot.monster_type);
-            self.monster_hit_player(monster_id, &snapshot, &victim, reach, audit)
-                .await;
+            landed.extend(
+                self.land_monster_hit(monster_id, &snapshot, &victim, reach, audit)
+                    .await,
+            );
+        }
+        let victims: Vec<_> = landed
+            .iter()
+            .filter(|h| h.result.hit)
+            .map(|h| SkillVictim {
+                player_id: h.player_id,
+                damage: h.result.damage,
+                current_health: h.current_health,
+            })
+            .collect();
+        if !victims.is_empty() {
+            // Whoever can see any victim hears of the strike.
+            let points = landed
+                .iter()
+                .filter(|h| h.result.hit)
+                .filter_map(|h| h.at.map(|(position, _)| Bounds::Point(position)));
+            self.interest_lock().publish_effect(
+                SubjectArea {
+                    bounds: Bounds::Union(points.collect()),
+                    space: Space::at(&origin, snapshot.floor_level),
+                },
+                &ServerMessage::MonsterSkillStruck {
+                    monster_id: monster_id.to_string(),
+                    skill: skill.id,
+                    victims,
+                },
+                None,
+            );
+        }
+        for hit in &landed {
+            self.finish_monster_hit(&snapshot, hit).await;
         }
     }
 
@@ -1551,16 +1602,62 @@ impl super::GameState {
         snapshot: &MonsterAttackSnapshot,
         target_player_id: &PlayerId,
         reach: MonsterReach<'_>,
-        mut audit: super::combat_audit::Attack<'_>,
+        audit: super::combat_audit::Attack<'_>,
     ) {
+        let Some(landed) = self
+            .land_monster_hit(monster_id, snapshot, target_player_id, reach, audit)
+            .await
+        else {
+            return;
+        };
+        let attack_msg = ServerMessage::MonsterAttackedPlayer {
+            monster_id: monster_id.to_string(),
+            player_id: landed.player_id,
+            hit: landed.result.hit,
+            roll: landed.result.roll,
+            damage: landed.result.damage,
+            current_health: landed.current_health,
+            ranged: matches!(reach, MonsterReach::Ground { .. }),
+        };
+        match landed.at {
+            Some((position, floor)) => {
+                self.publish_nearby(&position, floor, attack_msg, None)
+                    .await
+            }
+            None => self.send_direct_message(target_player_id, attack_msg).await,
+        }
+        self.finish_monster_hit(snapshot, &landed).await;
+    }
+
+    /// What follows the blow's announcement: its debuff, or the death.
+    async fn finish_monster_hit(&self, snapshot: &MonsterAttackSnapshot, hit: &LandedHit) {
+        if hit.result.hit && !hit.died() {
+            if let Some(debuff_id) = &snapshot.hit_debuff {
+                self.inflict_debuff(&hit.player_id, debuff_id, None).await;
+            }
+        }
+        if let (true, Some((position, floor))) = (hit.died(), hit.at) {
+            self.announce_player_death(&hit.player_id, position, floor, &snapshot.monster_type)
+                .await;
+        }
+    }
+
+    /// Roll a monster's blow and apply it to the target's HP, or `None` when
+    /// the target is out of its reach.
+    async fn land_monster_hit(
+        &self,
+        monster_id: &str,
+        snapshot: &MonsterAttackSnapshot,
+        target_player_id: &PlayerId,
+        reach: MonsterReach<'_>,
+        mut audit: super::combat_audit::Attack<'_>,
+    ) -> Option<LandedHit> {
         let MonsterAttackSnapshot {
             attack_bonus,
             ref damage_roll,
             ref weapon_damage_roll,
             position: monster_position,
             floor_level: monster_floor_level,
-            ref hit_debuff,
-            ref monster_type,
             rotation: monster_rotation,
             body,
             ..
@@ -1576,22 +1673,19 @@ impl super::GameState {
                     target_position = player.position;
                     target_floor_level = player.floor_level;
                 }
-                _ => return,
+                _ => return None,
             }
         }
 
         let monster_position =
             reach_point(body, monster_position, monster_rotation, &target_position);
         audit.reason = "unreachable_floor";
-        let Some(distance_sq) = reachable_dist_sq(
+        let distance_sq = reachable_dist_sq(
             monster_position,
             monster_floor_level,
             target_position,
             target_floor_level,
-        ) else {
-            return;
-        };
-        let ranged = matches!(reach, MonsterReach::Ground { .. });
+        )?;
         let in_reach = match reach {
             MonsterReach::Melee(max_range) => distance_sq <= max_range.powi(2),
             MonsterReach::Ground { origin } => {
@@ -1614,7 +1708,7 @@ impl super::GameState {
                 monster_id,
                 target_player_name
             );
-            return;
+            return None;
         }
         if !reach.ignores_walls()
             && wall_between(
@@ -1630,7 +1724,7 @@ impl super::GameState {
                 "Rejected monster attack through a wall: monster {} -> player {}",
                 monster_id, target_player_name
             );
-            return;
+            return None;
         }
         let damage = match reach {
             MonsterReach::Skill { skill, .. } => skill.damage,
@@ -1673,7 +1767,6 @@ impl super::GameState {
         );
 
         // Update player HP and combat timestamp
-        let mut did_die = false;
         let mut current_health = 0;
         let mut target_loc: Option<(Position, i8)> = None;
         audit.reason = "target_disappeared_or_dead";
@@ -1682,7 +1775,7 @@ impl super::GameState {
             let mut players = self.players.write().await;
             if let Some(player) = players.get_mut(target_player_id) {
                 if player.health == 0 {
-                    return; // Already dead
+                    return None;
                 }
 
                 player.last_combat_at = now;
@@ -1690,9 +1783,6 @@ impl super::GameState {
 
                 if result.hit && !player.invulnerable {
                     player.health = player.health.saturating_sub(result.damage);
-                    if player.health == 0 {
-                        did_die = true;
-                    }
                 }
                 current_health = player.health;
                 audit.resolved(old_health, player, result.hit);
@@ -1709,17 +1799,7 @@ impl super::GameState {
             self.mark_party_vitals_dirty(target_player_id).await;
         }
 
-        // Send attack result after server-side HP update.
-        let attack_msg = ServerMessage::MonsterAttackedPlayer {
-            monster_id: monster_id.to_string(),
-            player_id: *target_player_id,
-            hit: result.hit,
-            roll: result.roll,
-            damage: result.damage,
-            current_health,
-            ranged,
-        };
-        if let Some((target_position, target_floor)) = target_loc {
+        if target_loc.is_some() {
             if let Some(player) = self.players.read().await.get(target_player_id) {
                 self.publish_subject_change(ServerMessage::PlayerHealthUpdate {
                     player_id: *target_player_id,
@@ -1727,27 +1807,13 @@ impl super::GameState {
                     max_health: player.max_health,
                 });
             }
-            self.publish_nearby(&target_position, target_floor, attack_msg, None)
-                .await;
-        } else {
-            self.send_direct_message(target_player_id, attack_msg).await;
         }
-
-        if result.hit && !did_die {
-            if let Some(debuff_id) = hit_debuff {
-                self.inflict_debuff(target_player_id, debuff_id, None).await;
-            }
-        }
-
-        if let (true, Some((target_position, target_floor))) = (did_die, target_loc) {
-            self.announce_player_death(
-                target_player_id,
-                target_position,
-                target_floor,
-                monster_type,
-            )
-            .await;
-        }
+        Some(LandedHit {
+            player_id: *target_player_id,
+            result,
+            current_health,
+            at: target_loc,
+        })
     }
 
     /// Run the death chokepoint and tell the area.

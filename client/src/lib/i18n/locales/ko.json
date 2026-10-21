@@ -445,6 +445,8 @@
   "system.grillInterrupted": "굽기가 중단되었습니다.",
   "combat.monster": "몬스터",
   "combat.monsterHit": "주사위 {{roll}}: {{name}}에게 명중! 피해 {{damage}}!",
+  "combat.skillStruck": "{{count}}명 명중!",
+  "combat.skillStruckYou": "{{count}}명 명중! 나에게 피해 {{damage}}!",
   "combat.youSlain": "사망했습니다!",
   "combat.playerSlain": "{{name}} 님이 사망했습니다!",
   "combat.attackRejected": "공격 불가: {{reason}}",

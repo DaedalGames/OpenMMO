@@ -41,6 +41,13 @@ impl SharedState {
                     EventUrgency::Routine
                 }
             }
+            ServerMessage::MonsterSkillStruck { victims, .. } => {
+                if victims.iter().any(|v| self_id == Some(&v.player_id)) {
+                    EventUrgency::Urgent
+                } else {
+                    EventUrgency::Routine
+                }
+            }
             ServerMessage::PlayerDead { player_id } => {
                 if self_id == Some(player_id) {
                     EventUrgency::Urgent
@@ -750,7 +757,7 @@ impl SharedState {
                     p.max_health = *max_health;
                 }
             }
-            // Monster damage arrives only through these two, so without them
+            // Monster damage arrives only through these three, so without them
             // `self_player.health` never drops and everything gated on it
             // (auto-respawn, own-monster targeting) reads a live body.
             ServerMessage::MonsterAttackedPlayer {
@@ -759,6 +766,11 @@ impl SharedState {
                 ..
             } => {
                 self.set_player_health(player_id, *current_health);
+            }
+            ServerMessage::MonsterSkillStruck { victims, .. } => {
+                for v in victims {
+                    self.set_player_health(&v.player_id, v.current_health);
+                }
             }
             ServerMessage::PlayerDead { player_id } => {
                 self.set_player_health(player_id, 0);

@@ -454,6 +454,23 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
                 "[MonsterSkill] {monster_id} winds up {skill:?}: in {strike_s:.1}s it strikes {area}.{damage}"
             ))
         }
+        ServerMessage::MonsterSkillStruck {
+            monster_id,
+            skill,
+            victims,
+        } => Some(format!(
+            "[MonsterSkillStruck] {monster_id} {skill:?} hit {}",
+            victims
+                .iter()
+                .map(|v| format!(
+                    "{} dmg={} hp={}",
+                    player_name(state, &v.player_id),
+                    v.damage,
+                    v.current_health
+                ))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )),
         ServerMessage::MonsterGroundStrike {
             monster_id,
             target_player_id,
