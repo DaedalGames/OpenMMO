@@ -75,6 +75,11 @@ impl BodyFootprint {
         cells
     }
 
+    /// The farthest the engage point gets from the centre.
+    pub fn reach_radius(&self) -> f32 {
+        self.half_width.hypot(self.front.max(self.back)) + ENGAGE_OFFSET_M
+    }
+
     /// The point just outside the body nearest `(px, pz)`: where reach and
     /// line of sight to or from the monster are measured.
     pub fn engage_point(&self, cx: f32, cz: f32, rotation: f32, px: f32, pz: f32) -> (f32, f32) {

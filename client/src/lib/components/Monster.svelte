@@ -385,7 +385,7 @@
     const def = MONSTER_SKILLS[cast.id]
     const clip = def && findClip(def.clip)
     if (!mixer || !model || !clip || monsterState === 'dead') return false
-    if (!skillEffects && weaponObject?.parent) {
+    if (!skillEffects && (!initialWeapon || weaponObject?.parent)) {
       skillEffects = {
         clip,
         effects: def.createEffects(
@@ -393,7 +393,8 @@
           model,
           weaponObject,
           clip,
-          cast
+          cast,
+          initialDef?.footprint
         ),
       }
     }

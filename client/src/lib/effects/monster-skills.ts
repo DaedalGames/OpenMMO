@@ -2,6 +2,13 @@ import * as THREE from 'three'
 import { BARKAN_RUNE_SLASH } from '../utils/barkanRuneSlash'
 import { createBarkanRuneSlashEffect } from './barkan-rune-slash'
 import { BarkanFireFan } from './barkan-fire-fan'
+import {
+  EarthRoarEffect,
+  EARTH_ROAR_CAST_MS,
+  EARTH_ROAR_STRIKE_MS,
+} from './earth-roar'
+import type { MessageKey } from '../i18n'
+import { playDungeonSound } from '../managers/sfxManager'
 
 export interface MonsterSkillCast {
   rotation: number
@@ -32,12 +39,16 @@ export const MONSTER_SKILLS: Record<
   {
     clip: string
     durationMs: number
+    /** Chat line warning everyone the skill can reach. */
+    warning?: MessageKey
     createEffects(
       scene: THREE.Object3D,
       model: THREE.Object3D,
-      weapon: THREE.Object3D,
+      weapon: THREE.Object3D | undefined,
       clip: THREE.AnimationClip,
-      cast: MonsterSkillCast
+      cast: MonsterSkillCast,
+      /** monsters.csv `footprint`, `halfWidth|front|back`. */
+      footprint: string | undefined
     ): MonsterSkillEffects
   }
 > = {
@@ -45,7 +56,7 @@ export const MONSTER_SKILLS: Record<
     clip: 'RuneSlash',
     durationMs: BARKAN_RUNE_SLASH.duration * 1000,
     createEffects(scene, model, weapon, clip, cast) {
-      const blade = createBarkanRuneSlashEffect(model, weapon, clip, {
+      const blade = createBarkanRuneSlashEffect(model, weapon!, clip, {
         light: false,
         bounds: false,
       })
@@ -67,6 +78,37 @@ export const MONSTER_SKILLS: Record<
         dispose() {
           blade.dispose()
           fan.dispose()
+        },
+      }
+    },
+  },
+  earth_roar: {
+    clip: 'Roar',
+    durationMs: EARTH_ROAR_CAST_MS,
+    warning: 'monsterSkill.earthRoar',
+    createEffects(scene, _model, _weapon, _clip, cast, footprint) {
+      const [halfWidth = 0, front = 0, back = 0] = (footprint ?? '')
+        .split('|')
+        .map(Number)
+      const roar = new EarthRoarEffect(cast.range, { halfWidth, front, back })
+      scene.add(roar.group)
+      let roared = false
+      return {
+        start(origin) {
+          roar.start(origin)
+          roared = false
+        },
+        update(time, active, deltaTime, camera) {
+          // The dungeon's wake-up roar until Terraclash has its own, timed
+          // to peak as the dust wall leaves.
+          if (active && !roared && time * 1000 >= EARTH_ROAR_STRIKE_MS - 600) {
+            roared = true
+            playDungeonSound('reset')
+          }
+          roar.update(deltaTime, camera)
+        },
+        dispose() {
+          roar.dispose()
         },
       }
     },

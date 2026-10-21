@@ -33,7 +33,7 @@ export interface WakeBounds {
   height: number
 }
 
-interface Dust {
+export interface Dust {
   at: number
   life: number
   x: number
@@ -47,7 +47,7 @@ interface Dust {
   peak: number
   seed: number
   shade: number
-  roll: number
+  roll?: number
 }
 
 export interface Rock {
@@ -166,6 +166,109 @@ export function ballistic(r: Rock, t: number, out: THREE.Vector3): number {
   return t - land - hop
 }
 
+const scratch = new THREE.Object3D()
+const roll = new THREE.Quaternion()
+const forward = new THREE.Vector3(0, 0, 1)
+const point = new THREE.Vector3()
+const tint = new THREE.Color()
+
+/** Granite, `moss` of it mossy, one colour per rock instance. */
+export function tintRocks(
+  mesh: THREE.InstancedMesh,
+  rand: () => number,
+  moss: number
+) {
+  for (let i = 0; i < mesh.count; i++) {
+    const v = 0.75 + rand() * 0.35
+    const mossy = rand() < moss
+    tint.setRGB(
+      (mossy ? 0.34 : 0.46) * v,
+      (mossy ? 0.37 : 0.41) * v,
+      (mossy ? 0.2 : 0.35) * v,
+      THREE.SRGBColorSpace
+    )
+    mesh.setColorAt(i, tint)
+  }
+  mesh.instanceColor!.needsUpdate = true
+}
+
+/** Billboard each puff at `elapsedMs` (times in ms); drag slows the spread. */
+export function placeDust(
+  mesh: THREE.InstancedMesh,
+  dust: Dust[],
+  elapsedMs: number,
+  camera: THREE.Camera
+) {
+  for (let i = 0; i < dust.length; i++) {
+    const d = dust[i]
+    const age = (elapsedMs - d.at) / d.life
+    if (age < 0 || age >= 1) {
+      mesh.setMatrixAt(i, ZERO_SCALE)
+      continue
+    }
+    const t = (elapsedMs - d.at) / 1000
+    const travel = (1 - Math.exp(-1.6 * t)) / 1.6
+    scratch.position.set(
+      d.x + d.vx * travel,
+      d.y + d.vy * t + d.size * 0.35,
+      d.z + d.vz * travel
+    )
+    scratch.quaternion.copy(camera.quaternion)
+    if (d.roll !== undefined) {
+      scratch.quaternion.multiply(
+        roll.setFromAxisAngle(forward, d.roll + t * 0.3)
+      )
+    }
+    scratch.scale.setScalar(d.size + d.grow * Math.sqrt(age))
+    scratch.updateMatrix()
+    mesh.setMatrixAt(i, scratch.matrix)
+    const alpha =
+      d.peak *
+      Math.min(1, age / 0.12) *
+      (1 - THREE.MathUtils.smoothstep(age, 0, 1))
+    tint.setRGB(alpha, d.seed, d.shade)
+    mesh.setColorAt(i, tint)
+  }
+  mesh.instanceMatrix.needsUpdate = true
+  mesh.instanceColor!.needsUpdate = true
+}
+
+/** Fly each chunk at `elapsedMs`; `settleS` after coming to rest it sinks
+ *  out of sight rather than pop. */
+export function placeRocks(
+  mesh: THREE.InstancedMesh,
+  rocks: Rock[],
+  elapsedMs: number,
+  settleS: number
+) {
+  for (let i = 0; i < rocks.length; i++) {
+    const r = rocks[i]
+    const t = (elapsedMs - r.at) / 1000
+    if (t < 0) {
+      mesh.setMatrixAt(i, ZERO_SCALE)
+      continue
+    }
+    const rest = ballistic(r, t, point)
+    const sink = rest < settleS ? 0 : Math.min(1, (rest - settleS) / 0.8)
+    if (sink >= 1) {
+      mesh.setMatrixAt(i, ZERO_SCALE)
+      continue
+    }
+    const turning = rest < 0 ? t : t - rest
+    scratch.position.copy(point)
+    scratch.position.y += r.size * 0.4 - sink * r.size
+    scratch.rotation.set(
+      r.spin.x * turning,
+      r.spin.y * turning,
+      r.spin.z * turning
+    )
+    scratch.scale.copy(r.stretch).multiplyScalar(r.size)
+    scratch.updateMatrix()
+    mesh.setMatrixAt(i, scratch.matrix)
+  }
+  mesh.instanceMatrix.needsUpdate = true
+}
+
 /** Dust, falling stones and embers as a dormant boss shakes off its rock
  *  shell: a rumble up to `collapseMs`, then the shell bursts. Times are ms
  *  from the offering. `startSleep` plays it the other way: the boss grinds
@@ -185,9 +288,6 @@ export class DormantWakeEffect {
   private embers: Ember[] = []
   private collapseMs = 0
   private dummy = new THREE.Object3D()
-  private roll = new THREE.Quaternion()
-  private forward = new THREE.Vector3(0, 0, 1)
-  private point = new THREE.Vector3()
   private tint = new THREE.Color()
 
   constructor() {
@@ -438,19 +538,7 @@ export class DormantWakeEffect {
 
   private finishRocks(rand: () => number) {
     for (const r of this.rocks) r.land = landTime(r)
-    for (let i = 0; i < this.rocks.length; i++) {
-      // Granite with some of the shell's moss.
-      const v = 0.75 + rand() * 0.35
-      const moss = rand() < 0.3
-      this.tint.setRGB(
-        (moss ? 0.34 : 0.46) * v,
-        (moss ? 0.37 : 0.41) * v,
-        (moss ? 0.2 : 0.35) * v,
-        THREE.SRGBColorSpace
-      )
-      this.rockMesh.setColorAt(i, this.tint)
-    }
-    this.rockMesh.instanceColor!.needsUpdate = true
+    tintRocks(this.rockMesh, rand, 0.3)
   }
 
   /** False once the dust has settled; hidden until `elapsedMs` reaches 0. */
@@ -461,73 +549,10 @@ export class DormantWakeEffect {
     }
     this.group.visible = elapsedMs >= 0
     if (elapsedMs < 0) return true
-    this.updateDust(elapsedMs, camera)
-    this.updateRocks(elapsedMs)
+    placeDust(this.dustMesh, this.dust, elapsedMs, camera)
+    placeRocks(this.rockMesh, this.rocks, elapsedMs, 0.9)
     this.updateEmbers(elapsedMs, camera)
     return true
-  }
-
-  private updateDust(elapsedMs: number, camera: THREE.Camera) {
-    for (let i = 0; i < this.dust.length; i++) {
-      const d = this.dust[i]
-      const age = (elapsedMs - d.at) / d.life
-      if (age < 0 || age >= 1) {
-        this.hide(this.dustMesh, i)
-        continue
-      }
-      const t = (elapsedMs - d.at) / 1000
-      // Drag: the burst slows as it spreads.
-      const travel = (1 - Math.exp(-1.6 * t)) / 1.6
-      this.dummy.position.set(
-        d.x + d.vx * travel,
-        d.y + d.vy * t + d.size * 0.35,
-        d.z + d.vz * travel
-      )
-      this.dummy.quaternion
-        .copy(camera.quaternion)
-        .multiply(this.roll.setFromAxisAngle(this.forward, d.roll + t * 0.3))
-      this.dummy.scale.setScalar(d.size + d.grow * Math.sqrt(age))
-      this.dummy.updateMatrix()
-      this.dustMesh.setMatrixAt(i, this.dummy.matrix)
-      const alpha =
-        d.peak *
-        Math.min(1, age / 0.12) *
-        (1 - THREE.MathUtils.smoothstep(age, 0, 1))
-      this.tint.setRGB(alpha, d.seed, d.shade)
-      this.dustMesh.setColorAt(i, this.tint)
-    }
-    this.dustMesh.instanceMatrix.needsUpdate = true
-    this.dustMesh.instanceColor!.needsUpdate = true
-  }
-
-  private updateRocks(elapsedMs: number) {
-    for (let i = 0; i < this.rocks.length; i++) {
-      const r = this.rocks[i]
-      const t = (elapsedMs - r.at) / 1000
-      if (t < 0) {
-        this.hide(this.rockMesh, i)
-        continue
-      }
-      const rest = ballistic(r, t, this.point)
-      // Settled chunks sink out of sight rather than pop.
-      const sink = rest < 0.9 ? 0 : Math.min(1, (rest - 0.9) / 0.8)
-      if (sink >= 1) {
-        this.hide(this.rockMesh, i)
-        continue
-      }
-      const turning = rest < 0 ? t : t - rest
-      this.dummy.position.copy(this.point)
-      this.dummy.position.y += r.size * 0.4 - sink * r.size
-      this.dummy.rotation.set(
-        r.spin.x * turning,
-        r.spin.y * turning,
-        r.spin.z * turning
-      )
-      this.dummy.scale.copy(r.stretch).multiplyScalar(r.size)
-      this.dummy.updateMatrix()
-      this.rockMesh.setMatrixAt(i, this.dummy.matrix)
-    }
-    this.rockMesh.instanceMatrix.needsUpdate = true
   }
 
   private updateEmbers(elapsedMs: number, camera: THREE.Camera) {
@@ -535,7 +560,7 @@ export class DormantWakeEffect {
       const e = this.embers[i]
       const age = (elapsedMs - e.at) / e.life
       if (age < 0 || age >= 1) {
-        this.hide(this.emberMesh, i)
+        this.emberMesh.setMatrixAt(i, ZERO_SCALE)
         continue
       }
       const t = (elapsedMs - e.at) / 1000
@@ -555,10 +580,6 @@ export class DormantWakeEffect {
     }
     this.emberMesh.instanceMatrix.needsUpdate = true
     this.emberMesh.instanceColor!.needsUpdate = true
-  }
-
-  private hide(mesh: THREE.InstancedMesh, i: number) {
-    mesh.setMatrixAt(i, ZERO_SCALE)
   }
 
   clear() {

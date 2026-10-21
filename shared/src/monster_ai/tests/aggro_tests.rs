@@ -27,7 +27,9 @@ fn terraclash() -> MonsterBrain {
         40.0,
         3000.0,
     );
-    brain.ranged_range = 7.5;
+    brain.ranged_range = 11.0;
+    // Only plain swings pick targets; keep the roar out of these fights.
+    brain.skill_cooldown_left_ms = f32::MAX;
     brain
 }
 

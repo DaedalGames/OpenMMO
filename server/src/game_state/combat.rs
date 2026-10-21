@@ -26,7 +26,7 @@ use crate::types::{
 };
 use onlinerpg_shared::interest::{Bounds, Space, SubjectArea};
 use onlinerpg_shared::inventory::{EquipSlot, GroundItem, ItemInstance, PlayerInventory};
-use onlinerpg_shared::monster_ai::GROUND_STRIKE_RADIUS;
+use onlinerpg_shared::monster_ai::{SkillArea, SkillDamage, GROUND_STRIKE_RADIUS};
 use onlinerpg_shared::monster_body::reach_point;
 use onlinerpg_shared::xp;
 use rand::Rng;
@@ -122,11 +122,22 @@ enum MonsterReach<'a> {
     Ground {
         origin: Position,
     },
-    Fan {
+    Skill {
         skill: &'a onlinerpg_shared::monster_ai::MonsterSkill,
         origin: Position,
         rotation: f32,
     },
+}
+
+impl MonsterReach<'_> {
+    /// A ground eruption or a zone skill strikes whoever stands in it.
+    fn ignores_walls(&self) -> bool {
+        match self {
+            Self::Ground { .. } => true,
+            Self::Skill { skill, .. } => matches!(skill.area, SkillArea::Zone { .. }),
+            Self::Melee(_) => false,
+        }
+    }
 }
 
 /// Squared XZ distance between two participants, or `None` when they sit on
@@ -1517,10 +1528,11 @@ impl super::GameState {
                 _ => return,
             }
         };
+        let radius = skill.range() + snapshot.body.map_or(0.0, |b| b.reach_radius());
         let nearby = self
-            .players_within_position(&origin, snapshot.floor_level, skill.range, None)
+            .players_within_position(&origin, snapshot.floor_level, radius, None)
             .await;
-        let reach = MonsterReach::Fan {
+        let reach = MonsterReach::Skill {
             skill,
             origin,
             rotation,
@@ -1585,11 +1597,14 @@ impl super::GameState {
             MonsterReach::Ground { origin } => {
                 origin.dist_xz_sq(&target_position) <= GROUND_STRIKE_REACH_M.powi(2)
             }
-            MonsterReach::Fan {
+            MonsterReach::Skill {
                 skill,
                 origin,
                 rotation,
-            } => skill.fan_contains(&origin, rotation, &target_position),
+            } => match skill.area {
+                SkillArea::Fan { .. } => skill.fan_contains(&origin, rotation, &target_position),
+                SkillArea::Zone { radius } => distance_sq <= radius.powi(2),
+            },
         };
         if !in_reach {
             audit.reason = "out_of_range";
@@ -1601,7 +1616,7 @@ impl super::GameState {
             );
             return;
         }
-        if !ranged
+        if !reach.ignores_walls()
             && wall_between(
                 &self.passability_read(),
                 monster_position,
@@ -1617,23 +1632,40 @@ impl super::GameState {
             );
             return;
         }
-        let target_guard = self.effective_guard(target_player_id).await;
-        let place_bonus =
-            combat::place_attack_bonus(monster_floor_level, self.town_distance(&monster_position));
-
-        let (damage_multiplier, ignores_guard) = match reach {
-            MonsterReach::Melee(_) | MonsterReach::Ground { .. } => (1, false),
-            MonsterReach::Fan { skill, .. } => (skill.damage_multiplier, skill.ignores_guard),
+        let damage = match reach {
+            MonsterReach::Skill { skill, .. } => skill.damage,
+            MonsterReach::Melee(_) | MonsterReach::Ground { .. } => SkillDamage::Scaled {
+                multiplier: 1,
+                ignores_guard: false,
+            },
         };
-        let mut result = combat::roll_attack_with_accuracy(
-            attack_bonus + place_bonus,
-            target_guard,
-            damage_roll,
-            weapon_damage_roll.as_deref(),
-            0,
-            ignores_guard,
-        );
-        result.damage *= damage_multiplier;
+        let result = match damage {
+            SkillDamage::Fixed(damage) => combat::AttackResult {
+                hit: true,
+                roll: 0,
+                damage,
+            },
+            SkillDamage::Scaled {
+                multiplier,
+                ignores_guard,
+            } => {
+                let target_guard = self.effective_guard(target_player_id).await;
+                let place_bonus = combat::place_attack_bonus(
+                    monster_floor_level,
+                    self.town_distance(&monster_position),
+                );
+                let mut result = combat::roll_attack_with_accuracy(
+                    attack_bonus + place_bonus,
+                    target_guard,
+                    damage_roll,
+                    weapon_damage_roll.as_deref(),
+                    0,
+                    ignores_guard,
+                );
+                result.damage *= multiplier;
+                result
+            }
+        };
 
         debug!(
             "Monster {} attacks player {}: Roll {}, Hit: {}, Damage: {}",

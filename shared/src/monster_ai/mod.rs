@@ -28,7 +28,8 @@ pub use brain::MonsterBrain;
 pub use command::{AiCommand, AiState, ChaseAim, NearbyMonster, NearbyPlayer, SwingReach};
 pub use path::{CachePathProvider, PathProvider};
 pub use skill::{
-    skill_by_id, skill_for, MonsterSkill, MonsterSkillId, GROUND_STRIKE_RADIUS, RUNE_SLASH,
+    skill_by_id, skill_for, MonsterSkill, MonsterSkillId, SkillArea, SkillDamage, EARTH_ROAR,
+    GROUND_STRIKE_RADIUS, RUNE_SLASH,
 };
 pub use tree::{behavior_tree_for, load_behavior_trees, BehaviorNode, BehaviorTree};
 

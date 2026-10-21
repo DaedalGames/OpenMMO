@@ -722,7 +722,10 @@ impl super::GameState {
         else {
             return;
         };
-        let def = monster_ai::skill_by_id(skill);
+        let (range, half_angle) = match monster_ai::skill_by_id(skill).area {
+            monster_ai::SkillArea::Fan { range, half_angle } => (range, half_angle),
+            monster_ai::SkillArea::Zone { radius } => (radius, std::f32::consts::PI),
+        };
         self.publish_nearby(
             &position,
             floor_level,
@@ -730,8 +733,8 @@ impl super::GameState {
                 monster_id: monster_id.to_string(),
                 skill,
                 rotation,
-                range: def.range,
-                half_angle: def.half_angle,
+                range,
+                half_angle,
             },
             None,
         )

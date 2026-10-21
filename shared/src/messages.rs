@@ -1361,7 +1361,8 @@ pub enum ServerMessage {
         request_id: u32,
     },
     /// A telegraphed skill began; its damage arrives later as
-    /// `MonsterAttackedPlayer` for each player still in the fan.
+    /// `MonsterAttackedPlayer` for each player still in its area. A zone
+    /// skill sends a `half_angle` of pi.
     MonsterSkillStarted {
         monster_id: String,
         skill: crate::monster_ai::MonsterSkillId,

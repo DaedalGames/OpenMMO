@@ -433,9 +433,25 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             range,
             ..
         } => {
-            let strike_s = onlinerpg_shared::monster_ai::skill_by_id(*skill).strike_ms / 1000.0;
+            use onlinerpg_shared::monster_ai::{skill_by_id, SkillArea, SkillDamage};
+            let def = skill_by_id(*skill);
+            let strike_s = def.strike_ms / 1000.0;
+            let area = match def.area {
+                SkillArea::Fan { .. } => format!(
+                    "the {range:.0}m fan in front of it, so step behind it or out of range"
+                ),
+                SkillArea::Zone { .. } => {
+                    format!("everyone within {range:.1}m of its body, walls or not")
+                }
+            };
+            let damage = match def.damage {
+                SkillDamage::Fixed(damage) => format!(
+                    " It deals {damage} whatever your armor; drink a potion now if your HP is {damage} or less."
+                ),
+                SkillDamage::Scaled { .. } => String::new(),
+            };
             Some(format!(
-                "[MonsterSkill] {monster_id} winds up {skill:?}: it strikes the {range:.0}m fan in front of it in {strike_s:.1}s. Step behind it or out of range."
+                "[MonsterSkill] {monster_id} winds up {skill:?}: in {strike_s:.1}s it strikes {area}.{damage}"
             ))
         }
         ServerMessage::MonsterGroundStrike {

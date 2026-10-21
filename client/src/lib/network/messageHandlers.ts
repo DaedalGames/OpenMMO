@@ -10,6 +10,7 @@ import {
   handleFieldBossSleeping,
   handleFieldBossWaking,
   handleFieldRaidNotice,
+  handleMonsterSkillWarning,
 } from './altarMessages'
 import {
   playTeleportEffect,
@@ -1485,6 +1486,7 @@ export function handleServerMessage(
         data.range,
         data.half_angle
       )
+      handleMonsterSkillWarning(data.monster_id, data.skill)
       break
 
     case 'MonsterGroundStrike':

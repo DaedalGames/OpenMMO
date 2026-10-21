@@ -489,6 +489,99 @@ async fn barkans_rune_slash_strikes_the_fan_in_front_after_the_windup() {
     );
 }
 
+/// The roar takes a fixed 165, whatever the armor, from everyone within 11m
+/// of the body, front or back; /god and those farther out are spared. Its
+/// front reach starts 4m out from the centre, its back 3.8m.
+#[tokio::test(start_paused = true)]
+async fn terraclashs_roar_strikes_around_its_body_for_a_fixed_amount() {
+    let game_state = make_flat_world_game_state("terraclash_roar");
+    let names = [("near", 6.0), ("edge", 14.5), ("god", -14.0), ("far", 16.0)];
+    let mut channels = Vec::new();
+    for (name, z) in names {
+        game_state.add_player(make_player(name, 0.0, z)).await;
+        {
+            let mut players = game_state.players.write().await;
+            let player = players.get_mut(&pid(name)).unwrap();
+            player.health = 100_000;
+            player.max_health = 100_000;
+            player.invulnerable = name == "god";
+        }
+        channels.push(game_state.register_direct_channel(&pid(name)).await);
+    }
+    let boss = game_state
+        .spawn_monster(
+            "terraclash".into(),
+            Position {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
+            0.0,
+            0,
+            MonsterLifecycle::Ambient,
+            None,
+            false,
+        )
+        .await
+        .unwrap()
+        .id;
+    game_state.tick_monster_ai_by(200.0).await;
+    game_state
+        .broadcast_player_attack(&pid("near"), boss.clone())
+        .await;
+
+    let roar = onlinerpg_shared::monster_ai::EARTH_ROAR;
+    assert_eq!(
+        roar.range(),
+        game_state
+            .monster_defs
+            .get("terraclash")
+            .unwrap()
+            .ranged_attack_range,
+        "the roar reaches as far as the ranged swing"
+    );
+    let mut warned = HashSet::new();
+    let mut struck = Vec::new();
+    let mut elapsed = 0.0;
+    let mut cast_at = None;
+    while elapsed < roar.first_cast_ms + roar.cast_ms + 1000.0 {
+        game_state.tick_monster_ai_by(200.0).await;
+        elapsed += 200.0;
+        for (rx, (name, _)) in channels.iter_mut().zip(names) {
+            for message in drain(rx) {
+                match message {
+                    ServerMessage::MonsterSkillStarted {
+                        skill: onlinerpg_shared::monster_ai::MonsterSkillId::EarthRoar,
+                        ..
+                    } => {
+                        warned.insert(name);
+                        cast_at.get_or_insert(elapsed);
+                    }
+                    ServerMessage::MonsterAttackedPlayer {
+                        player_id,
+                        damage: 165,
+                        ..
+                    } if player_id == pid(name) => struck.push((name, elapsed)),
+                    _ => {}
+                }
+            }
+        }
+    }
+    let cast_at = cast_at.expect("terraclash roars once its first cast is due");
+    assert_eq!(warned, HashSet::from(["near", "edge", "god", "far"]));
+    let names: HashSet<_> = struck.iter().map(|(name, _)| *name).collect();
+    assert_eq!(names, HashSet::from(["near", "edge", "god"]));
+    for (name, at) in &struck {
+        assert!(
+            at - cast_at >= roar.strike_ms - 200.0,
+            "{name} struck {}ms into the cast",
+            at - cast_at
+        );
+    }
+    assert_eq!(health_of(&game_state, &pid("god")).await, 100_000);
+    assert_eq!(health_of(&game_state, &pid("far")).await, 100_000);
+}
+
 async fn terraclash_facing(game_state: &GameState, player_z: f32) -> (PlayerId, DirectRx, String) {
     let player_id = pid("archer");
     game_state
@@ -546,7 +639,7 @@ fn boss_blows(messages: &[ServerMessage], boss: &str) -> (Option<Position>, Vec<
     (strike, hits)
 }
 
-/// Terraclash cannot walk: a target past its 3m reach but within 7.5m gets
+/// Terraclash cannot walk: a target past its 3m reach but within 11m gets
 /// the ground it stood on struck after the slam lands; anyone farther is safe.
 #[tokio::test(start_paused = true)]
 async fn terraclash_strikes_the_ground_under_a_distant_target() {
@@ -567,7 +660,7 @@ async fn terraclash_strikes_the_ground_under_a_distant_target() {
     }
 
     let game_state = make_flat_world_game_state("terraclash_swing_far");
-    let (_, mut rx, boss) = terraclash_facing(&game_state, 12.5).await;
+    let (_, mut rx, boss) = terraclash_facing(&game_state, 16.5).await;
     for _ in 0..10 {
         game_state.tick_monster_ai_by(200.0).await;
     }

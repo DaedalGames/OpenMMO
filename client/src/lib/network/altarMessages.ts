@@ -9,6 +9,7 @@ import {
 import { monsterManager } from '../managers/monsterManager'
 import { combatController } from '../managers/combatController'
 import { SLEEP_CALM_MS } from '../effects/dormant-sleep'
+import { MONSTER_SKILLS } from '../effects/monster-skills'
 import type { Position } from './networkTypes'
 
 /** `AltarStatus` in shared/src/messages.rs, serde externally tagged. */
@@ -102,4 +103,13 @@ export function handleFieldBossSleeping(data: {
     position: data.position,
     sinkAt,
   })
+}
+
+/** Tell everyone a field boss's skill can reach to brace for it. */
+export function handleMonsterSkillWarning(monsterId: string, skill: string) {
+  const warning = MONSTER_SKILLS[skill]?.warning
+  const monster = monsterManager.monsters.get(monsterId)
+  if (warning && monster) {
+    systemLine(translate(warning, { monster: monsterName(monster.type) }))
+  }
 }

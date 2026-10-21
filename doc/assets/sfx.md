@@ -356,7 +356,8 @@ Both were generated and processed exactly like the monster cries above.
   `The_sound_of_monster_#3-1787310281519.mp3` kept in `~/assets_original/sfx/`
   on pc5090; prompt: "The sound of monsters waking up and howling deep within
   the dungeon"). Trimmed to 4.64 s with a 150 ms tail fade, −3 dB gain,
-  resampled 48→44.1 kHz.
+  resampled 48→44.1 kHz. Also Terraclash's Earth Roar until it has its own
+  sound (2026-10-22).
 
 ## Bow
 
