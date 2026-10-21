@@ -596,3 +596,28 @@ async fn stepping_off_the_mark_dodges_the_ground_strike() {
     tokio::time::sleep(std::time::Duration::from_millis(1500)).await;
     assert_eq!(boss_blows(&drain(&mut rx), &boss).1, Vec::<bool>::new());
 }
+
+/// A ground strike lands out to the reach the brain swung with, no farther.
+#[tokio::test(start_paused = true)]
+async fn terraclash_ground_strike_is_bounded_by_its_swing_reach() {
+    // Reach is measured from 4m in front of the centre.
+    let far_reach = onlinerpg_shared::monster_ai::aggro_for("terraclash")
+        .unwrap()
+        .far_reach;
+    // The server allows 4m of drift past it.
+    for (z, struck) in [
+        (4.0 + far_reach - 1.0, true),
+        (4.0 + far_reach + 5.0, false),
+    ] {
+        let game_state = make_flat_world_game_state(&format!("terraclash_far_{z}"));
+        let (player_id, mut rx, boss) = terraclash_facing(&game_state, z).await;
+        game_state
+            .monster_ground_strike(&boss, &player_id, far_reach)
+            .await;
+        assert_eq!(
+            boss_blows(&drain(&mut rx), &boss).0.is_some(),
+            struck,
+            "target at z={z}"
+        );
+    }
+}

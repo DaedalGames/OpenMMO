@@ -4,7 +4,7 @@
 use super::tree::BehaviorStatus;
 use super::{
     cell_center, cell_of, leg_crosses_occupied, param, path_len, AiCommand, AiState, BehaviorNode,
-    MonsterBrain, NearbyPlayer, PathProvider, ATTACK_RELEASE_MARGIN_METERS,
+    MonsterBrain, NearbyPlayer, PathProvider, SwingReach, ATTACK_RELEASE_MARGIN_METERS,
     CHASE_CELL_RANGE_MARGIN, DEFAULT_FLEE_HEALTH_RATIO, DEFAULT_FLEE_MAX_DURATION_MS,
     DEFAULT_IDLE_CHECK_MS, DEFAULT_LEASH_RANGE, DEFAULT_MAX_MOVE_DIST, DEFAULT_MIN_MOVE_DIST,
     DEFAULT_PATH_RECALC_MS, DEFAULT_RETURN_ARRIVE_DIST, DEFAULT_TARGET_MOVE_THRESHOLD,
@@ -330,47 +330,13 @@ impl MonsterBrain {
         }
 
         let range = param(params, "range", self.attack_range);
-        // Engage well inside `range`, release further out (see
-        // doc/MONSTER_SEPARATION.md 접근 거리, ATTACK_RELEASE_MARGIN_METERS).
-        let limit = if self.state == AiState::Attack {
-            range + ATTACK_RELEASE_MARGIN_METERS
-        } else if self.as_close_as_we_get() {
-            range
-        } else {
-            engage_limit(range)
-        };
-        // A swing already under way finishes; see `swing_left_ms`. A wall
-        // between the two refuses the blow the way distance does, so the chase
-        // is the only way left to reach the target.
-        let mut ranged = false;
+        // A swing already under way finishes; see `swing_left_ms`.
+        let mut reach = SwingReach::Melee;
         if self.swing_left_ms <= 0.0 {
-            let origin = self.strike_origin(&target.position);
-            let (to, dist_sq) = (target.position, origin.dist_xz_sq(&target.position));
-            let melee = dist_sq <= limit * limit
-                && !path_provider.attack_line_blocked(
-                    origin.x,
-                    origin.z,
-                    to.x,
-                    to.z,
-                    self.path_floor,
-                );
-            let reach = if self.state == AiState::Attack {
-                self.ranged_range + ATTACK_RELEASE_MARGIN_METERS
-            } else {
-                self.ranged_range
-            };
-            ranged = !melee
-                && self.ranged_range > 0.0
-                && dist_sq <= reach * reach
-                && !path_provider.ranged_line_blocked(
-                    origin.x,
-                    origin.z,
-                    to.x,
-                    to.z,
-                    self.path_floor,
-                );
-            if !melee && !ranged {
-                return BehaviorStatus::Failure;
+            let ground = self.ground_reach(self.aggro.as_ref().is_some_and(|a| a.far));
+            match self.swing_reach(range, &target.position, ground, path_provider) {
+                Some(r) => reach = r,
+                None => return BehaviorStatus::Failure,
             }
         }
 
@@ -393,11 +359,54 @@ impl MonsterBrain {
             commands.push(self.make_move_cmd());
             commands.push(AiCommand::Attack {
                 target_player_id: target_id,
-                ranged,
+                reach,
             });
+            if let Some(aggro) = &mut self.aggro {
+                aggro.roll_due = true;
+                aggro.far = false;
+            }
         }
 
         BehaviorStatus::Running
+    }
+
+    /// How a swing from here reaches `to`, if it does; a ground strike reaches
+    /// out to `ground_reach` (0 for none).
+    /// Engage well inside `range`, release further out (see
+    /// doc/MONSTER_SEPARATION.md 접근 거리, ATTACK_RELEASE_MARGIN_METERS). A wall
+    /// between the two refuses the blow the way distance does, so the chase is
+    /// the only way left to reach the target.
+    pub(super) fn swing_reach(
+        &self,
+        range: f32,
+        to: &crate::Position,
+        ground_reach: f32,
+        path_provider: &dyn PathProvider,
+    ) -> Option<SwingReach> {
+        let attacking = self.state == AiState::Attack;
+        let limit = if attacking {
+            range + ATTACK_RELEASE_MARGIN_METERS
+        } else if self.as_close_as_we_get() {
+            range
+        } else {
+            engage_limit(range)
+        };
+        let origin = self.strike_origin(to);
+        let dist_sq = origin.dist_xz_sq(to);
+        let melee = dist_sq <= limit * limit
+            && !path_provider.attack_line_blocked(origin.x, origin.z, to.x, to.z, self.path_floor);
+        if melee {
+            return Some(SwingReach::Melee);
+        }
+        let reach = if attacking {
+            ground_reach + ATTACK_RELEASE_MARGIN_METERS
+        } else {
+            ground_reach
+        };
+        (ground_reach > 0.0
+            && dist_sq <= reach * reach
+            && !path_provider.ranged_line_blocked(origin.x, origin.z, to.x, to.z, self.path_floor))
+        .then_some(SwingReach::Ground(ground_reach))
     }
 
     fn bt_chase_target(

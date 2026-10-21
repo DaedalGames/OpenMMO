@@ -133,6 +133,7 @@ pub(crate) fn test_player(x: f32, z: f32) -> Player {
         back: None,
         object_id: None,
         last_combat_at: 0,
+        drank_at: 0,
         client_kind: Default::default(),
         mount: None,
         ready_at: 0,

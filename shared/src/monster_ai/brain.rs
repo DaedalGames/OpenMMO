@@ -83,6 +83,7 @@ pub struct MonsterBrain {
     pub body: Option<crate::monster_body::BodyFootprint>,
     /// Plain swings past melee reach land this far out; 0 for none.
     pub ranged_range: f32,
+    pub(super) aggro: Option<Box<super::aggro::Aggro>>,
 }
 
 impl MonsterBrain {
@@ -153,6 +154,8 @@ impl MonsterBrain {
             detour_goal: None,
             body: None,
             ranged_range: 0.0,
+            aggro: super::aggro_for(monster_type)
+                .map(|rules| Box::new(super::aggro::Aggro::new(rules))),
         }
     }
 
@@ -253,6 +256,9 @@ impl MonsterBrain {
         self.swing_left_ms = (self.swing_left_ms - delta_ms).max(0.0);
         self.skill_cooldown_left_ms = (self.skill_cooldown_left_ms - delta_ms).max(0.0);
         self.cast_left_ms = (self.cast_left_ms - delta_ms).max(0.0);
+        if let Some(aggro) = &mut self.aggro {
+            aggro.advance(delta_ms);
+        }
     }
 
     pub fn is_casting(&self) -> bool {
@@ -361,6 +367,8 @@ impl MonsterBrain {
             self.state_timer_ms = 0.0;
         }
 
+        self.update_aggro_target(nearby_players, path_provider, rng);
+
         if matches!(self.state, AiState::Walk | AiState::Run) {
             self.tick_patrol(delta_ms, &mut commands, path_provider, rng);
         } else {
@@ -385,7 +393,8 @@ impl MonsterBrain {
     // Event handlers
     // =========================================================================
 
-    /// Apply incoming damage and acquire `attacker_id` as the target. Returns
+    /// Apply incoming damage and acquire `attacker_id` as the target (an aggro
+    /// brain only tallies it and keeps its pick). Returns
     /// `false` if the brain is already dead or the hit was lethal (in which
     /// case no further reaction should be produced).
     fn apply_hit(&mut self, attacker_id: &PlayerId, hit: bool, damage: u32) -> bool {
@@ -393,8 +402,15 @@ impl MonsterBrain {
             return false;
         }
 
-        self.health = self.health.saturating_sub(if hit { damage } else { 0 });
-        self.target_player_id = Some(*attacker_id);
+        let damage = if hit { damage } else { 0 };
+        self.health = self.health.saturating_sub(damage);
+        match &mut self.aggro {
+            Some(aggro) => {
+                aggro.record(*attacker_id, damage);
+                self.target_player_id.get_or_insert(*attacker_id);
+            }
+            None => self.target_player_id = Some(*attacker_id),
+        }
         self.move_speed = self.run_speed;
 
         if self.health == 0 {

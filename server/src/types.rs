@@ -56,6 +56,7 @@ pub fn new_player(
         armor: Default::default(),
         object_id: None,
         last_combat_at: 0,
+        drank_at: 0,
         client_kind,
         back_color: None,
         mount: None,

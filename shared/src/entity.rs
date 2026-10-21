@@ -105,6 +105,9 @@ pub struct Player {
     pub appearance: crate::character::CharacterAppearance,
     #[serde(skip)]
     pub last_combat_at: u64,
+    /// Unix ms of the last healing potion drunk; raid bosses notice it.
+    #[serde(skip)]
+    pub drank_at: u64,
     /// Which program drives this player, from the `ClientInfo` handshake.
     /// Deliberately never serialized: it feeds the `/who` totals only, and
     /// broadcasting it would let clients label individual players.
@@ -316,6 +319,7 @@ mod tests {
             back: None,
             object_id: None,
             last_combat_at: 0,
+            drank_at: 0,
             client_kind: ClientKind::default(),
             mount: None,
             ready_at: 0,
@@ -370,6 +374,7 @@ mod tests {
             back: None,
             object_id: None,
             last_combat_at: 0,
+            drank_at: 0,
             client_kind: ClientKind::default(),
             mount: None,
             ready_at: 0,
@@ -429,6 +434,7 @@ mod tests {
             back: None,
             object_id: Some(52),
             last_combat_at: 0,
+            drank_at: 0,
             client_kind: ClientKind::default(),
             mount: None,
             ready_at: 0,

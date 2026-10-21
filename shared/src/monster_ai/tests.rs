@@ -5,6 +5,7 @@ use crate::{MonsterState, PlayerId, Position};
 use rand::rngs::SmallRng;
 use rand::SeedableRng;
 
+mod aggro_tests;
 mod return_tests;
 mod skill_tests;
 
@@ -281,6 +282,7 @@ fn attacker_at(x: f32, z: f32) -> Vec<NearbyPlayer> {
         id: 1.into(),
         position: Position { x, y: 0.0, z },
         health: 10,
+        drank_recently: false,
     }]
 }
 

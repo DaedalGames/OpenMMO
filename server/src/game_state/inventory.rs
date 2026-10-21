@@ -1576,6 +1576,7 @@ impl super::GameState {
                     let amount = crate::game::combat::roll_dice(dice);
                     let old_health = player.health;
                     player.health = (player.health + amount).min(player.max_health);
+                    player.drank_at = Self::now_ms();
                     self.combat_audit.health(old_health, player, "potion");
                     (
                         player.health,

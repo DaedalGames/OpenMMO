@@ -108,7 +108,6 @@ struct MonsterAttackSnapshot {
     position: Position,
     floor_level: i8,
     attack_range: f32,
-    ranged_attack_range: f32,
     attack_impact_delay: u32,
     hit_debuff: Option<String>,
     monster_type: String,
@@ -1354,7 +1353,6 @@ impl super::GameState {
             attack_range: def
                 .map(|d| d.attack_range)
                 .unwrap_or(onlinerpg_shared::monster_ai::DEFAULT_ATTACK_RANGE),
-            ranged_attack_range: def.map_or(0.0, |d| d.ranged_attack_range),
             attack_impact_delay: def.map_or(0, |d| d.attack_impact_delay),
             hit_debuff: def.and_then(|d| d.hit_debuff.clone()),
             monster_type: monster.monster_type.clone(),
@@ -1407,6 +1405,7 @@ impl super::GameState {
         &self,
         monster_id: &str,
         target_player_id: &PlayerId,
+        reach: f32,
     ) {
         let Some((snapshot, mut audit)) = self.ready_swing(monster_id, target_player_id).await
         else {
@@ -1431,7 +1430,7 @@ impl super::GameState {
             &position,
         );
         audit.reason = "out_of_range";
-        let max_range = snapshot.ranged_attack_range + MONSTER_ATTACK_RANGE_TOLERANCE_METERS;
+        let max_range = reach + MONSTER_ATTACK_RANGE_TOLERANCE_METERS;
         if !reachable_dist_sq(origin, snapshot.floor_level, position, floor_level)
             .is_some_and(|d| d <= max_range.powi(2))
         {

@@ -4,7 +4,7 @@ use crate::types::{Monster, MonsterState, PlayerId, Position, ServerMessage};
 use onlinerpg_shared::dungeon::passability_floor_for_level;
 use onlinerpg_shared::monster_ai::{
     self, AiCommand, AiState, BehaviorTree, ChaseAim, MonsterBrain, NearbyMonster, NearbyPlayer,
-    AGGRESSIVE_BEHAVIOR, DEFAULT_BEHAVIOR,
+    SwingReach, AGGRESSIVE_BEHAVIOR, DEFAULT_BEHAVIOR,
 };
 use onlinerpg_shared::pathfinding::{is_movement_blocked, segment_touches_box, PathTermination};
 use onlinerpg_shared::shortest_world_delta_x;
@@ -225,7 +225,7 @@ fn door_blocks_sense(from: &Position, to: &Position, doors: &[[f32; 4]]) -> bool
     })
 }
 
-type Roster = HashMap<super::SpatialCell, Vec<(PlayerId, Position, u32, i8)>>;
+type Roster = HashMap<super::SpatialCell, Vec<(i8, NearbyPlayer)>>;
 
 /// A live monster someone can see this tick.
 struct Active {
@@ -319,7 +319,16 @@ impl super::GameState {
                 roster
                     .entry(super::SpatialCell::from_position(&p.position))
                     .or_default()
-                    .push((*id, p.position, p.health, p.floor_level));
+                    .push((
+                        p.floor_level,
+                        NearbyPlayer {
+                            id: *id,
+                            position: p.position,
+                            health: p.health,
+                            drank_recently: now.saturating_sub(p.drank_at)
+                                < monster_ai::DRANK_RECENTLY_MS,
+                        },
+                    ));
             }
             (roster, underground, ghosts)
         };
@@ -365,7 +374,7 @@ impl super::GameState {
             doors
         };
         for entries in roster.values_mut() {
-            entries.retain(|(id, ..)| !sealed.contains(id));
+            entries.retain(|(_, p)| !sealed.contains(&p.id));
         }
         let radius = super::EVENT_DELIVERY_RADIUS;
         let radius_sq = radius * radius;
@@ -374,14 +383,12 @@ impl super::GameState {
             super::SpatialCell::within_radius(position, radius)
                 .filter_map(|cell| roster.get(&cell))
                 .flatten()
-                .filter(|(id, p, _, f)| {
-                    *f == floor && position.dist_xz_sq(p) <= radius_sq && seen.insert(*id)
+                .filter(|(f, p)| {
+                    *f == floor
+                        && position.dist_xz_sq(&p.position) <= radius_sq
+                        && seen.insert(p.id)
                 })
-                .map(|(id, p, health, _)| NearbyPlayer {
-                    id: *id,
-                    position: *p,
-                    health: *health,
-                })
+                .map(|(_, p)| p.clone())
                 .collect()
         };
 
@@ -669,13 +676,14 @@ impl super::GameState {
             }
             AiCommand::Attack {
                 target_player_id,
-                ranged,
-            } if ranged => {
-                self.monster_ground_strike(monster_id, &target_player_id)
+                reach: SwingReach::Ground(reach),
+            } => {
+                self.monster_ground_strike(monster_id, &target_player_id, reach)
                     .await
             }
             AiCommand::Attack {
-                target_player_id, ..
+                target_player_id,
+                reach: SwingReach::Melee,
             } => self.monster_attack(monster_id, &target_player_id).await,
             AiCommand::CastSkill { skill, rotation } => {
                 self.publish_monster_skill(monster_id, floor_level, skill, rotation)

@@ -53,12 +53,23 @@ impl AiState {
     }
 }
 
+/// How a plain swing reaches its target.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum SwingReach {
+    Melee,
+    /// Past melee reach, the ground under the target is struck from where the
+    /// monster stands, out to this far.
+    Ground(f32),
+}
+
 /// Minimal player projection for behavior input.
 #[derive(Debug, Clone)]
 pub struct NearbyPlayer {
     pub id: PlayerId,
     pub position: Position,
     pub health: u32,
+    /// Drank a potion in the last few seconds.
+    pub drank_recently: bool,
 }
 
 /// Other monsters' last-synced poses, for cell-occupancy separation
@@ -101,8 +112,7 @@ pub enum AiCommand {
     },
     Attack {
         target_player_id: PlayerId,
-        /// Past melee reach, struck from where the monster stands.
-        ranged: bool,
+        reach: SwingReach,
     },
     /// A skill wound up facing `rotation`; viewers play it from now.
     CastSkill {

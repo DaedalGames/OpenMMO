@@ -7,9 +7,11 @@
 //! - [`brain`] — the per-monster [`MonsterBrain`] (struct, tick, event handlers)
 //! - [`behavior`] — behavior tree execution (condition/action evaluation)
 //! - [`movement`] — state transitions and path-following helpers
+//! - [`aggro`] — threat-based target picks for raid bosses
 
 use std::collections::HashMap;
 
+mod aggro;
 mod behavior;
 mod brain;
 mod command;
@@ -21,8 +23,9 @@ mod tree;
 #[cfg(test)]
 mod tests;
 
+pub use aggro::{aggro_for, DRANK_RECENTLY_MS};
 pub use brain::MonsterBrain;
-pub use command::{AiCommand, AiState, ChaseAim, NearbyMonster, NearbyPlayer};
+pub use command::{AiCommand, AiState, ChaseAim, NearbyMonster, NearbyPlayer, SwingReach};
 pub use path::{CachePathProvider, PathProvider};
 pub use skill::{
     skill_by_id, skill_for, MonsterSkill, MonsterSkillId, GROUND_STRIKE_RADIUS, RUNE_SLASH,
