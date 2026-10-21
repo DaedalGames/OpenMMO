@@ -46,14 +46,15 @@ function nodeWorld(node) {
   return parent ? multiply(nodeWorld(parent), m) : m;
 }
 
-/** World-space XZ bounding box of all mesh vertices in a GLB. */
-async function measureXZ(io, path) {
+/** World-space XZ bounding box and top of all mesh vertices in a GLB. */
+async function measure(io, path) {
   const doc = await io.read(path);
   const root = doc.getRoot();
   let minX = Infinity,
     maxX = -Infinity,
     minZ = Infinity,
-    maxZ = -Infinity;
+    maxZ = -Infinity,
+    maxY = -Infinity;
   for (const node of root.listNodes()) {
     const mesh = node.getMesh();
     if (!mesh) continue;
@@ -67,11 +68,12 @@ async function measureXZ(io, path) {
         if (p[i] > maxX) maxX = p[i];
         if (p[i + 2] < minZ) minZ = p[i + 2];
         if (p[i + 2] > maxZ) maxZ = p[i + 2];
+        if (p[i + 1] > maxY) maxY = p[i + 1];
       }
     }
   }
   if (!isFinite(minX)) throw new Error(`no mesh vertices in ${path}`);
-  return { minX, maxX, minZ, maxZ };
+  return { minX, maxX, minZ, maxZ, maxY };
 }
 
 const FORCE = process.argv.includes("--force");
@@ -143,12 +145,14 @@ const round = (v) => +v.toFixed(3);
 
 const out = {};
 for (const def of solidDefs) {
-  const b = await measureXZ(io, `${MODELS_DIR}/${def.model}`);
+  const b = await measure(io, `${MODELS_DIR}/${def.model}`);
   out[def.id] = {
     minX: round(b.minX),
     maxX: round(b.maxX),
     minZ: round(b.minZ),
     maxZ: round(b.maxZ),
+    // Outdoor rocks sit sunk into slopes; furniture stays knee-high for stairs.
+    ...(def.blocksFullHeight && { blockHeight: round(b.maxY) }),
   };
   const f = out[def.id];
   console.log(`  ${def.id}: x[${f.minX}, ${f.maxX}] z[${f.minZ}, ${f.maxZ}]`);

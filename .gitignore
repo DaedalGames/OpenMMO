@@ -84,6 +84,7 @@ data/debuffs.json
 data/dungeons.json
 data/dungeon_spawns.json
 data/estate_storage.json
+data/field_bosses.json
 data/items.json
 data/weapon_animations.json
 data/map_labels.json

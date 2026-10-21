@@ -34,6 +34,7 @@ impl EstateStorageDefinition {
                 max_x: self.footprint_width / 2.0,
                 min_z: -self.footprint_depth / 2.0,
                 max_z: self.footprint_depth / 2.0,
+                block_height: None,
             },
         )
     }

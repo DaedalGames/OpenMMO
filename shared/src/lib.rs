@@ -5,7 +5,6 @@
 //! type now lives.
 
 pub mod ability;
-pub mod altar;
 pub mod bridge;
 pub mod celestial;
 pub mod character;
@@ -14,6 +13,7 @@ pub mod dungeon;
 pub mod entity;
 pub mod estate_storage;
 pub mod fence;
+pub mod field_boss;
 pub mod fishing;
 pub mod fnv;
 pub mod furniture;

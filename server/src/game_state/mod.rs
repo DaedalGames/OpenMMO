@@ -470,8 +470,9 @@ pub struct GameState {
     interaction_furniture: Arc<std::sync::RwLock<player_interaction::FurnitureIndex>>,
     /// The one altar-summoned raid allowed at a time; lost on restart.
     field_raid: Arc<tokio::sync::Mutex<Option<field_raid::FieldRaid>>>,
-    /// Where the raid boss stands; its stand-in is not solid meanwhile.
-    field_boss_up_at: Arc<std::sync::RwLock<Option<Position>>>,
+    field_boss_sites: Arc<std::sync::RwLock<Vec<field_raid::FieldBossSite>>>,
+    /// The stand-in placement whose boss is up; not solid meanwhile.
+    woken_stand_in: Arc<std::sync::RwLock<Option<u32>>>,
     bed_rest_started: Arc<RwLock<HashMap<PlayerId, tokio::time::Instant>>>,
     /// Chairs and tables by region, so a served plate lands on a table top.
     dining: Arc<std::sync::RwLock<meal::DiningIndex>>,
@@ -768,7 +769,8 @@ impl GameState {
             beds: Arc::new(std::sync::RwLock::new(HashMap::new())),
             interaction_furniture: Arc::new(std::sync::RwLock::new(HashMap::new())),
             field_raid: Arc::new(tokio::sync::Mutex::new(None)),
-            field_boss_up_at: Arc::new(std::sync::RwLock::new(None)),
+            field_boss_sites: Arc::new(std::sync::RwLock::new(Vec::new())),
+            woken_stand_in: Arc::new(std::sync::RwLock::new(None)),
             bed_rest_started: Arc::new(RwLock::new(HashMap::new())),
             dining: Arc::new(std::sync::RwLock::new(HashMap::new())),
             no_spawn_zones,

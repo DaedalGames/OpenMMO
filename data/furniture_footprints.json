@@ -75,7 +75,8 @@
     "minX": -5.248,
     "maxX": 4.967,
     "minZ": -5.374,
-    "maxZ": 5.535
+    "maxZ": 5.535,
+    "blockHeight": 9
   },
   "terraclash_altar": {
     "minX": -0.772,

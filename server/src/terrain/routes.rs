@@ -11,6 +11,7 @@ use sha2::Digest;
 use std::sync::Arc;
 use tracing::{error, warn};
 
+use onlinerpg_shared::field_boss::is_field_boss_placement;
 use onlinerpg_terrain::coords;
 
 use super::io::TerrainIO;
@@ -578,18 +579,42 @@ async fn get_object(
     Path((rx, rz)): Path<(i32, i32)>,
     State(state): State<ObjectsState>,
 ) -> Result<Response, StatusCode> {
-    let data = state.terrain.read_object(rx, rz).await.map_err(|e| {
+    let mut data = state.terrain.read_object(rx, rz).await.map_err(|e| {
         error!("Failed to read object ({}, {}): {}", rx, rz, e);
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
+    let sites = state.game_state.field_boss_placements_in(rx, rz);
+    if !sites.is_empty() {
+        // `fixed`: placed from data-src/field_bosses.csv; the editor leaves them.
+        let placements = data
+            .as_object_mut()
+            .ok_or(StatusCode::INTERNAL_SERVER_ERROR)?
+            .entry("placements")
+            .or_insert_with(|| serde_json::json!([]));
+        if let Some(list) = placements.as_array_mut() {
+            for site in &sites {
+                let mut value =
+                    serde_json::to_value(site).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+                value["fixed"] = true.into();
+                list.push(value);
+            }
+        }
+    }
     Ok(Json(data).into_response())
 }
 
 async fn put_object(
     Path((rx, rz)): Path<(i32, i32)>,
     State(state): State<ObjectsState>,
-    Json(body): Json<serde_json::Value>,
+    Json(mut body): Json<serde_json::Value>,
 ) -> Result<StatusCode, (StatusCode, String)> {
+    if let Some(list) = body.get_mut("placements").and_then(|p| p.as_array_mut()) {
+        list.retain(|p| {
+            !p.get("id")
+                .and_then(|id| u32::try_from(id.as_u64()?).ok())
+                .is_some_and(is_field_boss_placement)
+        });
+    }
     let placements = GameState::parse_region_furniture(&body).map_err(|e| {
         warn!("Invalid region objects ({rx},{rz}): {e}");
         (

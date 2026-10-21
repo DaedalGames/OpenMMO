@@ -223,6 +223,7 @@
       // wide raycast threshold would otherwise inject phantom hits.
       if (h.object instanceof THREE.LineSegments) continue
       const owner = findAncestorWithUserData(h.object, 'objectId')
+      if (owner?.userData.objectFixed) continue
       const id = owner?.userData.objectId as number | undefined
       if (id != null && !ids.includes(id)) ids.push(id)
     }
@@ -665,6 +666,7 @@
       let bestDist = threshold * threshold
       let bestId: number | null = null
       for (const p of data.placements) {
+        if (p.fixed) continue
         // Skip orphans whose type was removed from the catalog — they have no
         // visible mesh, so letting them win the click intercepts selection.
         const def = getObjectDef(p.type)

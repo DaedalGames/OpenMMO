@@ -148,8 +148,8 @@ export interface ObjectDef {
   /** A sleeping boss's stand-in, hidden while that monster is up on it;
    *  it blocks where the boss body will. */
   dormantMonster?: string
-  /** Offering altar; shared/src/altar.rs reads the fields. */
-  altar?: object
+  /** Offering altar; which boss it wakes is in data-src/field_bosses.csv. */
+  altar?: boolean
   /** Absolute world Y to spawn new placements at, overriding the terrain-based
    *  default (e.g. a shop sign that hangs above a door). Fine-tune per placement
    *  with the editor's Y slider. */
@@ -188,6 +188,8 @@ export interface ObjectPlacement {
   floorLevel: number
   /** Per-instance text shown as a speech bubble on hover (textLabel objects). */
   text?: string
+  /** Placed by the server from data-src/field_bosses.csv; not editable. */
+  fixed?: boolean
 }
 
 export interface ObjectRegionData {

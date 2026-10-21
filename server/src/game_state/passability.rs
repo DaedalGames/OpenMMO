@@ -16,6 +16,7 @@ use onlinerpg_shared::pathfinding;
 use onlinerpg_shared::{WORLD_MAX_X, WORLD_MIN_X, WORLD_WIDTH_X};
 use onlinerpg_terrain::coords::{tile_to_region, world_to_tile};
 use serde::Deserialize;
+use std::borrow::Cow;
 use std::collections::HashMap;
 use tracing::{info, warn};
 
@@ -241,6 +242,7 @@ impl super::GameState {
         for house in &houses {
             self.passability_add_house(house).await;
         }
+        self.load_field_boss_sites().await;
         let regions = self.load_region_furniture(terrain_io).await?;
         let mut dungeons = 0usize;
         for def in self.dungeon_defs.all() {
@@ -266,7 +268,14 @@ impl super::GameState {
 
     async fn load_region_furniture(&self, terrain_io: &TerrainIO) -> std::io::Result<usize> {
         let mut count = 0;
-        for (rx, rz) in terrain_io.list_object_regions().await? {
+        let mut regions = terrain_io.list_object_regions().await?;
+        // Field-boss sites need no region file of their own.
+        for region in self.field_boss_regions() {
+            if !regions.contains(&region) {
+                regions.push(region);
+            }
+        }
+        for (rx, rz) in regions {
             let json = terrain_io.read_object(rx, rz).await?;
             let objs = serde_json::from_value::<RegionObjects>(json).map_err(|e| {
                 std::io::Error::new(
@@ -324,10 +333,17 @@ impl super::GameState {
     }
 }
 
+/// The object region holding a world point.
+pub(super) fn region_of(wx: f32, z: f32) -> (i32, i32) {
+    (
+        tile_to_region(world_to_tile(wx)),
+        tile_to_region(world_to_tile(z)),
+    )
+}
+
 /// The 3×3 region neighbourhood around a world point.
 pub(super) fn regions_around(wx: f32, z: f32) -> impl Iterator<Item = (i32, i32)> {
-    let rx = tile_to_region(world_to_tile(wx));
-    let rz = tile_to_region(world_to_tile(z));
+    let (rx, rz) = region_of(wx, z);
     (rx - 1..=rx + 1).flat_map(move |x| (rz - 1..=rz + 1).map(move |zz| (x, zz)))
 }
 
@@ -378,8 +394,16 @@ impl super::GameState {
         &self,
         rx: i32,
         rz: i32,
-        placements: &[FurniturePlacement],
+        file_placements: &[FurniturePlacement],
     ) -> bool {
+        // The region file plus this region's field-boss sites, which no file holds.
+        let sites = self.field_boss_placements_in(rx, rz);
+        let placements: Cow<[FurniturePlacement]> = if sites.is_empty() {
+            Cow::Borrowed(file_placements)
+        } else {
+            file_placements.iter().cloned().chain(sites).collect()
+        };
+        let placements = &*placements;
         {
             let mut index = self
                 .interaction_furniture
@@ -395,6 +419,16 @@ impl super::GameState {
         self.sync_respawn_beds(rx, rz, placements);
         self.sync_beds(rx, rz, placements);
         self.sync_dining(rx, rz, placements);
+        self.rebuild_region_furniture_passability(rx, rz, placements)
+    }
+
+    /// Region furniture collision alone, for a stand-in waking or sleeping.
+    pub(super) fn rebuild_region_furniture_passability(
+        &self,
+        rx: i32,
+        rz: i32,
+        placements: &[FurniturePlacement],
+    ) -> bool {
         let key = furniture::region_cache_key(rx, rz);
         let solid = self.without_woken_stand_in(placements);
         let mut cache = self.passability_write();

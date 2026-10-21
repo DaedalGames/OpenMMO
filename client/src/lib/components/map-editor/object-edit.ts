@@ -10,7 +10,12 @@ import { objectManager } from '../../managers/objectManager'
 import { furnitureManager } from '../../managers/furnitureManager'
 
 export function nextPlacementId(data: ObjectRegionData): number {
-  return data.placements.reduce((max, p) => Math.max(max, p.id), 0) + 1
+  return (
+    data.placements.reduce(
+      (max, p) => (p.fixed ? max : Math.max(max, p.id)),
+      0
+    ) + 1
+  )
 }
 
 /** Publish a new placement set to the store and persist it. */

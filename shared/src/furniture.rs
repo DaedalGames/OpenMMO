@@ -30,6 +30,10 @@ pub struct OccupancyRect {
     pub max_x: f32,
     pub min_z: f32,
     pub max_z: f32,
+    /// Blocking height above the base for objects marked `blocksFullHeight`;
+    /// `FURNITURE_BLOCK_HEIGHT` otherwise.
+    #[serde(default)]
+    pub block_height: Option<f32>,
 }
 
 /// Solid-furniture footprint table, generated from the GLBs by
@@ -171,7 +175,7 @@ pub fn occupancy_fits_house_floor(
 /// from the region-object JSON and the client's `ObjectPlacement` — unknown
 /// fields (`id`, `rotationX`, `text`) are ignored — so both the wasm and the
 /// agent-client entry points parse into it with no hand-written mapping.
-#[derive(Clone, Debug, serde::Deserialize)]
+#[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FurniturePlacement {
     /// Editor object id, unique within its region file.
@@ -358,7 +362,7 @@ pub fn furniture_pieces(placements: &[FurniturePlacement]) -> Vec<FurniturePiece
             cells,
             floor_level: p.floor_level,
             y_base: p.y,
-            wall_height: FURNITURE_BLOCK_HEIGHT,
+            wall_height: occ.block_height.unwrap_or(FURNITURE_BLOCK_HEIGHT),
         });
     }
     pieces
@@ -431,6 +435,7 @@ mod tests {
             max_x: 0.25,
             min_z: -0.25,
             max_z: 0.25,
+            block_height: None,
         };
         let cells = footprint_cells(&block, 1.0, 1.0, 0.0);
         assert_eq!(cells.len(), 1, "cells: {cells:?}");
@@ -445,6 +450,7 @@ mod tests {
             max_x: 0.4,
             min_z: -1.5,
             max_z: 1.5,
+            block_height: None,
         };
         let span = |cells: &[(i32, i32)]| {
             let xs: Vec<i32> = cells.iter().map(|c| c.0).collect();

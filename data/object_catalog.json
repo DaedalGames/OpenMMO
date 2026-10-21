@@ -312,6 +312,7 @@
     "name": "Terraclash (dormant)",
     "model": "monsters/terraclash_dormant.glb",
     "solid": true,
+    "blocksFullHeight": true,
     "dormantMonster": "terraclash"
   },
   {
@@ -319,11 +320,6 @@
     "name": "Terraclash Altar",
     "model": "objects/terraclash_altar.glb",
     "solid": true,
-    "altar": {
-      "offering": "earth_amulet",
-      "monster": "terraclash",
-      "spawn": { "x": 3.1, "z": -13.7, "rotation": 0 },
-      "reward": "helm_of_brilliance"
-    }
+    "altar": true
   }
 ]

@@ -1,0 +1,2 @@
+id,monster,condition,x,z,rotation,dormantObject,dormantSink,altarObject,altarX,altarZ,altarRotation,offering,reward
+terraclash,terraclash,full_moon,-1828.7,5519.9,270,terraclash_dormant,2.9,terraclash_altar,-1842.4,5516.8,270,earth_amulet,helm_of_brilliance

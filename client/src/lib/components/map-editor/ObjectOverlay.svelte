@@ -561,6 +561,7 @@
       if (bounds) clone.add(createSelectionBox(bounds.center, bounds.size))
     }
     clone.userData.objectId = p.id
+    if (p.fixed) clone.userData.objectFixed = true
     clone.userData.objectType = p.type
     clone.userData.structKey = structKey
     const catDef = objectDefsById.get(p.type)
