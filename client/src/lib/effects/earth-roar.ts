@@ -15,9 +15,9 @@ import {
 } from './dormant-wake'
 
 /** Ms into the cast the roar lands; `EARTH_ROAR.strike_ms` on the server. */
-export const EARTH_ROAR_STRIKE_MS = 3000
+export const EARTH_ROAR_STRIKE_MS = 4000
 /** The whole cast, `EARTH_ROAR.cast_ms`. */
-export const EARTH_ROAR_CAST_MS = 5200
+export const EARTH_ROAR_CAST_MS = 6200
 /** The dust wall reaches the roar's edge this long after the roar. */
 const WAVE_MS = 700
 const END_MS = EARTH_ROAR_STRIKE_MS + 2600

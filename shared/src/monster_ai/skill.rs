@@ -70,8 +70,8 @@ pub const RUNE_SLASH: MonsterSkill = MonsterSkill {
 /// `tools/blender-scripts/rig_terraclash.py`.
 pub const EARTH_ROAR: MonsterSkill = MonsterSkill {
     id: MonsterSkillId::EarthRoar,
-    cast_ms: 5200.0,
-    strike_ms: 3000.0,
+    cast_ms: 6200.0,
+    strike_ms: 4000.0,
     cooldown_ms: 60_000.0,
     first_cast_ms: 30_000.0,
     area: SkillArea::Zone { radius: 11.0 },

@@ -190,10 +190,10 @@ roar_rots = {'Spine': [(X, -8)], 'Chest': [(X, -14)], 'Head': [(X, -30)],
 crouch = {'Spine': [(X, 6)], 'Chest': [(X, 10)], 'Head': [(X, 12)]}
 gather = {'Spine': [(X, 10)], 'Chest': [(X, 16)], 'Head': [(X, 18)],
           'Shoulder.L': [(Y, 8)], 'Shoulder.R': [(Y, -8)]}
-# The roar's damage lands at 3.0s (EARTH_ROAR.strike_ms); the long gather is
+# The roar's damage lands at 4.0s (EARTH_ROAR.strike_ms); the long gather is
 # the time raiders get to drink.
-clip('Roar', [(0, rest), (1.0, crouch), (2.4, gather), (3.0, roar_rots), (4.4, roar_rots),
-              (5.2, rest)])
+clip('Roar', [(0, rest), (1.2, crouch), (3.4, gather), (4.0, roar_rots), (5.4, roar_rots),
+              (6.2, rest)])
 
 hit = {'Chest': [(X, -6)], 'Head': [(X, -8)], 'Spine': [(X, -3)]}
 clip('Hit', [(0, rest), (0.15, hit), (0.6, rest)])
