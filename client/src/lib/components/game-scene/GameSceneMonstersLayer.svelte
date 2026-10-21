@@ -126,6 +126,7 @@
     rotation={monster.rotation}
     monsterState={monster.state}
     attackCounter={monster.attackCounter}
+    attackFromLeft={monster.attackFromLeft}
     skill={monster.skill}
     hitCounter={monster.hitCounter}
     lastDamageInfo={monster.lastDamageInfo}

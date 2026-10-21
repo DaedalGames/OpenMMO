@@ -10,6 +10,7 @@ export interface MonsterData {
   chaseAim?: { playerId: number; stopRange: number } // engage-ring chase leg from the last Move sync
   moveSpeed: number
   attackCounter?: number
+  attackFromLeft?: boolean // Last swing's target was on the monster's left
   /** The telegraphed skill under way; `counter` restarts its clip. */
   skill?: {
     id: string

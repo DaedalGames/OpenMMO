@@ -108,8 +108,12 @@ for (const m of monsters) {
     durationsByModel.set(m.model, extractDurations(modelPath(m)))
   }
   // `animAttack` may list several `|`-separated clips the client picks from at
-  // random; the swing holds for the longest of them.
-  const clipNames = (m.animAttack ?? 'Attack').split('|').filter(Boolean)
+  // random, and `animAttackLeft` more for targets on the left; the swing holds
+  // for the longest of them.
+  const clipNames = [m.animAttack ?? 'Attack', m.animAttackLeft ?? '']
+    .join('|')
+    .split('|')
+    .filter(Boolean)
   const durations = clipNames.map(
     (clipName) =>
       durationsByModel.get(m.model)[clipName] ??

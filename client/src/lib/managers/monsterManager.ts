@@ -473,12 +473,16 @@ class MonsterManager {
     }
 
     let rotation: number | undefined
+    let fromLeft = false
     if (target) {
       const dx = shortestWrappedDeltaX(monster.position.x, target.x)
       const dz = target.z - monster.position.z
       if (dx !== 0 || dz !== 0) rotation = Math.atan2(dx, dz)
+      const r = monster.rotation
+      fromLeft = dx * Math.cos(r) - dz * Math.sin(r) > 0
     }
     this.applyMonsterPose(monster, { rotation, state: 'attack' })
+    monster.attackFromLeft = fromLeft
     monster.attackCounter = (monster.attackCounter ?? 0) + 1
     monster.lastAttackStartedAt = now
     this.monsters.set(monsterId, { ...monster })

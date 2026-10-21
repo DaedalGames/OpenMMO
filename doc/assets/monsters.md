@@ -211,6 +211,8 @@
     팔·어깨·머리·몸통 영역별로 쓸 수 있는 뼈를 제한한다. 지면에서 주먹과 몸통 바위를 잇는 면 19개는 팔을 들 때
     늘어나므로 잘라냈다. 결과는 `assets/monsters/terraclash/rig_v1/terraclash.{glb,blend}`이며, 같은 GLB를 `client/public/models/monsters/terraclash.glb`로
     써서 `monsters.csv`의 `terraclash`(제자리 고정, 임시 능력치)로 등록했다. 미리보기: `modular-character-preview.html?character=terraclash`.
+  - 왼팔 평타(2026-10-21): `Attack`(오른팔 내려찍기)을 좌우 반전한 `AttackLeft`를 같은 스크립트에서 굽는다.
+    몸체가 돌지 않으므로 대상이 정면 기준 왼쪽이면 `animAttackLeft`(`AttackLeft`), 오른쪽이면 `animAttack`(`Attack`)을 쓴다. 길이는 같은 2.6초다.
 - SCP939 https://sketchfab.com/3d-models/scp939-79a749a5073b453d9d85875797bf45d7
   - 전송량 최적화 (2026-10-16): `scp939.edf348b1.glb`를 **5,776,536 → 1,395,636바이트(75.84% 감소)**로 줄였다.
     gzip level 6 예상 전송량은 **4,032,324 → 994,918바이트(75.33% 감소)**이며 다음 빌드 파일명은 `scp939.79bd676e.glb`다.

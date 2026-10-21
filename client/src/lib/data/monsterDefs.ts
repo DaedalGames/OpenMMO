@@ -22,6 +22,8 @@ export interface MonsterDefinition {
   animRun: string
   /** One clip, or several `|`-separated to pick from at random per swing. */
   animAttack: string
+  /** Clips for targets on the monster's left; `animAttack` then covers the right. */
+  animAttackLeft?: string
   animAttackIdle?: string
   /** Empty for monsters on the shared packs — those have no hit reaction. */
   animHit?: string
@@ -128,7 +130,12 @@ export function splitClipNames(value: string | undefined): string[] {
   return value ? value.split('|').filter(Boolean) : []
 }
 
-export function attackClipNames(def: MonsterDefinition | undefined): string[] {
+export function attackClipNames(
+  def: MonsterDefinition | undefined,
+  fromLeft = false
+): string[] {
+  const left = fromLeft ? splitClipNames(def?.animAttackLeft) : []
+  if (left.length > 0) return left
   const names = splitClipNames(def?.animAttack)
   return names.length > 0 ? names : ['Attack']
 }

@@ -164,7 +164,24 @@ lift = {'Spine': [(Z, -10), (X, -4)], 'Chest': [(Z, -8)], 'Head': [(X, -8)],
 slam = {'Spine': [(Z, 6), (X, 10)], 'Chest': [(Z, 4), (X, 8)], 'Head': [(X, 6)],
         'Shoulder.R': [(Y, -6)], 'UpperArm.R': [(X, -18)], 'LowerArm.R': [(X, 10)],
         'Hand.R': [(X, 6)]}
-clip('Attack', [(0, rest), (0.9, lift), (1.15, lift), (1.4, slam), (1.9, slam), (2.6, rest)])
+
+
+def slam_clip(name, lift, slam):
+    clip(name, [(0, rest), (0.9, lift), (1.15, lift), (1.4, slam), (1.9, slam), (2.6, rest)])
+
+
+slam_clip('Attack', lift, slam)
+
+
+def mirror(rots):
+    """Swap sides; reflecting across X keeps X rotations and flips Y/Z ones."""
+    swap = {'.R': '.L', '.L': '.R'}
+    return {(n[:-2] + swap[n[-2:]] if n[-2:] in swap else n):
+            [(axis, deg if axis == X else -deg) for axis, deg in r]
+            for n, r in rots.items()}
+
+
+slam_clip('AttackLeft', mirror(lift), mirror(slam))
 
 roar_rots = {'Spine': [(X, -8)], 'Chest': [(X, -14)], 'Head': [(X, -30)],
              'Shoulder.L': [(Y, -15)], 'Shoulder.R': [(Y, 15)],

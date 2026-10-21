@@ -58,6 +58,7 @@
     rotation: number
     monsterState: MonsterData['state']
     attackCounter?: number
+    attackFromLeft?: boolean
     hitCounter?: number
     skill?: MonsterData['skill']
     id: string
@@ -74,6 +75,7 @@
     rotation,
     monsterState,
     attackCounter,
+    attackFromLeft = false,
     hitCounter,
     skill,
     id,
@@ -87,9 +89,9 @@
 
   const def = $derived(getMonsterDef(type))
   const attackClips = $derived(attackClipNames(def))
-  // Re-rolled from `attackClips` at the start of every swing, so this is only
-  // a seed — `untrack` says that out loud, the way the model resolution below
-  // does, instead of leaving a reactive read that never re-runs.
+  // Re-rolled at the start of every swing, so this is only a seed — `untrack`
+  // says that out loud, the way the model resolution below does, instead of
+  // leaving a reactive read that never re-runs.
   let attackClip = untrack(() => attackClips[0])
 
   // Monster type is fixed for the component's lifetime, so the model and any
@@ -452,7 +454,8 @@
       const hitCounterChanged = lastHitCounter !== hitCounter
       if (attackCounterChanged && monsterState === 'attack') {
         isAttackAnimationFinished = false
-        attackClip = attackClips[Math.floor(Math.random() * attackClips.length)]
+        const pool = attackClipNames(def, attackFromLeft)
+        attackClip = pool[Math.floor(Math.random() * pool.length)]
       }
       lastAttackCounter = attackCounter
       lastHitCounter = hitCounter

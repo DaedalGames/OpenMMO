@@ -7,7 +7,8 @@ import { disposeObjects } from './dispose-objects'
 const MOTIONS: [string, string][] = [
   ['Bind', '기준 자세'],
   ['Idle', '대기'],
-  ['Attack', '내려찍기'],
+  ['Attack', '오른팔 내려찍기'],
+  ['AttackLeft', '왼팔 내려찍기'],
   ['Roar', '포효'],
   ['Hit', '피격'],
   ['Death', '사망'],
