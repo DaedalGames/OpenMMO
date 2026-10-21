@@ -243,7 +243,7 @@ class MonsterManager {
 
   /** A sleeping boss outlives its removal until its sink ends. */
   remove(id: string) {
-    if (this.monsters.get(id)?.sleepStartedAt === undefined) this.drop(id)
+    if (this.monsters.get(id)?.sinkAt === undefined) this.drop(id)
   }
 
   private drop(id: string) {
@@ -524,13 +524,24 @@ class MonsterManager {
     clearXpArrival()
   }
 
-  /** A raid boss sinks back to sleep: bodiless at once, like the server's,
-   *  and gone once the sink ends. */
-  beginSleep(id: string, startedAt: number) {
+  /** A raid boss goes back to sleep: it drops its fight and stands idle,
+   *  bodiless at once like the server's, then sinks from `sinkAt`. */
+  beginSleep(id: string, sinkAt: number) {
     const monster = this.monsters.get(id)
     if (!monster) return
     this.removeBody(id)
-    this.monsters.set(id, { ...monster, sleepStartedAt: startedAt })
+    this.monsters.set(id, {
+      ...monster,
+      state: 'idle',
+      skill: undefined,
+      sinkAt,
+    })
+  }
+
+  /** A corpse, or a boss going back to sleep: already gone on the server. */
+  isGone(id: string) {
+    const monster = this.monsters.get(id)
+    return monster?.state === 'dead' || monster?.sinkAt !== undefined
   }
 
   update(deltaTime: number) {
@@ -538,8 +549,8 @@ class MonsterManager {
     const gameState = get(gameStore)
     const now = Date.now()
     for (const monster of this.monsters.values()) {
-      if (monster.sleepStartedAt !== undefined) {
-        if (now - monster.sleepStartedAt >= SLEEP_SINK_MS) this.drop(monster.id)
+      if (monster.sinkAt !== undefined) {
+        if (now - monster.sinkAt >= SLEEP_SINK_MS) this.drop(monster.id)
         continue
       }
       const terrainY = this.monsterGroundY(

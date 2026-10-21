@@ -7,6 +7,8 @@ import {
   pushFieldBossWake,
 } from '../stores/fieldBossWakeStore'
 import { monsterManager } from '../managers/monsterManager'
+import { combatController } from '../managers/combatController'
+import { SLEEP_CALM_MS } from '../effects/dormant-sleep'
 import type { Position } from './networkTypes'
 
 /** `AltarStatus` in shared/src/messages.rs, serde externally tagged. */
@@ -90,11 +92,14 @@ export function handleFieldBossSleeping(data: {
   monster: string
   position: Position
 }) {
-  const startedAt = Date.now()
-  monsterManager.beginSleep(data.monster_id, startedAt)
+  const sinkAt = Date.now() + SLEEP_CALM_MS
+  if (combatController.targetMonsterId === data.monster_id) {
+    combatController.cancelCombat({ notifyServer: false })
+  }
+  monsterManager.beginSleep(data.monster_id, sinkAt)
   pushFieldBossSleep({
     monster: data.monster,
     position: data.position,
-    startedAt,
+    sinkAt,
   })
 }

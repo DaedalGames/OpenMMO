@@ -47,7 +47,12 @@
     DORMANT_SINK_MS,
     DormantWakeEffect,
   } from '../../effects/dormant-wake'
-  import { SLEEP_SINK_MS, shake, sleepRise } from '../../effects/dormant-sleep'
+  import {
+    SLEEP_RISE_FROM_MS,
+    SLEEP_SINK_MS,
+    shake,
+    sleepRise,
+  } from '../../effects/dormant-sleep'
   import {
     takeFieldBossSleeps,
     takeFieldBossWakes,
@@ -403,10 +408,7 @@
     const ids: number[] = []
     for (const standIn of standIns) {
       for (const m of monsterManager.monsters.values()) {
-        if (
-          m.sleepStartedAt === undefined &&
-          risesFrom(standIn, m.type, m.position)
-        ) {
+        if (m.sinkAt === undefined && risesFrom(standIn, m.type, m.position)) {
           ids.push(standIn.p.id)
           break
         }
@@ -514,7 +516,7 @@
   function startSleep(s: FieldBossSleep) {
     const found = standInFor(s.monster, s.position)
     if (!found) return
-    beginShell('sleep', found, s.position.y, s.startedAt, SLEEP_SINK_MS)
+    beginShell('sleep', found, s.position.y, s.sinkAt, SLEEP_SINK_MS)
   }
 
   function beginShell(
@@ -543,11 +545,13 @@
     const { kind, p, collapseMs, height } = shell
     const t = elapsed / 1000
     if (kind === 'sleep') {
-      // Climbs back out from under the ground, shuddering less as it
-      // settles. Fetched each frame: the filter flip re-attaches it.
+      // Climbs back out from under the ground once the dust is up,
+      // shuddering less as it settles. Fetched each frame: the filter flip
+      // re-attaches it.
+      clone.visible = elapsed >= SLEEP_RISE_FROM_MS
+      if (!clone.visible) return
       const rise = sleepRise(elapsed)
       applyPlacementTransform(clone, p)
-      clone.visible = true
       shake(clone, t, 0.12 * (1 - rise))
       clone.position.y -= (1 - rise) * height * 1.05
     } else if (elapsed >= collapseMs + DORMANT_SINK_MS) {

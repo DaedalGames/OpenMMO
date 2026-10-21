@@ -1680,7 +1680,7 @@
   // though the ray misses the actual silhouette.
   function hoveredMonsterAttackIntent(): ClickIntent | null {
     const hover = get(hoverTarget)
-    if (hover?.kind !== 'monster' || isMonsterDead(hover.monsterId)) return null
+    if (hover?.kind !== 'monster' || isMonsterGone(hover.monsterId)) return null
     const monster = monsterManager.monsters.get(hover.monsterId)
     if (!monster || !currentPlayer) return null
     const p = currentPlayer.position
@@ -1753,7 +1753,7 @@
         playerVisualFloorLevel: get(playerVisualFloorLevel),
         resolveHousingStairTarget: (floorLevel, x, y, z, stairFloor) =>
           housingManager.stairLandingTargetAt(floorLevel, x, y, z, stairFloor),
-        isMonsterDead,
+        isMonsterGone,
         canCastFishing:
           !movementOnly &&
           abilityEquipmentAllowed(FISHING.id, get(inventoryStore).equipped) &&
@@ -2081,8 +2081,7 @@
   let hoverTrailing: ReturnType<typeof setTimeout> | null = null
   let pendingHoverEvent: MouseEvent | null = null
 
-  const isMonsterDead = (id: string) =>
-    monsterManager.monsters.get(id)?.state === 'dead'
+  const isMonsterGone = (id: string) => monsterManager.isGone(id)
 
   // An item being picked up is hidden through its parent's `visible`, which
   // raycasts ignore — so a hit on one that is gone or already in hand doesn't
@@ -2092,7 +2091,7 @@
       const item = groundItemManager.items.get(target.instanceId)
       return !!item && !item.inHand
     }
-    if (target.kind === 'monster') return !isMonsterDead(target.monsterId)
+    if (target.kind === 'monster') return !isMonsterGone(target.monsterId)
     if (target.kind === 'player') {
       const player = get(gameStore).otherPlayers.get(target.playerId)
       return !!player && player.health > 0

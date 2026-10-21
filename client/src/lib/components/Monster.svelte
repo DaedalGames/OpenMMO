@@ -68,7 +68,7 @@
     heightManager?: TerrainHeightManager | null
     lastDamageInfo?: MonsterData['lastDamageInfo']
     droppedWeaponItemDefId?: string
-    sleepStartedAt?: number
+    sinkAt?: number
     onHitFinished?: () => void
   }
 
@@ -86,7 +86,7 @@
     heightManager = null,
     lastDamageInfo,
     droppedWeaponItemDefId,
-    sleepStartedAt,
+    sinkAt,
     onHitFinished,
   }: Props = $props()
 
@@ -423,7 +423,7 @@
     //    (which runs during the game loop, before Svelte's reactive updates)
     //    sees the monster at its current position.
     // A sleeping boss grinds down into the ground, nameplate and all.
-    const slept = sleepStartedAt === undefined ? 0 : Date.now() - sleepStartedAt
+    const slept = sinkAt === undefined ? 0 : Date.now() - sinkAt
     const sink = sleepSink(slept)
     const sunk = sink * nametagHeight
     if (group) {

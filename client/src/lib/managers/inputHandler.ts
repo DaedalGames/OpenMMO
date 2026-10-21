@@ -186,7 +186,7 @@ export interface RaycastContext {
   playerPosition: Position
   /** Gates house door clicks to the door's own floor (0 = ground/outdoors). */
   playerVisualFloorLevel: number
-  isMonsterDead: (monsterId: string) => boolean
+  isMonsterGone: (monsterId: string) => boolean
   /** Rod in the main hand and standing on castable ground (surface, not a
    *  dungeon or upper house floor) — water clicks become casts. */
   canCastFishing?: boolean
@@ -438,7 +438,7 @@ class InputHandler {
           const owner = findAncestorWithUserData(hit.object, 'monsterId')
           if (!owner) return null
           const monsterId = owner.userData.monsterId as string
-          if (context.isMonsterDead(monsterId)) return null // Try other rays
+          if (context.isMonsterGone(monsterId)) return null // Try other rays
 
           const hitPoint = hit.point
           const dist = new THREE.Vector3(

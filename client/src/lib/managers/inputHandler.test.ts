@@ -223,7 +223,7 @@ function contextWith(overrides: Partial<RaycastContext> = {}): RaycastContext {
     groundMeshes: [ground],
     playerPosition: { x: 0, y: 0, z: 0 },
     playerVisualFloorLevel: 0,
-    isMonsterDead: () => false,
+    isMonsterGone: () => false,
     ...overrides,
   }
 }

@@ -1,9 +1,12 @@
 import { MathUtils, type Object3D } from 'three'
 
-/** A boss going back to sleep sinks into the ground over this long. */
+/** A boss going back to sleep stands idle this long, its fight over, before
+ *  it sinks into the ground over `SLEEP_SINK_MS`. Times below run from the
+ *  start of the sink. */
+export const SLEEP_CALM_MS = 3000
 export const SLEEP_SINK_MS = 2400
 /** Its stand-in climbs back out over this window, inside the dust. */
-const SLEEP_RISE_FROM_MS = 1300
+export const SLEEP_RISE_FROM_MS = 1300
 const SLEEP_RISE_TO_MS = 3300
 
 /** How far (0–1) a sleeping boss has sunk `elapsedMs` in. */

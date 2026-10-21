@@ -453,12 +453,14 @@ export class DormantWakeEffect {
     this.rockMesh.instanceColor!.needsUpdate = true
   }
 
-  /** False once the dust has settled. */
+  /** False once the dust has settled; hidden until `elapsedMs` reaches 0. */
   update(elapsedMs: number, camera: THREE.Camera): boolean {
     if (elapsedMs >= this.collapseMs + DORMANT_WAKE_TAIL_MS) {
       this.clear()
       return false
     }
+    this.group.visible = elapsedMs >= 0
+    if (elapsedMs < 0) return true
     this.updateDust(elapsedMs, camera)
     this.updateRocks(elapsedMs)
     this.updateEmbers(elapsedMs, camera)

@@ -8,11 +8,11 @@ export interface FieldBossWake {
   collapseMs: number
 }
 
-/** A `FieldBossSleeping` event; `startedAt` is `Date.now()` ms. */
+/** A `FieldBossSleeping` event; the boss sinks from `sinkAt` (`Date.now()` ms). */
 export interface FieldBossSleep {
   monster: string
   position: Position
-  startedAt: number
+  sinkAt: number
 }
 
 const pending: FieldBossWake[] = []
