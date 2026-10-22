@@ -29,7 +29,9 @@ export function setupCsmShadow(light: THREE.DirectionalLight): void {
   internals._init = (builder) => {
     init(builder)
     for (const cascade of csm.lights)
-      cascade.shadow!.filterNode = pcfShadowFilter
+      (
+        cascade.shadow as unknown as { filterNode: typeof pcfShadowFilter }
+      ).filterNode = pcfShadowFilter
   }
   light.shadow.shadowNode = csm
 }

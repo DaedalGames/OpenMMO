@@ -1,4 +1,10 @@
-import type { DepthTexture, LightShadow, PointLight, RenderTarget } from 'three'
+import type {
+  DepthTexture,
+  LightShadow,
+  PerspectiveCamera,
+  PointLight,
+  RenderTarget,
+} from 'three'
 import {
   Fn,
   If,
@@ -19,17 +25,21 @@ import {
   viewZToLogarithmicDepth,
   viewZToPerspectiveDepth,
   viewZToReversedPerspectiveDepth,
-  vogelDiskSample,
+  vogelDiskSample as vogelDiskSampleTyped,
 } from 'three/tsl'
-import { PointShadowNode, type Node, type NodeBuilder } from 'three/webgpu'
+import { PointShadowNode, type NodeBuilder } from 'three/webgpu'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type N = any // TSL node
+const vogelDiskSample: N = vogelDiskSampleTyped
 
 type ShadowTarget = { shadowMap: RenderTarget; depthTexture: DepthTexture }
 type TargetFactory = (shadow: LightShadow, builder: NodeBuilder) => ShadowTarget
 type FilterInputs = {
   depthTexture: DepthTexture
-  shadowCoord: Node
+  shadowCoord: N
   shadow: LightShadow
-  depthLayer?: Node
+  depthLayer?: N
 }
 
 // three@0.186.1's shadow filters create their render-group uniforms inside
@@ -45,9 +55,11 @@ export function pcfShadowFilter({
   shadowCoord,
   shadow,
   depthLayer,
-}: FilterInputs): Node {
-  const mapSize = reference('mapSize', 'vec2', shadow).setGroup(renderGroup)
-  const radiusScaled = reference('radius', 'float', shadow)
+}: FilterInputs): N {
+  const mapSize = (reference('mapSize', 'vec2', shadow) as N).setGroup(
+    renderGroup
+  )
+  const radiusScaled = (reference('radius', 'float', shadow) as N)
     .setGroup(renderGroup)
     .mul(vec2(1).div(mapSize).x)
   const phi = interleavedGradientNoise(screenCoordinate.xy).mul(6.28318530718)
@@ -64,13 +76,15 @@ export function pcfShadowFilter({
 function stablePointShadowFilter(shadow: LightShadow) {
   const near = uniform('float')
     .setGroup(renderGroup)
-    .onRenderUpdate(() => shadow.camera.near)
+    .onRenderUpdate(() => (shadow.camera as PerspectiveCamera).near)
   const far = uniform('float')
     .setGroup(renderGroup)
-    .onRenderUpdate(() => shadow.camera.far)
-  const bias = reference('bias', 'float', shadow).setGroup(renderGroup)
-  const mapSize = reference('mapSize', 'vec2', shadow).setGroup(renderGroup)
-  const texelSize = reference('radius', 'float', shadow)
+    .onRenderUpdate(() => (shadow.camera as PerspectiveCamera).far)
+  const bias = (reference('bias', 'float', shadow) as N).setGroup(renderGroup)
+  const mapSize = (reference('mapSize', 'vec2', shadow) as N).setGroup(
+    renderGroup
+  )
+  const texelSize = (reference('radius', 'float', shadow) as N)
     .setGroup(renderGroup)
     .div(mapSize.x)
   return Fn(
@@ -97,7 +111,7 @@ function stablePointShadowFilter(shadow: LightShadow) {
               )
             : toDepth(viewZ.negate(), near, far).add(bias)
           const bd3D = position.normalize()
-          const dir = abs(bd3D)
+          const dir: N = abs(bd3D)
           const up = dir.x
             .greaterThan(dir.z)
             .select(vec3(0, 1, 0), vec3(1, 0, 0))
@@ -110,7 +124,7 @@ function stablePointShadowFilter(shadow: LightShadow) {
             const s = vogelDiskSample(i, 5, phi)
             const offset = tangent.mul(s.x).add(bitangent.mul(s.y))
             return cubeTexture(
-              depthTexture,
+              depthTexture as N,
               bd3D.add(offset.mul(texelSize))
             ).compare(dp)
           }
@@ -130,7 +144,7 @@ export function setupPointShadow(light: PointLight): void {
   if (light.shadow.shadowNode) return
   const node = new PointShadowNode(light, light.shadow) as PointShadowNode & {
     setupRenderTarget: TargetFactory
-    setupShadowFilter: (builder: NodeBuilder, inputs: FilterInputs) => Node
+    setupShadowFilter: (builder: NodeBuilder, inputs: FilterInputs) => N
   }
   const createTarget = node.setupRenderTarget.bind(node)
   node.setupRenderTarget = (shadow, builder) => {

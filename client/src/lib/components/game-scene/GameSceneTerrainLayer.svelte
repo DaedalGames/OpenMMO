@@ -106,7 +106,10 @@
     const samples = puddleTracker.update(seconds, sampleRain, restoreHistory)
     const blend = -Math.expm1(-Math.max(0, seconds) / 0.35)
     for (const tile of terrainTiles) {
-      const uniforms = meshMap.get(tile.id)?.material.userData.rainPuddles
+      const material = meshMap.get(tile.id)?.material as
+        | THREE.Material
+        | undefined
+      const uniforms = material?.userData.rainPuddles
       if (!uniforms) continue
       const x = tile.position[0] - TERRAIN_TILE_SIZE / 2
       const z = tile.position[2] - TERRAIN_TILE_SIZE / 2
