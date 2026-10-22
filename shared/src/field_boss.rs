@@ -49,6 +49,8 @@ struct Row {
     altar_z: Option<f32>,
     #[serde(default)]
     altar_rotation: f32,
+    #[serde(default)]
+    altar_sink: f32,
     offering: Option<String>,
     reward: Option<String>,
     token: Option<String>,
@@ -78,13 +80,15 @@ pub struct DormantDef {
     pub sink: f32,
 }
 
-/// An altar that wakes the boss when `offering` is laid on it.
+/// An altar that wakes the boss when `offering` is laid on it, sunk `sink` m
+/// so its downhill edge does not float on a slope.
 #[derive(Debug)]
 pub struct AltarDef {
     pub object: String,
     pub x: f32,
     pub z: f32,
     pub rotation: f32,
+    pub sink: f32,
     pub offering: String,
     /// Granted to the summoner when the raid is won with them in it.
     pub reward: Option<String>,
@@ -158,6 +162,7 @@ fn parse(row: Row, index: u32, catalog: &HashMap<String, CatalogEntry>) -> Field
                 x: wrap_world_x(x),
                 z,
                 rotation: row.altar_rotation,
+                sink: row.altar_sink,
                 offering,
                 reward: row.reward,
             })
@@ -231,7 +236,7 @@ impl FieldBossDef {
             id: self.altar_placement_id(),
             type_id: a.object.clone(),
             x: a.x,
-            y: altar_ground,
+            y: altar_ground - a.sink,
             z: a.z,
             rotation_deg: a.rotation,
             floor_level: 0,
@@ -273,6 +278,7 @@ mod tests {
         let placements = def.placements(16.5, 23.4);
         assert_eq!(placements.len(), 2);
         assert!(placements.iter().all(|p| is_field_boss_placement(p.id)));
+        assert!((placements[0].y - 16.3).abs() < 1e-4, "altar sunk a little");
         assert!((placements[1].y - 20.5).abs() < 1e-4, "sunk into the slope");
     }
 }
