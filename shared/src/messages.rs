@@ -1680,6 +1680,8 @@ pub enum ServerMessage {
         outcome: FieldRaidOutcome,
         /// Item granted to this recipient for the raid.
         reward: Option<String>,
+        /// Raid token item and how many this recipient got.
+        tokens: Option<(String, u32)>,
     },
     /// An offering took; the boss rises from its dormant stand-in at
     /// `position` once `wake_in_ms` has passed.

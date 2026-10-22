@@ -52,28 +52,37 @@ async fn setup(when: GameDateTime, amulets: u32) -> (GameState, PlayerId, Direct
     let boss = terraclash();
     let (rx, rz) = super::super::passability::region_of(boss.x, boss.z);
     game.sync_region_furniture(rx, rz, &[]);
-    let mut player = make_player("summoner", altar().x - 1.5, altar().z);
-    player.position.y = GROUND;
-    let id = player.id;
-    game.add_player(player).await;
-    game.register_player_character(&id, SUMMONER_CHARACTER, 0, attrs_with_cha(10), 0, None)
-        .await;
-    let rx = game.register_direct_channel(&id).await;
-    let mut inv = PlayerInventory::default();
+    let (id, rx) = join_raid(&game, "summoner", SUMMONER_CHARACTER).await;
     if amulets > 0 {
-        inv.bag.push(bag_item(41, "earth_amulet", amulets));
+        game.inventories
+            .write()
+            .await
+            .get_mut(&id)
+            .unwrap()
+            .bag
+            .push(bag_item(41, "earth_amulet", amulets));
     }
-    game.inventories.write().await.insert(id, inv);
     (game, id, rx)
 }
 
+/// A raider beside the altar, within reach of it and of the battle zone.
+async fn join_raid(game: &GameState, name: &str, character: i64) -> (PlayerId, DirectRx) {
+    let mut player = make_player(name, altar().x - 1.5, altar().z);
+    player.position.y = GROUND;
+    let id = player.id;
+    game.add_player(player).await;
+    game.register_player_character(&id, character, 0, attrs_with_cha(10), 0, None)
+        .await;
+    let rx = game.register_direct_channel(&id).await;
+    game.inventories
+        .write()
+        .await
+        .insert(id, PlayerInventory::default());
+    (id, rx)
+}
+
 async fn amulets(game: &GameState, id: &PlayerId) -> u32 {
-    game.inventories.read().await[id]
-        .bag
-        .iter()
-        .filter(|i| i.item_def_id == "earth_amulet")
-        .map(|i| i.quantity)
-        .sum()
+    bag_count(game, id, "earth_amulet").await
 }
 
 fn statuses(rx: &mut DirectRx) -> Vec<AltarStatus> {
@@ -109,11 +118,13 @@ async fn kill(game: &GameState, boss: &crate::types::Monster) {
     game.tick_field_raid().await;
 }
 
-fn notices(rx: &mut DirectRx) -> Vec<Option<String>> {
+type Notice = (Option<String>, Option<(String, u32)>);
+
+fn notices(rx: &mut DirectRx) -> Vec<Notice> {
     drain(rx)
         .into_iter()
         .filter_map(|m| match m {
-            ServerMessage::FieldRaidNotice { reward, .. } => Some(reward),
+            ServerMessage::FieldRaidNotice { reward, tokens, .. } => Some((reward, tokens)),
             _ => None,
         })
         .collect()
@@ -240,7 +251,10 @@ async fn a_summoner_who_fought_to_the_end_gets_the_helm_once() {
     assert_eq!(helms(&game.inventories.read().await[&id]), 1);
     assert_eq!(
         notices(&mut rx),
-        vec![Some("helm_of_brilliance".to_string())]
+        vec![(
+            Some("helm_of_brilliance".to_string()),
+            Some(("terraclash_token".to_string(), 1))
+        )]
     );
 
     game.tick_field_raid().await;
@@ -254,7 +268,7 @@ async fn a_summoner_who_never_hit_or_lay_dead_gets_no_helm() {
     drain(&mut rx);
     kill(&game, &boss).await;
     assert_eq!(helms(&game.inventories.read().await[&id]), 0);
-    assert_eq!(notices(&mut rx), vec![None]);
+    assert_eq!(notices(&mut rx), vec![(None, None)]);
 
     let (game, id, _rx) = setup(full_moon(), 1).await;
     let boss = wake(&game, &id).await;
@@ -351,4 +365,90 @@ async fn a_winter_raid_ends_when_its_moon_sets_before_sunrise() {
     tick_at(&game, set).await;
     assert!(game.field_raid.lock().await.is_none());
     assert_eq!(ending(&mut rx), (true, Some(FieldRaidOutcome::MoonSet)));
+}
+
+async fn tokens(game: &GameState, id: &PlayerId) -> u32 {
+    bag_count(game, id, "terraclash_token").await
+}
+
+#[test]
+fn each_damage_tier_reached_adds_a_token() {
+    let token = terraclash().token.as_ref().expect("terraclash token");
+    assert_eq!(token.tiers, [1, 1000, 3000]);
+    let counts = [0, 1, 999, 1000, 2999, 3000, 80_000].map(|d| token.count_for(d));
+    assert_eq!(counts, [0, 1, 1, 2, 2, 3, 3]);
+}
+
+#[test]
+fn the_token_is_a_bound_stack() {
+    let game = make_test_game_state("field_raid_token");
+    let token = &terraclash().token.as_ref().expect("terraclash token").item;
+    let def = game.item_defs.get(token).expect("token item");
+    assert!(def.stackable);
+    assert!(game.item_defs.untradeable(token));
+}
+
+#[tokio::test]
+async fn raiders_alive_at_the_kill_earn_tokens_by_damage_dealt() {
+    let (game, summoner, mut summoner_rx) = setup(full_moon(), 1).await;
+    let boss = wake(&game, &summoner).await;
+    let (top, _) = join_raid(&game, "top", 12).await;
+    let (second, _) = join_raid(&game, "second", 13).await;
+    let (third, _) = join_raid(&game, "third", 14).await;
+    let (idle, mut idle_rx) = join_raid(&game, "idle", 15).await;
+    let (fallen, _) = join_raid(&game, "fallen", 16).await;
+    for (id, damage) in [
+        (&summoner, 1000),
+        (&top, 3500),
+        (&second, 3000),
+        (&third, 999),
+        (&fallen, 5000),
+    ] {
+        game.record_field_raid_hit(id, damage).await;
+    }
+    game.players.write().await.get_mut(&fallen).unwrap().health = 0;
+    drain(&mut summoner_rx);
+    drain(&mut idle_rx);
+    kill(&game, &boss).await;
+
+    for (id, expected) in [(&top, 3), (&second, 3), (&third, 1), (&summoner, 2)] {
+        assert_eq!(tokens(&game, id).await, expected);
+    }
+    assert_eq!(tokens(&game, &idle).await, 0);
+    assert_eq!(tokens(&game, &fallen).await, 0);
+    assert_eq!(
+        notices(&mut summoner_rx),
+        vec![(
+            Some("helm_of_brilliance".to_string()),
+            Some(("terraclash_token".to_string(), 2))
+        )]
+    );
+    assert_eq!(notices(&mut idle_rx), vec![(None, None)]);
+
+    game.tick_field_raid().await;
+    assert_eq!(tokens(&game, &top).await, 3, "paid once");
+}
+
+#[tokio::test]
+async fn a_reconnect_keeps_the_raiders_damage() {
+    let (game, summoner, _rx) = setup(full_moon(), 1).await;
+    let boss = wake(&game, &summoner).await;
+    let (before, _) = join_raid(&game, "before", 12).await;
+    let (rival, _) = join_raid(&game, "rival", 13).await;
+    game.record_field_raid_hit(&before, 600).await;
+    game.record_field_raid_hit(&rival, 40).await;
+    game.unregister_player_character(&before).await;
+    game.remove_player(&before).await;
+    let (after, _) = join_raid(&game, "after", 12).await;
+    game.record_field_raid_hit(&after, 500).await;
+    kill(&game, &boss).await;
+
+    assert_eq!(tokens(&game, &after).await, 2);
+    assert_eq!(tokens(&game, &rival).await, 1);
+}
+
+#[test]
+fn the_raid_boss_shrugs_off_hit_stagger() {
+    let game = make_test_game_state("field_raid_stagger");
+    assert!(game.monster_defs.get("terraclash").unwrap().stagger_immune);
 }

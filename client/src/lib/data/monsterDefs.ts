@@ -57,6 +57,8 @@ export interface MonsterDefinition {
    * (e.g. scp939's long additive stagger).
    */
   deathPlaysHit?: boolean
+  /** Raid boss: landed hits neither stagger it nor play its flinch. */
+  staggerImmune?: boolean
   /**
    * Cross-fade seconds into the death clip (default 0.2). Raise for monsters
    * whose death pose is a static clip the body should settle into slowly

@@ -452,6 +452,14 @@ class MonsterManager {
     this.monsters.set(monsterId, { ...monster })
   }
 
+  /** A killing blow's flinch is `deathPlaysHit`'s call. */
+  private shrugsOffHit(monster: MonsterData) {
+    return (
+      !monster.isDeadPending &&
+      getMonsterDef(monster.type)?.staggerImmune === true
+    )
+  }
+
   /** A cast owns the pose: its strikes start no swing and cause no flinch. */
   isCasting(monster: MonsterData) {
     const skill = monster.skill
@@ -668,7 +676,10 @@ class MonsterManager {
       targetPosition?: Position
     }
   ) {
-    if (update.state === 'hit' && this.isCasting(monster)) {
+    if (
+      update.state === 'hit' &&
+      (this.isCasting(monster) || this.shrugsOffHit(monster))
+    ) {
       this.playPendingSwordHitSound(monster)
       update = { ...update, state: undefined }
     }

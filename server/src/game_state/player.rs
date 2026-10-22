@@ -144,25 +144,14 @@ impl super::GameState {
         .await;
     }
 
+    /// Serializes once and shares the bytes: every connection would otherwise
+    /// re-encode the same message, which adds up on move fanout at scale.
     pub async fn send_direct_message_to_players(
         &self,
         player_ids: &[PlayerId],
         msg: ServerMessage,
     ) {
-        self.send_direct_message_to_players_except(player_ids, msg, None)
-            .await;
-    }
-
-    /// Serializes once and shares the bytes: every connection would otherwise
-    /// re-encode the same message, which adds up on move fanout at scale.
-    pub async fn send_direct_message_to_players_except(
-        &self,
-        player_ids: &[PlayerId],
-        msg: ServerMessage,
-        skip_player_id: Option<&PlayerId>,
-    ) {
-        let is_skipped = |id: &PlayerId| skip_player_id.is_some_and(|skip_id| skip_id == id);
-        if !player_ids.iter().any(|id| !is_skipped(id)) {
+        if player_ids.is_empty() {
             return;
         }
         let Some(bytes) = super::encode_server_msg(&msg) else {
@@ -170,9 +159,6 @@ impl super::GameState {
         };
         let channels = self.direct_channels.read().await;
         for player_id in player_ids {
-            if is_skipped(player_id) {
-                continue;
-            }
             if let Some(tx) = channels.get(player_id) {
                 let _ = tx.send(bytes.clone());
             }

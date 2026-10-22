@@ -96,6 +96,8 @@ pub struct MonsterBrain {
     pub body: Option<crate::monster_body::BodyFootprint>,
     /// Plain swings past melee reach land this far out; 0 for none.
     pub ranged_range: f32,
+    /// Off for raid bosses: a crowd's blows would never let one act.
+    pub staggers: bool,
     pub(super) aggro: Option<Box<super::aggro::Aggro>>,
 }
 
@@ -170,6 +172,7 @@ impl MonsterBrain {
             detour_goal: None,
             body: None,
             ranged_range: 0.0,
+            staggers: true,
             aggro: super::aggro_for(monster_type)
                 .map(|rules| Box::new(super::aggro::Aggro::new(rules))),
         }
@@ -527,7 +530,7 @@ impl MonsterBrain {
             return vec![];
         }
 
-        if hit {
+        if hit && self.staggers {
             self.state = AiState::Hit;
             self.state_timer_ms = 0.0;
             vec![self.make_move_cmd()]

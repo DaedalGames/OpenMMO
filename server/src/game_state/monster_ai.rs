@@ -280,6 +280,7 @@ impl super::GameState {
         brain.rotation = monster.rotation;
         brain.body = def.and_then(|d| d.body);
         brain.ranged_range = def.map_or(0.0, |d| d.ranged_attack_range);
+        brain.staggers = !def.is_some_and(|d| d.stagger_immune);
         brain
     }
 

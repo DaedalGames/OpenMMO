@@ -271,6 +271,8 @@
   "sunken_coin_pouch.name": "沈んだ小銭入れ",
   "table.description": "頑丈な木のテーブル。",
   "table.name": "テーブル",
+  "terraclash_token.description": "ルーンが刻まれたテラクラッシュの石のかけら。討伐に力を尽くした証。",
+  "terraclash_token.name": "テラクラッシュの証",
   "tip_hat.description": "羽根付きの古びた帽子。演奏前に置くと聴衆が硬貨を入れてくれます。もう一度使うと回収します。",
   "tip_hat.name": "大道芸人の帽子",
   "torch.description": "炎が揺らめく木の松明。",

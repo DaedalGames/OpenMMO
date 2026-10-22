@@ -223,7 +223,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// `FieldRaidNotice`, `MonsterGroundStrike`, Terraclash's skills and their
 /// marked spots, and `MonsterSkillStruck` in place of a `MonsterAttackedPlayer`
 /// per skill victim.
-pub const PROTOCOL_VERSION: u32 = 127;
+/// v128: raid tokens in `FieldRaidNotice`.
+pub const PROTOCOL_VERSION: u32 = 128;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from

@@ -724,7 +724,7 @@ Server → Client (broadcast):
 | `walk` | 이동 중 |
 | `run` | 플레이어 추적 중 (chaseRange 이내) |
 | `attack` | 공격 중 (attackRange 이내) |
-| `hit` | 피격 경직 (~800ms) |
+| `hit` | 피격 경직 (~800ms). `staggerImmune` 몬스터는 들어가지 않는다 |
 | `dead` | 사망 |
 
 - 구현: [client/src/lib/managers/monsterManager.ts](../client/src/lib/managers/monsterManager.ts)

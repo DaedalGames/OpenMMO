@@ -731,13 +731,23 @@ impl super::GameState {
 
     /// Award one unit to the bag, or the ground when it exceeds carry weight.
     pub async fn award_item(&self, player_id: &PlayerId, item_def_id: &str) {
+        self.award_items(player_id, item_def_id, 1).await;
+    }
+
+    /// Award `quantity` units of a stackable def, or one of any def, to the
+    /// bag, or all to the ground when they exceed carry weight.
+    pub async fn award_items(&self, player_id: &PlayerId, item_def_id: &str, quantity: u32) {
         let Some(stackable) = self.item_defs.get(item_def_id).map(|d| d.stackable) else {
-            warn!("award_item: unknown item_def_id {:?}", item_def_id);
+            warn!("award_items: unknown item_def_id {:?}", item_def_id);
             return;
         };
+        if quantity == 0 || (!stackable && quantity > 1) {
+            warn!("award_items: cannot award {quantity} of {item_def_id:?}");
+            return;
+        }
         let max_weight = self.max_carry_weight(player_id).await;
         let armor_mult = self.armor_weight_mult(player_id).await;
-        let def_weight = self.item_defs.weight_with(item_def_id, armor_mult);
+        let def_weight = self.item_defs.weight_with(item_def_id, armor_mult) * quantity as f32;
         // Reserve before locking inventory to avoid nested locks.
         let reserved_instance_id = self.next_instance_id().await;
 
@@ -755,7 +765,10 @@ impl super::GameState {
             } else {
                 stack_into_bag(
                     &mut inv.bag,
-                    BagInsert::one(stackable, item_def_id, 0, reserved_instance_id),
+                    BagInsert {
+                        quantity,
+                        ..BagInsert::one(stackable, item_def_id, 0, reserved_instance_id)
+                    },
                 );
                 Placement::Bagged(inv.clone())
             }
@@ -781,7 +794,7 @@ impl super::GameState {
                     item_def_id: item_def_id.to_string(),
                     position,
                     floor_level,
-                    quantity: 1,
+                    quantity,
                     enchant: 0,
                     dropped_by: Some(*player_id),
                     cape_color: None,

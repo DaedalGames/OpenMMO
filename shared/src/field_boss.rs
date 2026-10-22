@@ -51,6 +51,8 @@ struct Row {
     altar_rotation: f32,
     offering: Option<String>,
     reward: Option<String>,
+    token: Option<String>,
+    token_tiers: Option<String>,
 }
 
 #[derive(Debug)]
@@ -64,6 +66,8 @@ pub struct FieldBossDef {
     pub rotation: f32,
     pub dormant: Option<DormantDef>,
     pub altar: Option<AltarDef>,
+    /// Earned by the raiders of a won raid, one per tier their damage reached.
+    pub token: Option<RaidToken>,
     index: u32,
 }
 
@@ -84,6 +88,36 @@ pub struct AltarDef {
     pub offering: String,
     /// Granted to the summoner when the raid is won with them in it.
     pub reward: Option<String>,
+}
+
+#[derive(Debug)]
+pub struct RaidToken {
+    pub item: String,
+    /// Ascending damage each further token needs.
+    pub tiers: Vec<u64>,
+}
+
+impl RaidToken {
+    pub fn count_for(&self, damage: u64) -> u32 {
+        self.tiers.iter().filter(|&&t| damage >= t).count() as u32
+    }
+}
+
+fn parse_token_tiers(id: &str, text: Option<&str>) -> Vec<u64> {
+    let text = text.unwrap_or_else(|| panic!("{id}: a token needs tokenTiers"));
+    let tiers: Vec<u64> = text
+        .split('|')
+        .map(|t| {
+            t.trim()
+                .parse()
+                .unwrap_or_else(|_| panic!("{id}: tokenTiers {text:?}"))
+        })
+        .collect();
+    assert!(
+        tiers.first() >= Some(&1) && tiers.is_sorted_by(|a, b| a < b),
+        "{id}: tokenTiers must rise from at least 1"
+    );
+    tiers
 }
 
 #[derive(serde::Deserialize)]
@@ -130,6 +164,10 @@ fn parse(row: Row, index: u32, catalog: &HashMap<String, CatalogEntry>) -> Field
         }
         _ => panic!("{id}: altarObject, altarX, altarZ and offering go together"),
     };
+    let token = row.token.map(|item| RaidToken {
+        tiers: parse_token_tiers(&id, row.token_tiers.as_deref()),
+        item,
+    });
     FieldBossDef {
         id,
         monster: row.monster,
@@ -139,6 +177,7 @@ fn parse(row: Row, index: u32, catalog: &HashMap<String, CatalogEntry>) -> Field
         rotation: row.rotation,
         dormant,
         altar,
+        token,
         index,
     }
 }

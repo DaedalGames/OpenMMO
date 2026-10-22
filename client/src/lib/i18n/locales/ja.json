@@ -716,5 +716,6 @@
   "fieldRaid.dawn": "夜が明けた。{{monster}}は再び眠りにつく。",
   "fieldRaid.wiped": "立っている者はもういない。{{monster}}は再び眠りにつく。",
   "fieldRaid.reward": "召喚の報酬として{{item}}を受け取った。",
+  "fieldRaid.tokens": "{{item}}を{{count}}個受け取った。",
   "monsterName.terraclash": "テラクラッシュ"
 }

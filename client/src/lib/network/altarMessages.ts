@@ -61,6 +61,7 @@ export function handleFieldRaidNotice(data: {
   monster: string
   outcome: FieldRaidOutcome
   reward: string | null
+  tokens: [string, number] | null
 }) {
   systemLine(
     translate(OUTCOME_KEYS[data.outcome], {
@@ -70,6 +71,12 @@ export function handleFieldRaidNotice(data: {
   if (data.reward) {
     systemLine(
       translate('fieldRaid.reward', { item: itemDisplayName(data.reward) })
+    )
+  }
+  if (data.tokens) {
+    const [item, count] = data.tokens
+    systemLine(
+      translate('fieldRaid.tokens', { item: itemDisplayName(item), count })
     )
   }
 }

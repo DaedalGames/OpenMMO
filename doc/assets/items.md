@@ -22,6 +22,13 @@
   - 3D: Tripo API 유료 크레딧, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, seed `102019`, 목표 4,000 triangles, 2026-10-19, **120크레딧**. [이용 조건](https://developers.tripo3d.ai/en/terms).
   - [제작 명세](../../assets/items/earth_amulet/tripo_v1/build.json) · [요청·작업·비용 기록](../../assets/items/earth_amulet/tripo_v1/generation.json) · [Tripo GLB](../../assets/items/earth_amulet/tripo_v1/source/model_url.glb) · [바닥 모델 스크립트](../../assets/items/earth_amulet/tripo_v1/floor/build_floor.py) · [Blender](../../assets/items/earth_amulet/tripo_v1/floor/earth_amulet.blend) · [검수 렌더](../../assets/items/earth_amulet/tripo_v1/floor/review.png).
 
+## Terraclash Token — 테라클래시 증표
+
+- 모델 `client/public/models/objects/terraclash_token.glb`·아이콘 `client/public/items/objects/terraclash_token.png` — Blender에서 절차적으로 자체 제작, 2026-10-22. 외부 모델·텍스처·AI 생성물 없음. 프로젝트 자체 에셋으로 저장소 라이선스를 따른다.
+  - 9각 화강암 조각 위에 테라클래시 가슴의 봉인 룬(원과 사선)을 용암빛으로 얹었다. 0.069×0.017×0.069m, 756 triangles, 텍스처 없는 PBR 재질 2개, 룬만 발광(1.6), 원점=바닥 중심.
+  - 아이콘은 Cycles 투명 직교 렌더 512²→128² RGBA, Euler (-38°, 0°, -8°). packed 작업 파일 `assets/items/terraclash_token/terraclash_token.blend`.
+  - 재현: `blender -b --python-exit-code 1 -P tools/blender-scripts/build_terraclash_token.py`.
+
 ## Cloak of Invisibility — 투명 망토 (가칭)
 
 - **확정** [concept_v1](../../assets/items/invisibility_cloak/concept_v1/concept.png) — 입으면 투명해지고 공격하면 풀리는 운영자용 망토 원화. 후드 없는 테이퍼 시트(입은 망토 프로시저럴 시트와 같은 형태), 진줏빛 은회색 천·짙은 청회색 안감, 밑단 은사 자수, 감은 눈 모양 은 브로치. 상자·드롭 목록에 넣지 않는다.

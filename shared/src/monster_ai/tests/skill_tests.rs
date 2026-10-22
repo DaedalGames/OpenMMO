@@ -395,3 +395,42 @@ fn at_five_percent_terraclash_roars_five_times_ten_seconds_apart() {
     );
     assert!(!swings.is_empty(), "plain swings resume after the fifth");
 }
+
+/// Plain swings over `ms` while raider 1 lands a blow every 300ms.
+fn swings_under_blows(staggers: bool, ms: f32) -> usize {
+    let mut brain = terraclash();
+    brain.staggers = staggers;
+    brain.skill_cooldowns_ms.fill(f32::MAX);
+    let mut rng = SmallRng::seed_from_u64(5);
+    let mut swings = 0;
+    let mut elapsed = 0.0;
+    while elapsed < ms {
+        if elapsed % 300.0 == 0.0 {
+            brain.handle_hit_with_behavior_tree(&1.into(), true, 10);
+        }
+        let commands = brain.tick_with_behavior_tree(
+            100.0,
+            &raid(),
+            &[],
+            &attack_tree(),
+            &DirectPath,
+            &mut rng,
+        );
+        swings += commands
+            .iter()
+            .filter(|c| matches!(c, AiCommand::Attack { .. }))
+            .count();
+        elapsed += 100.0;
+    }
+    swings
+}
+
+#[test]
+fn a_raid_boss_keeps_swinging_under_a_crowds_blows() {
+    assert_eq!(
+        swings_under_blows(true, 15_000.0),
+        0,
+        "staggered every blow"
+    );
+    assert!(swings_under_blows(false, 15_000.0) >= 4);
+}

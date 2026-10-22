@@ -42,23 +42,6 @@ async fn seat_on_deepest_floor(game_state: &GameState, deepest: u8, player_id: P
     floor.players.insert(player_id, 0);
 }
 
-/// How many `item_def_id` the player's bag holds.
-async fn bag_count(game_state: &GameState, player_id: &PlayerId, item_def_id: &str) -> u32 {
-    game_state
-        .inventories
-        .read()
-        .await
-        .get(player_id)
-        .map(|inv| {
-            inv.bag
-                .iter()
-                .filter(|i| i.item_def_id == item_def_id)
-                .map(|i| i.quantity)
-                .sum()
-        })
-        .unwrap_or(0)
-}
-
 /// Roll the game clock past sunset so the next tick resets the dungeons.
 async fn advance_one_night(game_state: &GameState) {
     game_state.debug_set_time(0, 0);

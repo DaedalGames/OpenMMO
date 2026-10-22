@@ -716,5 +716,6 @@
   "fieldRaid.dawn": "天亮了。{{monster}}重新陷入沉睡。",
   "fieldRaid.wiped": "已無人站立。{{monster}}重新陷入沉睡。",
   "fieldRaid.reward": "作為召喚的獎勵，你獲得了{{item}}。",
+  "fieldRaid.tokens": "你獲得了{{item}}×{{count}}。",
   "monsterName.terraclash": "泰拉克拉什"
 }

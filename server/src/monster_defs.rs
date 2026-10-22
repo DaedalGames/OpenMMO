@@ -56,6 +56,8 @@ pub struct MonsterDefinition {
     /// Plain swings past `attack_range` reach this far; 0 for melee only.
     #[serde(rename = "rangedAttackRange", default)]
     pub ranged_attack_range: f32,
+    #[serde(rename = "staggerImmune", default)]
+    pub stagger_immune: bool,
     #[serde(rename = "attackCooldown")]
     pub attack_cooldown: u32,
     /// Behavior tree name (data-src/behavior_trees.json).

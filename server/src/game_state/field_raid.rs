@@ -16,6 +16,7 @@ use onlinerpg_shared::moon::{full_moons_up, Moon};
 use onlinerpg_shared::world::GameDateTime;
 use onlinerpg_shared::{MonsterState, Position, ServerMessage};
 use std::borrow::Cow;
+use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use tracing::{info, warn};
 
@@ -46,7 +47,9 @@ pub(crate) struct FieldRaid {
     /// The offering character, by character id since a reconnect changes
     /// the player id mid-raid.
     summoner: Option<i64>,
-    summoner_hit: bool,
+    /// HP each character took off the boss, by character id for the same
+    /// reason.
+    damage: HashMap<i64, u64>,
     /// The full moons in the sky at the offering; the raid lasts until all
     /// have set or the sky turns fully blue, through the dawn glow and the
     /// waning past full.
@@ -278,7 +281,7 @@ impl GameState {
                         ticks_left: WAKE_TICKS,
                     },
                     summoner,
-                    summoner_hit: false,
+                    damage: HashMap::new(),
                     moons,
                 });
             }
@@ -310,20 +313,16 @@ impl GameState {
         .await;
     }
 
-    /// A damaging hit on the raid boss; only the summoner's first one matters.
+    /// HP a hit took off the raid boss.
     pub(super) async fn record_field_raid_hit(&self, player_id: &PlayerId, damage: u32) {
         if damage == 0 {
             return;
         }
-        let summoner = match self.field_raid.lock().await.as_ref() {
-            Some(raid) if !raid.summoner_hit => raid.summoner,
-            _ => return,
-        };
-        if summoner.is_none() || self.character_id_of(player_id).await != summoner {
+        let Some(character) = self.character_id_of(player_id).await else {
             return;
-        }
+        };
         if let Some(raid) = self.field_raid.lock().await.as_mut() {
-            raid.summoner_hit = true;
+            *raid.damage.entry(character).or_default() += u64::from(damage);
         }
     }
 
@@ -440,7 +439,14 @@ impl GameState {
     /// A defeated boss is left to the kill's own corpse timer; any other
     /// sinks back into its stand-in.
     async fn end_field_raid(&self, raid: &FieldRaid, monster_id: &str, outcome: FieldRaidOutcome) {
-        *self.field_raid.lock().await = None;
+        // The live raid, not the tick's copy, holds every hit up to now.
+        let tally = self
+            .field_raid
+            .lock()
+            .await
+            .take()
+            .map(|r| r.damage)
+            .unwrap_or_default();
         // The raiders gathered before the offering; only those around hear it.
         let nearby = self
             .player_ids_within_position(&raid.position, 0, NOTICE_RADIUS_M)
@@ -462,43 +468,69 @@ impl GameState {
         self.set_stand_in_woken(raid.boss, false);
         info!("Field raid {} ended: {outcome:?}", raid.boss.monster);
         let rewarded = match outcome {
-            FieldRaidOutcome::Defeated => self.grant_summoner_reward(raid).await,
-            _ => None,
+            FieldRaidOutcome::Defeated => self.reward_raiders(raid, &tally).await,
+            _ => HashSet::new(),
         };
-        let notice = |reward| ServerMessage::FieldRaidNotice {
+        let bystanders: Vec<_> = nearby
+            .into_iter()
+            .filter(|id| !rewarded.contains(id))
+            .collect();
+        let notice = ServerMessage::FieldRaidNotice {
             monster: raid.boss.monster.clone(),
             outcome,
-            reward,
+            reward: None,
+            tokens: None,
         };
-        self.send_direct_message_to_players_except(&nearby, notice(None), rewarded.as_ref())
+        self.send_direct_message_to_players(&bystanders, notice)
             .await;
-        if let Some(summoner) = rewarded {
-            self.send_direct_message(
-                &summoner,
-                notice(raid.boss.altar.as_ref().and_then(|a| a.reward.clone())),
-            )
-            .await;
-        }
     }
 
-    /// The summoner earns the altar's reward by hitting the boss and standing
-    /// alive in the battle zone when it falls (doc/TIER5_FIELD_RAID.md).
-    async fn grant_summoner_reward(&self, raid: &FieldRaid) -> Option<PlayerId> {
-        let reward = raid.boss.altar.as_ref()?.reward.as_deref()?;
-        if !raid.summoner_hit {
-            return None;
+    /// Raiders are those who hit the boss and stand alive in the battle zone
+    /// as it falls. Each earns tokens by the damage they dealt, and the
+    /// summoner the altar's reward too (doc/TIER5_FIELD_RAID.md).
+    async fn reward_raiders(
+        &self,
+        raid: &FieldRaid,
+        tally: &HashMap<i64, u64>,
+    ) -> HashSet<PlayerId> {
+        let mut raiders = Vec::new();
+        for player_id in self.living_near(&raid.position).await {
+            let Some(character) = self.character_id_of(&player_id).await else {
+                continue;
+            };
+            if let Some(&damage) = tally.get(&character) {
+                raiders.push((player_id, character, damage));
+            }
         }
-        let player_id = self.player_id_of_character(raid.summoner?).await?;
-        if !self.living_near(&raid.position).await.contains(&player_id) {
-            return None;
+        raiders.sort_by_key(|r| std::cmp::Reverse(r.2));
+        let token = raid.boss.token.as_ref();
+        let altar_reward = raid.boss.altar.as_ref().and_then(|a| a.reward.as_deref());
+        let mut rewarded = HashSet::new();
+        for (rank, &(player_id, character, damage)) in raiders.iter().enumerate() {
+            let tokens = token.map(|t| (t.item.clone(), t.count_for(damage)));
+            if let Some((token, count)) = &tokens {
+                self.award_items(&player_id, token, *count).await;
+            }
+            let item = altar_reward.filter(|_| Some(character) == raid.summoner);
+            if let Some(item) = item {
+                self.award_item(&player_id, item).await;
+            }
+            info!(
+                "Field raid {}: #{} {} dealt {damage}, tokens {tokens:?}, item {item:?}",
+                raid.boss.monster,
+                rank + 1,
+                self.player_name_of(&player_id).await,
+            );
+            let notice = ServerMessage::FieldRaidNotice {
+                monster: raid.boss.monster.clone(),
+                outcome: FieldRaidOutcome::Defeated,
+                reward: item.map(str::to_string),
+                tokens,
+            };
+            self.send_direct_message(&player_id, notice).await;
+            rewarded.insert(player_id);
         }
-        self.award_item(&player_id, reward).await;
-        info!(
-            "Field raid {}: summoner {} earned {reward}",
-            raid.boss.monster,
-            self.player_name_of(&player_id).await
-        );
-        Some(player_id)
+        rewarded
     }
 
     pub(super) fn full_moon_command(&self) -> Result<String, String> {
