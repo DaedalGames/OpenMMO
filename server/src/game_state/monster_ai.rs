@@ -297,7 +297,7 @@ impl super::GameState {
 
     async fn tick_monster_ai_with(&self, forced_delta_ms: Option<f32>) {
         let started = Instant::now();
-        let (mut roster, underground, ghosts) = {
+        let (roster, underground, ghosts) = {
             let now = Self::now_ms();
             let players = self.players.read().await;
             let mut roster = Roster::default();
@@ -333,9 +333,10 @@ impl super::GameState {
             }
             (roster, underground, ghosts)
         };
-        // Just arrived, or behind a shut locked door: out of every monster's sight.
+        // Just arrived, or behind a shut locked door: out of sight of monsters
+        // outside the stair room. One lured inside still sees them (issue 197).
         let sealed = self.players_hidden_in_stair_rooms(&underground).await;
-        let closed_doors = {
+        let floors = {
             let dungeons = self.dungeons.read().await;
             let mut doors = HashMap::new();
             for (_, pos, level) in &underground {
@@ -354,7 +355,7 @@ impl super::GameState {
                     .or_insert_with(|| {
                         let (ox, oz) =
                             onlinerpg_shared::dungeon::dungeon_origin(entrance.x, entrance.z);
-                        onlinerpg_shared::dungeon::closed_door_segs(
+                        let segs = onlinerpg_shared::dungeon::closed_door_segs(
                             layout,
                             rt.open_doors.get(&depth),
                         )
@@ -369,14 +370,12 @@ impl super::GameState {
                                 oz + bz as f32,
                             ]
                         })
-                        .collect::<Vec<_>>()
+                        .collect::<Vec<_>>();
+                        (segs, layout.rooms.first().copied())
                     });
             }
             doors
         };
-        for entries in roster.values_mut() {
-            entries.retain(|(_, p)| !sealed.contains(&p.id));
-        }
         let radius = super::EVENT_DELIVERY_RADIUS;
         let radius_sq = radius * radius;
         let players_near = |position: &Position, floor: i8| -> Vec<NearbyPlayer> {
@@ -391,6 +390,23 @@ impl super::GameState {
                 })
                 .map(|(_, p)| p.clone())
                 .collect()
+        };
+
+        // Filtered before a monster turns active, so sealed players wake nothing.
+        let sees_sealed = |position: &Position, floor: i8| {
+            self.dungeon_defs
+                .entrance_at(position.x, position.z)
+                .is_some_and(|entrance| {
+                    floors
+                        .get(&(entrance.id.as_str(), floor))
+                        .is_some_and(|(_, room)| {
+                            super::dungeon::in_stair_room(
+                                &entrance.position(),
+                                room.as_ref(),
+                                position,
+                            )
+                        })
+                })
         };
 
         let ghost_near = |position: &Position, floor: i8| {
@@ -417,7 +433,12 @@ impl super::GameState {
                 if m.state == MonsterState::Dead || m.health == 0 {
                     continue;
                 }
-                let players = players_near(&m.position, m.floor_level);
+                let mut players = players_near(&m.position, m.floor_level);
+                if players.iter().any(|p| sealed.contains(&p.id))
+                    && !sees_sealed(&m.position, m.floor_level)
+                {
+                    players.retain(|p| !sealed.contains(&p.id));
+                }
                 let ghost_near = players.is_empty() && ghost_near(&m.position, m.floor_level);
                 if players.is_empty() && !ghost_near {
                     continue;
@@ -465,10 +486,9 @@ impl super::GameState {
                 let from = entry.brain.position;
                 let target = entry.brain.target_player_id().or(entry.door_hidden_target);
                 let remembered = entry.remembered(target, started);
-                let doors = closed_doors
+                let doors = floors
                     .get(&(entrance.id.as_str(), a.floor_level))
-                    .map(Vec::as_slice)
-                    .unwrap_or_default();
+                    .map_or(&[][..], |(segs, _)| segs.as_slice());
                 if entry.closed_doors != doors {
                     entry.closed_doors = doors.to_vec();
                     entry.brain.retry_chase();

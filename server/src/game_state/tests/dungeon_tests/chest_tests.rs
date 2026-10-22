@@ -727,3 +727,73 @@ async fn players_behind_a_shut_locked_door_are_unseen() {
     let sealed = game_state.players_hidden_in_stair_rooms(&[arrival]).await;
     assert!(sealed.is_empty(), "open door: seen");
 }
+
+/// A key used on a door tonight must reach the chest: setting it down first
+/// no longer keeps it. A tailgater who never used one is not asked for it.
+#[tokio::test]
+async fn chest_wants_back_the_keys_used_on_doors_tonight() {
+    use onlinerpg_shared::dungeon::{generate_dungeon_for, interior_doors};
+    const ORC_ID: &str = "orc_warrens";
+    let auth = make_test_auth("chest_used_keys");
+    let account = auth.login_npc("npc_chest_used_keys").unwrap();
+    let opener = create_test_character(&auth, &account, "Opener");
+    let follower = create_test_character(&auth, &account, "Follower");
+    let game = make_test_game_state("chest_used_keys");
+    game.ensure_dungeon_runtime(ORC_ID).await;
+    let entrance = game.dungeon_defs.get(ORC_ID).unwrap().clone();
+    let layouts = generate_dungeon_for(ORC_ID);
+    let deepest = layouts.len() as u8;
+    let (first_key, last_key) = (entrance.key_item_id(5), entrance.key_item_id(10));
+    let door = interior_doors(&layouts[4])
+        .into_iter()
+        .find(|d| d.locked)
+        .unwrap();
+    let (outside, _) = super::door_tests::door_side_positions(&entrance, 5, &door, false);
+    let chest_pos = cell_center(
+        &entrance.position(),
+        deepest,
+        layouts.last().unwrap().chest.unwrap(),
+    );
+
+    let opener_id = super::door_tests::add_delver(&game, "Opener", outside, 5).await;
+    game.register_player_character(&opener_id, opener.id, 0, attrs_with_cha(12), 0, None)
+        .await;
+    give_bag(&game, &opener_id, Some(&first_key)).await;
+    assert!(game.give_item(&opener_id, &last_key).await);
+    assert_eq!(
+        game.toggle_dungeon_door(&opener_id, ORC_ID, 5, door.door_id)
+            .await,
+        Some(true)
+    );
+
+    game.teleport_player(&opener_id, chest_pos, 0.0, -(deepest as i8))
+        .await;
+    game.inventories
+        .write()
+        .await
+        .get_mut(&opener_id)
+        .unwrap()
+        .bag
+        .retain(|item| item.item_def_id != first_key);
+    let mut rx = game.register_direct_channel(&opener_id).await;
+    game.open_dungeon_chest(&opener_id, ORC_ID, &auth).await;
+    assert_chest_rejected(&mut rx, "Bring it to the chest");
+    assert_eq!(game.get_player_gold(&opener_id).await, 0);
+    assert_eq!(bag_count(&game, &opener_id, &last_key).await, 1);
+
+    assert!(game.give_item(&opener_id, &first_key).await);
+    game.open_dungeon_chest(&opener_id, ORC_ID, &auth).await;
+    assert!(game.get_player_gold(&opener_id).await > 0);
+    assert_eq!(bag_count(&game, &opener_id, &first_key).await, 0);
+    assert_eq!(bag_count(&game, &opener_id, &last_key).await, 0);
+
+    let follower_id = pid("Follower");
+    let mut player = make_player("Follower", chest_pos.x, chest_pos.z);
+    player.floor_level = -(deepest as i8);
+    game.add_player(player).await;
+    game.register_player_character(&follower_id, follower.id, 0, attrs_with_cha(12), 0, None)
+        .await;
+    give_bag(&game, &follower_id, Some(&last_key)).await;
+    game.open_dungeon_chest(&follower_id, ORC_ID, &auth).await;
+    assert!(game.get_player_gold(&follower_id).await > 0);
+}

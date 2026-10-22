@@ -46,7 +46,7 @@ fn crypt_locked_door(
 
 /// Cell centers either side of `door`, at the low end of the opening or (with
 /// `far_end`) the high one — the spots a player works it from.
-fn door_side_positions(
+pub(super) fn door_side_positions(
     entrance: &crate::dungeon_defs::DungeonEntranceDef,
     depth: u8,
     door: &onlinerpg_shared::dungeon::InteriorDoorSpec,
@@ -71,7 +71,12 @@ fn door_side_positions(
 }
 
 /// A player standing at `at` on the floor holding a door at `depth`.
-async fn add_delver(game_state: &GameState, name: &str, at: Position, depth: u8) -> PlayerId {
+pub(super) async fn add_delver(
+    game_state: &GameState,
+    name: &str,
+    at: Position,
+    depth: u8,
+) -> PlayerId {
     let mut player = make_player(name, at.x, at.z);
     player.position.y = at.y;
     player.floor_level = -(depth as i8);
@@ -779,5 +784,99 @@ async fn monster_brains_do_not_see_through_a_shut_door() {
         game_state.brain_target(&monster).await,
         Some(player_id),
         "a just-seen target survives a blocked tick"
+    );
+}
+
+/// A shut locked door hides the stair room from monsters outside it, not
+/// from one lured inside: that one keeps fighting (issue 197).
+#[tokio::test]
+async fn a_monster_inside_a_sealed_stair_room_still_sees_the_players_there() {
+    use onlinerpg_shared::dungeon::generate_dungeon_for;
+    let game_state = make_test_game_state("sealed_stair_room_inside");
+    game_state
+        .init_passability(&crate::terrain::io::TerrainIO::new(
+            "nonexistent_terrain_dir".into(),
+        ))
+        .await
+        .expect("init passability");
+    let (entrance, depth, door, _) = crypt_locked_door(&game_state);
+    let stair_room = generate_dungeon_for(&entrance.id)[depth as usize - 1].rooms[0];
+    let (a, b) = door_side_positions(&entrance, depth, &door, false);
+    let ep = entrance.position();
+    let in_room = |p: &Position| {
+        let (x, z) = onlinerpg_shared::dungeon::world_to_cell(&ep, p.x, p.z);
+        stair_room.contains(x, z)
+    };
+    let (by_door, beyond) = if in_room(&a) { (a, b) } else { (b, a) };
+    let step = |from: Position, cells: f32| Position {
+        x: from.x + (from.x - beyond.x) * cells,
+        z: from.z + (from.z - beyond.z) * cells,
+        ..from
+    };
+    let player_at = step(by_door, 3.0);
+    let player_id = add_delver(&game_state, "trapped", player_at, depth).await;
+    game_state
+        .handle_player_floor_change(&player_id, 0, -(depth as i8), &player_at, &player_at)
+        .await;
+    let spawn = |at: Position| {
+        let gs = game_state.clone();
+        async move {
+            gs.spawn_monster(
+                "goblin".to_string(),
+                at,
+                0.0,
+                -(depth as i8),
+                MonsterLifecycle::Ambient,
+                None,
+                true,
+            )
+            .await
+            .expect("goblin spawns")
+            .id
+        }
+    };
+    let inside = spawn(step(by_door, 1.0)).await;
+    let outside = spawn(beyond).await;
+    assert!(in_room(&step(by_door, 1.0)) && !in_room(&beyond));
+
+    for _ in 0..5 {
+        game_state.tick_monster_ai_by(200.0).await;
+    }
+    assert_eq!(
+        game_state.brain_target(&inside).await,
+        Some(player_id),
+        "a fresh arrival is visible to a monster already in the room"
+    );
+
+    game_state
+        .dungeons
+        .write()
+        .await
+        .get_mut(&entrance.id)
+        .unwrap()
+        .floors
+        .get_mut(&depth)
+        .unwrap()
+        .players
+        .insert(player_id, 0);
+    let mut rx = game_state.register_direct_channel(&player_id).await;
+    let mut attacked = false;
+    for _ in 0..30 {
+        game_state.tick_monster_ai_by(200.0).await;
+        attacked |= drain(&mut rx).iter().any(|m| {
+            matches!(
+                m,
+                ServerMessage::MonsterAttackedPlayer { monster_id, .. } if monster_id == &inside
+            )
+        });
+    }
+    assert!(
+        attacked,
+        "the monster inside keeps fighting behind the shut door"
+    );
+    assert_eq!(
+        game_state.brain_target(&outside).await,
+        None,
+        "the shut door still hides the room from outside"
     );
 }

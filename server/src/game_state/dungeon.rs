@@ -176,6 +176,16 @@ fn prop_wall_opposite_dir(layout: &FloorLayout, x: i32, z: i32) -> (i32, i32) {
     }
 }
 
+/// Whether `pos` lies in a floor's arrival stair room (`rooms[0]`).
+pub(super) fn in_stair_room(
+    entrance: &Position,
+    stair_room: Option<&onlinerpg_shared::dungeon::Room>,
+    pos: &Position,
+) -> bool {
+    let (cx, cz) = world_to_cell(entrance, pos.x, pos.z);
+    stair_room.is_some_and(|room| room.contains(cx, cz))
+}
+
 /// Squared XZ distance from `pos` to a door's blocking line, measured to the
 /// whole segment so a wide opening is in reach from either end. `seg` is
 /// floor-local grid lines, and those sit on integer world coordinates, so
@@ -329,7 +339,13 @@ impl GameState {
                     return None;
                 }
                 locked = door.locked;
-                if locked && !self.require_key(player_id, entrance, depth, "door").await {
+                if locked
+                    && !self
+                        .require_key(player_id, entrance, depth, |key| {
+                            format!("The door is locked. It takes a {key}.")
+                        })
+                        .await
+                {
                     return None;
                 }
             }
@@ -377,6 +393,8 @@ impl GameState {
                 (is_open, opening)
             };
             if let Some(opening) = opening {
+                self.record_key_door_unlock(player_id, entrance_id, depth)
+                    .await;
                 self.send_system_message(
                     player_id,
                     format!(
@@ -498,13 +516,13 @@ impl GameState {
     }
 
     /// The key gate: whether the player carries the key to `entrance`'s
-    /// locked floor `depth`; a refusal tells them which key `what` takes.
+    /// locked floor `depth`; a refusal shows `reason` for the key's name.
     async fn require_key(
         &self,
         player_id: &PlayerId,
         entrance: &crate::dungeon_defs::DungeonEntranceDef,
         depth: u8,
-        what: &str,
+        reason: impl FnOnce(&str) -> String,
     ) -> bool {
         let key = entrance.key_item_id(depth);
         if self.holds_item(player_id, &key).await {
@@ -513,16 +531,65 @@ impl GameState {
         self.send_direct_message(
             player_id,
             ServerMessage::InteractionRejected {
-                reason: format!("The {what} is locked. It takes a {}.", self.item_name(&key)),
+                reason: reason(&self.item_name(&key)),
             },
         )
         .await;
         false
     }
 
+    async fn record_key_door_unlock(&self, player_id: &PlayerId, entrance_id: &str, depth: u8) {
+        let Some(character_id) = self.character_id_of(player_id).await else {
+            return;
+        };
+        let tonight = Self::night_epoch(self.current_total_game_seconds());
+        let mut unlocks = self.key_door_unlocks.write().await;
+        unlocks.retain(|_, &mut night| night >= tonight);
+        unlocks.insert((character_id, entrance_id.to_string(), depth), tonight);
+    }
+
+    /// Locked floors whose door this character unlocked tonight, while the
+    /// chest is still unclaimed: their keys must be carried to the chest.
+    async fn keys_owed_to_chest(
+        &self,
+        character_id: i64,
+        entrance_id: &str,
+        total: u8,
+        now_seconds: i64,
+    ) -> Vec<u8> {
+        let tonight = Self::night_epoch(now_seconds);
+        if self
+            .chest_opened_tonight(character_id, entrance_id, tonight)
+            .await
+        {
+            return Vec::new();
+        }
+        let unlocks = self.key_door_unlocks.read().await;
+        locked_depths(total)
+            .filter(|&depth| {
+                unlocks.get(&(character_id, entrance_id.to_string(), depth)) == Some(&tonight)
+            })
+            .collect()
+    }
+
+    async fn chest_opened_tonight(
+        &self,
+        character_id: i64,
+        entrance_id: &str,
+        tonight: i64,
+    ) -> bool {
+        Self::opened_since(
+            self.chest_opens
+                .read()
+                .await
+                .get(&(character_id, entrance_id.to_string())),
+            tonight,
+        )
+    }
+
     /// Spend one of each of the dungeon's floor keys the player carries and
-    /// push the bag. The deepest one is required (checked by the caller); the
-    /// shallower ones just go with it.
+    /// push the bag. The deepest one and any used on a door tonight are
+    /// required (checked by the caller); the rest just go with it.
     async fn take_dungeon_keys(
         &self,
         player_id: &PlayerId,
@@ -549,9 +616,9 @@ impl GameState {
         self.send_inventory_snapshot(player_id, snapshot).await;
     }
 
-    /// Players in a floor's arrival stair room (`rooms[0]`) that monster AI
-    /// must not see: fresh arrivals (`STAIR_ROOM_ARRIVAL_GRACE_MS`) and anyone
-    /// behind shut locked doors (doc/DUNGEON_REWARD.md §4).
+    /// Players in a floor's arrival stair room (`rooms[0]`) that monsters
+    /// outside it must not see: fresh arrivals (`STAIR_ROOM_ARRIVAL_GRACE_MS`)
+    /// and anyone behind shut locked doors (doc/DUNGEON_REWARD.md §4).
     pub(super) async fn players_hidden_in_stair_rooms(
         &self,
         underground: &[(PlayerId, Position, i8)],
@@ -573,8 +640,7 @@ impl GameState {
             let Some(layout) = rt.layouts.get(depth as usize - 1) else {
                 continue;
             };
-            let (cx, cz) = world_to_cell(&entrance.position(), pos.x, pos.z);
-            if !layout.rooms.first().is_some_and(|r| r.contains(cx, cz)) {
+            if !in_stair_room(&entrance.position(), layout.rooms.first(), pos) {
                 continue;
             }
             let just_arrived = rt
@@ -803,11 +869,29 @@ impl GameState {
             return;
         }
         if let Some(depth) = last_locked_depth(total) {
-            if !self.require_key(player_id, entrance, depth, "chest").await {
+            if !self
+                .require_key(player_id, entrance, depth, |key| {
+                    format!("The chest is locked. It takes a {key}.")
+                })
+                .await
+            {
                 return;
             }
         }
         let now_seconds = self.current_total_game_seconds();
+        for depth in self
+            .keys_owed_to_chest(character_id, entrance_id, total, now_seconds)
+            .await
+        {
+            if !self
+                .require_key(player_id, entrance, depth, |key| {
+                    format!("You unlocked a door with your {key} tonight. Bring it to the chest.")
+                })
+                .await
+            {
+                return;
+            }
+        }
         if !self
             .claim_chest_open(character_id, entrance_id, now_seconds)
             .await
@@ -1645,14 +1729,10 @@ impl GameState {
         }
         let character_id = self.character_id_of(killer).await?;
         let tonight = Self::night_epoch(self.current_total_game_seconds());
-        let opened_tonight = Self::opened_since(
-            self.chest_opens
-                .read()
-                .await
-                .get(&(character_id, entrance_id.to_string())),
-            tonight,
-        );
-        (!opened_tonight).then_some(key)
+        (!self
+            .chest_opened_tonight(character_id, entrance_id, tonight)
+            .await)
+            .then_some(key)
     }
 
     /// Infer the dungeon floor for an arbitrary position (used by debug
