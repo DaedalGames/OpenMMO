@@ -63,7 +63,7 @@ impl Default for MiniMaxConfig {
     fn default() -> Self {
         Self {
             api_key: String::new(),
-            model: "MiniMax-M3".to_string(),
+            model: "MiniMax-M3.1-Flash".to_string(),
             region: MiniMaxRegion::GlobalEn,
             protocol: MiniMaxProtocol::Anthropic,
             global_openai_base_url: "https://api.minimax.io/v1".to_string(),
@@ -92,6 +92,9 @@ impl MiniMaxConfig {
     fn endpoint(&self) -> anyhow::Result<ResolvedEndpoint> {
         if self.model.is_empty() {
             anyhow::bail!("minimax.model is not set");
+        }
+        if self.model == "MiniMax-M3.1-Flash" && self.thinking == Some(MiniMaxThinking::Disabled) {
+            anyhow::bail!("MiniMax-M3.1-Flash requires adaptive thinking; omit minimax.thinking or set it to adaptive");
         }
         if self.model == "MiniMax-M2.7" && self.thinking.is_some() {
             anyhow::bail!("MiniMax-M2.7 thinking is always on; leave minimax.thinking unset");
@@ -369,7 +372,13 @@ mod tests {
 
     #[test]
     fn current_model_ids_are_passed_through() {
-        for model in ["MiniMax-M3", "MiniMax-M2.7"] {
+        assert_eq!(MiniMaxConfig::default().model, "MiniMax-M3.1-Flash");
+        for model in [
+            "MiniMax-M3.1-Flash",
+            "MiniMax-M3",
+            "MiniMax-M2.7",
+            "custom-model",
+        ] {
             let mut config = config();
             config.model = model.to_string();
             assert_eq!(config.endpoint().unwrap().model, model);
@@ -392,6 +401,21 @@ thinking = "disabled"
         assert_eq!(config.protocol, MiniMaxProtocol::Openai);
         assert_eq!(config.thinking, Some(MiniMaxThinking::Disabled));
         assert!(MiniMaxInvoker::new(&config, String::new()).is_ok());
+    }
+
+    #[test]
+    fn flash_rejects_disabled_thinking_in_both_protocols() {
+        for protocol in [MiniMaxProtocol::Anthropic, MiniMaxProtocol::Openai] {
+            let config = MiniMaxConfig {
+                protocol,
+                thinking: Some(MiniMaxThinking::Disabled),
+                ..config()
+            };
+            let error = MiniMaxInvoker::new(&config, String::new())
+                .err()
+                .expect("disabled thinking must be rejected for Flash");
+            assert!(error.to_string().contains("requires adaptive thinking"));
+        }
     }
 
     #[test]

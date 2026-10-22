@@ -93,7 +93,7 @@ temperature = 0.7
 # MiniMax API settings (used when llm = "minimax")
 [minimax]
 # api_key = "..."                              # Or set MINIMAX_API_KEY
-model = "MiniMax-M3"                           # Also supports MiniMax-M2.7
+model = "MiniMax-M3.1-Flash"                    # Also supports MiniMax-M3 and custom model IDs
 region = "global_en"                           # "global_en" or "cn_zh"
 protocol = "anthropic"                         # "anthropic" or "openai"
 global_openai_base_url = "https://api.minimax.io/v1"
@@ -103,8 +103,10 @@ cn_anthropic_base_url = "https://api.minimaxi.com/anthropic"
 system_prompt_file = "data/system_prompt.txt"
 max_tokens = 1024
 temperature = 0.7
-# thinking = "adaptive"                        # MiniMax-M3: "adaptive" or "disabled"; omit for the default
-# MiniMax-M2.7 thinking is always on; leave thinking unset.
+# thinking = "adaptive"                        # Flash: adaptive only; M3: adaptive or disabled
+# Omitted thinking: Flash adaptive; M3 disabled (anthropic) or adaptive (openai).
+# Effort is omitted: Flash defaults to max; M3 ignores effort.
+# Legacy MiniMax-M2.7 configurations must leave thinking unset.
 
 # Codex CLI settings (used when llm = "codex")
 # Requires `codex` CLI installed (npm i -g @openai/codex) and OPENAI_API_KEY set.
