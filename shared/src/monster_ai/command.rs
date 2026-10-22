@@ -114,15 +114,18 @@ pub enum AiCommand {
         target_player_id: PlayerId,
         reach: SwingReach,
     },
-    /// A skill wound up facing `rotation`; viewers play it from now.
+    /// A skill wound up facing `rotation`, marking `spots`; viewers play it
+    /// from now.
     CastSkill {
         skill: MonsterSkillId,
         rotation: f32,
+        spots: Vec<Position>,
     },
     /// The cast's damage moment, from where it was cast.
     SkillStrike {
         skill: MonsterSkillId,
         position: Position,
         rotation: f32,
+        spots: Vec<Position>,
     },
 }

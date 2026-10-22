@@ -142,7 +142,7 @@ impl MonsterBrain {
                 self.bt_flee_from_target(params, delta_ms, nearby_players, commands, path_provider)
             }
             "attack_target" => {
-                self.bt_attack_target(params, nearby_players, commands, path_provider)
+                self.bt_attack_target(params, nearby_players, commands, path_provider, rng)
             }
             "chase_target" => {
                 self.bt_chase_target(params, delta_ms, nearby_players, commands, path_provider)
@@ -308,6 +308,7 @@ impl MonsterBrain {
         nearby_players: &[NearbyPlayer],
         commands: &mut Vec<AiCommand>,
         path_provider: &dyn PathProvider,
+        rng: &mut impl Rng,
     ) -> BehaviorStatus {
         let target = match self.current_target(nearby_players) {
             Some(target) => target,
@@ -341,6 +342,7 @@ impl MonsterBrain {
         }
 
         let target_id = target.id;
+        let target_position = target.position;
         self.set_facing(self.position.bearing_xz_to(&target.position));
         if self.state != AiState::Attack {
             self.state = AiState::Attack;
@@ -350,9 +352,17 @@ impl MonsterBrain {
             commands.push(self.make_move_cmd());
         }
 
-        if self.attack_cooldown_left_ms <= 0.0 {
+        if self.attack_cooldown_left_ms <= 0.0
+            || (self.swing_left_ms <= 0.0 && self.last_stand_due())
+        {
             self.attack_cooldown_left_ms = self.attack_cooldown_ms;
-            if self.try_cast(commands) {
+            if self.try_cast(
+                &target_position,
+                nearby_players,
+                path_provider,
+                rng,
+                commands,
+            ) {
                 return BehaviorStatus::Running;
             }
             self.swing_left_ms = self.swing_commit_ms;

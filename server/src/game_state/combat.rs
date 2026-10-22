@@ -27,7 +27,7 @@ use crate::types::{
 use onlinerpg_shared::interest::{Bounds, Space, SubjectArea};
 use onlinerpg_shared::inventory::{EquipSlot, GroundItem, ItemInstance, PlayerInventory};
 use onlinerpg_shared::messages::SkillVictim;
-use onlinerpg_shared::monster_ai::{SkillArea, SkillDamage, GROUND_STRIKE_RADIUS};
+use onlinerpg_shared::monster_ai::{SkillArea, SkillDamage, GROUND_STRIKE_RADIUS, REACH_SLACK};
 use onlinerpg_shared::monster_body::reach_point;
 use onlinerpg_shared::xp;
 use rand::Rng;
@@ -51,7 +51,7 @@ pub(super) const PLAYER_ATTACK_PROVOKE_RANGE_METERS: f32 = 10.0;
 // Allow for positions changing between the brain tick and attack resolution.
 const MONSTER_ATTACK_RANGE_TOLERANCE_METERS: f32 = 4.0;
 /// A body straddling the eruption's edge is still caught.
-const GROUND_STRIKE_REACH_M: f32 = GROUND_STRIKE_RADIUS + 0.3;
+const GROUND_STRIKE_REACH_M: f32 = GROUND_STRIKE_RADIUS + REACH_SLACK;
 // Authored timing data the clients also import (data-src/player_anim_timing.csv),
 // so server delays can never drift from the animations.
 static PLAYER_ANIM_TIMING: LazyLock<serde_json::Value> = LazyLock::new(|| {
@@ -127,15 +127,22 @@ enum MonsterReach<'a> {
         skill: &'a onlinerpg_shared::monster_ai::MonsterSkill,
         origin: Position,
         rotation: f32,
+        spots: &'a [Position],
+    },
+    /// A tick of the magma a skill left on its spots.
+    Burn {
+        skill: &'a onlinerpg_shared::monster_ai::MonsterSkill,
+        spots: &'a [Position],
     },
 }
 
 impl MonsterReach<'_> {
-    /// A ground eruption or a zone skill strikes whoever stands in it.
+    /// Ground eruptions, magma and zone or spot skills strike whoever stands
+    /// in them.
     fn ignores_walls(&self) -> bool {
         match self {
-            Self::Ground { .. } => true,
-            Self::Skill { skill, .. } => matches!(skill.area, SkillArea::Zone { .. }),
+            Self::Ground { .. } | Self::Burn { .. } => true,
+            Self::Skill { skill, .. } => !matches!(skill.area, SkillArea::Fan { .. }),
             Self::Melee(_) => false,
         }
     }
@@ -1530,13 +1537,15 @@ impl super::GameState {
         }
     }
 
-    /// Land a cast's strike on everyone standing in its fan.
+    /// Land a cast's strike on everyone standing in its area, then leave its
+    /// magma burning on the spots.
     pub(super) async fn monster_skill_strike(
         &self,
         monster_id: &str,
-        skill: &onlinerpg_shared::monster_ai::MonsterSkill,
+        skill: &'static onlinerpg_shared::monster_ai::MonsterSkill,
         origin: Position,
         rotation: f32,
+        spots: Vec<Position>,
     ) {
         let snapshot = {
             let monsters = self.monsters.read().await;
@@ -1545,21 +1554,67 @@ impl super::GameState {
                 _ => return,
             }
         };
-        let radius = skill.range() + snapshot.body.map_or(0.0, |b| b.reach_radius());
-        let nearby = self
-            .players_within_position(&origin, snapshot.floor_level, radius, None)
-            .await;
         let reach = MonsterReach::Skill {
             skill,
             origin,
             rotation,
+            spots: &spots,
         };
+        let radius = skill.full_reach() + snapshot.body.map_or(0.0, |b| b.reach_radius());
+        self.strike_skill_victims(monster_id, &snapshot, origin, radius, reach)
+            .await;
+
+        let Some(pools) = skill.pools.filter(|_| !spots.is_empty()) else {
+            return;
+        };
+        let game_state = self.clone();
+        let monster_id = monster_id.to_string();
+        tokio::spawn(async move {
+            for _ in 0..pools.ticks {
+                tokio::time::sleep(Duration::from_millis(pools.tick_ms as u64)).await;
+                let alive = game_state
+                    .monsters
+                    .read()
+                    .await
+                    .get(&monster_id)
+                    .is_some_and(|m| m.state != MonsterState::Dead);
+                if !alive {
+                    return;
+                }
+                let reach = MonsterReach::Burn {
+                    skill,
+                    spots: &spots,
+                };
+                game_state
+                    .strike_skill_victims(&monster_id, &snapshot, origin, radius, reach)
+                    .await;
+            }
+        });
+    }
+
+    /// Land one blow on each player within `radius` of `origin` that `reach`
+    /// covers, and announce them in one `MonsterSkillStruck`.
+    async fn strike_skill_victims(
+        &self,
+        monster_id: &str,
+        snapshot: &MonsterAttackSnapshot,
+        origin: Position,
+        radius: f32,
+        reach: MonsterReach<'_>,
+    ) {
+        let (MonsterReach::Skill { skill, .. } | MonsterReach::Burn { skill, .. }) = reach else {
+            return;
+        };
+        let burn = matches!(reach, MonsterReach::Burn { .. });
+        let nearby = self
+            .players_within_position(&origin, snapshot.floor_level, radius, None)
+            .await;
         let mut landed = Vec::new();
         for (victim, _) in nearby {
             let mut audit = self.combat_audit.attack(victim);
             audit.monster(monster_id, &snapshot.monster_type);
             landed.extend(
-                self.land_monster_hit(monster_id, &snapshot, &victim, reach, audit)
+                self.land_monster_hit(monster_id, snapshot, &victim, reach, audit)
                     .await,
             );
         }
@@ -1574,25 +1629,27 @@ impl super::GameState {
             .collect();
         if !victims.is_empty() {
             // Whoever can see any victim hears of the strike.
-            let points = landed
+            let points: Vec<_> = landed
                 .iter()
                 .filter(|h| h.result.hit)
-                .filter_map(|h| h.at.map(|(position, _)| Bounds::Point(position)));
+                .filter_map(|h| h.at.map(|(position, _)| Bounds::Point(position)))
+                .collect();
             self.interest_lock().publish_effect(
                 SubjectArea {
-                    bounds: Bounds::Union(points.collect()),
-                    space: Space::at(&origin, snapshot.floor_level),
+                    bounds: Bounds::Union(points),
+                    space: Space::at(&snapshot.position, snapshot.floor_level),
                 },
                 &ServerMessage::MonsterSkillStruck {
                     monster_id: monster_id.to_string(),
                     skill: skill.id,
                     victims,
+                    burn,
                 },
                 None,
             );
         }
         for hit in &landed {
-            self.finish_monster_hit(&snapshot, hit).await;
+            self.finish_monster_hit(snapshot, hit).await;
         }
     }
 
@@ -1695,10 +1752,13 @@ impl super::GameState {
                 skill,
                 origin,
                 rotation,
+                spots,
             } => match skill.area {
                 SkillArea::Fan { .. } => skill.fan_contains(&origin, rotation, &target_position),
                 SkillArea::Zone { radius } => distance_sq <= radius.powi(2),
+                SkillArea::Spots => skill.spots_contain(spots, &target_position),
             },
+            MonsterReach::Burn { skill, spots, .. } => skill.spots_contain(spots, &target_position),
         };
         if !in_reach {
             audit.reason = "out_of_range";
@@ -1728,6 +1788,9 @@ impl super::GameState {
         }
         let damage = match reach {
             MonsterReach::Skill { skill, .. } => skill.damage,
+            MonsterReach::Burn { skill, .. } => {
+                SkillDamage::Fixed(skill.pools.map_or(0, |pools| pools.damage))
+            }
             MonsterReach::Melee(_) | MonsterReach::Ground { .. } => SkillDamage::Scaled {
                 multiplier: 1,
                 ignores_guard: false,

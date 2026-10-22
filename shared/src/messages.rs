@@ -1377,13 +1377,18 @@ pub enum ServerMessage {
         rotation: f32,
         range: f32,
         half_angle: f32,
+        /// Ground the cast marked, each `spot_radius` across; empty for most.
+        spots: Vec<crate::Position>,
+        spot_radius: f32,
     },
     /// A skill's strike, once for everyone it hit; misses are not listed.
     /// Each victim's `PlayerHealthUpdate` and death still go out on their own.
+    /// `burn` is a tick of the magma it left behind.
     MonsterSkillStruck {
         monster_id: String,
         skill: crate::monster_ai::MonsterSkillId,
         victims: Vec<SkillVictim>,
+        burn: bool,
     },
     /// A plain swing at a distant target: the ground where it stood erupts
     /// after `impact_ms`, striking whoever is still within `radius`.

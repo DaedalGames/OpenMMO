@@ -366,6 +366,7 @@ fn monster_damage_and_death_update_local_health() {
     s.push_event(ServerMessage::MonsterSkillStruck {
         monster_id: "m1".to_string(),
         skill: onlinerpg_shared::monster_ai::MonsterSkillId::EarthRoar,
+        burn: false,
         victims: vec![
             SkillVictim {
                 player_id: PlayerId::from(1),

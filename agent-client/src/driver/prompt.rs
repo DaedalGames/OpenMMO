@@ -431,6 +431,8 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             monster_id,
             skill,
             range,
+            spots,
+            spot_radius,
             ..
         } => {
             use onlinerpg_shared::monster_ai::{skill_by_id, SkillArea, SkillDamage};
@@ -443,6 +445,27 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
                 SkillArea::Zone { .. } => {
                     format!("everyone within {range:.1}m of its body, walls or not")
                 }
+                SkillArea::Spots => "everyone on a marked circle, so step off them".into(),
+            };
+            let marks = if spots.is_empty() {
+                String::new()
+            } else {
+                let at: Vec<_> = spots
+                    .iter()
+                    .map(|p| format!("({:.0}, {:.0})", p.x, p.z))
+                    .collect();
+                let after = match def.pools {
+                    Some(pools) => format!(
+                        "; they turn to magma for {:.0}s, burning {} each second",
+                        pools.tick_ms * pools.ticks as f32 / 1000.0,
+                        pools.damage
+                    ),
+                    None => String::new(),
+                };
+                format!(
+                    " Marked {spot_radius:.1}m circles at x,z {}{after}.",
+                    at.join(" ")
+                )
             };
             let damage = match def.damage {
                 SkillDamage::Fixed(damage) => format!(
@@ -451,15 +474,17 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
                 SkillDamage::Scaled { .. } => String::new(),
             };
             Some(format!(
-                "[MonsterSkill] {monster_id} winds up {skill:?}: in {strike_s:.1}s it strikes {area}.{damage}"
+                "[MonsterSkill] {monster_id} winds up {skill:?}: in {strike_s:.1}s it strikes {area}.{marks}{damage}"
             ))
         }
         ServerMessage::MonsterSkillStruck {
             monster_id,
             skill,
             victims,
+            burn,
         } => Some(format!(
-            "[MonsterSkillStruck] {monster_id} {skill:?} hit {}",
+            "[MonsterSkillStruck] {monster_id} {skill:?}{} hit {}",
+            if *burn { " magma" } else { "" },
             victims
                 .iter()
                 .map(|v| format!(

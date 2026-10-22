@@ -195,6 +195,33 @@ gather = {'Spine': [(X, 10)], 'Chest': [(X, 16)], 'Head': [(X, 18)],
 clip('Roar', [(0, rest), (1.2, crouch), (3.4, gather), (4.0, roar_rots), (5.4, roar_rots),
               (6.2, rest)])
 
+
+
+def both(rots, trunk):
+    """Both arms posed alike, the trunk set apart since one side's twist
+    would cancel the other's."""
+    arms = {n: r for n, r in {**mirror(rots), **rots}.items()
+            if n not in ('Spine', 'Chest', 'Head')}
+    return {**arms, **trunk}
+
+
+# FORMATION_BREAK: both fists rise overhead and come down on the fan in
+# front at 2.8s (strike_ms).
+heave = both({'Shoulder.R': [(Y, 24)], 'UpperArm.R': [(X, -125), (Y, -10)],
+              'LowerArm.R': [(X, -35)], 'Hand.R': [(X, -20)]},
+             {'Spine': [(X, -8)], 'Chest': [(X, -12)], 'Head': [(X, -16)]})
+smash = both(slam, {'Spine': [(X, 14)], 'Chest': [(X, 12)], 'Head': [(X, 8)]})
+clip('Smash', [(0, rest), (1.6, heave), (2.45, heave), (2.8, smash), (3.6, smash),
+               (4.4, rest)])
+
+# EARTHQUAKE: a warning pound, then a heavier one at 3.5s (strike_ms).
+raise_low = both({'Shoulder.R': [(Y, 12)], 'UpperArm.R': [(X, -60), (Y, -10)],
+                  'LowerArm.R': [(X, -25)]},
+                 {'Spine': [(X, -3)], 'Chest': [(X, -5)], 'Head': [(X, -6)]})
+pound = both(slam, {'Spine': [(X, 16)], 'Chest': [(X, 14)], 'Head': [(X, 10)]})
+clip('Quake', [(0, rest), (0.8, raise_low), (1.15, pound), (1.5, pound), (2.6, heave),
+               (3.15, heave), (3.5, pound), (4.3, pound), (5.0, rest)])
+
 hit = {'Chest': [(X, -6)], 'Head': [(X, -8)], 'Spine': [(X, -3)]}
 clip('Hit', [(0, rest), (0.15, hit), (0.6, rest)])
 

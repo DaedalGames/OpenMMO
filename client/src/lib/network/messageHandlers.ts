@@ -10,7 +10,6 @@ import {
   handleFieldBossSleeping,
   handleFieldBossWaking,
   handleFieldRaidNotice,
-  handleMonsterSkillWarning,
 } from './altarMessages'
 import {
   playTeleportEffect,
@@ -20,6 +19,7 @@ import {
   cancelLocalTeleportRequest,
 } from '../stores/teleportEffectStore'
 import { playGroundEruption } from '../stores/groundEruptionStore'
+import { MONSTER_SKILLS } from '../effects/monster-skills'
 import {
   inspectionResult,
   type InspectionResult,
@@ -1486,7 +1486,12 @@ export function handleServerMessage(
         data.range,
         data.half_angle
       )
-      handleMonsterSkillWarning(data.monster_id, data.skill)
+      markMonsterSkillSpots(
+        data.monster_id,
+        data.skill,
+        data.spots,
+        data.spot_radius
+      )
       break
 
     case 'MonsterGroundStrike':
@@ -1505,7 +1510,7 @@ export function handleServerMessage(
       break
 
     case 'MonsterSkillStruck':
-      handleMonsterSkillStruck(data.victims)
+      handleMonsterSkillStruck(data.victims, data.burn)
       break
 
     case 'MonsterAttackedPlayer': {
@@ -2850,13 +2855,37 @@ function reactToMonsterBlow(
   }
 }
 
+/** Crack the ground a boss's cast marked; it splits open at the strike. */
+export function markMonsterSkillSpots(
+  monsterId: string,
+  skill: string,
+  spots: Position[],
+  radius: number
+) {
+  const marks = MONSTER_SKILLS[skill]?.marks
+  const monster = monsterManager.monsters.get(monsterId)
+  if (!marks || !monster) return
+  const startedAt = Date.now()
+  for (const position of spots) {
+    playGroundEruption({
+      position,
+      floorLevel: monster.floorLevel ?? 0,
+      radius,
+      startedAt,
+      impactMs: marks.impactMs,
+      lingerMs: marks.lingerMs,
+    })
+  }
+}
+
 // A crowd hit at once groans as a few voices, not dozens.
 const SKILL_HURT_SOUNDS = 3
 
 /** One strike on many players, with a single combat line instead of one per
  *  victim. Their HP comes in each victim's `PlayerHealthUpdate`. */
 function handleMonsterSkillStruck(
-  victims: { player_id: number; damage: number; current_health: number }[]
+  victims: { player_id: number; damage: number; current_health: number }[],
+  burn: boolean
 ) {
   const selfId = get(gameStore).currentPlayer?.id
   const own = victims.find((v) => v.player_id === selfId)
@@ -2868,9 +2897,11 @@ function handleMonsterSkillStruck(
       v.damage,
       v.current_health,
       0,
-      v === own || groans++ < SKILL_HURT_SOUNDS
+      v === own || (!burn && groans++ < SKILL_HURT_SOUNDS)
     )
   }
+  // Magma burns every second; only its own victim needs the line.
+  if (burn && !own) return
   addCombatMessage({
     text: own
       ? translate('combat.skillStruckYou', {

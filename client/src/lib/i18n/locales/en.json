@@ -716,6 +716,5 @@
   "fieldRaid.dawn": "Day has broken. {{monster}} sinks back into sleep.",
   "fieldRaid.wiped": "No one is left standing. {{monster}} sinks back into sleep.",
   "fieldRaid.reward": "You received the {{item}} for summoning it.",
-  "monsterSkill.earthRoar": "{{monster}} draws a deep breath. Its Earth Roar will sweep everyone near it. Heal up!",
   "monsterName.terraclash": "Terraclash"
 }

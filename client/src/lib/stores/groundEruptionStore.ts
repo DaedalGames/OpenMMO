@@ -7,6 +7,8 @@ export type GroundEruption = {
   radius: number
   startedAt: number
   impactMs: number
+  /** How long the split ground stays molten after the impact. */
+  lingerMs?: number
 }
 
 const NONE: readonly GroundEruption[] = []

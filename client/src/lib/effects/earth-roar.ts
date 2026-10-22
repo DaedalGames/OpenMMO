@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { MeshBasicNodeMaterial, MeshStandardNodeMaterial } from 'three/webgpu'
+import { MeshBasicNodeMaterial } from 'three/webgpu'
 import { color, mx_noise_float, uniform, uv, vec3 } from 'three/tsl'
 import { createRng } from '../utils/simplex-noise'
 import {
@@ -8,6 +8,7 @@ import {
   landTime,
   placeDust,
   placeRocks,
+  rockMaterial,
   rubble,
   tintRocks,
   type Dust,
@@ -38,6 +39,13 @@ export interface BodyFootprint {
   back: number
 }
 
+export function parseFootprint(footprint: string | undefined): BodyFootprint {
+  const [halfWidth = 0, front = 0, back = 0] = (footprint ?? '')
+    .split('|')
+    .map(Number)
+  return { halfWidth, front, back }
+}
+
 /** Terraclash's roar: dust and scree while it gathers itself, then a dust
  *  wall rolling out as far as the roar reaches. */
 export class EarthRoarEffect {
@@ -53,7 +61,7 @@ export class EarthRoarEffect {
     true
   )
   private dustMaterial = dustMaterial()
-  private rockMaterial = new MeshStandardNodeMaterial()
+  private rockMaterial = rockMaterial()
   private wallMaterial = new MeshBasicNodeMaterial()
   private wallFade = uniform(0)
   private dustMesh: THREE.InstancedMesh
@@ -72,9 +80,6 @@ export class EarthRoarEffect {
   ) {
     this.halfX = body.halfWidth
     this.halfZ = (body.front + body.back) / 2
-    this.rockMaterial.roughness = 0.95
-    this.rockMaterial.metalness = 0
-    this.rockMaterial.flatShading = true
 
     const m = this.wallMaterial
     m.transparent = true

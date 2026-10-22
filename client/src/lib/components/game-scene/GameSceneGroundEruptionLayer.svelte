@@ -29,7 +29,8 @@
   onMount(() => {
     let disposed = false
     const assets = new GroundEruptionAssets()
-    for (let i = 0; i < 6; i++) {
+    // An earthquake's marks, a smash's pools and a few ground strikes at once.
+    for (let i = 0; i < 16; i++) {
       const effect = new GroundEruptionEffect(assets)
       slots.push({ effect, event: null })
       group.add(effect.group)
@@ -62,7 +63,7 @@
           entry.event!.startedAt < oldest.event!.startedAt ? entry : oldest
         )
       slot.event = event
-      slot.effect.start(event.impactMs, event.radius, seed++)
+      slot.effect.start(event.impactMs, event.radius, seed++, event.lingerMs)
     }
     const floor =
       $currentDungeonDepth > 0

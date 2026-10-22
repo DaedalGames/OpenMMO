@@ -11,7 +11,16 @@ use super::{
 };
 use crate::pathfinding::PathWaypoint;
 use crate::{MonsterState, PlayerId, Position};
+use rand::seq::SliceRandom;
 use rand::Rng;
+
+/// The skill under way and where it aims.
+#[derive(Debug, Clone, PartialEq)]
+pub(super) struct Cast {
+    pub(super) skill: &'static super::MonsterSkill,
+    pub(super) rotation: f32,
+    pub(super) spots: Vec<Position>,
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct MonsterBrain {
@@ -60,11 +69,15 @@ pub struct MonsterBrain {
     pub(super) swing_commit_ms: f32,
     /// Time left in the swing currently being delivered.
     pub(super) swing_left_ms: f32,
-    pub(super) skill: Option<&'static super::MonsterSkill>,
-    pub(super) skill_cooldown_left_ms: f32,
+    pub(super) skills: Option<&'static super::skill::SkillSet>,
+    /// Per entry of `skills`.
+    pub(super) skill_cooldowns_ms: Vec<f32>,
+    /// Last-stand casts left, once it begins.
+    pub(super) last_stand: Option<u8>,
+    /// The cast whose strike is still to land.
+    pub(super) cast: Option<Cast>,
     /// Time left in a cast; the brain holds its pose and facing until it ends.
     pub(super) cast_left_ms: f32,
-    pub(super) strike_pending: bool,
     /// The free cell near the target the chase is heading to; kept while it
     /// stays free so re-slotting doesn't oscillate.
     pub(super) chase_goal_cell: Option<(i32, i32)>,
@@ -102,7 +115,7 @@ impl MonsterBrain {
         attack_cooldown_ms: f32,
     ) -> Self {
         let swing_commit_ms = super::attack_clip_ms(monster_type);
-        let skill = super::skill_for(monster_type);
+        let skills = super::skill::skills_for(monster_type);
         Self {
             monster_id,
             behavior,
@@ -143,10 +156,13 @@ impl MonsterBrain {
             attack_cooldown_left_ms: 0.0,
             swing_commit_ms,
             swing_left_ms: 0.0,
-            skill,
-            skill_cooldown_left_ms: skill.map_or(0.0, |skill| skill.first_cast_ms),
+            skills,
+            skill_cooldowns_ms: skills.map_or(Vec::new(), |set| {
+                set.skills.iter().map(|(s, _)| s.first_cast_ms).collect()
+            }),
+            last_stand: None,
+            cast: None,
             cast_left_ms: 0.0,
-            strike_pending: false,
             chase_goal_cell: None,
             occupied_cells: Vec::new(),
             cell_yield: false,
@@ -254,7 +270,9 @@ impl MonsterBrain {
         self.sync_elapsed_ms += delta_ms;
         self.attack_cooldown_left_ms = (self.attack_cooldown_left_ms - delta_ms).max(0.0);
         self.swing_left_ms = (self.swing_left_ms - delta_ms).max(0.0);
-        self.skill_cooldown_left_ms = (self.skill_cooldown_left_ms - delta_ms).max(0.0);
+        for cooldown in &mut self.skill_cooldowns_ms {
+            *cooldown = (*cooldown - delta_ms).max(0.0);
+        }
         self.cast_left_ms = (self.cast_left_ms - delta_ms).max(0.0);
         if let Some(aggro) = &mut self.aggro {
             aggro.advance(delta_ms);
@@ -265,38 +283,107 @@ impl MonsterBrain {
         self.cast_left_ms > 0.0
     }
 
-    /// Start the skill if it is ready, in place of a plain swing.
-    pub(super) fn try_cast(&mut self, commands: &mut Vec<AiCommand>) -> bool {
-        let Some(skill) = self.skill else {
+    fn last_stand_rule(&self) -> Option<super::skill::LastStand> {
+        let rule = self.skills?.last_stand?;
+        (self.health as f32 <= self.max_health as f32 * rule.health_ratio).then_some(rule)
+    }
+
+    /// The last stand opens at once, without waiting out the swing cooldown.
+    pub(super) fn last_stand_due(&self) -> bool {
+        self.last_stand.is_none() && self.last_stand_rule().is_some()
+    }
+
+    /// Start a ready skill in place of a plain swing at `target`.
+    pub(super) fn try_cast(
+        &mut self,
+        target: &Position,
+        nearby_players: &[NearbyPlayer],
+        path_provider: &dyn PathProvider,
+        rng: &mut impl Rng,
+        commands: &mut Vec<AiCommand>,
+    ) -> bool {
+        let Some(set) = self.skills else {
             return false;
         };
-        if self.skill_cooldown_left_ms > 0.0 {
-            return false;
-        }
-        self.skill_cooldown_left_ms = skill.cooldown_ms;
+        let mut swing_wait_ms = self.attack_cooldown_ms;
+        let skill = if let Some(rule) = self.last_stand_rule() {
+            let left = self.last_stand.get_or_insert(rule.casts);
+            if *left == 0 {
+                return false;
+            }
+            *left -= 1;
+            if *left > 0 {
+                swing_wait_ms = rule.every_ms - rule.skill.cast_ms;
+            }
+            rule.skill
+        } else {
+            let ready: Vec<usize> = (0..set.skills.len())
+                .filter(|&i| self.skill_cooldowns_ms[i] <= 0.0)
+                .collect();
+            let Ok(&i) = ready.choose_weighted(rng, |&i| set.skills[i].1) else {
+                return false;
+            };
+            let skill = set.skills[i].0;
+            self.skill_cooldowns_ms[i] = skill.cooldown_ms;
+            // No other skill until this one ends and the gap passes.
+            for cooldown in &mut self.skill_cooldowns_ms {
+                *cooldown = cooldown.max(skill.cast_ms + set.gap_ms);
+            }
+            skill
+        };
         self.cast_left_ms = skill.cast_ms;
-        // The next plain swing waits out a full cooldown after the cast.
-        self.attack_cooldown_left_ms = skill.cast_ms + self.attack_cooldown_ms;
-        self.strike_pending = true;
+        self.attack_cooldown_left_ms = skill.cast_ms + swing_wait_ms;
+        let rotation = self.aim_toward(self.position.bearing_xz_to(target));
+        let floor = self.path_floor;
+        let spots = skill.lay_spots(
+            self.body,
+            self.position,
+            self.rotation,
+            rotation,
+            nearby_players,
+            |x, z| path_provider.cell_passable(x, z, floor),
+            rng,
+        );
         commands.push(self.make_move_cmd());
         commands.push(AiCommand::CastSkill {
             skill: skill.id,
-            rotation: self.rotation,
+            rotation,
+            spots: spots.clone(),
+        });
+        self.cast = Some(Cast {
+            skill,
+            rotation,
+            spots,
         });
         true
     }
 
     fn tick_cast(&mut self, commands: &mut Vec<AiCommand>) {
-        let Some(skill) = self.skill else {
+        let left = self.cast_left_ms;
+        let Some(cast) = self
+            .cast
+            .take_if(|c| c.skill.cast_ms - left >= c.skill.strike_ms)
+        else {
             return;
         };
-        if self.strike_pending && skill.cast_ms - self.cast_left_ms >= skill.strike_ms {
-            self.strike_pending = false;
-            commands.push(AiCommand::SkillStrike {
-                skill: skill.id,
-                position: self.position,
-                rotation: self.rotation,
-            });
+        commands.push(AiCommand::SkillStrike {
+            skill: cast.skill.id,
+            position: self.position,
+            rotation: cast.rotation,
+            spots: cast.spots,
+        });
+    }
+
+    /// A skill's facing toward `bearing`: a body that cannot turn still aims
+    /// this far either side of its own.
+    fn aim_toward(&self, bearing: Option<f32>) -> f32 {
+        const AIM_LIMIT: f32 = 60.0 * std::f32::consts::PI / 180.0;
+        match (self.body, bearing) {
+            (Some(_), Some(bearing)) => {
+                let off = crate::mount_movement::angle_delta(self.rotation, bearing);
+                self.rotation + off.clamp(-AIM_LIMIT, AIM_LIMIT)
+            }
+            _ => self.rotation,
         }
     }
 

@@ -685,20 +685,26 @@ impl super::GameState {
                 target_player_id,
                 reach: SwingReach::Melee,
             } => self.monster_attack(monster_id, &target_player_id).await,
-            AiCommand::CastSkill { skill, rotation } => {
-                self.publish_monster_skill(monster_id, floor_level, skill, rotation)
+            AiCommand::CastSkill {
+                skill,
+                rotation,
+                spots,
+            } => {
+                self.publish_monster_skill(monster_id, floor_level, skill, rotation, spots)
                     .await
             }
             AiCommand::SkillStrike {
                 skill,
                 position,
                 rotation,
+                spots,
             } => {
                 self.monster_skill_strike(
                     monster_id,
                     monster_ai::skill_by_id(skill),
                     position,
                     rotation,
+                    spots,
                 )
                 .await
             }
@@ -711,6 +717,7 @@ impl super::GameState {
         floor_level: i8,
         skill: monster_ai::MonsterSkillId,
         rotation: f32,
+        mut spots: Vec<Position>,
     ) {
         let Some(position) = self
             .monsters
@@ -722,10 +729,21 @@ impl super::GameState {
         else {
             return;
         };
-        let (range, half_angle) = match monster_ai::skill_by_id(skill).area {
+        let def = monster_ai::skill_by_id(skill);
+        let (range, half_angle) = match def.area {
             monster_ai::SkillArea::Fan { range, half_angle } => (range, half_angle),
-            monster_ai::SkillArea::Zone { radius } => (radius, std::f32::consts::PI),
+            monster_ai::SkillArea::Zone { .. } | monster_ai::SkillArea::Spots => {
+                (def.range(), std::f32::consts::PI)
+            }
         };
+        // The brain laid bare-ground spots at its own height.
+        if floor_level == 0 {
+            for spot in &mut spots {
+                if let Ok(y) = self.height_sampler.sample_height(spot.x, spot.z).await {
+                    spot.y = y;
+                }
+            }
+        }
         self.publish_nearby(
             &position,
             floor_level,
@@ -735,6 +753,8 @@ impl super::GameState {
                 rotation,
                 range,
                 half_angle,
+                spots,
+                spot_radius: def.spots.map_or(0.0, |rule| rule.radius),
             },
             None,
         )

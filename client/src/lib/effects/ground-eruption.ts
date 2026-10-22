@@ -48,7 +48,7 @@ const SPARKS = 14
 const GROUND_LIFT = 0.04
 
 /** 1 below `lo`, easing to 0 at `hi`. */
-const drop = (lo: N, hi: N, x: N) => float(1).sub(smoothstep(lo, hi, x))
+export const drop = (lo: N, hi: N, x: N) => float(1).sub(smoothstep(lo, hi, x))
 
 interface Spike {
   x: number
@@ -79,7 +79,9 @@ interface Puff {
   roll: number
 }
 
-interface Spark {
+export interface Spark {
+  /** Launch time, in the same ms as `placeSparks`'s `elapsedMs`. */
+  at: number
   x: number
   y: number
   z: number
@@ -91,7 +93,7 @@ interface Spark {
 }
 
 /** A jagged basalt shard: base radius 1 at the origin, tip at +1 Y. */
-function shardGeometry() {
+export function shardGeometry() {
   const geometry = new THREE.CylinderGeometry(0.05, 1, 1, 8, 7)
   geometry.translate(0, 0.5, 0)
   const pos = geometry.getAttribute('position')
@@ -120,7 +122,7 @@ function shardGeometry() {
 }
 
 /** Basalt with darker strata; `heat` lights magma in the base's seams. */
-function basalt(heat?: N) {
+export function basalt(heat?: N) {
   const material = new MeshStandardNodeMaterial()
   material.flatShading = true
   material.metalness = 0
@@ -146,7 +148,7 @@ function basalt(heat?: N) {
   return material
 }
 
-function sparkMaterial() {
+export function sparkMaterial() {
   const material = new MeshBasicNodeMaterial()
   material.transparent = true
   material.depthWrite = false
@@ -156,6 +158,39 @@ function sparkMaterial() {
   material.colorNode = mix(color('#ff4a10'), color('#ffe2a0'), core)
   material.opacityNode = core.pow(2)
   return material
+}
+
+const sparkDummy = new THREE.Object3D()
+const sparkTint = new THREE.Color()
+
+/** Fly each additive spark at `elapsedMs`; it fades as it falls. */
+export function placeSparks(
+  mesh: THREE.InstancedMesh,
+  sparks: Spark[],
+  elapsedMs: number,
+  camera: THREE.Camera
+) {
+  for (let i = 0; i < sparks.length; i++) {
+    const s = sparks[i]
+    const age = (elapsedMs - s.at) / s.life
+    const t = (elapsedMs - s.at) / 1000
+    const y = s.y + s.vy * t - 0.5 * GRAVITY * t * t
+    if (age < 0 || age >= 1 || y < 0) {
+      mesh.setMatrixAt(i, ZERO_SCALE)
+      continue
+    }
+    sparkDummy.position.set(s.x + s.vx * t, y, s.z + s.vz * t)
+    sparkDummy.quaternion.copy(camera.quaternion)
+    sparkDummy.scale.setScalar(s.size * (1 - age * 0.5))
+    sparkDummy.updateMatrix()
+    mesh.setMatrixAt(i, sparkDummy.matrix)
+    // Additive: a dimmer colour is the fade.
+    const glow = (1 - age) * 1.8
+    sparkTint.setRGB(glow, glow, glow)
+    mesh.setColorAt(i, sparkTint)
+  }
+  mesh.instanceMatrix.needsUpdate = true
+  mesh.instanceColor!.needsUpdate = true
 }
 
 /** What every pooled eruption shares; only the mark and the shards carry
@@ -187,6 +222,7 @@ export class GroundEruptionEffect {
   private charge = uniform(0)
   private cool = uniform(0)
   private heat = uniform(0)
+  private flood = uniform(0)
   private markMaterial = new MeshBasicNodeMaterial()
   private mark: THREE.Mesh
   private shardMaterial = basalt(this.heat)
@@ -194,12 +230,14 @@ export class GroundEruptionEffect {
   private rockMesh: THREE.InstancedMesh
   private dustMesh: THREE.InstancedMesh
   private sparkMesh: THREE.InstancedMesh
+  private particleMeshes: THREE.InstancedMesh[]
   private spikes: Spike[] = []
   private pebbles: { x: number; z: number; size: number; phase: number }[] = []
   private debris: Rock[] = []
   private puffs: Puff[] = []
   private sparks: Spark[] = []
   private impactMs = 1
+  private lingerMs = 0
   private dummy = new THREE.Object3D()
   private roll = new THREE.Quaternion()
   private forward = new THREE.Vector3(0, 0, 1)
@@ -227,7 +265,8 @@ export class GroundEruptionEffect {
     )
     const fissure = drop(0.008, 0.03, gap).mul(grown)
     const lip = drop(0.02, 0.07, gap).mul(grown)
-    const molten = drop(0, 0.008, gap)
+    // Lingering magma floods the cracks wider.
+    const molten = drop(0, mix(0.008, 0.05, this.flood), gap)
       .mul(grown)
       .mul(drop(0.5, 1.05, r).mul(0.6).add(0.4))
     const inside = drop(0.7, 1, r)
@@ -281,19 +320,20 @@ export class GroundEruptionEffect {
     )
     this.shardMesh.castShadow = true
     this.rockMesh.castShadow = true
-    this.group.add(
-      this.mark,
+    this.particleMeshes = [
       this.shardMesh,
       this.rockMesh,
       this.dustMesh,
-      this.sparkMesh
-    )
+      this.sparkMesh,
+    ]
+    this.group.add(this.mark, ...this.particleMeshes)
     this.clear()
   }
 
-  start(impactMs: number, radius: number, seed: number) {
+  start(impactMs: number, radius: number, seed: number, lingerMs = 0) {
     const rand = createRng(seed)
     this.impactMs = Math.max(1, impactMs)
+    this.lingerMs = lingerMs
     this.mark.scale.set(radius, radius, 1)
     this.mark.rotation.z = rand() * Math.PI * 2
     this.group.visible = true
@@ -428,6 +468,7 @@ export class GroundEruptionEffect {
       const a = rand() * Math.PI * 2
       const out = 1 + rand() * 3
       this.sparks.push({
+        at: this.impactMs,
         x: Math.cos(a) * 0.2,
         y: 0.2,
         z: Math.sin(a) * 0.2,
@@ -443,19 +484,30 @@ export class GroundEruptionEffect {
   /** False once the shards have sunk and the dust settled. */
   update(elapsedMs: number, camera: THREE.Camera): boolean {
     const since = elapsedMs - this.impactMs
-    if (since >= TAIL_MS) {
+    const linger = this.lingerMs
+    if (since >= TAIL_MS + linger) {
       this.clear()
       return false
     }
+    const settled = Math.max(0, since - linger)
     this.charge.value = THREE.MathUtils.clamp(elapsedMs / this.impactMs, 0, 1)
     this.heat.value =
-      since < 0 ? 0 : 1 - THREE.MathUtils.smoothstep(since, 0, COOL_MS)
+      since < 0 ? 0 : 1 - THREE.MathUtils.smoothstep(settled, 0, COOL_MS)
     this.cool.value =
-      since < 0 ? 0 : THREE.MathUtils.smoothstep(since, 200, TAIL_MS - 300)
+      since < 0 ? 0 : THREE.MathUtils.smoothstep(settled, 200, TAIL_MS - 300)
+    this.flood.value =
+      linger > 0 && since >= 0
+        ? THREE.MathUtils.smoothstep(since, 0, 500) *
+          (1 - THREE.MathUtils.smoothstep(settled, 0, COOL_MS))
+        : 0
+    // Past the tail only a lingering mark is left to animate.
+    const particles = since < TAIL_MS
+    for (const mesh of this.particleMeshes) mesh.visible = particles
+    if (!particles) return true
     this.updateSpikes(since)
     this.updateRocks(elapsedMs, since)
     this.updatePuffs(elapsedMs, camera)
-    this.updateSparks(since, camera)
+    placeSparks(this.sparkMesh, this.sparks, elapsedMs, camera)
     return true
   }
 
@@ -561,30 +613,6 @@ export class GroundEruptionEffect {
     }
     this.dustMesh.instanceMatrix.needsUpdate = true
     this.dustMesh.instanceColor!.needsUpdate = true
-  }
-
-  private updateSparks(since: number, camera: THREE.Camera) {
-    for (let i = 0; i < this.sparks.length; i++) {
-      const s = this.sparks[i]
-      const age = since / s.life
-      const t = since / 1000
-      const y = s.y + s.vy * t - 0.5 * GRAVITY * t * t
-      if (age < 0 || age >= 1 || y < 0) {
-        this.sparkMesh.setMatrixAt(i, ZERO_SCALE)
-        continue
-      }
-      this.dummy.position.set(s.x + s.vx * t, y, s.z + s.vz * t)
-      this.dummy.quaternion.copy(camera.quaternion)
-      this.dummy.scale.setScalar(s.size * (1 - age * 0.5))
-      this.dummy.updateMatrix()
-      this.sparkMesh.setMatrixAt(i, this.dummy.matrix)
-      // Additive: a dimmer colour is the fade.
-      const glow = (1 - age) * 1.8
-      this.tint.setRGB(glow, glow, glow)
-      this.sparkMesh.setColorAt(i, this.tint)
-    }
-    this.sparkMesh.instanceMatrix.needsUpdate = true
-    this.sparkMesh.instanceColor!.needsUpdate = true
   }
 
   clear() {

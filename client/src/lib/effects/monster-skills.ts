@@ -4,10 +4,21 @@ import { createBarkanRuneSlashEffect } from './barkan-rune-slash'
 import { BarkanFireFan } from './barkan-fire-fan'
 import {
   EarthRoarEffect,
+  parseFootprint,
   EARTH_ROAR_CAST_MS,
   EARTH_ROAR_STRIKE_MS,
 } from './earth-roar'
-import type { MessageKey } from '../i18n'
+import {
+  FormationBreakEffect,
+  FORMATION_BREAK_CAST_MS,
+  FORMATION_BREAK_POOL_MS,
+  FORMATION_BREAK_STRIKE_MS,
+} from './formation-break'
+import {
+  EarthquakeEffect,
+  EARTHQUAKE_CAST_MS,
+  EARTHQUAKE_STRIKE_MS,
+} from './earthquake'
 import { playDungeonSound } from '../managers/sfxManager'
 
 export interface MonsterSkillCast {
@@ -39,8 +50,9 @@ export const MONSTER_SKILLS: Record<
   {
     clip: string
     durationMs: number
-    /** Chat line warning everyone the skill can reach. */
-    warning?: MessageKey
+    /** The cast's marked spots split open at `impactMs`, then stay molten
+     *  `lingerMs` longer. */
+    marks?: { impactMs: number; lingerMs?: number }
     createEffects(
       scene: THREE.Object3D,
       model: THREE.Object3D,
@@ -85,12 +97,8 @@ export const MONSTER_SKILLS: Record<
   earth_roar: {
     clip: 'Roar',
     durationMs: EARTH_ROAR_CAST_MS,
-    warning: 'monsterSkill.earthRoar',
     createEffects(scene, _model, _weapon, _clip, cast, footprint) {
-      const [halfWidth = 0, front = 0, back = 0] = (footprint ?? '')
-        .split('|')
-        .map(Number)
-      const roar = new EarthRoarEffect(cast.range, { halfWidth, front, back })
+      const roar = new EarthRoarEffect(cast.range, parseFootprint(footprint))
       scene.add(roar.group)
       let roared = false
       return {
@@ -109,6 +117,53 @@ export const MONSTER_SKILLS: Record<
         },
         dispose() {
           roar.dispose()
+        },
+      }
+    },
+  },
+  formation_break: {
+    clip: 'Smash',
+    durationMs: FORMATION_BREAK_CAST_MS,
+    marks: {
+      impactMs: FORMATION_BREAK_STRIKE_MS,
+      lingerMs: FORMATION_BREAK_POOL_MS,
+    },
+    createEffects(scene, _model, _weapon, _clip, cast, footprint) {
+      const smash = new FormationBreakEffect(
+        cast.range,
+        cast.halfAngle,
+        parseFootprint(footprint)
+      )
+      scene.add(smash.group)
+      return {
+        start(origin, next) {
+          smash.start(origin, next.rotation)
+        },
+        update(_time, _active, deltaTime, camera) {
+          smash.update(deltaTime, camera)
+        },
+        dispose() {
+          smash.dispose()
+        },
+      }
+    },
+  },
+  earthquake: {
+    clip: 'Quake',
+    durationMs: EARTHQUAKE_CAST_MS,
+    marks: { impactMs: EARTHQUAKE_STRIKE_MS },
+    createEffects(scene, _model, _weapon, _clip, _cast, footprint) {
+      const quake = new EarthquakeEffect(parseFootprint(footprint))
+      scene.add(quake.group)
+      return {
+        start(origin) {
+          quake.start(origin)
+        },
+        update(_time, _active, deltaTime, camera) {
+          quake.update(deltaTime, camera)
+        },
+        dispose() {
+          quake.dispose()
         },
       }
     },

@@ -543,8 +543,9 @@ async fn terraclashs_roar_strikes_around_its_body_for_a_fixed_amount() {
     let mut warned = HashSet::new();
     let mut batches = Vec::new();
     let mut elapsed = 0.0;
-    let mut cast_at = None;
-    while elapsed < roar.first_cast_ms + roar.cast_ms + 1000.0 {
+    let mut cast_at: Option<f32> = None;
+    // The other skills come between; wait out the roar's strike.
+    while cast_at.is_none_or(|at| elapsed < at + roar.cast_ms) && elapsed < 300_000.0 {
         game_state.tick_monster_ai_by(200.0).await;
         elapsed += 200.0;
         for (rx, (name, _)) in channels.iter_mut().zip(names) {
@@ -553,13 +554,15 @@ async fn terraclashs_roar_strikes_around_its_body_for_a_fixed_amount() {
                     ServerMessage::MonsterSkillStarted {
                         skill: onlinerpg_shared::monster_ai::MonsterSkillId::EarthRoar,
                         ..
-                    } => {
+                    } if cast_at.is_none_or(|at| at == elapsed) => {
                         warned.insert(name);
                         cast_at.get_or_insert(elapsed);
                     }
-                    ServerMessage::MonsterSkillStruck { victims, .. } => {
-                        batches.push((name, elapsed, victims))
-                    }
+                    ServerMessage::MonsterSkillStruck {
+                        skill: onlinerpg_shared::monster_ai::MonsterSkillId::EarthRoar,
+                        victims,
+                        ..
+                    } => batches.push((name, elapsed, victims)),
                     _ => {}
                 }
             }
@@ -582,7 +585,129 @@ async fn terraclashs_roar_strikes_around_its_body_for_a_fixed_amount() {
         assert!(victims.iter().all(|v| v.damage == 165));
     }
     assert_eq!(health_of(&game_state, &pid("god")).await, 100_000);
-    assert_eq!(health_of(&game_state, &pid("far")).await, 100_000);
+}
+
+async fn terraclash_among(game_state: &GameState, raiders: &[(&str, f32, f32)]) -> String {
+    for &(name, x, z) in raiders {
+        game_state.add_player(make_player(name, x, z)).await;
+        let mut players = game_state.players.write().await;
+        let player = players.get_mut(&pid(name)).unwrap();
+        player.health = 100_000;
+        player.max_health = 100_000;
+    }
+    game_state
+        .spawn_monster(
+            "terraclash".into(),
+            Position {
+                x: 0.0,
+                y: 0.0,
+                z: 0.0,
+            },
+            0.0,
+            0,
+            MonsterLifecycle::Ambient,
+            None,
+            false,
+        )
+        .await
+        .unwrap()
+        .id
+}
+
+fn spot(x: f32, z: f32) -> Position {
+    Position { x, y: 0.0, z }
+}
+
+/// The earthquake strikes only those on its marks, for a fixed 120, walls
+/// or not.
+#[tokio::test(start_paused = true)]
+async fn the_earthquake_strikes_only_the_marked_ground() {
+    let game_state = make_flat_world_game_state("terraclash_quake");
+    let raiders = [("on", 8.0, 8.0), ("edge", 11.6, 8.0), ("off", 13.0, 8.0)];
+    let boss = terraclash_among(&game_state, &raiders).await;
+    let mut rx = game_state.register_direct_channel(&pid("on")).await;
+    let quake = &onlinerpg_shared::monster_ai::EARTHQUAKE;
+    game_state
+        .monster_skill_strike(&boss, quake, spot(0.0, 0.0), 0.0, vec![spot(8.0, 8.0)])
+        .await;
+    let struck = drain(&mut rx)
+        .into_iter()
+        .find_map(|m| match m {
+            ServerMessage::MonsterSkillStruck { victims, burn, .. } => Some((victims, burn)),
+            _ => None,
+        })
+        .expect("the quake hits");
+    let hit: HashSet<_> = struck.0.iter().map(|v| (v.player_id, v.damage)).collect();
+    assert_eq!(hit, HashSet::from([(pid("on"), 120), (pid("edge"), 120)]));
+    assert!(!struck.1);
+    assert_eq!(health_of(&game_state, &pid("off")).await, 100_000);
+}
+
+/// Formation break's magma burns whoever stays on it once a second for ten
+/// seconds, and stops with the boss.
+#[tokio::test(start_paused = true)]
+async fn formation_breaks_magma_burns_each_second_while_stood_in() {
+    let game_state = make_flat_world_game_state("terraclash_magma");
+    let raiders = [("archer", -9.0, 9.0), ("mage", 0.0, -12.0)];
+    let boss = terraclash_among(&game_state, &raiders).await;
+    let mut rx = game_state.register_direct_channel(&pid("archer")).await;
+    let skill = &onlinerpg_shared::monster_ai::FORMATION_BREAK;
+    let pools = skill.pools.unwrap();
+    game_state
+        .monster_skill_strike(
+            &boss,
+            skill,
+            spot(0.0, 0.0),
+            0.0,
+            vec![spot(-9.0, 9.0), spot(0.0, -12.0)],
+        )
+        .await;
+    assert!(
+        drain(&mut rx).is_empty(),
+        "both stand outside the fan; the magma has not burned yet"
+    );
+
+    let tick = std::time::Duration::from_millis(pools.tick_ms as u64);
+    let mut burns = 0;
+    for second in 0..4 {
+        if second == 2 {
+            // The mage steps off; the archer stays.
+            game_state
+                .players
+                .write()
+                .await
+                .get_mut(&pid("mage"))
+                .unwrap()
+                .position = spot(0.0, -20.0);
+        }
+        tokio::time::sleep(tick + std::time::Duration::from_millis(10)).await;
+        for m in drain(&mut rx) {
+            if let ServerMessage::MonsterSkillStruck { victims, burn, .. } = m {
+                assert!(burn);
+                assert!(victims.iter().all(|v| v.damage == pools.damage));
+                burns += 1;
+            }
+        }
+    }
+    assert_eq!(burns, 4);
+    assert_eq!(
+        health_of(&game_state, &pid("archer")).await,
+        100_000 - 4 * pools.damage
+    );
+    assert_eq!(
+        health_of(&game_state, &pid("mage")).await,
+        100_000 - 2 * pools.damage
+    );
+
+    game_state
+        .monsters
+        .write()
+        .await
+        .get_mut(&boss)
+        .unwrap()
+        .state = MonsterState::Dead;
+    tokio::time::sleep(tick * pools.ticks).await;
+    assert!(drain(&mut rx).is_empty(), "the magma dies with the boss");
 }
 
 async fn terraclash_facing(game_state: &GameState, player_z: f32) -> (PlayerId, DirectRx, String) {

@@ -716,6 +716,5 @@
   "fieldRaid.dawn": "날이 밝았습니다. {{monster}}$이 다시 잠듭니다.",
   "fieldRaid.wiped": "싸울 사람이 남지 않았습니다. {{monster}}$이 다시 잠듭니다.",
   "fieldRaid.reward": "소환의 보상으로 {{item}}$을 받았습니다.",
-  "monsterSkill.earthRoar": "{{monster}}$이 숨을 크게 들이쉽니다. 곧 대지의 포효가 주변을 휩씁니다. 체력을 채우세요!",
   "monsterName.terraclash": "테라클래시"
 }

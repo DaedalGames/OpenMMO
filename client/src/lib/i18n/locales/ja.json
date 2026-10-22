@@ -716,6 +716,5 @@
   "fieldRaid.dawn": "夜が明けた。{{monster}}は再び眠りにつく。",
   "fieldRaid.wiped": "立っている者はもういない。{{monster}}は再び眠りにつく。",
   "fieldRaid.reward": "召喚の報酬として{{item}}を受け取った。",
-  "monsterSkill.earthRoar": "{{monster}}が大きく息を吸い込んだ。まもなく大地の咆哮が周囲を襲う。体力を回復しよう！",
   "monsterName.terraclash": "テラクラッシュ"
 }

@@ -205,10 +205,15 @@
   let lastSkillCounter = $state<number | undefined>(
     untrack(() => skill?.counter)
   )
-  let skillEffects:
-    | { clip: THREE.AnimationClip; effects: MonsterSkillEffects }
-    | undefined
-  onDestroy(() => skillEffects?.effects.dispose())
+  // One set per skill this monster has cast, kept for its next cast.
+  const skillEffects: {
+    id: string
+    clip: THREE.AnimationClip
+    effects: MonsterSkillEffects
+  }[] = []
+  onDestroy(() => {
+    for (const { effects } of skillEffects) effects.dispose()
+  })
   const damageText = new DamageTextEmitter()
   onDestroy(() => damageText.dispose())
   onDestroy(() => {
@@ -385,8 +390,10 @@
     const def = MONSTER_SKILLS[cast.id]
     const clip = def && findClip(def.clip)
     if (!mixer || !model || !clip || monsterState === 'dead') return false
-    if (!skillEffects && (!initialWeapon || weaponObject?.parent)) {
-      skillEffects = {
+    let entry = skillEffects.find((e) => e.id === cast.id)
+    if (!entry && (!initialWeapon || weaponObject?.parent)) {
+      entry = {
+        id: cast.id,
         clip,
         effects: def.createEffects(
           threlte.scene,
@@ -397,12 +404,10 @@
           initialDef?.footprint
         ),
       }
+      skillEffects.push(entry)
     }
-    if (skillEffects && group) {
-      skillEffects.effects.start(
-        group.getWorldPosition(new THREE.Vector3()),
-        cast
-      )
+    if (entry && group) {
+      entry.effects.start(group.getWorldPosition(new THREE.Vector3()), cast)
     }
     attackClip = clip.name
     isAttackAnimationFinished = false
@@ -410,13 +415,13 @@
   }
 
   function updateSkillEffects(deltaTime: number, camera?: THREE.Camera) {
-    if (!skillEffects) return
-    const action =
-      currentAction?.getClip() === skillEffects.clip ? currentAction : undefined
-    const active =
-      !!action && monsterState !== 'dead' && !isAttackAnimationFinished
-    const time = action?.time ?? 0
-    skillEffects.effects.update(time, active, deltaTime, camera)
+    for (const { clip, effects } of skillEffects) {
+      const action =
+        currentAction?.getClip() === clip ? currentAction : undefined
+      const active =
+        !!action && monsterState !== 'dead' && !isAttackAnimationFinished
+      effects.update(action?.time ?? 0, active, deltaTime, camera)
+    }
   }
 
   export function update(deltaTime: number, camera?: THREE.Camera) {

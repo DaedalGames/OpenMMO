@@ -124,6 +124,15 @@ export function dustMaterial() {
   return material
 }
 
+/** Flat-shaded matte stone; instance colours tint it. */
+export function rockMaterial() {
+  const material = new MeshStandardNodeMaterial()
+  material.roughness = 0.95
+  material.metalness = 0
+  material.flatShading = true
+  return material
+}
+
 /** A lumpy chunk; per-instance stretch makes the variety. */
 export function rubble(): THREE.BufferGeometry {
   const geometry = new THREE.IcosahedronGeometry(0.5, 0)
@@ -278,7 +287,7 @@ export class DormantWakeEffect {
   private planeGeometry = new THREE.PlaneGeometry(1, 1)
   private rockGeometry = rubble()
   private dustMaterial = dustMaterial()
-  private rockMaterial = new MeshStandardNodeMaterial()
+  private rockMaterial = rockMaterial()
   private emberMaterial = new MeshBasicNodeMaterial()
   private dustMesh: THREE.InstancedMesh
   private rockMesh: THREE.InstancedMesh
@@ -292,10 +301,6 @@ export class DormantWakeEffect {
 
   constructor() {
     const r = uv().sub(0.5).length().mul(2)
-    this.rockMaterial.color = new THREE.Color('#ffffff')
-    this.rockMaterial.roughness = 0.95
-    this.rockMaterial.metalness = 0
-    this.rockMaterial.flatShading = true
     this.emberMaterial.transparent = true
     this.emberMaterial.depthWrite = false
     this.emberMaterial.blending = THREE.AdditiveBlending
