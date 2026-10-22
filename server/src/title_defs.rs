@@ -47,6 +47,18 @@ pub fn boss_kill_titles(boss_type: &str) -> (Option<&'static TitleDef>, Option<&
     (shared, solo)
 }
 
+/// The raid titles for `boss_type`: (raiders', final blow's), either may be
+/// absent.
+pub fn field_raid_titles(
+    boss_type: &str,
+) -> (Option<&'static TitleDef>, Option<&'static TitleDef>) {
+    let find = |source: &str| {
+        DEFS.values()
+            .find(|def| def.source == source && def.boss_id.as_deref() == Some(boss_type))
+    };
+    (find("field_raid"), find("field_raid_last_hit"))
+}
+
 /// The title for catching `item_id`, if any.
 pub fn fishing_catch_title(item_id: &str) -> Option<&'static TitleDef> {
     DEFS.values()
@@ -58,7 +70,7 @@ pub fn sort_ids(ids: &mut [String]) {
     ids.sort_by_key(|id| (title_def(id).map_or(u32::MAX, |d| d.order), id.clone()));
 }
 
-/// Boot-time check: every boss_kill title names a real monster, every
+/// Boot-time check: every boss and raid title names a real monster, every
 /// fishing title a real item.
 pub fn validate(
     monster_defs: &crate::monster_defs::MonsterDefs,
@@ -74,7 +86,7 @@ pub fn validate(
             );
         }
         match def.source.as_str() {
-            "boss_kill" => {
+            "boss_kill" | "field_raid" | "field_raid_last_hit" => {
                 let boss = def
                     .boss_id
                     .as_deref()
@@ -122,6 +134,16 @@ mod tests {
             );
         }
         assert!(boss_kill_titles("goblin").0.is_none());
+    }
+
+    #[test]
+    fn every_field_boss_has_a_raid_and_a_final_blow_title() {
+        for boss in onlinerpg_shared::field_boss::field_boss_defs() {
+            let (raid, final_blow) = field_raid_titles(&boss.monster);
+            let raid = raid.unwrap_or_else(|| panic!("{} raid", boss.monster));
+            let final_blow = final_blow.unwrap_or_else(|| panic!("{} final blow", boss.monster));
+            assert_eq!(final_blow.supersedes.as_deref(), Some(raid.id.as_str()));
+        }
     }
 
     #[test]

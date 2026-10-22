@@ -366,6 +366,8 @@
   "title.skeleton_slayer_solo": "独りで骸骨の騎士を討ちし者",
   "title.barkan_slayer": "バルカンを討ちし者",
   "title.barkan_slayer_solo": "独りでバルカンを討ちし者",
+  "title.terraclash_raider": "テラクラッシュを崩せし者",
+  "title.terraclash_final_blow": "テラクラッシュに最後の一撃を加えし者",
   "server.insufficientGold": "ゴールドが足りません",
   "server.tooHeavy": "重すぎて持てません",
   "server.lootReserved": "宝箱の戦利品は30秒間、宝箱を開けた人だけが拾えます。",

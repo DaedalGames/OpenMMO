@@ -115,7 +115,7 @@ async fn wake(game: &GameState, id: &PlayerId) -> crate::types::Monster {
 
 async fn kill(game: &GameState, boss: &crate::types::Monster) {
     game.monsters.write().await.get_mut(&boss.id).unwrap().state = MonsterState::Dead;
-    game.tick_field_raid().await;
+    game.end_field_raid(FieldRaidOutcome::Defeated, None).await;
 }
 
 type Notice = (Option<String>, Option<(String, u32)>);
@@ -445,6 +445,62 @@ async fn a_reconnect_keeps_the_raiders_damage() {
 
     assert_eq!(tokens(&game, &after).await, 2);
     assert_eq!(tokens(&game, &rival).await, 1);
+}
+
+#[tokio::test]
+async fn raiders_earn_the_raid_title_and_the_last_hit_the_final_blow_too() {
+    let (game, summoner, _rx) = setup(full_moon(), 1).await;
+    let boss = wake(&game, &summoner).await;
+    join_raid(&game, "killer", 12).await;
+    join_raid(&game, "fallen", 13).await;
+    join_raid(&game, "idle", 14).await;
+    for name in ["summoner", "killer", "fallen"] {
+        game.record_field_raid_hit(&pid(name), 40).await;
+    }
+    game.players
+        .write()
+        .await
+        .get_mut(&pid("fallen"))
+        .unwrap()
+        .health = 0;
+    game.monsters.write().await.get_mut(&boss.id).unwrap().state = MonsterState::Dead;
+    game.tick_field_raid().await;
+    assert!(
+        game.field_raid.lock().await.is_some(),
+        "the tick leaves a dead boss to its killing blow"
+    );
+    game.settle_field_raid_kill(&pid("killer"), 40, None).await;
+    assert!(game.field_raid.lock().await.is_none());
+
+    let raider = || "terraclash_raider".to_string();
+    let final_blow = || "terraclash_final_blow".to_string();
+    assert_eq!(
+        titles_of(&game, "summoner").await,
+        (vec![raider()], Some(raider()))
+    );
+    assert_eq!(
+        titles_of(&game, "killer").await,
+        (vec![raider(), final_blow()], Some(final_blow()))
+    );
+    assert_eq!(titles_of(&game, "fallen").await, (vec![], None));
+    assert_eq!(titles_of(&game, "idle").await, (vec![], None));
+}
+
+#[tokio::test]
+async fn the_final_blow_needs_no_place_among_the_raiders() {
+    let (game, summoner, _rx) = setup(full_moon(), 1).await;
+    wake(&game, &summoner).await;
+    let (killer, _) = join_raid(&game, "killer", 12).await;
+    game.record_field_raid_hit(&summoner, 40).await;
+    game.players.write().await.get_mut(&killer).unwrap().health = 0;
+    game.settle_field_raid_kill(&killer, 40, None).await;
+
+    let final_blow = "terraclash_final_blow".to_string();
+    assert_eq!(
+        titles_of(&game, "killer").await,
+        (vec![final_blow.clone()], Some(final_blow))
+    );
+    assert_eq!(tokens(&game, &killer).await, 0);
 }
 
 #[test]

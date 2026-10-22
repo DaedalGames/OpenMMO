@@ -1076,6 +1076,16 @@ impl super::GameState {
             };
             if monster_floor_level < 0 {
                 self.record_boss_damage(&monster_id, player_id, dealt).await;
+            } else if field_raid_boss && is_dead {
+                // Off the kill path, like a dungeon boss's titles.
+                let game_state = self.clone();
+                let player_id = *player_id;
+                let auth = auth.cloned();
+                tokio::spawn(async move {
+                    game_state
+                        .settle_field_raid_kill(&player_id, dealt, auth.as_ref())
+                        .await;
+                });
             } else if field_raid_boss {
                 self.record_field_raid_hit(player_id, dealt).await;
             }

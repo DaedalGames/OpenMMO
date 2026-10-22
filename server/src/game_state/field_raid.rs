@@ -7,6 +7,7 @@ use super::passability::region_of;
 use super::passability::regions_around;
 use super::player_interaction::placement_position;
 use super::GameState;
+use crate::auth::AuthService;
 use crate::types::{MonsterLifecycle, PlayerId};
 use onlinerpg_shared::celestial::is_full_daylight;
 use onlinerpg_shared::field_boss::{field_boss_by_altar, field_boss_defs, AltarDef, FieldBossDef};
@@ -50,6 +51,8 @@ pub(crate) struct FieldRaid {
     /// HP each character took off the boss, by character id for the same
     /// reason.
     damage: HashMap<i64, u64>,
+    /// Whose hit brought the boss to 0 HP; official NPCs never count.
+    last_hit: Option<i64>,
     /// The full moons in the sky at the offering; the raid lasts until all
     /// have set or the sky turns fully blue, through the dawn glow and the
     /// waning past full.
@@ -282,6 +285,7 @@ impl GameState {
                     },
                     summoner,
                     damage: HashMap::new(),
+                    last_hit: None,
                     moons,
                 });
             }
@@ -326,9 +330,32 @@ impl GameState {
         }
     }
 
-    /// Wake the boss after an offering; end the raid on a kill, a set moon or
-    /// an empty battle zone. Only this tick advances a raid, so it works from a
-    /// copy and never holds `field_raid` across the spawn and despawn it sets off.
+    /// The killing blow: its hit and the last hit, then the defeat. The tick
+    /// leaves a dead boss to this, so the blow always counts.
+    pub(super) async fn settle_field_raid_kill(
+        &self,
+        player_id: &PlayerId,
+        damage: u32,
+        auth: Option<&AuthService>,
+    ) {
+        self.record_field_raid_hit(player_id, damage).await;
+        let last_hit = self.eligible_title_character_id(player_id).await;
+        let Some(monster) = self.field_raid.lock().await.as_mut().map(|raid| {
+            raid.last_hit = last_hit;
+            raid.boss.monster.clone()
+        }) else {
+            return;
+        };
+        info!(
+            "Field raid {monster}: last hit by {}",
+            self.player_name_of(player_id).await
+        );
+        self.end_field_raid(FieldRaidOutcome::Defeated, auth).await;
+    }
+
+    /// Wake the boss after an offering; end the raid on a set moon or an empty
+    /// battle zone. It works from a copy and never holds `field_raid` across
+    /// the spawn and despawn it sets off.
     pub async fn tick_field_raid(&self) {
         let Some(raid) = self.field_raid.lock().await.clone() else {
             return;
@@ -357,14 +384,14 @@ impl GameState {
                 }
             },
             Phase::Fighting { ref monster_id } => {
-                let alive = self
+                let dead = self
                     .monsters
                     .read()
                     .await
                     .get(monster_id)
-                    .is_some_and(|m| m.state != MonsterState::Dead);
-                let outcome = if !alive {
-                    FieldRaidOutcome::Defeated
+                    .is_some_and(|m| m.state == MonsterState::Dead);
+                let outcome = if dead {
+                    return;
                 } else if let Some(outcome) = raid.sky_outcome(&self.current_game_datetime()) {
                     outcome
                 } else if self.living_near(&raid.position).await.is_empty() {
@@ -372,7 +399,7 @@ impl GameState {
                 } else {
                     return;
                 };
-                self.end_field_raid(&raid, monster_id, outcome).await;
+                self.end_field_raid(outcome, None).await;
             }
         }
     }
@@ -436,17 +463,25 @@ impl GameState {
         .map(|m| m.id)
     }
 
-    /// A defeated boss is left to the kill's own corpse timer; any other
-    /// sinks back into its stand-in.
-    async fn end_field_raid(&self, raid: &FieldRaid, monster_id: &str, outcome: FieldRaidOutcome) {
-        // The live raid, not the tick's copy, holds every hit up to now.
-        let tally = self
+    /// Taking the raid ends it once, whichever of the tick and the kill gets
+    /// there first. A defeated boss is left to the kill's own corpse timer;
+    /// any other sinks back into its stand-in. `auth` stores a defeat's titles.
+    pub(super) async fn end_field_raid(
+        &self,
+        outcome: FieldRaidOutcome,
+        auth: Option<&AuthService>,
+    ) {
+        let Some(raid) = self
             .field_raid
             .lock()
             .await
-            .take()
-            .map(|r| r.damage)
-            .unwrap_or_default();
+            .take_if(|r| matches!(r.phase, Phase::Fighting { .. }))
+        else {
+            return;
+        };
+        let Phase::Fighting { monster_id } = &raid.phase else {
+            unreachable!("taken only while fighting");
+        };
         // The raiders gathered before the offering; only those around hear it.
         let nearby = self
             .player_ids_within_position(&raid.position, 0, NOTICE_RADIUS_M)
@@ -468,7 +503,7 @@ impl GameState {
         self.set_stand_in_woken(raid.boss, false);
         info!("Field raid {} ended: {outcome:?}", raid.boss.monster);
         let rewarded = match outcome {
-            FieldRaidOutcome::Defeated => self.reward_raiders(raid, &tally).await,
+            FieldRaidOutcome::Defeated => self.reward_raiders(&raid, auth).await,
             _ => HashSet::new(),
         };
         let bystanders: Vec<_> = nearby
@@ -487,18 +522,19 @@ impl GameState {
 
     /// Raiders are those who hit the boss and stand alive in the battle zone
     /// as it falls. Each earns tokens by the damage they dealt, and the
-    /// summoner the altar's reward too (doc/TIER5_FIELD_RAID.md).
+    /// summoner the altar's reward too, and each a raid title; the last blow's
+    /// owner, raider or not, also the final-blow title (doc/TIER5_FIELD_RAID.md).
     async fn reward_raiders(
         &self,
         raid: &FieldRaid,
-        tally: &HashMap<i64, u64>,
+        auth: Option<&AuthService>,
     ) -> HashSet<PlayerId> {
         let mut raiders = Vec::new();
         for player_id in self.living_near(&raid.position).await {
             let Some(character) = self.character_id_of(&player_id).await else {
                 continue;
             };
-            if let Some(&damage) = tally.get(&character) {
+            if let Some(&damage) = raid.damage.get(&character) {
                 raiders.push((player_id, character, damage));
             }
         }
@@ -530,6 +566,16 @@ impl GameState {
             self.send_direct_message(&player_id, notice).await;
             rewarded.insert(player_id);
         }
+        let titled: Vec<i64> = {
+            let players = self.players.read().await;
+            raiders
+                .iter()
+                .filter(|r| players.get(&r.0).is_some_and(|p| !p.is_official_npc))
+                .map(|r| r.1)
+                .collect()
+        };
+        self.grant_field_raid_titles(&raid.boss.monster, &titled, raid.last_hit, auth)
+            .await;
         rewarded
     }
 

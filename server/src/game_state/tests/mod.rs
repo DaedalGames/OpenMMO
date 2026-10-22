@@ -87,6 +87,19 @@ async fn assert_gold_consumption(game: &GameState, sink: GoldSink, quantity: u64
     assert_eq!(totals, (quantity, gold), "{sink:?}");
 }
 
+/// A player's earned titles and the one shown.
+async fn titles_of(game_state: &GameState, name: &str) -> (Vec<String>, Option<String>) {
+    let titles = game_state
+        .player_titles
+        .read()
+        .await
+        .get(&pid(name))
+        .cloned()
+        .unwrap_or_default();
+    let shown = game_state.players.read().await[&pid(name)].title.clone();
+    (titles, shown)
+}
+
 /// Stable numeric id derived from a fixture's name, so tests keep naming
 /// players ("owner", "buyer") instead of carrying opaque integers. Only needs
 /// to be consistent within one process; a collision between two names in the

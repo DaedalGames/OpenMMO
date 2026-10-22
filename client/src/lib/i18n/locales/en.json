@@ -366,6 +366,8 @@
   "title.skeleton_slayer_solo": "Who Slew the Skeleton Knight Alone",
   "title.barkan_slayer": "Slayer of Barkan",
   "title.barkan_slayer_solo": "Who Slew Barkan Alone",
+  "title.terraclash_raider": "Who Brought Down Terraclash",
+  "title.terraclash_final_blow": "Who Dealt Terraclash the Final Blow",
   "server.insufficientGold": "Not enough gold",
   "server.tooHeavy": "Too heavy to carry",
   "server.lootReserved": "This loot is reserved for the chest opener for 30 seconds.",

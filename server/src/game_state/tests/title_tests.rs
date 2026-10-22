@@ -21,18 +21,6 @@ async fn boss(game_state: &GameState, id: &str) {
     );
 }
 
-async fn titles_of(game_state: &GameState, name: &str) -> (Vec<String>, Option<String>) {
-    let titles = game_state
-        .player_titles
-        .read()
-        .await
-        .get(&pid(name))
-        .cloned()
-        .unwrap_or_default();
-    let shown = game_state.players.read().await[&pid(name)].title.clone();
-    (titles, shown)
-}
-
 #[tokio::test]
 async fn the_main_contributor_earns_the_title_and_a_near_solo_kill_the_solo_tier() {
     let game_state = make_test_game_state("titles_grant");

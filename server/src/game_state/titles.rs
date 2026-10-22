@@ -1,5 +1,5 @@
 //! Titles (doc/TITLES.md): the per-boss damage log and its grant on death,
-//! the fishing-catch grant, and which earned title a player shows
+//! the field-raid and fishing-catch grants, and which earned title a player shows
 //! (`Player.title`).
 
 use std::collections::HashMap;
@@ -36,7 +36,7 @@ pub(super) fn qualifying(damage: &HashMap<i64, u64>) -> Vec<(i64, bool)> {
 }
 
 impl GameState {
-    async fn eligible_title_character_id(&self, player_id: &PlayerId) -> Option<i64> {
+    pub(super) async fn eligible_title_character_id(&self, player_id: &PlayerId) -> Option<i64> {
         if self
             .players
             .read()
@@ -102,6 +102,26 @@ impl GameState {
             if let Some(def) = solo.filter(|_| is_solo) {
                 self.grant_title(character_id, &def.id, auth).await;
             }
+        }
+    }
+
+    /// A fallen raid boss: its raiders' title, then the final blow's, which
+    /// supersedes it.
+    pub(super) async fn grant_field_raid_titles(
+        &self,
+        boss_type: &str,
+        raiders: &[i64],
+        last_hit: Option<i64>,
+        auth: Option<&AuthService>,
+    ) {
+        let (raid, final_blow) = title_defs::field_raid_titles(boss_type);
+        if let Some(def) = raid {
+            for &character_id in raiders {
+                self.grant_title(character_id, &def.id, auth).await;
+            }
+        }
+        if let (Some(def), Some(character_id)) = (final_blow, last_hit) {
+            self.grant_title(character_id, &def.id, auth).await;
         }
     }
 
