@@ -192,3 +192,27 @@ async fn a_moving_target_resumes_a_cached_failed_chase() {
     assert!(brains.entries[&ids[0]].brain.position.dist_xz_sq(&position) > 0.0);
     assert_eq!(brains.entries[&ids[0]].brain.state(), AiState::Chase);
 }
+
+#[tokio::test]
+async fn holds_keep_their_failures_through_edits_elsewhere() {
+    let (game, _, ids) = enclosed_target("ai_failures_survive_far_edits", 4).await;
+    for _ in 0..30 {
+        game.tick_monster_ai_by(200.0).await;
+    }
+    let queries = game.monster_brains.lock().await.stats.pathfinds;
+    let dungeon_floor = onlinerpg_shared::dungeon::DUNGEON_FLOOR_INDEX_BASE;
+    for (key, entry) in [
+        ("far", path_budget::furniture_piece(300, 1, 0)),
+        ("crypt", path_budget::furniture_piece(4, 1, dungeon_floor)),
+    ] {
+        game.passability_write().insert(key.into(), entry);
+        for _ in 0..5 {
+            game.tick_monster_ai_by(200.0).await;
+        }
+    }
+    let brains = game.monster_brains.lock().await;
+    assert_eq!(brains.stats.pathfinds, queries);
+    for id in &ids {
+        assert_eq!(brains.entries[id].brain.state(), AiState::Hold);
+    }
+}

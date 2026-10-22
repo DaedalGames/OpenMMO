@@ -2,14 +2,20 @@ use super::{PathDiagnostics, PathSample, BRAIN_PATH_NODE_BUDGET};
 use onlinerpg_shared::monster_ai::{CachePathProvider, PathProvider};
 use onlinerpg_shared::pathfinding::{
     find_and_smooth_path_avoiding_with_budget, PassabilityCache, PathResult, PathTermination,
+    SearchExtent,
 };
 use std::cell::{Cell, RefCell};
 use std::collections::VecDeque;
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::sync::Weak;
 use std::time::{Duration, Instant};
 
-const FAILURE_TTL: Duration = Duration::from_secs(10);
+/// A failure is invalidated by geometry edits it read, so this only backstops
+/// an input the fingerprint misses.
+const FAILURE_TTL: Duration = Duration::from_secs(60);
 const MAX_FAILURES: usize = 32;
+/// Margin past the searched cells that edge and mover-radius checks read.
+const REGION_PAD: i32 = 2;
 
 #[derive(PartialEq)]
 struct Query {
@@ -22,7 +28,81 @@ struct Query {
 struct FailedPath {
     query: Query,
     result: PathResult,
+    extent: SearchExtent,
+    fingerprint: u64,
     expires: Instant,
+}
+
+/// Hash of the geometry a search over `extent` could have read, so an edit
+/// elsewhere (a dungeon door, another estate) leaves the failure valid. Only
+/// the overlapping cells are hashed: region and shell grids are large.
+fn fingerprint(cache: &PassabilityCache, extent: &SearchExtent) -> u64 {
+    let (x0, z0) = (extent.min.0 - REGION_PAD, extent.min.1 - REGION_PAD);
+    let (x1, z1) = (extent.max.0 + REGION_PAD, extent.max.1 + REGION_PAD);
+    cache
+        .iter()
+        .filter(|(_, rp)| {
+            rp.max_x >= x0 as f32
+                && rp.min_x <= (x1 + 1) as f32
+                && rp.max_z >= z0 as f32
+                && rp.min_z <= (z1 + 1) as f32
+                && (rp.floors.iter().any(|f| extent.has_floor(f.floor_level))
+                    || rp.stairwells.iter().any(|s| {
+                        extent.has_floor(s.lower_floor) || extent.has_floor(s.upper_floor)
+                    }))
+        })
+        .map(|(key, rp)| {
+            let mut h = DefaultHasher::new();
+            key.hash(&mut h);
+            (
+                rp.yields_to_trapped_mover,
+                rp.allows_projectiles,
+                rp.is_ground,
+            )
+                .hash(&mut h);
+            for s in &rp.stairwells {
+                (s.local_min_x, s.local_min_z, s.local_max_x, s.local_max_z).hash(&mut h);
+                (s.lower_floor, s.upper_floor, s.along_z, s.reversed).hash(&mut h);
+            }
+            let (ox, oz) = (
+                rp.house_origin_x.floor() as i32,
+                rp.house_origin_z.floor() as i32,
+            );
+            for f in rp.floors.iter().filter(|f| extent.has_floor(f.floor_level)) {
+                let (fx, fz) = (ox + f.origin_x, oz + f.origin_z);
+                let (w, d) = (i32::from(f.width), i32::from(f.depth));
+                let (ax, az) = (x0.max(fx), z0.max(fz));
+                let (bx, bz) = (x1.min(fx + w - 1), z1.min(fz + d - 1));
+                if ax > bx || az > bz {
+                    continue;
+                }
+                (f.floor_level, ax, az, bx, bz).hash(&mut h);
+                (f.y_base.to_bits(), f.wall_height.to_bits()).hash(&mut h);
+                for z in az..=bz {
+                    let row = ((z - fz) * w) as usize;
+                    f.cells[row + (ax - fx) as usize..=row + (bx - fx) as usize].hash(&mut h);
+                }
+            }
+            h.finish()
+        })
+        .fold(0, u64::wrapping_add)
+}
+
+#[cfg(test)]
+pub(super) fn furniture_piece(
+    x: i32,
+    z: i32,
+    floor_level: u8,
+) -> onlinerpg_shared::pathfinding::RuntimePassability {
+    onlinerpg_shared::pathfinding::build_furniture_passability(&[
+        onlinerpg_shared::pathfinding::FurniturePiece {
+            cells: vec![(x, z)],
+            floor_level,
+            y_base: 0.0,
+            wall_height: 3.0,
+        },
+    ])
+    .unwrap()
 }
 
 #[derive(Default)]
@@ -32,14 +112,26 @@ pub(super) struct FailedPaths {
 }
 
 impl FailedPaths {
-    pub(super) fn synchronize(&mut self, geometry: &Weak<PassabilityCache>) -> bool {
+    /// Drops expired failures and those an edit could have changed; true when
+    /// an edit dropped any.
+    pub(super) fn synchronize(
+        &mut self,
+        geometry: &Weak<PassabilityCache>,
+        cache: &PassabilityCache,
+        now: Instant,
+    ) -> bool {
         if Weak::ptr_eq(&self.geometry, geometry) {
             return false;
         }
-        let invalidated = !self.entries.is_empty();
-        self.entries.clear();
         self.geometry = geometry.clone();
-        invalidated
+        let mut changed = false;
+        self.entries.retain(|entry| {
+            let live = entry.expires > now;
+            let keep = live && fingerprint(cache, &entry.extent) == entry.fingerprint;
+            changed |= live && !keep;
+            keep
+        });
+        changed
     }
 
     fn get(&self, query: &Query, now: Instant) -> Option<PathResult> {
@@ -49,7 +141,14 @@ impl FailedPaths {
             .map(|entry| entry.result.clone())
     }
 
-    fn insert(&mut self, query: Query, result: PathResult, now: Instant) {
+    fn insert(
+        &mut self,
+        query: Query,
+        result: PathResult,
+        extent: SearchExtent,
+        cache: &PassabilityCache,
+        now: Instant,
+    ) {
         while self
             .entries
             .front()
@@ -63,6 +162,8 @@ impl FailedPaths {
         self.entries.push_back(FailedPath {
             query,
             result,
+            extent,
+            fingerprint: fingerprint(cache, &extent),
             expires: now + FAILURE_TTL,
         });
     }
@@ -168,6 +269,7 @@ impl PathProvider for CountingPath<'_> {
             return self.defer();
         }
         let started = Instant::now();
+        let mut extent = SearchExtent::default();
         let result = find_and_smooth_path_avoiding_with_budget(
             sx,
             sz,
@@ -179,6 +281,7 @@ impl PathProvider for CountingPath<'_> {
             max_nodes,
             blocked,
             &self.remaining,
+            &mut extent,
         );
         let expanded_nodes = remaining - self.remaining.get();
         self.tick_remaining
@@ -195,9 +298,13 @@ impl PathProvider for CountingPath<'_> {
             d
         });
         if !result.found && remaining >= max_nodes && max_nodes > 0 {
-            self.failures
-                .borrow_mut()
-                .insert(query, result.clone(), self.now);
+            self.failures.borrow_mut().insert(
+                query,
+                result.clone(),
+                extent,
+                self.inner.cache,
+                self.now,
+            );
         }
         result
     }
@@ -207,19 +314,10 @@ impl PathProvider for CountingPath<'_> {
 mod tests {
     use super::*;
     use crate::game_state::passability_snapshot::PassabilityStore;
-    use onlinerpg_shared::pathfinding::{build_furniture_passability, FurniturePiece};
+    use onlinerpg_shared::dungeon::DUNGEON_FLOOR_INDEX_BASE;
 
     fn obstacle() -> PassabilityCache {
-        PassabilityCache::from([(
-            "obstacle".into(),
-            build_furniture_passability(&[FurniturePiece {
-                cells: vec![(0, 0)],
-                floor_level: 0,
-                y_base: 0.0,
-                wall_height: 3.0,
-            }])
-            .unwrap(),
-        )])
+        PassabilityCache::from([("obstacle".into(), furniture_piece(0, 0, 0))])
     }
 
     fn query(path: &CountingPath<'_>, limit: usize) -> PathResult {
@@ -325,15 +423,62 @@ mod tests {
         let budget = Cell::new(100);
         {
             let cache = store.read();
-            assert!(!failures.borrow_mut().synchronize(&cache.token()));
+            assert!(!failures
+                .borrow_mut()
+                .synchronize(&cache.token(), &cache, Instant::now()));
             let path = CountingPath::new(&cache, &budget, &failures, Instant::now());
             assert!(!query(&path, 20).found);
         }
         store.write().clear();
         let cache = store.read();
-        assert!(failures.borrow_mut().synchronize(&cache.token()));
+        assert!(failures
+            .borrow_mut()
+            .synchronize(&cache.token(), &cache, Instant::now()));
         let path = CountingPath::new(&cache, &budget, &failures, Instant::now());
         assert!(query(&path, 20).found);
+        assert_eq!(path.diagnostics.get().cache_hits, 0);
+    }
+
+    #[test]
+    fn edits_outside_a_failures_floor_and_area_keep_it() {
+        let store = PassabilityStore::default();
+        *store.write() = obstacle();
+        let failures = RefCell::new(FailedPaths::default());
+        let budget = Cell::new(1000);
+        let now = Instant::now();
+        {
+            let cache = store.read();
+            failures
+                .borrow_mut()
+                .synchronize(&cache.token(), &cache, Instant::now());
+            let path = CountingPath::new(&cache, &budget, &failures, now);
+            assert!(!query(&path, 20).found);
+        }
+        for (key, entry) in [
+            ("far", furniture_piece(200, 0, 0)),
+            (
+                "dungeon below",
+                furniture_piece(5, 0, DUNGEON_FLOOR_INDEX_BASE),
+            ),
+        ] {
+            store.write().insert(key.into(), entry);
+            let cache = store.read();
+            assert!(!failures
+                .borrow_mut()
+                .synchronize(&cache.token(), &cache, Instant::now()));
+            let path = CountingPath::new(&cache, &budget, &failures, now);
+            query(&path, 20);
+            assert_eq!(path.diagnostics.get().cache_hits, 1);
+        }
+        store
+            .write()
+            .insert("near".into(), furniture_piece(5, 0, 0));
+        let cache = store.read();
+        assert!(failures
+            .borrow_mut()
+            .synchronize(&cache.token(), &cache, Instant::now()));
+        let path = CountingPath::new(&cache, &budget, &failures, now);
+        query(&path, 20);
         assert_eq!(path.diagnostics.get().cache_hits, 0);
     }
 

@@ -1,7 +1,7 @@
 //! Smooth A* paths from the player's continuous position using line of sight.
 //! Anchor floor transitions to keep stairwell movement cardinal.
 
-use super::astar::{find_path_avoiding_counted, segment_enters_cells};
+use super::astar::{find_path_avoiding_counted, segment_enters_cells, SearchExtent};
 use super::query::{
     is_cardinal_move_blocked, is_circle_blocked_on_floor, is_movement_blocked, segment_obstacles,
     SegmentObstacles,
@@ -264,6 +264,7 @@ pub fn find_and_smooth_path_avoiding(
         max_nodes,
         blocked,
         &std::cell::Cell::new(max_nodes),
+        &mut SearchExtent::default(),
     )
 }
 
@@ -279,7 +280,9 @@ pub fn find_and_smooth_path_avoiding_with_budget(
     max_nodes: usize,
     blocked: &[(i32, i32)],
     remaining: &std::cell::Cell<usize>,
+    extent: &mut SearchExtent,
 ) -> PathResult {
+    *extent = SearchExtent::default();
     if start_floor == goal_floor
         && direct_line_ok(
             start_x,
@@ -309,7 +312,6 @@ pub fn find_and_smooth_path_avoiding_with_budget(
             termination: crate::pathfinding::PathTermination::NodeLimit,
         };
     }
-    let mut expanded = 0;
     let result = find_path_avoiding_counted(
         start_x,
         start_z,
@@ -320,9 +322,9 @@ pub fn find_and_smooth_path_avoiding_with_budget(
         cache,
         max_nodes.min(remaining.get()),
         blocked,
-        &mut expanded,
+        extent,
     );
-    remaining.set(remaining.get().saturating_sub(expanded));
+    remaining.set(remaining.get().saturating_sub(extent.expanded));
     if result.waypoints.is_empty() {
         return result;
     }

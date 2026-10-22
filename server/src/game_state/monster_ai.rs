@@ -560,7 +560,11 @@ impl super::GameState {
                 let Some(tree) = monster_ai::behavior_tree_for(trees, &entry.brain.behavior) else {
                     continue;
                 };
-                if entry.failed_paths.borrow_mut().synchronize(&geometry) {
+                if entry
+                    .failed_paths
+                    .borrow_mut()
+                    .synchronize(&geometry, &cache, brain_started)
+                {
                     entry.brain.retry_chase();
                 }
                 // Only a brain that starts below the full budget can be deferred.

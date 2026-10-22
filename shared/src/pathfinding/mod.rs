@@ -22,7 +22,7 @@ mod query;
 mod smooth;
 mod stair;
 
-pub use astar::{find_path, segment_enters_cells, DEFAULT_MAX_NODES};
+pub use astar::{find_path, segment_enters_cells, SearchExtent, DEFAULT_MAX_NODES};
 pub use cache::{
     apply_door_overlays, build_furniture_passability, build_runtime_passability, door_cells,
     update_door_edge, FurniturePiece,

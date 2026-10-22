@@ -49,6 +49,38 @@ struct ClosedEntry {
     parent: AStarKey,
 }
 
+/// Cells a search read; a cached failure stays valid while geometry around
+/// this box is unchanged.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct SearchExtent {
+    pub(super) expanded: usize,
+    pub min: (i32, i32),
+    pub max: (i32, i32),
+    floors: [u64; 4],
+}
+
+impl SearchExtent {
+    fn at(x: i32, z: i32, floor: u8) -> Self {
+        let mut extent = Self {
+            min: (x, z),
+            max: (x, z),
+            ..Self::default()
+        };
+        extent.include(x, z, floor);
+        extent
+    }
+
+    fn include(&mut self, x: i32, z: i32, floor: u8) {
+        self.min = (self.min.0.min(x), self.min.1.min(z));
+        self.max = (self.max.0.max(x), self.max.1.max(z));
+        self.floors[usize::from(floor / 64)] |= 1 << (floor % 64);
+    }
+
+    pub fn has_floor(&self, floor: u8) -> bool {
+        self.floors[usize::from(floor / 64)] & (1 << (floor % 64)) != 0
+    }
+}
+
 /// Find a path on a virtual 1m world grid with floor-level awareness.
 ///
 /// `start_floor`/`goal_floor` are floor *keys*, not "the floor nearest that Y":
@@ -129,7 +161,7 @@ pub fn find_path_avoiding(
         cache,
         max_nodes,
         blocked,
-        &mut 0,
+        &mut SearchExtent::default(),
     )
 }
 
@@ -144,14 +176,15 @@ pub(super) fn find_path_avoiding_counted(
     cache: &PassabilityCache,
     max_nodes: usize,
     blocked: &[(i32, i32)],
-    expanded: &mut usize,
+    extent: &mut SearchExtent,
 ) -> PathResult {
-    *expanded = 0;
     let (goal_x, goal_z) = snap_goal_into_floor(cache, goal_x, goal_z, goal_floor);
     let sx = start_x.floor() as i32;
     let sz = start_z.floor() as i32;
     let gx = goal_x.floor() as i32;
     let gz = goal_z.floor() as i32;
+    *extent = SearchExtent::at(sx, sz, start_floor);
+    extent.include(gx, gz, goal_floor);
 
     if sx == gx && sz == gz && start_floor == goal_floor {
         return PathResult {
@@ -266,11 +299,12 @@ pub(super) fn find_path_avoiding_counted(
     let mut termination = crate::pathfinding::PathTermination::Unreachable;
 
     while let Some(Reverse(cur)) = open.pop() {
-        if *expanded >= max_nodes {
+        if extent.expanded >= max_nodes {
             termination = crate::pathfinding::PathTermination::NodeLimit;
             break;
         }
-        *expanded += 1;
+        extent.expanded += 1;
+        extent.include(cur.x, cur.z, key_to_floor(cur.fk));
 
         let cur_key: AStarKey = (cur.x, cur.z, cur.fk);
 
