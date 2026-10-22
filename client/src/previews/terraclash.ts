@@ -3,6 +3,10 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { disposeObjects } from './dispose-objects'
+import { getMonsterDef } from '../lib/data/monsterDefs'
+import { MONSTER_SKILLS } from '../lib/effects/monster-skills'
+import { CRUMBLE_BURST_MS } from '../lib/effects/death-crumble'
+import { playMonsterSound } from '../lib/managers/sfxManager'
 
 const MOTIONS: [string, string][] = [
   ['Bind', '기준 자세'],
@@ -10,10 +14,35 @@ const MOTIONS: [string, string][] = [
   ['Attack', '오른팔 내려찍기'],
   ['AttackLeft', '왼팔 내려찍기'],
   ['Roar', '포효'],
+  ['Smash', '진형 파괴'],
+  ['Quake', '지진'],
   ['Hit', '피격'],
   ['Death', '사망'],
   ['Dead', '사망 후'],
 ]
+
+const TERRACLASH = getMonsterDef('terraclash')!
+const SLAM: [number, string | undefined] = [
+  TERRACLASH.attackImpactDelay,
+  TERRACLASH.attackSound,
+]
+
+// Each clip's sounds as [ms into it, url], as in the game. The crumble
+// itself needs WebGPU, which this page does not use.
+const SOUND_CUES: Record<string, [number, string | undefined][]> = {
+  Attack: [SLAM],
+  AttackLeft: [SLAM],
+  Death: [
+    [0, TERRACLASH.deathSound],
+    [CRUMBLE_BURST_MS, TERRACLASH.crumbleSound],
+  ],
+}
+for (const { clip, sound, marks } of Object.values(MONSTER_SKILLS)) {
+  SOUND_CUES[clip] = [
+    [sound?.atMs ?? 0, sound?.url],
+    [marks?.impactMs ?? 0, marks?.sound],
+  ]
+}
 
 // Game camera seen from a west-facing boss: orthographic, pitch atan(1/√2).
 const VIEWS: Record<string, [number, number, number]> = {
@@ -73,6 +102,7 @@ export async function showTerraclash(
         <option value="side">측면</option>
         <option value="back">후면</option>
       </select>
+      <label class="toggle"><input id="terraclash-sound" type="checkbox" checked /> 효과음</label>
       <label class="toggle"><input id="terraclash-reference" type="checkbox" checked /> 1.9m 플레이어와 크기 비교</label>
       <label class="toggle"><input id="terraclash-skeleton" type="checkbox" /> 뼈대 보기</label>
       <label class="toggle"><input id="terraclash-wireframe" type="checkbox" /> 와이어프레임</label>
@@ -93,6 +123,7 @@ export async function showTerraclash(
   const pause = el<HTMLButtonElement>('pause')
   const replay = el<HTMLButtonElement>('replay')
   const time = el<HTMLOutputElement>('time')
+  const soundToggle = el<HTMLInputElement>('sound')
   const params = new URLSearchParams(location.search)
   status.textContent = '테라클래시와 비교용 플레이어를 불러오는 중…'
 
@@ -244,10 +275,19 @@ export async function showTerraclash(
   const clips = new Map(gltf.animations.map((clip) => [clip.name, clip]))
   let action: THREE.AnimationAction | undefined
   let paused = false
+  // Ms since the clip last started, past its end for a clip that holds.
+  let cueMs = 0
   const play = () => {
     mixer.stopAllAction()
     const clip = clips.get(motion.value)
-    action = clip ? mixer.clipAction(clip).reset().play() : undefined
+    action = clip ? mixer.clipAction(clip).reset() : undefined
+    // Death holds its last pose so the crumble cue after it still comes.
+    if (action && motion.value === 'Death') {
+      action.setLoop(THREE.LoopOnce, 1)
+      action.clampWhenFinished = true
+    }
+    action?.play()
+    cueMs = 0
     paused = false
     pause.textContent = '일시정지'
     const awake = state.value === 'awake'
@@ -294,6 +334,7 @@ export async function showTerraclash(
       Number(scrub.value) * action.getClip().duration,
       action.getClip().duration - 1e-6
     )
+    cueMs = action.time * 1000
     mixer.update(0)
   }
   const requestedMotion = params.get('motion')
@@ -314,7 +355,20 @@ export async function showTerraclash(
   renderer.setAnimationLoop((now) => {
     const dt = Math.min((now - previous) / 1000, 0.05)
     previous = now
-    if (!paused) mixer.update(dt * Number(speed.value))
+    if (!paused) {
+      const before = action?.time ?? 0
+      mixer.update(dt * Number(speed.value))
+      const after = action?.time ?? 0
+      const looped = after < before
+      const from = looped ? 0 : cueMs
+      cueMs = looped ? after * 1000 : cueMs + dt * Number(speed.value) * 1000
+      // Only at full speed: slowed clips would put the sounds out of step.
+      if (soundToggle.checked && Number(speed.value) === 1) {
+        for (const [at, url] of SOUND_CUES[motion.value] ?? []) {
+          if (url && from <= at && at < cueMs) playMonsterSound(url)
+        }
+      }
+    }
     if (action) scrub.value = String(action.time / action.getClip().duration)
     time.textContent = `${(action?.time ?? 0).toFixed(2)} / ${(action?.getClip().duration ?? 0).toFixed(2)}초`
     if (controls.enabled) controls.update()

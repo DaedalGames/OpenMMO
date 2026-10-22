@@ -62,12 +62,13 @@
     preloadBowSounds,
     preloadLevelUpSound,
     preloadPropSounds,
-    preloadMonsterDeathSounds,
+    preloadMonsterSounds,
     preloadPlayerDeathSounds,
     preloadPlayerHurtSounds,
     preloadSwordHitSound,
     preloadSwordMissSound,
   } from '../managers/sfxManager'
+  import { preloadMonsterSkillSounds } from '../effects/monster-skills'
   import {
     inputHandler,
     hoverTargetKey,
@@ -2268,7 +2269,8 @@
       estateFurnitureSelectionMode.subscribe(enterPlacementMode)
     preloadSwordHitSound()
     preloadSwordMissSound()
-    preloadMonsterDeathSounds()
+    preloadMonsterSounds()
+    preloadMonsterSkillSounds()
     preloadPlayerHurtSounds()
     preloadPlayerDeathSounds()
     preloadPropSounds()

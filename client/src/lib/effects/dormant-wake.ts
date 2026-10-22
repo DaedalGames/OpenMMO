@@ -1,5 +1,9 @@
 import * as THREE from 'three'
-import { MeshBasicNodeMaterial, MeshStandardNodeMaterial } from 'three/webgpu'
+import {
+  MeshBasicNodeMaterial,
+  MeshStandardNodeMaterial,
+  type WebGPURenderer,
+} from 'three/webgpu'
 import {
   color,
   float,
@@ -31,6 +35,19 @@ export interface WakeBounds {
   halfX: number
   halfZ: number
   height: number
+}
+
+/** Bounds around `box` (a body's world box) standing on `ground`. */
+export function wakeBounds(box: THREE.Box3, ground: number): WakeBounds {
+  const { min, max } = box
+  return {
+    x: (min.x + max.x) / 2,
+    y: ground,
+    z: (min.z + max.z) / 2,
+    halfX: ((max.x - min.x) / 2) * 0.9,
+    halfZ: ((max.z - min.z) / 2) * 0.9,
+    height: Math.max(1, max.y - ground),
+  }
 }
 
 export interface Dust {
@@ -585,6 +602,22 @@ export class DormantWakeEffect {
     }
     this.emberMesh.instanceMatrix.needsUpdate = true
     this.emberMesh.instanceColor!.needsUpdate = true
+  }
+
+  /** Compiled ahead, then hidden again if `idle` still holds. */
+  warm(
+    renderer: unknown,
+    camera: THREE.Camera,
+    scene: THREE.Scene,
+    idle: () => boolean
+  ) {
+    this.group.visible = true
+    void (renderer as WebGPURenderer)
+      .compileAsync(this.group, camera, scene)
+      .catch((error) => console.error('Wake shader warmup failed', error))
+      .finally(() => {
+        if (idle()) this.clear()
+      })
   }
 
   clear() {

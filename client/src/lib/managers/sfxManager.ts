@@ -12,6 +12,8 @@ import type { AbilityId } from '../data/abilities'
 
 const MONSTER_DEATH_VOLUME = 0.5
 const MONSTER_DEATH_POOL_SIZE = 3
+const MONSTER_SOUND_VOLUME = 0.55
+const MONSTER_SOUND_POOL_SIZE = 3
 const SWORD_HIT_VOLUME = 0.55
 const SWORD_MISS_VOLUME = 0.5
 const SWORD_HIT_POOL_SIZE = 4
@@ -240,8 +242,8 @@ export function playSwordMissSound(
   playAudioFromPool(url, SWORD_MISS_VOLUME, SWORD_MISS_POOL_SIZE)
 }
 
-/** Monster death cry; only the defs that declare one. */
-export function preloadMonsterDeathSounds() {
+/** Every sound the monster defs name. */
+export function preloadMonsterSounds() {
   for (const def of Object.values(monsterDefs)) {
     if (def.deathSound) {
       preloadAudioPool(
@@ -250,7 +252,30 @@ export function preloadMonsterDeathSounds() {
         MONSTER_DEATH_POOL_SIZE
       )
     }
+    for (const url of [
+      def.attackSound,
+      def.rangedAttackSound,
+      def.wakeSound,
+      def.sleepSound,
+      def.crumbleSound,
+    ]) {
+      if (url) preloadMonsterSound(url)
+    }
   }
+}
+
+export function preloadMonsterSound(url: string) {
+  preloadAudioPool(url, MONSTER_SOUND_VOLUME, MONSTER_SOUND_POOL_SIZE)
+}
+
+/** A monster's blow, skill, waking or crumbling; `delayMs` lines it up with
+ *  the frame it belongs to. */
+export function playMonsterSound(url: string, delayMs = 0) {
+  if (!canUseAudio()) return
+  const play = () =>
+    playAudioFromPool(url, MONSTER_SOUND_VOLUME, MONSTER_SOUND_POOL_SIZE)
+  if (delayMs > 0) window.setTimeout(play, delayMs)
+  else play()
 }
 
 export function playMonsterDeathSound(url: string) {

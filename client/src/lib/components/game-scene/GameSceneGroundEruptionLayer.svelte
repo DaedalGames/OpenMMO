@@ -15,6 +15,7 @@
     GroundEruptionEffect,
   } from '../../effects/ground-eruption'
   import { unwrapWorldXNear } from '../../terrain/world-wrap'
+  import { playMonsterSound } from '../../managers/sfxManager'
 
   let { currentPlayer }: { currentPlayer: LocalPlayer | null } = $props()
   const { camera, renderer, scene } = useThrelte()
@@ -22,6 +23,7 @@
   const slots: {
     effect: GroundEruptionEffect
     event: GroundEruption | null
+    erupted: boolean
   }[] = []
   let prepared = false
   let seed = 1
@@ -32,7 +34,7 @@
     // An earthquake's marks, a smash's pools and a few ground strikes at once.
     for (let i = 0; i < 16; i++) {
       const effect = new GroundEruptionEffect(assets)
-      slots.push({ effect, event: null })
+      slots.push({ effect, event: null, erupted: false })
       group.add(effect.group)
       effect.start(1, 1.5, i + 1)
     }
@@ -63,12 +65,15 @@
           entry.event!.startedAt < oldest.event!.startedAt ? entry : oldest
         )
       slot.event = event
+      slot.erupted = false
       slot.effect.start(event.impactMs, event.radius, seed++, event.lingerMs)
     }
     const floor =
       $currentDungeonDepth > 0
         ? -$currentDungeonDepth
         : Math.max(0, $playerVisualFloorLevel)
+    // An earthquake's marks split open together; they erupt as one sound.
+    const sounds: string[] = []
     for (const slot of slots) {
       const event = slot.event
       if (!event) continue
@@ -78,6 +83,13 @@
         slot.effect.clear()
         continue
       }
+      if (!slot.erupted && elapsed >= event.impactMs) {
+        slot.erupted = true
+        const { sound } = event
+        if (sound && event.floorLevel === floor && !sounds.includes(sound)) {
+          sounds.push(sound)
+        }
+      }
       slot.effect.group.visible = event.floorLevel === floor
       slot.effect.group.position.set(
         unwrapWorldXNear(currentPlayer.position.x, event.position.x),
@@ -85,6 +97,7 @@
         event.position.z
       )
     }
+    for (const sound of sounds) playMonsterSound(sound)
   }
 </script>
 

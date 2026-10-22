@@ -74,6 +74,60 @@ PROMPTS = {
         "naturally to silence. Close, dry game sound effect, no voice, no music, no flesh, "
         "no metal, no glass, no explosion, no reverb."
     ),
+    "terraclash_slam": (
+        "A colossal stone giant's fist slamming into packed earth: an immediate "
+        "massive low thud of rock on ground, a sharp crack of splitting stone, "
+        "then a brief spray of gravel and dirt clods settling. Heavy, deep, "
+        "close-up boss impact, one blow only. No metal, voice, roar, music, "
+        "whoosh, explosion or reverb."
+    ),
+    "terraclash_eruption": (
+        "Jagged basalt rock spikes bursting violently up through cracked molten "
+        "ground: a sudden deep crack, grinding stone shards punching upward, a "
+        "short hiss and sizzle of lava, then falling pebbles and dust. Immediate "
+        "onset, one eruption, fading to silence. No voice, music, metal, fire "
+        "whoosh or explosion boom."
+    ),
+    "terraclash_roar": (
+        "A colossal living rock giant's furious roar: an enormous deep guttural "
+        "bellow fused with grinding boulders and rumbling stone, shaking the "
+        "ground, with rocks and gravel tumbling down. Starts immediately at full "
+        "force, sustained, then fades. A monster voice made of stone. No human "
+        "voice, music, dragon screech or thunder."
+    ),
+    "terraclash_smash": (
+        "A gigantic stone fist smashing the ground with earth-shattering force: "
+        "an immediate colossal impact with a deep shockwave, the earth splitting "
+        "open along long cracks, rock slabs heaving up, heavy debris and clods "
+        "raining down. One devastating blow, starting immediately. No voice, "
+        "music, metal, fiery explosion or long reverb."
+    ),
+    "terraclash_quake": (
+        "An earthquake building up: a deep low rumble of the ground trembling, "
+        "growing steadily louder and stronger, with grinding rock, cracking "
+        "earth and rattling pebbles, ending at its most intense. Starts quiet, "
+        "no impact at the start. No voice, music, thunder or wind."
+    ),
+    "terraclash_shell_burst": (
+        "A thick rock shell bursting apart as a giant stone creature breaks "
+        "free: an immediate violent crack, boulders splitting and tumbling, a "
+        "heavy cascade of rubble and gravel, then dust settling. Starts "
+        "immediately, one burst. No voice, roar, music, metal, fire or "
+        "explosion boom."
+    ),
+    "terraclash_sleep": (
+        "A colossal stone giant slowly grinding down and sinking into the "
+        "earth: deep grinding rock, a heavy low rumble, soil and gravel "
+        "shifting and pouring, ending as the rock closes over it with a dull "
+        "heavy thud. No voice, roar, music, metal or explosion."
+    ),
+    "terraclash_death": (
+        "A colossal living rock giant's death: a deep, weary stony groan "
+        "fading out, then its huge body collapsing to the ground, massive "
+        "boulders cracking apart and crumbling into an avalanche of rubble "
+        "and gravel that slowly settles. No human voice, music, metal, "
+        "explosion or thunder."
+    ),
     "scp939": "The wet, distorted death shriek of a fleshy eyeless monster, unnatural and wrong",
     "level_up": (
         "Fantasy RPG level-up sound: a bright magical ascending shimmer. A quick "

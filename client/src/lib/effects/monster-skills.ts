@@ -19,7 +19,7 @@ import {
   EARTHQUAKE_CAST_MS,
   EARTHQUAKE_STRIKE_MS,
 } from './earthquake'
-import { playDungeonSound } from '../managers/sfxManager'
+import { preloadMonsterSound } from '../managers/sfxManager'
 
 export interface MonsterSkillCast {
   rotation: number
@@ -43,16 +43,17 @@ export interface MonsterSkillEffects {
 // Seconds after a cast before its effects stop updating; covers the last
 // flames' lifetime.
 const SETTLE_SECONDS = 1
-
 /** Telegraphed monster skills by the server's `MonsterSkillId`. */
 export const MONSTER_SKILLS: Record<
   string,
   {
     clip: string
     durationMs: number
-    /** The cast's marked spots split open at `impactMs`, then stay molten
-     *  `lingerMs` longer. */
-    marks?: { impactMs: number; lingerMs?: number }
+    /** Played once per cast as the clip passes `atMs`. */
+    sound?: { url: string; atMs: number }
+    /** The cast's marked spots split open at `impactMs` with `sound`, then
+     *  stay molten `lingerMs` longer. */
+    marks?: { impactMs: number; lingerMs?: number; sound?: string }
     createEffects(
       scene: THREE.Object3D,
       model: THREE.Object3D,
@@ -97,22 +98,19 @@ export const MONSTER_SKILLS: Record<
   earth_roar: {
     clip: 'Roar',
     durationMs: EARTH_ROAR_CAST_MS,
+    // The roar takes 0.3s to reach full voice.
+    sound: {
+      url: '/sounds/terraclash-roar.ogg',
+      atMs: EARTH_ROAR_STRIKE_MS - 300,
+    },
     createEffects(scene, _model, _weapon, _clip, cast, footprint) {
       const roar = new EarthRoarEffect(cast.range, parseFootprint(footprint))
       scene.add(roar.group)
-      let roared = false
       return {
         start(origin) {
           roar.start(origin)
-          roared = false
         },
-        update(time, active, deltaTime, camera) {
-          // The dungeon's wake-up roar until Terraclash has its own, timed
-          // to peak as the dust wall leaves.
-          if (active && !roared && time * 1000 >= EARTH_ROAR_STRIKE_MS - 600) {
-            roared = true
-            playDungeonSound('reset')
-          }
+        update(_time, _active, deltaTime, camera) {
           roar.update(deltaTime, camera)
         },
         dispose() {
@@ -124,6 +122,10 @@ export const MONSTER_SKILLS: Record<
   formation_break: {
     clip: 'Smash',
     durationMs: FORMATION_BREAK_CAST_MS,
+    sound: {
+      url: '/sounds/terraclash-smash.ogg',
+      atMs: FORMATION_BREAK_STRIKE_MS,
+    },
     marks: {
       impactMs: FORMATION_BREAK_STRIKE_MS,
       lingerMs: FORMATION_BREAK_POOL_MS,
@@ -151,7 +153,15 @@ export const MONSTER_SKILLS: Record<
   earthquake: {
     clip: 'Quake',
     durationMs: EARTHQUAKE_CAST_MS,
-    marks: { impactMs: EARTHQUAKE_STRIKE_MS },
+    // The swell runs 3.03s and peaks as it ends.
+    sound: {
+      url: '/sounds/terraclash-quake.ogg',
+      atMs: EARTHQUAKE_STRIKE_MS - 3030,
+    },
+    marks: {
+      impactMs: EARTHQUAKE_STRIKE_MS,
+      sound: '/sounds/terraclash-eruption.ogg',
+    },
     createEffects(scene, _model, _weapon, _clip, _cast, footprint) {
       const quake = new EarthquakeEffect(parseFootprint(footprint))
       scene.add(quake.group)
@@ -168,4 +178,11 @@ export const MONSTER_SKILLS: Record<
       }
     },
   },
+}
+
+export function preloadMonsterSkillSounds() {
+  for (const { sound, marks } of Object.values(MONSTER_SKILLS)) {
+    if (sound) preloadMonsterSound(sound.url)
+    if (marks?.sound) preloadMonsterSound(marks.sound)
+  }
 }

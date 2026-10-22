@@ -38,6 +38,7 @@
     splitClipNames,
   } from '../data/monsterDefs'
   import { getItemDef } from '../data/itemDefs'
+  import { playMonsterSound } from '../managers/sfxManager'
   import {
     computeCorpseGroundOffset,
     loadSharedPackClipsForModel,
@@ -49,6 +50,7 @@
   import TargetRing from './TargetRing.svelte'
   import { warmupPipelines } from '../utils/pipelineWarmup'
   import { shake, sleepSink } from '../effects/dormant-sleep'
+  import { DeathCrumble } from '../effects/death-crumble'
   import {
     disposeMeshMaterials,
     disposeObjectTree,
@@ -210,10 +212,21 @@
     id: string
     clip: THREE.AnimationClip
     effects: MonsterSkillEffects
+    sounded: boolean
   }[] = []
   onDestroy(() => {
     for (const { effects } of skillEffects) effects.dispose()
   })
+  const crumbleSound = initialDef?.crumbleSound
+  const crumble = crumbleSound
+    ? new DeathCrumble(threlte.scene, crumbleSound)
+    : undefined
+  // A corpse already down when this mounted has crumbled away.
+  let deadMs = untrack(() => monsterState) === 'dead' ? Infinity : 0
+  if (crumble && deadMs === 0) {
+    crumble.warm(threlte.renderer, threlte.camera.current, threlte.scene)
+  }
+  onDestroy(() => crumble?.dispose())
   const damageText = new DamageTextEmitter()
   onDestroy(() => damageText.dispose())
   onDestroy(() => {
@@ -403,11 +416,13 @@
           cast,
           initialDef?.footprint
         ),
+        sounded: false,
       }
       skillEffects.push(entry)
     }
     if (entry && group) {
       entry.effects.start(group.getWorldPosition(new THREE.Vector3()), cast)
+      entry.sounded = false
     }
     attackClip = clip.name
     isAttackAnimationFinished = false
@@ -415,12 +430,18 @@
   }
 
   function updateSkillEffects(deltaTime: number, camera?: THREE.Camera) {
-    for (const { clip, effects } of skillEffects) {
+    for (const entry of skillEffects) {
       const action =
-        currentAction?.getClip() === clip ? currentAction : undefined
+        currentAction?.getClip() === entry.clip ? currentAction : undefined
       const active =
         !!action && monsterState !== 'dead' && !isAttackAnimationFinished
-      effects.update(action?.time ?? 0, active, deltaTime, camera)
+      const time = action?.time ?? 0
+      const sound = MONSTER_SKILLS[entry.id].sound
+      if (sound && active && !entry.sounded && time * 1000 >= sound.atMs) {
+        entry.sounded = true
+        playMonsterSound(sound.url)
+      }
+      entry.effects.update(time, active, deltaTime, camera)
     }
   }
 
@@ -436,6 +457,11 @@
       group.position.set(position.x, position.y - sunk, position.z)
       group.rotation.y = rotation
       if (sink > 0) shake(group, slept / 1000, 0.12 * (1 - sink))
+    }
+    // Nothing left of a crumbled body to animate.
+    if (crumble && model && group && camera && monsterState === 'dead') {
+      deadMs += deltaTime * 1000
+      if (!crumble.update(group, model, position.y, deadMs, camera)) return
     }
     if (hoverProxyGroup) {
       hoverProxyGroup.position.set(position.x, position.y - sunk, position.z)
@@ -470,6 +496,10 @@
         isAttackAnimationFinished = false
         const pool = attackClipNames(def, attackFromLeft)
         attackClip = pool[Math.floor(Math.random() * pool.length)]
+        // A swing already under way when this mounted has landed.
+        if (def?.attackSound && lastAttackCounter !== undefined) {
+          playMonsterSound(def.attackSound, def.attackImpactDelay)
+        }
       }
       lastAttackCounter = attackCounter
       lastHitCounter = hitCounter

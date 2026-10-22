@@ -356,8 +356,63 @@ Both were generated and processed exactly like the monster cries above.
   `The_sound_of_monster_#3-1787310281519.mp3` kept in `~/assets_original/sfx/`
   on pc5090; prompt: "The sound of monsters waking up and howling deep within
   the dungeon"). Trimmed to 4.64 s with a 150 ms tail fade, −3 dB gain,
-  resampled 48→44.1 kHz. Also Terraclash's Earth Roar until it has its own
-  sound (2026-10-22).
+  resampled 48→44.1 kHz. Terraclash's Earth Roar borrowed it until
+  `terraclash-roar.ogg` replaced it the same day (2026-10-22).
+
+## Terraclash
+
+필드보스 테라클래시의 평타·원거리 평타·스킬, 깨어남·잠듦·사망 효과음 9종.
+[ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects) API로 2026-10-22 직접 생성.
+Starter 유료 플랜(API 구독 조회로 확인),
+[유료 플랜 상업 이용 라이선스](https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform) 적용.
+`eleven_text_to_sound_v2`, 프롬프트마다 3테이크씩 24개 생성, 총 511크레딧
+(스킬 5종 366, 깨어남·잠듦·사망 145).
+프롬프트는 `tools/gen-death-sfx.py`의 `terraclash_*`에 기록.
+고른 원본과 생성·가공 메타데이터는 `assets/sfx/terraclash-2026-10-22/`의
+`<이름>_take<n>_2026-10-22.mp3` 및 같은 이름의 `.json`에 보관.
+고르지 않은 16개는 로컬 `sfx-candidates/terraclash-2026-10-22/`에만 있고 HF에 동기화하지 않음.
+모두 float PCM으로 가공해 모노 44.1 kHz, 인코딩 전 피크 −3 dB, Ogg Vorbis q5.
+테이크는 엔벨로프·대역 에너지로 골랐다(사람이 들어 보고 고른 것이 아님).
+
+- terraclash-slam.ogg — 평타·원거리 평타 내려찍기. take 2, 1.2초·`prompt_influence=0.7`.
+  0.85초로 자르고 끝 100 ms 페이드. take 1은 80 Hz 이하 서브 저음만 0.4초 이어져 작은 스피커에서 안 들리고,
+  take 3은 0.5초 무음 뒤 고음 위주라 제외. `monsters.csv`의 `attackSound`로 지정하며
+  휘두를 때마다 `attackImpactDelay`(1400 ms) 뒤에 재생, 빗나가도 같은 소리라 칼바람 소리는 내지 않는다.
+- terraclash-eruption.ogg — 원거리 평타·지진 표식에서 현무암이 솟는 소리. take 3, 1.5초·0.7.
+  1.2초로 자르고 끝 150 ms 페이드. 저중역이 가장 두꺼운 테이크.
+  표식이 터지는 프레임에 재생하며, 같은 프레임에 여러 표식이 터져도(지진 9개) 한 번만 낸다.
+  진형 파괴의 용암 웅덩이는 강타 소리가 덮으므로 내지 않는다.
+- terraclash-roar.ogg — 대지의 포효(최후 발악 5연속 포함). take 2, 3.5초·0.65.
+  2.5초로 자르고 끝 100 ms 페이드. 80–200 Hz가 중심인 가장 낮은 포효.
+  처음 0.3초에 걸쳐 커지므로 포효 순간보다 300 ms 먼저 재생.
+- terraclash-smash.ogg — 진형 파괴 강타. take 3, 2.5초·0.7.
+  1.8초로 자르고 끝 200 ms 페이드. 충격 뒤 0.9초쯤 파편 소리가 한 번 더 있는 테이크. 강타 순간(2.8초)에 재생.
+- terraclash-quake.ogg — 지진 전조. take 3, 3.5초·0.6.
+  세 테이크 모두 처음이 가장 크고 줄어들어서, 저음 비중이 가장 큰 take 3을
+  앞 0.45초를 잘라 내고 **거꾸로 뒤집어** 3.03초 동안 커지는 소리로 만들었다. 끝 40 ms 페이드.
+  끝나는 순간이 지진 타격(3.5초)과 맞도록 시전 0.47초에 재생하고, 이어서 분출음이 난다.
+
+- terraclash-wake.ogg — 봉헌 뒤 모형이 깨지며 보스가 일어나는 소리. 직접 합성한 5.3초:
+  quake take 3의 0.45–2.45초를 뒤집은 진동(+6 dB, 시작 300 ms 페이드)이 2초 동안 커지고,
+  2.0초에 `terraclash_shell_burst` take 2(2.5초·0.7, 앞 2.0초)의 껍질 붕괴,
+  2.8초에 포효(roar take 2, −6 dB)가 겹친다. 붕괴가 모형이 무너지는 순간(`wake_in_ms` 2000)과 맞는다.
+  합성 기록은 `terraclash-wake_composed_2026-10-22.json`. 봉헌 메시지를 받을 때 재생.
+- terraclash-sleep.ogg — 실패한 레이드에서 보스가 땅속으로 가라앉는 소리. take 2, 3.5초·0.65.
+  3.3초로 자르고 끝 300 ms 페이드. 저음만 있는 take 1보다 바위 갈리는 중역이 있는 테이크.
+  가라앉기 시작할 때(정지 3초 뒤) 재생.
+- terraclash-death.ogg — 처치 시 신음과 무너짐. take 2, 4초·0.65. 끝 400 ms 페이드.
+  처음 2.2초 동안 가장 오래 버티는 테이크. `monsters.csv`의 `deathSound`, 마지막 타격 때 재생.
+  이전에는 `stone-golem-death.ogg`를 썼다.
+- terraclash-crumble.ogg — 쓰러진 몸이 바위와 흙먼지로 터지는 소리. shell_burst take 2의 앞 2.0초,
+  끝 300 ms 페이드. 사망 2.5초 뒤 부서지는 순간(`CRUMBLE_BURST_MS`)에 재생.
+
+경로는 데이터에 둔다. 평타·원거리 평타·깨어남·잠듦·부서짐은 `monsters.csv`의
+`attackSound`·`rangedAttackSound`·`wakeSound`·`sleepSound`·`crumbleSound`, 포효·강타·지진 전조와
+지진 표식의 분출음은 `effects/monster-skills.ts`의 `sound`·`marks.sound`.
+재생은 `sfxManager.ts`의 `playMonsterSound`·`playMonsterDeathSound`를 거친다.
+깨어남·잠듦은 근처에 모형이 보일 때만 나고, 1초 이상 늦게 시작한 효과에서는 내지 않는다.
+거리 감쇠는 없다(다른 몬스터 소리와 같음). `?character=terraclash` 캐릭터 미리보기에서
+동작을 고르면 게임과 같은 시점에 소리가 난다(1배속일 때만).
 
 ## Bow
 

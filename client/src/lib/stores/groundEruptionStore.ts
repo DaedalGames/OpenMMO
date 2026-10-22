@@ -9,6 +9,8 @@ export type GroundEruption = {
   impactMs: number
   /** How long the split ground stays molten after the impact. */
   lingerMs?: number
+  /** Played as it splits open, once for marks that split together. */
+  sound?: string
 }
 
 const NONE: readonly GroundEruption[] = []

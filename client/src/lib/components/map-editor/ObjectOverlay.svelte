@@ -5,7 +5,6 @@
   import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
   import { getMonsterDef } from '../../data/monsterDefs'
   import { onDestroy, untrack } from 'svelte'
-  import type { WebGPURenderer } from 'three/webgpu'
   import {
     editorTool,
     currentObjectData,
@@ -46,6 +45,7 @@
   import {
     DORMANT_SINK_MS,
     DormantWakeEffect,
+    wakeBounds,
   } from '../../effects/dormant-wake'
   import {
     SLEEP_RISE_FROM_MS,
@@ -53,6 +53,7 @@
     shake,
     sleepRise,
   } from '../../effects/dormant-sleep'
+  import { playMonsterSound } from '../../managers/sfxManager'
   import {
     takeFieldBossSleeps,
     takeFieldBossWakes,
@@ -458,6 +459,7 @@
     startedAt: number
     collapseMs: number
     height: number
+    sound: string | undefined
   } | null = null
   const _wakeBox = new THREE.Box3()
   // Same loader and key as Monster.svelte, so the boss model is cached by
@@ -471,13 +473,7 @@
   $effect(() => {
     if (wakeWarmed || standIns.length === 0) return
     wakeWarmed = true
-    wakeEffect.group.visible = true
-    void (renderer as unknown as WebGPURenderer)
-      .compileAsync(wakeEffect.group, $sceneCamera, scene)
-      .catch((error) => console.error('Wake shader warmup failed', error))
-      .finally(() => {
-        if (!shell) wakeEffect.clear()
-      })
+    wakeEffect.warm(renderer, $sceneCamera, scene, () => !shell)
   })
 
   /** The stand-in's box at rest, as the effect's bounds. */
@@ -487,15 +483,7 @@
     ground: number
   ) {
     applyPlacementTransform(clone, p)
-    _wakeBox.setFromObject(clone)
-    return {
-      x: (_wakeBox.min.x + _wakeBox.max.x) / 2,
-      y: ground,
-      z: (_wakeBox.min.z + _wakeBox.max.z) / 2,
-      halfX: ((_wakeBox.max.x - _wakeBox.min.x) / 2) * 0.9,
-      halfZ: ((_wakeBox.max.z - _wakeBox.min.z) / 2) * 0.9,
-      height: Math.max(1, _wakeBox.max.y - ground),
-    }
+    return wakeBounds(_wakeBox.setFromObject(clone), ground)
   }
 
   function standInFor(monster: string, at: Position) {
@@ -505,18 +493,32 @@
   }
 
   function startWake(w: FieldBossWake) {
-    const model = getMonsterDef(w.monster)?.model
-    if (model) monsterLoader.load(`/models/${model}`)
+    const def = getMonsterDef(w.monster)
+    if (def?.model) monsterLoader.load(`/models/${def.model}`)
     const found = standInFor(w.monster, w.position)
     if (!found?.clone.parent) return
-    beginShell('wake', found, w.position.y, w.startedAt, w.collapseMs)
+    beginShell(
+      'wake',
+      found,
+      w.position.y,
+      w.startedAt,
+      w.collapseMs,
+      def?.wakeSound
+    )
   }
 
   /** Detached clones count too: the stand-in comes back into view this frame. */
   function startSleep(s: FieldBossSleep) {
     const found = standInFor(s.monster, s.position)
     if (!found) return
-    beginShell('sleep', found, s.position.y, s.sinkAt, SLEEP_SINK_MS)
+    beginShell(
+      'sleep',
+      found,
+      s.position.y,
+      s.sinkAt,
+      SLEEP_SINK_MS,
+      getMonsterDef(s.monster)?.sleepSound
+    )
   }
 
   function beginShell(
@@ -524,18 +526,31 @@
     { p, clone }: { p: ObjectPlacement; clone: THREE.Object3D },
     ground: number,
     startedAt: number,
-    collapseMs: number
+    collapseMs: number,
+    sound: string | undefined
   ) {
     endShell()
     const bounds = standInBounds(clone, p, ground)
     if (kind === 'wake') wakeEffect.start(bounds, collapseMs)
     else wakeEffect.startSleep(bounds)
-    shell = { kind, p, startedAt, collapseMs, height: bounds.height }
+    shell = {
+      kind,
+      p,
+      startedAt,
+      collapseMs,
+      height: bounds.height,
+      sound,
+    }
   }
 
   function stepShell(camera: THREE.Camera) {
     if (!shell) return
     const elapsed = Date.now() - shell.startedAt
+    // Late by a second or more and the sound would trail the dust.
+    if (shell.sound && elapsed >= 0) {
+      if (elapsed < 1000) playMonsterSound(shell.sound)
+      shell.sound = undefined
+    }
     if (!wakeEffect.update(elapsed, camera)) {
       endShell()
       return

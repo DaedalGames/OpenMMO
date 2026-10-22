@@ -1494,20 +1494,23 @@ export function handleServerMessage(
       )
       break
 
-    case 'MonsterGroundStrike':
+    case 'MonsterGroundStrike': {
       monsterManager.handleMonsterAttackStarted(
         data.monster_id,
         250,
         data.position
       )
+      const striker = monsterManager.monsters.get(data.monster_id)
       playGroundEruption({
         position: data.position,
         floorLevel: data.floor_level,
         radius: data.radius,
         startedAt: Date.now(),
         impactMs: data.impact_ms,
+        sound: striker && getMonsterDef(striker.type)?.rangedAttackSound,
       })
       break
+    }
 
     case 'MonsterSkillStruck':
       handleMonsterSkillStruck(data.victims, data.burn)
@@ -1543,10 +1546,11 @@ export function handleServerMessage(
         data.current_health,
         impactDelayMs
       )
-      if (!data.hit && !data.ranged) {
+      const monsterDef = monster && getMonsterDef(monster.type)
+      if (!data.hit && !data.ranged && !monsterDef?.attackSound) {
         // Whoosh with the monster's weapon material; unarmed types fall
         // through to the default miss sound.
-        const monsterWeapon = monster && getMonsterDef(monster.type)?.weapon
+        const monsterWeapon = monsterDef?.weapon
         playSwordMissSound(
           getMaterialMissSoundUrl(
             monsterWeapon ? getItemDef(monsterWeapon)?.material : undefined
@@ -2874,6 +2878,7 @@ export function markMonsterSkillSpots(
       startedAt,
       impactMs: marks.impactMs,
       lingerMs: marks.lingerMs,
+      sound: marks.sound,
     })
   }
 }

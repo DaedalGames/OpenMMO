@@ -91,6 +91,17 @@ export interface MonsterDefinition {
   weaponRotation?: string | number
   /** Death cry, played on the killing blow (path under /sounds). */
   deathSound?: string
+  /** The blow landing, `attackImpactDelay` into each swing (path under
+   * /sounds); it replaces the miss whoosh. */
+  attackSound?: string
+  /** The ground bursting under a ranged strike's mark. */
+  rangedAttackSound?: string
+  /** A field boss shaking off its stand-in, and sinking back under it. */
+  wakeSound?: string
+  sleepSound?: string
+  /** Set on a stone boss whose fallen body bursts into rubble and sinks
+   * away; the sound of the burst. */
+  crumbleSound?: string
   /** Play the shared character packs; only for models rigged on the character
    * skeleton, which then ship no clips of their own. */
   sharedAnims?: boolean
