@@ -55,11 +55,21 @@ function movementConfigFor(
 /// that lands on the spot they already stopped at.
 const PICKUP_CANCEL_DISTANCE = 0.2
 
-function movedFar(from: Position, to: Position): boolean {
+function movedFar(
+  from: Position,
+  to: Position,
+  threshold = PICKUP_CANCEL_DISTANCE
+): boolean {
   const dx = shortestWrappedDeltaX(from.x, to.x)
   const dz = to.z - from.z
-  return dx * dx + dz * dz > PICKUP_CANCEL_DISTANCE * PICKUP_CANCEL_DISTANCE
+  return dx * dx + dz * dz > threshold * threshold
 }
+
+const FROZEN_STATES = new Set(['attack', 'dead', 'interact'])
+/** Faster than the server so a remote replaying its trail catches up. */
+const TRAIL_CATCH_UP_MULT = 1.5
+/** Server ticks, so a long clip cannot grow the trail without bound. */
+const MAX_TRAIL_POINTS = 200
 
 class PlayerStateManager {
   players = new SvelteMap<number, PlayerState>()
@@ -92,6 +102,10 @@ class PlayerStateManager {
     })
   }
 
+  // Positions a remote passed while frozen in a clip, replayed in order once
+  // it ends: heading straight for the latest one cuts corners through walls.
+  private trails = new Map<number, Position[]>()
+
   // Attack animation duration in seconds (updated from actual animation data)
   attackAnimationDuration = 1.0
 
@@ -113,13 +127,6 @@ class PlayerStateManager {
    *  rebuilds each frame. */
   hitCounters = new SvelteMap<number, number>()
 
-  // Buffered position/rotation received during attack animation (1-slot queue).
-  // Applied when the attack ends.
-  private pendingMove = new Map<
-    number,
-    { position: Position; rotation: number; sprinting: boolean }
-  >()
-
   // Timestamp (performance.now()) when each player's attack animation started
   private attackStartTimes = new Map<number, number>()
 
@@ -136,27 +143,8 @@ class PlayerStateManager {
       this.attackStartTimes.delete(playerId)
 
       const p = this.players.get(playerId)
-      if (!p || p.state !== 'attack') return
-
-      const pending = this.pendingMove.get(playerId)
-      this.pendingMove.delete(playerId)
-
-      if (pending) {
-        // Apply buffered position/rotation from move received during attack
-        this.targetPositions.set(playerId, pending.position)
-        this.targetRotations.set(playerId, pending.rotation)
-        this.targetSprinting.set(playerId, pending.sprinting)
-        this.players.set(playerId, {
-          ...p,
-          state: 'idle',
-          rotation: pending.rotation,
-        })
-      } else {
-        this.players.set(playerId, {
-          ...p,
-          state: 'idle',
-        })
-      }
+      if (p?.state === 'attack')
+        this.players.set(playerId, { ...p, state: 'idle' })
     })
 
     // Snapshot other-player store state once for the frame (torch lookup below).
@@ -168,16 +156,42 @@ class PlayerStateManager {
       const currentPlayer = this.players.get(playerId)
       if (!currentPlayer) return
 
-      // Skip movement update if player is attacking, dead, or interacting
-      if (
-        currentPlayer?.state === 'attack' ||
-        currentPlayer?.state === 'dead' ||
-        currentPlayer?.state === 'interact'
-      ) {
-        return
-      }
+      if (FROZEN_STATES.has(currentPlayer.state)) return
 
       const currentPos = currentPlayer.position
+      const sprinting = this.targetSprinting.get(playerId) ?? false
+      const other = otherPlayers.get(playerId)
+      const mount = other?.mount ?? null
+      const floor = other?.floorLevel ?? 0
+      const hasTorch = other?.torchOn ?? false
+      const movementConfig = movementConfigFor(mount, sprinting)
+
+      const trail = this.trails.get(playerId)
+      if (trail) {
+        const speed = movementConfig.maxSpeed * TRAIL_CATCH_UP_MULT
+        const pos = { ...currentPos }
+        let rotation = this.advanceAlongTrail(playerId, trail, pos, speed * dt)
+        rotation ??= currentPlayer.rotation
+        pos.y = this.groundY(mount, floor, pos, currentPos.y)
+        if (mount !== null)
+          rotation = steerHorse(currentPlayer.rotation, rotation, dt).rotation
+        // handleAttack reads the speed to queue swings until the remote stops.
+        const running = this.movementData.get(playerId)
+        if (running && this.trails.has(playerId)) running.currentSpeed = speed
+        else
+          this.movementData.set(
+            playerId,
+            initMovementState(pos, targetPos, speed)
+          )
+        this.players.set(playerId, {
+          position: pos,
+          state: 'moving',
+          speed,
+          rotation,
+          movementMode: getMovementMode(undefined, hasTorch, sprinting),
+        })
+        return
+      }
 
       // Get or initialize movement data
       let movement = this.movementData.get(playerId)
@@ -196,11 +210,7 @@ class PlayerStateManager {
       // movement is guaranteed to be defined after above block
       if (!movement) return
 
-      // Calculate movement step
-      const sprinting = this.targetSprinting.get(playerId) ?? false
-      const mount = otherPlayers.get(playerId)?.mount ?? null
       const mounted = mount !== null
-      const movementConfig = movementConfigFor(mount, sprinting)
       const result = calculateMovementStep(
         currentPos,
         movement,
@@ -216,27 +226,7 @@ class PlayerStateManager {
         ).rotation
       }
 
-      // calculateMovementStep only advances XZ and carries Y over, and the
-      // move protocol has no per-waypoint Y, so the ground has to be
-      // resampled here. Without it a remote keeps the Y it entered the floor
-      // with, which reads as sinking through dungeon and house stairs.
-      const floor = otherPlayers.get(playerId)?.floorLevel ?? 0
-      result.newPos.y =
-        (floor === 0
-          ? this.floatSurfaceY(
-              mount,
-              result.newPos.x,
-              result.newPos.z,
-              currentPos.y
-            )
-          : null) ??
-        entityGroundY(
-          this.heightManager,
-          floor,
-          result.newPos.x,
-          result.newPos.z,
-          currentPos.y
-        )
+      result.newPos.y = this.groundY(mount, floor, result.newPos, currentPos.y)
 
       // Update movement state
       movement.currentSpeed = result.newSpeed
@@ -275,7 +265,6 @@ class PlayerStateManager {
           this.executeAttack(playerId)
         }
       } else {
-        const hasTorch = otherPlayers.get(playerId)?.torchOn ?? false
         const movementMode = getMovementMode(
           movement.totalDistance,
           hasTorch,
@@ -293,8 +282,61 @@ class PlayerStateManager {
     })
   }
 
+  // calculateMovementStep only advances XZ and carries Y over, and the move
+  // protocol has no per-waypoint Y, so the ground has to be resampled. Without
+  // it a remote keeps the Y it entered the floor with, which reads as sinking
+  // through dungeon and house stairs.
+  private groundY(
+    mount: MountKind | null,
+    floor: number,
+    pos: Position,
+    fallbackY: number
+  ): number {
+    return (
+      (floor === 0
+        ? this.floatSurfaceY(mount, pos.x, pos.z, fallbackY)
+        : null) ??
+      entityGroundY(this.heightManager, floor, pos.x, pos.z, fallbackY)
+    )
+  }
+
+  /** Walks `budget` metres of `trail` from `pos` (mutated in place), dropping
+   *  the points it reaches; returns the heading of the last leg walked. */
+  private advanceAlongTrail(
+    playerId: number,
+    trail: Position[],
+    pos: Position,
+    budget: number
+  ): number | undefined {
+    let rotation: number | undefined
+    while (budget > 0 && trail.length > 0) {
+      const next = trail[0]
+      const dx = shortestWrappedDeltaX(pos.x, next.x)
+      const dz = next.z - pos.z
+      const distance = Math.sqrt(dx * dx + dz * dz)
+      if (distance > 0) rotation = Math.atan2(dx, dz)
+      const t = distance <= budget ? 1 : budget / distance
+      pos.x += dx * t
+      pos.z += dz * t
+      budget -= distance * t
+      if (t === 1) trail.shift()
+    }
+    if (trail.length === 0) this.trails.delete(playerId)
+    return rotation
+  }
+
+  private extendTrail(playerId: number, from: Position, position: Position) {
+    let trail = this.trails.get(playerId)
+    const last = trail?.[trail.length - 1] ?? from
+    if (!movedFar(last, position, 0.01)) return
+    if (!trail) this.trails.set(playerId, (trail = []))
+    trail.push({ ...position })
+    if (trail.length > MAX_TRAIL_POINTS) trail.shift()
+  }
+
   // Initialize remote player state with position and rotation
   initPlayer(playerId: number, position: Position, rotation: number) {
+    this.trails.delete(playerId)
     this.targetPositions.set(playerId, { ...position })
     this.targetSprinting.delete(playerId)
     this.seedHitCounter(playerId)
@@ -314,7 +356,7 @@ class PlayerStateManager {
     this.targetRotations.delete(playerId)
     this.targetSprinting.delete(playerId)
     this.attackQueue.delete(playerId)
-    this.pendingMove.delete(playerId)
+    this.trails.delete(playerId)
     this.attackStartTimes.delete(playerId)
     this.hitCounters.delete(playerId)
   }
@@ -327,7 +369,7 @@ class PlayerStateManager {
     this.targetRotations.clear()
     this.targetSprinting.clear()
     this.attackQueue.clear()
-    this.pendingMove.clear()
+    this.trails.clear()
     this.attackStartTimes.clear()
     this.hitCounters.clear()
   }
@@ -357,6 +399,7 @@ class PlayerStateManager {
   }
 
   handleRespawn(playerId: number, position: Position, rotation: number) {
+    this.trails.delete(playerId)
     this.movementData.delete(playerId)
     this.attackQueue.delete(playerId)
     this.attackStartTimes.delete(playerId)
@@ -371,6 +414,7 @@ class PlayerStateManager {
   }
 
   teleportPlayer(playerId: number, position: Position, rotation: number) {
+    this.trails.delete(playerId)
     this.targetPositions.set(playerId, { ...position })
     this.seedHitCounter(playerId)
     this.targetSprinting.delete(playerId)
@@ -410,6 +454,7 @@ class PlayerStateManager {
   setAuthoritativePose(playerId: number, position: Position, rotation: number) {
     const player = this.players.get(playerId)
     if (!player) return
+    this.trails.delete(playerId)
     this.movementData.delete(playerId)
     this.targetPositions.set(playerId, { ...position })
     this.targetRotations.set(playerId, rotation)
@@ -481,15 +526,11 @@ class PlayerStateManager {
     sprinting = false
   ) {
     const player = this.players.get(playerId)
-
-    // During attack animation, buffer the move for after the animation ends.
-    if (player?.state === 'attack') {
-      this.pendingMove.set(playerId, {
-        position: { ...targetPosition },
-        rotation,
-        sprinting,
-      })
-      return
+    if (
+      player &&
+      (FROZEN_STATES.has(player.state) || this.trails.has(playerId))
+    ) {
+      this.extendTrail(playerId, player.position, targetPosition)
     }
 
     // The picker's own client drops the crouch the moment it moves, so a move
