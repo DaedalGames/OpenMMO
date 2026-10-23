@@ -299,6 +299,7 @@ impl GameState {
         self.mark_inventory_dirty(player_id).await;
         self.send_inventory_snapshot(player_id, snapshot).await;
         self.log_consumed(player_id, [def.offering.as_str()]).await;
+        self.record_field_raid_event(&boss.id, None);
         info!(
             "{player_id} offered at {} ({:.1},{:.1}); {} wakes at ({:.1},{:.1})",
             altar.type_id, altar.x, altar.z, boss.monster, position.x, position.z,
@@ -502,6 +503,7 @@ impl GameState {
         }
         self.set_stand_in_woken(raid.boss, false);
         info!("Field raid {} ended: {outcome:?}", raid.boss.monster);
+        self.record_field_raid_event(&raid.boss.id, Some(outcome));
         let rewarded = match outcome {
             FieldRaidOutcome::Defeated => self.reward_raiders(&raid, auth).await,
             _ => HashSet::new(),

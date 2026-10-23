@@ -70,6 +70,40 @@ impl super::GameState {
         }
     }
 
+    pub(super) fn record_field_raid_event(
+        &self,
+        boss: &str,
+        outcome: Option<onlinerpg_shared::messages::FieldRaidOutcome>,
+    ) {
+        self.pending_field_raid_events()
+            .push(crate::metrics::FieldRaidEvent {
+                timestamp: unix_now(),
+                boss: boss.to_owned(),
+                outcome,
+            });
+    }
+
+    pub(crate) fn pending_field_raid_events(
+        &self,
+    ) -> std::sync::MutexGuard<'_, Vec<crate::metrics::FieldRaidEvent>> {
+        self.pending_field_raid_events
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+    }
+
+    pub(crate) async fn flush_field_raid_events(&self, auth: &AuthService) {
+        let events = std::mem::take(&mut *self.pending_field_raid_events());
+        if events.is_empty() {
+            return;
+        }
+        let saved = events.clone();
+        let auth = auth.clone();
+        if let Err(error) = super::auth_db(move || auth.record_field_raid_events(&saved)).await {
+            warn!("Field raid event save failed: {error}");
+            self.pending_field_raid_events().splice(0..0, events);
+        }
+    }
+
     pub(crate) async fn ground_item_quantities(
         &self,
         item_def_ids: &[&str],

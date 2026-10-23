@@ -1,4 +1,4 @@
-import { formatCount, type ChartHistory } from './metrics'
+import type { ChartHistory } from './metrics'
 
 export const hardwarePeriods = [
   { hours: 1, label: '1시간' },
@@ -90,8 +90,5 @@ export function parseHardwareStatus(value: unknown, hours: HardwareHours = 24): 
   }
   return data
 }
-
-export const formatPercent = (value: number | null | undefined) => value == null
-  ? '—' : `${formatCount(value)}%`
 
 export const usagePercent = (used: number, total: number) => used / total * 100

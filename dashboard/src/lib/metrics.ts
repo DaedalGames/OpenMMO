@@ -443,6 +443,8 @@ const monthFormatter = new Intl.DateTimeFormat('ko-KR', {
 
 export const formatTime = (timestamp: number) => timeFormatter.format(timestamp * 1000)
 export const formatCount = (value: number) => value.toLocaleString('ko-KR', { maximumFractionDigits: 1 })
+export const formatPercent = (value: number | null | undefined) => value == null
+  ? '—' : `${formatCount(value)}%`
 export function goldSegments(copper: number) {
   const amount = Math.round(copper)
   return [

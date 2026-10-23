@@ -158,6 +158,11 @@ async fn offering_consumes_one_amulet_and_opens_one_raid() {
         "a second offering keeps its amulet"
     );
     assert_eq!(statuses(&mut rx), vec![AltarStatus::RaidActive]);
+    assert_eq!(
+        raid_events(&game),
+        ["summoned"],
+        "a refused offering is no summon"
+    );
 }
 
 #[tokio::test]
@@ -210,6 +215,14 @@ async fn the_boss_wakes_at_the_altar_spawn_and_its_death_ends_the_raid() {
 
     kill(&game, &boss).await;
     assert!(game.field_raid.lock().await.is_none());
+    assert_eq!(raid_events(&game), ["summoned", "defeated"]);
+}
+
+fn raid_events(game: &GameState) -> Vec<&'static str> {
+    game.pending_field_raid_events()
+        .iter()
+        .map(crate::metrics::FieldRaidEvent::storage_key)
+        .collect()
 }
 
 #[tokio::test]
@@ -288,6 +301,7 @@ async fn an_empty_battle_zone_puts_the_boss_back_to_sleep() {
     game.tick_field_raid().await;
     assert!(game.field_raid.lock().await.is_none());
     assert!(bosses(&game).await.is_empty());
+    assert_eq!(raid_events(&game), ["summoned", "wiped"]);
     assert_eq!(
         amulets(&game, &id).await,
         0,

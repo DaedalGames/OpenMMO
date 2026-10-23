@@ -3,9 +3,9 @@
   import MetricsError from './MetricsError.svelte'
   import PeriodFilter from './PeriodFilter.svelte'
   import HardwareHistoryChart from './HardwareHistoryChart.svelte'
-  import { formatDateTime, type ChartMarker } from './metrics'
+  import { formatDateTime, formatPercent, type ChartMarker } from './metrics'
   import { formatBytes } from './traffic'
-  import { formatPercent, usagePercent, hardwarePeriods, type HardwareHours, type HardwareStatus } from './hardware'
+  import { usagePercent, hardwarePeriods, type HardwareHours, type HardwareStatus } from './hardware'
 
   let { hours = $bindable<HardwareHours>(24), resource, markers = [] }: { hours?: HardwareHours; resource: MetricsResource<HardwareStatus>; markers?: ChartMarker[] } = $props()
   let { history, loading, refreshing, error, refresh } = $derived(resource)

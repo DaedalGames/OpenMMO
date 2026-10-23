@@ -5,6 +5,8 @@ mod character_deletion;
 mod enchant_failures;
 #[path = "auth_estate_storage.rs"]
 mod estate_storage;
+#[path = "auth_field_raids.rs"]
+mod field_raids;
 pub(crate) use estate_storage::EstateDeposit;
 #[path = "auth_fence.rs"]
 mod fence;
@@ -776,6 +778,7 @@ impl AuthService {
         Self::ensure_weapon_enchant_history_schema(&conn)?;
         Self::ensure_weapon_enchant_failures_schema(&conn)?;
         Self::ensure_loot_tally_schema(&conn)?;
+        Self::ensure_field_raid_events_schema(&conn)?;
         Self::ensure_armor_enchant_history_schema(&conn)?;
         Self::ensure_land_history_schema(&conn)?;
 

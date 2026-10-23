@@ -1,9 +1,8 @@
 <script lang="ts">
   import HistoryChart from './HistoryChart.svelte'
   import type { HardwareSnapshot, HardwareStatus } from './hardware'
-  import { formatPercent } from './hardware'
   import { formatBytes } from './traffic'
-  import { formatCount, type ChartMarker } from './metrics'
+  import { formatCount, formatPercent, type ChartMarker } from './metrics'
 
   let { history, markers = [] }: { history: HardwareStatus; markers?: ChartMarker[] } = $props()
   let metric = $state('process-memory')

@@ -713,6 +713,7 @@ impl super::GameState {
             .await;
         self.flush_weapon_enchant_failures(auth).await;
         self.flush_loot_tally(auth).await;
+        self.flush_field_raid_events(auth).await;
     }
 
     async fn collect_shutdown_snapshot(
@@ -766,6 +767,7 @@ impl super::GameState {
         self.flush_offline_stall_owners(auth).await;
         self.flush_weapon_enchant_failures(auth).await;
         self.flush_loot_tally(auth).await;
+        self.flush_field_raid_events(auth).await;
 
         let (dirty_player_ids, dirty_states) = self.collect_dirty_character_states().await;
         let (dirty_inventory_ids, dirty_inventories) = self.collect_dirty_inventory_states().await;
