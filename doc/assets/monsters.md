@@ -136,7 +136,7 @@
     날개는 대기·이동 중 작게 움직이며 `WingFold`는 별도로 키프레임을 만든 2초 접기·펼치기 검토 동작이다.
     손목 사슬은 팔 움직임을 따라 위치를 옮기되 아래로 늘어지는 방향을 유지한다.
   - 로컬 게임 연결본은 `assets/monsters/barkan/game_v1/barkan.glb`·`barkan.blend`와 `client/public/models/monsters/barkan.glb`다.
-    티어 5 갈라진 성채 25층의 기존 `barkan` 배치에 연결했다. 외형만 임시 해골 기사였으므로 보스 종류·층 배치는 바꾸지 않았다.
+    티어 5 부서진 요새 25층의 기존 `barkan` 배치에 연결했다. 외형만 임시 해골 기사였으므로 보스 종류·층 배치는 바꾸지 않았다.
     대기·걷기와 별도로 기존 `skeleton_knight/fbx/Attack.fbx`·`Death.fbx`를 옮긴 임시 공격·사망 동작을 포함한다.
     공격은 1.54초, 사망은 약 2.58초이며 원본 Mixamo 출처·이용 조건을 유지한다. 게임 연결본에는 `WingFold`를 넣지 않는다.
     평타(`Attack`)는 2026-10-18 사용자 요청으로 휘두름 끝을 늘렸다. `animate_barkan.py`가 굽는 단계에서

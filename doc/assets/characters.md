@@ -381,6 +381,13 @@ Khronos glTF Validator 오류 0, 기존 경고 2개와 meshopt 미지원 안내 
 node tools/optimize-character-textures.mjs assets/npcs/tobin/tobin-before-textures-1024.glb client/public/models/characters/tobin.glb 1024
 ```
 
+### Ysolde / 이졸데 — 부서진 요새 앞 고고학자 (2026-10-24)
+
+- 테라클래시 파편을 받아 장비로 바꿔 주는 인간 여성 NPC(24세). 설정은 [티어 5 문서](../TIER5_FIELD_RAID.md#고고학자-npc)와 `agent-client/data/npcs/ysolde/instance.txt`.
+- 원화: [ysolde-concept.png](../images/characters/ysolde-concept.png), 1024×1536 PNG. OpenAI Codex built-in ImageGen(`codex exec`, codex-cli 0.162.1), **ChatGPT Pro 20x**, 생성·수정 2026-10-24. OpenAI 생성 출력물 이용 조건 적용.
+- 펠트 모자, 짧은 캔버스 재킷, 붓·끌 꽂이가 달린 벨트, 짧은 캔버스 반바지, 무릎 높이 가죽 부츠. Meshy·Mixamo용 빈손 정면 A포즈. 긴 바지 초안은 **[미사용]**이며 사용자 요청으로 반바지로 수정했다.
+- 생성·편집 프롬프트와 해시: [concept-source.json](../../assets/npcs/ysolde/concept-source.json).
+
 ## 텍스처 재패킹 (2026-08-06)
 
 Meshy/Tripo 내보내기가 노멀·metallicRoughness 맵을 2048² RGBA PNG로 임베드해
