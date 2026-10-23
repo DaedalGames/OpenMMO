@@ -387,6 +387,18 @@ node tools/optimize-character-textures.mjs assets/npcs/tobin/tobin-before-textur
 - 원화: [ysolde-concept.png](../images/characters/ysolde-concept.png), 1024×1536 PNG. OpenAI Codex built-in ImageGen(`codex exec`, codex-cli 0.162.1), **ChatGPT Pro 20x**, 생성·수정 2026-10-24. OpenAI 생성 출력물 이용 조건 적용.
 - 펠트 모자, 짧은 캔버스 재킷, 붓·끌 꽂이가 달린 벨트, 짧은 캔버스 반바지, 무릎 높이 가죽 부츠. Meshy·Mixamo용 빈손 정면 A포즈. 긴 바지 초안은 **[미사용]**이며 사용자 요청으로 반바지로 수정했다.
 - 생성·편집 프롬프트와 해시: [concept-source.json](../../assets/npcs/ysolde/concept-source.json).
+- 3D: Tripo API 유료 크레딧, 2026-10-24. Tripo 이용 약관 적용. 정면 원화 한 장으로 `/generation/image-to-model`, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, 목표 10,000 faces, seed `102401`.
+  task `ac48f63d-5e8c-4801-96ef-886d3abf9564`, **120크레딧**(880 → 760).
+  원본 `assets/npcs/ysolde/tripo_v1/model_url.glb`는 메시 1개, 9,750 triangles, 리그 없음, 4096² base color·normal·ORM 텍스처. 높이 1.0으로 정규화되어 있다.
+  요청·작업 기록은 같은 폴더의 `build.json`·`generation.json`에 보존한다.
+- 피팅: **Tripo 원래 A포즈와 앞을 향한 손바닥을 그대로 사용한다.** 전체 정면을 glTF +Z로 돌리고 발밑 중심을 원점, 모자 꼭대기까지 1.90m로 맞춘 단일 전역 변환만 적용했다. 손·하완을 따로 비틀거나 스무딩하지 않는다. `prepare_original.py`가 리깅 입력을 만들며 재현 후 중간 GLB는 정리한다. 피팅 기록은 `tripo_v1/generation.json`의 `rigging.fitting`에 보존한다. 삼각형·UV·PBR 이미지 바이트는 원본 그대로이며 노멀은 전역 회전에 맞췄다.
+- **[미사용·삭제]** 손목까지 90° 비틀었던 피팅 입력과 첫 리그. 사용자 요청(2026-10-24)으로 사전 회전을 제거했다. 앞쪽으로 어긋난 팔꿈치 깊이와 불균일한 가중치도 수정했다. 미사용 Mixamo 업로드 ZIP·비교 렌더·진단 파일은 정리했고, 시도와 삭제 내역은 `generation.json`에 남겼다.
+- 로컬 피팅·리깅(2026-10-24): 기존 여성 공통 몸체의 **65본** 이름·계층·회전축을 참조하고, 이졸데의 원래 어깨·팔꿈치·손목·골반·무릎·발목과 양손 열 손가락 관절에 맞췄다. 팔꿈치의 실제 깊이를 맞추고 팔꿈치·손목 가중치는 길이 방향으로 부드럽게 연결했다. 손 리그의 회전축은 원래 손바닥 평면과 손가락 방향에서 정했다. 체형을 맞춘 기준 몸체의 가중치를 옮긴 뒤 손가락별 체인을 분리하고 머리·모자와 허리띠 가중치를 정리했다. 정점당 최대 4개 정규화 가중치, 누락 정점 0개. 리그 ID `ysolde_meters_v1`.
+- 결과: [`rig_v1/ysolde.glb`](../../assets/npcs/ysolde/rig_v1/ysolde.glb), 텍스처·3개 액션을 내장한 [`rig_v1/ysolde.blend`](../../assets/npcs/ysolde/rig_v1/ysolde.blend). 키는 모자 꼭대기까지 **1.90m**, Metric `scale_length=1`, 메시·아마추어 object scale `(1,1,1)`, runtime scale `1`. 9,750 triangles·UV·노멀·재질과 4096² PBR 이미지 바이트를 피팅 입력 그대로 유지했다.
+- 동작: 공통 여성 몸체의 `idle1`·`walk`·`run`을 실제 클라이언트 리타게팅 코드로 변환했다. 손가락은 이 모델에 맞는 편안한 자세로 조정했다. 이동·대기의 손목 회전도 원래 자세 기준으로 완화해 최대 20° 이내로 제한했다. 60Hz로 발밑을 보정하고 달리기 원본의 공중 구간(최대 약 0.139m)을 유지했다. 추가 유료 호출 없이 기존 여성 리그·프로젝트 Mixamo 동작의 출처·라이선스를 승계한다.
+- 검증: 세 동작 총 **616시점**, 바닥 관통·본 길이 변화·비정상 좌표 검사 통과. 양손 열 손끝 모두 자체 손가락 체인 가중치 약 100%이며 각 둘째 관절을 45° 굽히면 손끝이 3.35–4.67cm 움직인다. bind 위치 오차 최대 약 `1.16e-7m`, 가중치 합 오차 최대 약 `4.47e-8`. Khronos glTF Validator 오류 0개·경고 1개(원본과 같은 tangent 미포함, 런타임 생성).
+- 재현: `.venv/bin/python assets/npcs/ysolde/export_rig.py`. 원본에서 피팅·리깅·동작 생성·검증·Blender 저장을 실행하고, 중간 GLB·클립 JSON·개별 검사 파일을 삭제한다. 관절·가중치·클립·검증 기록은 `tripo_v1/generation.json`의 `rigging`에 통합했다. 표정·눈 깜빡임·독립적인 머리카락 물리 본은 없다. 아직 게임 내 NPC 모델 경로에는 연결하지 않았다. 사용자 요청으로 중간 결과물을 삭제한 뒤 최종 GLB·Blender와 재현 소스만 보존한다.
+- 개발 미리보기: `/modular-character-preview.html?character=ysolde`. 상단 캐릭터 목록에서 이졸데를 선택한다. 기준 A포즈·대기·걷기·달리기, 재생 속도·일시정지·구간 탐색, 얼굴·오른손 확대, 뼈대·와이어프레임 표시를 지원하며 `rig_v1/ysolde.glb`를 직접 읽는다.
 
 ## 텍스처 재패킹 (2026-08-06)
 

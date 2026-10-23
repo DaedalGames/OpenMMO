@@ -90,6 +90,11 @@ export let preview:
 async function main() {
   if (!import.meta.env.DEV)
     throw new Error('개발 서버에서 여는 제작용 미리보기입니다.')
+  if (new URLSearchParams(location.search).get('character') === 'ysolde') {
+    const { showYsolde } = await import('./ysolde')
+    await showYsolde(scene, resources, cleanup, () => disposed)
+    return
+  }
   if (new URLSearchParams(location.search).get('character') === 'terraclash') {
     const { showTerraclash } = await import('./terraclash')
     await showTerraclash(scene, resources, cleanup, () => disposed)

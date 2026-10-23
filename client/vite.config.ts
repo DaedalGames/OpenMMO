@@ -112,6 +112,7 @@ function modularCharacterPreview(): Plugin {
     'helmet_barbarian',
   ])
   const fixed: Record<string, URL> = {
+    ysolde: new URL('../assets/npcs/ysolde/rig_v1/ysolde.glb', import.meta.url),
     barkan: new URL(
       '../assets/monsters/barkan/rig_v1/barkan.glb',
       import.meta.url
