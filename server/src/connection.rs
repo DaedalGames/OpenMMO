@@ -1476,6 +1476,17 @@ async fn handle_client_message(
                     saved_floor, selected_character.name
                 );
             }
+            if player.is_official_npc {
+                if let Some(entry) = game_state.npc_login_schedule(&player.name) {
+                    player.position = Position {
+                        x: entry.pos[0],
+                        y: entry.pos[1],
+                        z: entry.pos[2],
+                    };
+                    player.rotation = entry.rotation.to_radians();
+                    player.floor_level = entry.floor_level as i8;
+                }
+            }
             let mut dungeon_reset_on_login = false;
             if player.floor_level < 0 {
                 let ok = game_state
@@ -2732,6 +2743,79 @@ fn default_character_max_hp(
 mod tests {
     use super::*;
     use std::net::Ipv4Addr;
+
+    #[tokio::test]
+    async fn official_npc_enters_at_its_schedule_position() {
+        let auth = Arc::new(crate::game_state::tests::make_test_auth(
+            "npc_schedule_entry",
+        ));
+        let account = auth.login_npc("npc_ysolde").unwrap();
+        let character = auth
+            .create_character(
+                &account,
+                "Ysolde",
+                &roll_character_attributes(&CharacterClass::Merchant, crate::types::Gender::Female),
+                16,
+                CharacterClass::Merchant,
+                crate::types::Gender::Female,
+            )
+            .unwrap();
+        for official in [false, true] {
+            let game = Arc::new(crate::game_state::tests::make_test_game_state(&format!(
+                "npc_schedule_entry_{official}"
+            )));
+            let position = Position {
+                x: -1880.7,
+                y: 6.9,
+                z: 5522.7,
+            };
+            game.set_npc_schedule(
+                "Ysolde",
+                vec![onlinerpg_shared::schedule::ScheduleEntry {
+                    at: "00:00".into(),
+                    pos: [position.x, position.y, position.z],
+                    rotation: 90.0,
+                    ..Default::default()
+                }],
+            );
+            let mut state = ConnectionState::new(Ipv4Addr::LOCALHOST.into());
+            handle_handshake(
+                &client_info(onlinerpg_shared::PROTOCOL_VERSION, "cli"),
+                &mut state,
+            );
+            finish_auth(&game, &auth, &mut state, account.clone(), official).await;
+            let request = onlinerpg_shared::serialize_client_msg(&ClientMessage::EnterGame {
+                character_id: character.id,
+            })
+            .unwrap();
+            let responses =
+                handle_client_message(&request, &game, &auth, &test_auth_ctx(), &mut state)
+                    .await
+                    .unwrap();
+            let player = responses
+                .iter()
+                .find_map(|message| match message {
+                    ServerMessage::JoinSuccess { player, .. } => Some(player),
+                    _ => None,
+                })
+                .expect("character enters the game");
+            let expected = if official {
+                position
+            } else {
+                crate::world_config::world_config()
+                    .spawn_position
+                    .position()
+            };
+            assert_eq!(
+                (player.position.x, player.position.z),
+                (expected.x, expected.z)
+            );
+            assert_eq!(player.floor_level, 0);
+            if official {
+                assert!((player.rotation - std::f32::consts::FRAC_PI_2).abs() < 0.001);
+            }
+        }
+    }
 
     #[test]
     fn in_game_rejection_identifies_the_connection_without_debug_wrappers() {

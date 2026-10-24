@@ -1,0 +1,12 @@
+{
+  "schedule": [
+    {
+      "at": "00:00",
+      "pos": [-1880.7, 6.9, 5522.7],
+      "rotation": 90.0,
+      "floor_level": 0,
+      "label": "studying the runes near the Sundered Bastion and answering visitors",
+      "waypoints": []
+    }
+  ]
+}

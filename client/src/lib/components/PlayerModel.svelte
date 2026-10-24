@@ -127,6 +127,7 @@
     getNpcModelPath,
     getWeaponModelPath,
     isModularModel,
+    YSOLDE_CHARACTER_MODEL_PATH,
   } from '../utils/modelPaths'
   import { loadGLB } from '../utils/gltfCache'
   import {
@@ -1414,6 +1415,17 @@
         locomotionAnimations,
         combatMeleeAnimations
       )
+      if (modelPath === YSOLDE_CHARACTER_MODEL_PATH) {
+        for (const selection of orderedSelections) {
+          const clip = baseAnimations.find(
+            (clip) => clip.name === selection.name
+          )
+          if (!clip) continue
+          selection.clip = clip
+          selection.source = 'base'
+          selection.fromFallback = false
+        }
+      }
       const animations = isModularModel(modelPath)
         ? orderedSelections.map((selection) => selection.clip)
         : retargetOrderedCharacterAnimationsForModel(

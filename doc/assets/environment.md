@@ -54,6 +54,33 @@ white-cloud.jpg도 같은 폴더의 원본(5964px)을 2048px q85로 줄인 것.
 - sea foam https://www.filterforge.com/filters/13843.html — 수면 및 나룻배의 항적·노 물보라에 사용 (`textures/13843.png`, water-foam-gen.ts, effects/boat-water.ts)
 - waternormals (Three.js examples) https://github.com/mrdoob/three.js/tree/dev/examples/textures — 물 표면 노멀맵으로 사용 중 (`textures/waternormals.jpg`, scene-init.ts)
 
+## Ysolde's Excavation Tent / 이졸데의 발굴 야영 텐트 (2026-10-24)
+
+- 원화 초안: [ysolde-tent-concept.png](../images/props/ysolde-tent-concept.png), 1536×1024 PNG. 이졸데의 현재 위치 근처에 놓을 소형 거주 텐트의 초기 디자인 검토용이다.
+- OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**, 생성 2026-10-24. 외부 참조 이미지 없이 생성했으며 OpenAI 생성 출력물 이용 조건 적용.
+- 모래색·올리브색 캔버스, 목재 지지대, 삼줄과 말뚝으로 만든 박공지붕 텐트. 내부에 1인 침대와 통로, 입구에 유물 상자·붓·모종삽·말린 도면과 랜턴을 두어 발굴 야영지 분위기를 표현했다.
+- 제작 시 목표 크기는 본체 약 2.4×3.2m, 용마루 높이 2.2m. 원화의 시각적 비례를 바탕으로 3D 단계에서 침대 출입 공간을 검증한다.
+- 전체 생성 프롬프트·해시: [concept-source.json](../../assets/props/ysolde-tent/concept-source.json).
+- 분리 디자인 참고 v2(2026-10-24): [후면부](../images/props/ysolde-tent-back-concept-v2.png)·[전면부](../images/props/ysolde-tent-front-concept-v2.png), 각각 1536×1024 PNG. 같은 내장 ImageGen·**ChatGPT Pro 20x**로 기존 원화와 사용자가 표시한 측벽 가이드를 참조해 수정했으며 같은 OpenAI 출력물 이용 조건 적용. [전체 프롬프트·해시·파트 구성](../../assets/props/ysolde-tent/split-concepts-v2.json).
+- 사용자가 실내 느낌을 위해 표시한 왼쪽 경사벽 전체를 후면부에 추가했다. 후면부는 삼각형 뒤벽·왼쪽 경사벽·용마루와 뒤 기둥·빈 바닥천이며 실내에서도 남긴다. 전면부는 오른쪽 경사천·앞 기둥·묶어 연 입구 천이며 실내에서 숨긴다. 왼쪽 경사벽은 전면부에서 제거해 파트가 중복되지 않게 했다.
+- **[미사용]** 분리 원화 v1: [후면부](../images/props/ysolde-tent-back-concept-v1.png)·[전면부](../images/props/ysolde-tent-front-concept-v1.png). 실내에서 뒤벽만 남던 구성이며 v2로 대체했다. [이전 프롬프트·해시](../../assets/props/ysolde-tent/split-concepts-v1.json).
+- 잠자리와 모든 소품은 텐트 메시에서 제외하고 독립 오브젝트로 다룬다. 처음에는 여관 2층 부활 침대(id 52–55)와 같은 `rustic_bed`로 공간을 검토했으며, 이후 그 침구를 재사용한 바닥 매트리스와 낮은 목제 야전침대를 미리보기 후보로 추가했다. [잠자리 제작 기록](props.md).
+- 직교 제작 원화 v3(2026-10-24): Blender에서 공통 폭 2.4m·깊이 3.2m·용마루 2.2m·기둥 끝 2.3m 기준형을 만든 뒤, 내장 ImageGen(**ChatGPT Pro 20x**)으로 재질을 입힌 별도 PNG 6장이다. 생성 이미지의 색상 외곽 크기를 기준 렌더와 비교했을 때 폭 차이는 최대 약 1.5%, 높이는 약 0.5%였다. 이 수치는 투영 외곽 비교이며 3D 형상의 일치를 보장하지 않는다. [전체 프롬프트·해시·투영 검사](../../assets/props/ysolde-tent/orthographic-v3/sources.json), [기준형 생성 소스](../../assets/props/ysolde-tent/render_orthographic_guides.py).
+
+| 파트 | 정면 | 측면 | 후면 |
+| --- | --- | --- | --- |
+| 후면부 | [정면](../images/props/ysolde-tent-ortho-v3/back/front.png) | [왼쪽](../images/props/ysolde-tent-ortho-v3/back/side.png) | [후면](../images/props/ysolde-tent-ortho-v3/back/back.png) |
+| 전면부 | [정면](../images/props/ysolde-tent-ortho-v3/front/front.png) | [오른쪽](../images/props/ysolde-tent-ortho-v3/front/side.png) | [후면](../images/props/ysolde-tent-ortho-v3/front/back.png) |
+
+- Tripo API 유료 크레딧으로 파트별 3시점 생성, 모델 `P2-20260801`, detailed PBR `v3.5-20260815`, 목표 4,000 faces. 후면 task `86d03297-5057-411d-838a-9659210d3341`, 전면 task `5ede9e77-1cb2-494c-946e-adfda9697004`. 각각 120크레딧, 합계 **240크레딧**(760 → 520). Tripo 이용 약관 적용. 요청·입력 해시·응답·원본은 `assets/props/ysolde-tent/tripo_ortho_v3/{back,front}/`에 보존했다.
+- 원본은 반대쪽 경사천과 불필요한 끝면을 추정해 추가했다. 그대로 배치하지 않고, [로컬 조립 소스](../../assets/props/ysolde-tent/fit_tripo_parts.py)로 불필요한 면을 잘라 파트를 분리하고 공통 크기·원점을 맞췄다. 바닥천은 직접 만든 평면에 원본 Tripo 캔버스 재질의 UV 영역을 사용한다. 외부 에셋과 추가 유료 생성은 사용하지 않았다.
+- 바닥 UV 보정(2026-10-24): 밝은 테두리·고리가 섞이던 후면 텍스처 샘플을 전면부 하단 올리브색 천 영역으로 교체했다. 좁은 천 영역을 폭 방향으로 8회 배치해 무늬가 늘어나지 않도록 맞췄다. 원본 Tripo 재질을 재사용하며 추가 생성 비용은 없다.
+- 입구 연결 보정(2026-10-24): 접힌 천·매듭·앞 기둥을 연결된 원본 구성별로 구분해 왼쪽 천이 절단 경계에서 잘리지 않도록 복원했다. 양쪽 접힌 천의 깊이와 옆면 입구 끝단을 함께 맞춰 파묻힘과 틈을 줄이고, 상단은 원래 기둥 연결로 부드럽게 전환했다. 전면부에 남던 왼쪽 옆면 중복 조각을 제거했으며 기존 UV·PBR 재질을 유지했다.
+- 뒤벽 중앙 보정(2026-10-24): 바깥으로 돌출되던 별도 덮개 평면 2개를 제거했다. 뒤벽 양쪽 천의 중앙 가장자리를 같은 높이에서 분할·연장·용접하고 기존 뒤벽 UV를 연장해 하단 틈을 닫았다. [수정된 뒤쪽 렌더](../images/props/ysolde-tent-fitted-v3/rear.png). 내보낸 GLB의 기둥을 제외한 뒤벽 천에 정면·사선 레이 2,100개를 쏘아 중앙 틈이 없음을 확인했다. 기존 Tripo 재질을 재사용했으며 추가 생성 비용은 없다.
+- 조립본: [Blender](../../assets/props/ysolde-tent/fitted_v3/ysolde-tent.blend), [후면 GLB](../../assets/props/ysolde-tent/fitted_v3/tent-back.glb)·[전면 GLB](../../assets/props/ysolde-tent/fitted_v3/tent-front.glb). [외부 렌더](../images/props/ysolde-tent-fitted-v3/outside.png)·[전면을 숨긴 내부 렌더](../images/props/ysolde-tent-fitted-v3/inside.png). 10개 방향별 레이 검사로 후면부의 왼쪽·뒤벽·바닥은 남고, 전면부의 오른쪽 경사천·입구만 분리되는 것을 확인했다. 아직 게임 배치와 침대 설치는 하지 않았다.
+- 개발 미리보기: `/modular-character-preview.html?asset=ysolde-tent`. 전체·실내(전면 숨김)·전면부만 표시, 직교 카메라 회전·확대와 5개 시점, 1m 격자·와이어프레임을 지원한다. ‘잠자리’에서 놓지 않음·바닥 매트리스·낮은 야전침대·비교용 여관 침대를 고를 수 있으며 표시 모드·시점·선택은 URL에 저장한다. 각각 `bed=mattress`·`bed=cot`·`bed=inn`이고, 이전 `bed=1` 링크는 바닥 매트리스로 연다. 제작용 GLB를 직접 읽고 게임 월드의 배치 데이터는 수정하지 않는다.
+- 커밋 전 정리(2026-10-24): 원본 검사용 Blender 2개·Tripo 결과 비교 이미지·배포와 문서에서 쓰지 않는 전면부 렌더·일회성 검사 스크립트 등 중간 파일 16개(약 35MiB)를 삭제했다. 원본 검사 수치는 각 `generation.json`에 통합하고, 최종 GLB·편집 Blender·재현 소스·생성 입력과 문서 이미지는 보존했다.
+
 ## References
 
 - https://github.com/tigerabrodi/webgpu-vfx for reference — **[미사용]** 기법 참고용

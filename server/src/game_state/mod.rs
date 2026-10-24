@@ -655,22 +655,29 @@ impl GameState {
     }
 
     pub fn is_npc_asleep(&self, npc_name: &str) -> bool {
-        self.active_npc_schedule_matches(npc_name, ScheduleEntry::is_sleeping)
+        self.active_npc_schedule(npc_name)
+            .is_some_and(|entry| entry.is_sleeping())
     }
 
-    fn active_npc_schedule_matches(
-        &self,
-        npc_name: &str,
-        predicate: impl FnOnce(&ScheduleEntry) -> bool,
-    ) -> bool {
+    pub fn npc_login_schedule(&self, npc_name: &str) -> Option<ScheduleEntry> {
+        let definition = crate::npc_defs::npc_defs().get_by_npc_name(npc_name)?;
+        if !definition.spawn_at_schedule {
+            return None;
+        }
+        self.active_npc_schedule(npc_name).filter(|entry| {
+            entry.pos.iter().all(|value| value.is_finite())
+                && entry.rotation.is_finite()
+                && i8::try_from(entry.floor_level).is_ok()
+        })
+    }
+
+    fn active_npc_schedule(&self, npc_name: &str) -> Option<ScheduleEntry> {
         let datetime = self.current_game_datetime();
         let schedules = self
             .npc_schedules
             .read()
             .expect("npc schedules lock poisoned");
-        let Some(schedule) = schedules.get(npc_name) else {
-            return false;
-        };
+        let schedule = schedules.get(npc_name)?;
         let (active, _) = resolve_active_schedule(
             schedule,
             Some(onlinerpg_shared::schedule::schedule_period(&datetime)),
@@ -680,7 +687,7 @@ impl GameState {
                 onlinerpg_shared::moon::game_day_index(&datetime),
             )),
         );
-        active.is_some_and(|i| predicate(&schedule[i]))
+        active.map(|i| schedule[i].clone())
     }
 
     #[allow(clippy::too_many_arguments)]

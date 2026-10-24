@@ -4,18 +4,15 @@ use std::collections::HashMap;
 use std::sync::OnceLock;
 use tracing::info;
 
-/// One LLM NPC in the game-data registry (`data/npcs.json`). Every NPC has
-/// a row; the trading fields are optional — per `doc/ECONOMY.md`, any NPC
-/// *may* trade as a resident (economy phase 3): finite wallet refilled by a
-/// salary, buys only its wishlist (at a premium), and sells from its real
-/// inventory. Money pumps are blocked structurally: wishlist items are kept
-/// (never resold), and only non-wishlist bag items are for sale.
+/// Registry identity, deployment behavior, and optional resident trading rules.
 #[derive(Debug, Clone, Deserialize)]
 #[allow(dead_code)]
 pub struct NpcDefinition {
     pub id: String,
     #[serde(rename = "npcName")]
     pub npc_name: String,
+    #[serde(rename = "spawnAtSchedule", default)]
+    pub spawn_at_schedule: bool,
     /// Item def ids this NPC wants to buy from players. Empty = the NPC
     /// does not trade as a resident.
     #[serde(default, deserialize_with = "crate::semicolon_list::deserialize")]

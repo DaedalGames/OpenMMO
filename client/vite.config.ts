@@ -112,6 +112,22 @@ function modularCharacterPreview(): Plugin {
     'helmet_barbarian',
   ])
   const fixed: Record<string, URL> = {
+    ysolde_tent_back: new URL(
+      '../assets/props/ysolde-tent/fitted_v3/tent-back.glb',
+      import.meta.url
+    ),
+    ysolde_tent_front: new URL(
+      '../assets/props/ysolde-tent/fitted_v3/tent-front.glb',
+      import.meta.url
+    ),
+    ysolde_ground_mattress: new URL(
+      '../assets/items/ysolde_camp_bed/ground-mattress.glb',
+      import.meta.url
+    ),
+    ysolde_field_cot: new URL(
+      '../assets/items/ysolde_camp_bed/field-cot.glb',
+      import.meta.url
+    ),
     ysolde: new URL('../assets/npcs/ysolde/rig_v1/ysolde.glb', import.meta.url),
     barkan: new URL(
       '../assets/monsters/barkan/rig_v1/barkan.glb',

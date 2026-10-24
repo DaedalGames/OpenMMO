@@ -235,3 +235,9 @@ id = "tobin"
 account = "npc_tobin"
 gender = "male"
 llm = "codex"
+
+[[npcs]]
+id = "ysolde"
+account = "npc_ysolde"
+gender = "female"
+llm = "codex"

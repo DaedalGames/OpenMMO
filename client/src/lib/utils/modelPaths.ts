@@ -39,6 +39,7 @@ export const ESTATE_ARCHITECT_CHARACTER_MODEL_PATH =
   '/models/characters/estate_architect.glb'
 export const GRIDA_CHARACTER_MODEL_PATH = '/models/characters/grida.glb'
 export const TOBIN_CHARACTER_MODEL_PATH = '/models/characters/tobin.glb'
+export const YSOLDE_CHARACTER_MODEL_PATH = '/models/characters/ysolde.glb'
 
 export const CHARACTER_ANIMATION_PACK_PATHS = {
   locomotion: '/models/animations/locomotion.glb',
@@ -101,6 +102,7 @@ const NPC_MODEL_OVERRIDES: Record<string, string> = {
   Rowan: ESTATE_ARCHITECT_CHARACTER_MODEL_PATH,
   Grida: GRIDA_CHARACTER_MODEL_PATH,
   Tobin: TOBIN_CHARACTER_MODEL_PATH,
+  Ysolde: YSOLDE_CHARACTER_MODEL_PATH,
 }
 
 export function getNpcModelPath(npcName: string): string | undefined {
