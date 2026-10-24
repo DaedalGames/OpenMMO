@@ -1,6 +1,56 @@
 use super::*;
 
 #[tokio::test]
+async fn ysolde_respawns_at_camp_and_keeps_her_minimum_level() {
+    for official in [false, true] {
+        let game = make_test_game_state(&format!("ysolde_respawn_{official}"));
+        let schedule: crate::npc_schedule::ScheduleFile = serde_json::from_str(include_str!(
+            "../../../../agent-client/data/npcs/ysolde/schedule.json"
+        ))
+        .unwrap();
+        let spawn = schedule.schedule[0].clone();
+        game.set_npc_schedule("Ysolde", schedule.schedule);
+        let mut player = make_player("ysolde", 0.0, 0.0);
+        player.name = "Ysolde".into();
+        player.is_official_npc = official;
+        player.level = 30;
+        player.max_health = 360;
+        player.health = 0;
+        player.object_type = Some("excavate".into());
+        let id = player.id;
+        game.register_player_character(
+            &id,
+            1,
+            onlinerpg_shared::xp::xp_for_level(30),
+            attrs_with_cha(10),
+            0,
+            None,
+        )
+        .await;
+        game.add_player(player).await;
+        game.on_player_died(&id, "test").await;
+        game.respawn_player(&id).await;
+        let players = game.get_all_players().await;
+        let revived = &players[&id];
+        assert_eq!(revived.health, revived.max_health);
+        assert_eq!(revived.object_type, None);
+        assert_eq!(revived.object_id, None);
+        if official {
+            assert_eq!(
+                revived.position,
+                pos3(spawn.pos[0], spawn.pos[1], spawn.pos[2])
+            );
+            assert_eq!(revived.floor_level, spawn.floor_level as i8);
+            assert_eq!(revived.level, 30);
+            assert_eq!(revived.max_health, 360);
+        } else {
+            assert_eq!(revived.position, world_config().respawn.position());
+            assert_eq!(revived.level, 29);
+        }
+    }
+}
+
+#[tokio::test]
 async fn debug_teleport_lands_above_edited_terrain_and_broadcasts_the_correct_height() {
     let game = make_test_game_state("debug_teleport_surface");
     let id = pid("Admin");

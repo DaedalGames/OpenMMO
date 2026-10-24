@@ -1,6 +1,34 @@
 use super::*;
 
 #[test]
+fn monster_state_and_sightings_use_display_names() {
+    let (mut s, _rx) = test_state();
+    s.self_player = Some(test_player(0.0, 0.0));
+    for (id, monster_type, name) in [
+        ("m21", "scp939", "Stalker"),
+        ("m22", "unknown_monster", "unknown_monster"),
+    ] {
+        let mut m = monster(id);
+        m.monster_type = monster_type.into();
+        m.aggressive = true;
+        s.nearby_monsters.insert(id.into(), m);
+        let world = s.format_world_state();
+        assert!(
+            world.contains(&format!("Monster: {name} [{id}]")),
+            "{world}"
+        );
+    }
+    s.check_sightings();
+    assert!(s
+        .agent_events
+        .iter()
+        .any(|line| line.starts_with("[Sighted] Stalker [m21]")));
+    assert!(!s.format_world_state().contains("scp939"));
+    assert!(s.agent_events.iter().all(|line| !line.contains("scp939")));
+    assert_eq!(s.nearby_monsters["m21"].monster_type, "scp939");
+}
+
+#[test]
 fn fence_visibility_is_shared_without_one_npc_removing_anothers_collision() {
     use onlinerpg_shared::fence::{Fence, FenceAxis, FenceEdge};
     use onlinerpg_shared::pathfinding::is_movement_blocked;

@@ -55,7 +55,11 @@ pub(super) async fn check_schedule_transition(
     new: (Option<usize>, Option<u32>),
     label: &str,
 ) -> (Option<usize>, Option<u32>) {
-    if state.lock().await.player_trade_in_progress() {
+    let routine_paused = {
+        let s = state.lock().await;
+        s.player_trade_in_progress() || s.schedule_combat_active()
+    };
+    if routine_paused {
         return current;
     }
     if new != current {
@@ -116,6 +120,9 @@ pub(super) async fn stop_current_entry(
 }
 
 async fn send_interact_if_needed(s: &mut SharedState, entry: &ScheduleEntry) {
+    if s.schedule_combat_active() {
+        return;
+    }
     if let Some(position) = entry.fishing_target() {
         if !s.can_start_scheduled_fishing() {
             return;
@@ -237,6 +244,7 @@ async fn perform_waypoint_activity(
     {
         let mut s = state.lock().await;
         if s.player_trade_in_progress()
+            || s.schedule_combat_active()
             || s.self_player.as_ref().is_none_or(|p| {
                 p.health == 0
                     || p.mount.is_some()
@@ -259,10 +267,21 @@ async fn perform_waypoint_activity(
             return;
         }
     }
-    tokio::time::sleep(std::time::Duration::from_secs(u64::from(
-        activity.duration_secs.min(120),
-    )))
-    .await;
+    let deadline = tokio::time::Instant::now()
+        + std::time::Duration::from_secs(u64::from(activity.duration_secs.min(120)));
+    while tokio::time::Instant::now() < deadline {
+        let interrupted = {
+            let s = state.lock().await;
+            s.schedule_combat_active() || s.self_player.as_ref().is_none_or(|p| p.health == 0)
+        };
+        if interrupted {
+            break;
+        }
+        tokio::time::sleep_until(
+            deadline.min(tokio::time::Instant::now() + std::time::Duration::from_millis(50)),
+        )
+        .await;
+    }
     let mut s = state.lock().await;
     if let Err(error) = s
         .send_background_command(ClientMessage::StopInteraction)

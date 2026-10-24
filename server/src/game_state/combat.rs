@@ -37,14 +37,10 @@ use std::time::Duration;
 use tracing::{debug, info, warn};
 
 const WEAPON_DROP_OFFSET_METERS: f32 = 2.0;
-// Mirrors the web and agent clients' 2m melee reach. This server-side check is
-// authoritative: clients may request an attack directly without chasing.
-const PLAYER_MELEE_ATTACK_RANGE_METERS: f32 = 2.0;
-// The server walks the player at client speed and so trails it by the network
-// lag; a blow thrown on arrival must not be refused for that. It belongs to
-// every reach, not just the melee one — a bow that stops at its own 10m and
-// looses would otherwise be refused for the same trailing metre.
-const PLAYER_RANGE_TOLERANCE_METERS: f32 = 1.0;
+// Matches the web and agent clients' melee reach.
+pub(super) const PLAYER_MELEE_ATTACK_RANGE_METERS: f32 = 2.0;
+// Allow for network lag on both melee and ranged attacks.
+pub(super) const PLAYER_RANGE_TOLERANCE_METERS: f32 = 1.0;
 // Out-of-range swings may still pull aggro when the monster is plausibly
 // nearby, but farther requests are ignored to prevent remote provocation.
 pub(super) const PLAYER_ATTACK_PROVOKE_RANGE_METERS: f32 = 10.0;
@@ -452,25 +448,38 @@ impl super::GameState {
     }
 
     async fn equipped_weapon(&self, player_id: &PlayerId) -> EquippedWeapon {
-        let inventories = self.inventories.read().await;
-        inventories
-            .get(player_id)
-            .and_then(|inv| inv.equipped.get(&EquipSlot::MainHand))
-            .and_then(|item| {
-                self.item_defs.get(&item.item_def_id).and_then(|def| {
-                    def.damage_dice().map(|dice| EquippedWeapon {
-                        dagger_instance: (def.weapon_type
-                            == Some(crate::item_defs::WeaponType::Dagger))
-                        .then_some(item.instance_id),
-                        dice: dice.to_string(),
-                        enchant: item.enchant,
-                        range: def.weapon_range(),
-                        ability: def.ranged_ability(),
-                        ammo_kind: def.ammo_kind.clone(),
+        let weapon = {
+            let inventories = self.inventories.read().await;
+            inventories
+                .get(player_id)
+                .and_then(|inv| inv.equipped.get(&EquipSlot::MainHand))
+                .and_then(|item| {
+                    self.item_defs.get(&item.item_def_id).and_then(|def| {
+                        def.damage_dice().map(|dice| EquippedWeapon {
+                            dagger_instance: (def.weapon_type
+                                == Some(crate::item_defs::WeaponType::Dagger))
+                            .then_some(item.instance_id),
+                            dice: dice.to_string(),
+                            enchant: item.enchant,
+                            range: def.weapon_range(),
+                            ability: def.ranged_ability(),
+                            ammo_kind: def.ammo_kind.clone(),
+                        })
                     })
                 })
-            })
-            .unwrap_or_default()
+        };
+        if let Some(weapon) = weapon {
+            return weapon;
+        }
+        let mut unarmed = EquippedWeapon::default();
+        if let Some(dice) = self
+            .official_npc_def(player_id)
+            .await
+            .and_then(|def| def.unarmed_damage_roll.as_ref())
+        {
+            unarmed.dice.clone_from(dice);
+        }
+        unarmed
     }
 
     /// Use the chosen stack, or select and remember the strongest matching ammo.
@@ -2025,13 +2034,22 @@ impl super::GameState {
     }
 
     async fn apply_player_death_penalty(&self, player_id: &PlayerId) {
+        let npc_def = self.official_npc_def(player_id).await;
         // Read-modify-write under one lock, like the kill-XP grant: a shared
         // kill can land while the penalty is computed, and a split read/write
         // would drop it.
         let applied = {
             let mut map = self.player_characters.write().await;
             map.get_mut(player_id).and_then(|entry| {
-                let penalty = xp::apply_death_penalty(entry.1);
+                let mut penalty = xp::apply_death_penalty(entry.1);
+                if let Some(def) = npc_def {
+                    penalty.new_xp = penalty
+                        .new_xp
+                        .max(xp::xp_for_level(def.min_level).min(penalty.old_xp));
+                    penalty.new_level = xp::level_from_xp(penalty.new_xp);
+                    penalty.xp_penalty = penalty.old_xp - penalty.new_xp;
+                    penalty.leveled_down = penalty.new_level < penalty.old_level;
+                }
                 let progression_changed =
                     penalty.new_xp != penalty.old_xp || penalty.new_level != penalty.old_level;
                 if !progression_changed {
@@ -2092,6 +2110,9 @@ impl super::GameState {
                     }
                 }
 
+                if let Some(def) = npc_def {
+                    player.set_base_max_health(player.base_max_health().max(def.min_max_hp));
+                }
                 let old_health = player.health;
                 if player.health > player.max_health {
                     player.health = player.max_health;
@@ -2149,6 +2170,24 @@ impl super::GameState {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn ysolde_trowel_uses_its_combat_damage_only_for_the_official_npc() {
+        use crate::game_state::tests::{make_player, make_test_game_state};
+
+        for official in [false, true] {
+            let game = make_test_game_state(&format!("ysolde_trowel_{official}"));
+            let mut player = make_player("ysolde", 0.0, 0.0);
+            player.name = "Ysolde".into();
+            player.is_official_npc = official;
+            let id = player.id;
+            game.add_player(player).await;
+            assert_eq!(
+                game.equipped_weapon(&id).await.dice,
+                if official { "4d8" } else { "1d2" }
+            );
+        }
+    }
 
     fn pos(x: f32, y: f32, z: f32) -> Position {
         Position { x, y, z }

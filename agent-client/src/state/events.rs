@@ -31,6 +31,9 @@ impl SharedState {
 
     /// Classify how urgent a server event is for LLM processing.
     pub fn classify_event(&self, msg: &ServerMessage) -> EventUrgency {
+        if self.dialogue_ignores_event(msg) {
+            return EventUrgency::Noise;
+        }
         let self_id = self.self_player_id.as_ref();
         match msg {
             // Urgent: we are being attacked or we died
@@ -761,16 +764,34 @@ impl SharedState {
             // `self_player.health` never drops and everything gated on it
             // (auto-respawn, own-monster targeting) reads a live body.
             ServerMessage::MonsterAttackedPlayer {
+                monster_id,
                 player_id,
                 current_health,
                 ..
             } => {
                 self.set_player_health(player_id, *current_health);
+                if self.self_player_id.as_ref() == Some(player_id) {
+                    self.record_self_combat(monster_id);
+                }
             }
-            ServerMessage::MonsterSkillStruck { victims, .. } => {
+            ServerMessage::MonsterSkillStruck {
+                monster_id,
+                victims,
+                ..
+            } => {
                 for v in victims {
                     self.set_player_health(&v.player_id, v.current_health);
+                    if self.self_player_id == Some(v.player_id) {
+                        self.record_self_combat(monster_id);
+                    }
                 }
+            }
+            ServerMessage::PlayerAttacked {
+                player_id,
+                monster_id,
+                ..
+            } if self.self_player_id.as_ref() == Some(player_id) => {
+                self.record_self_combat(monster_id);
             }
             ServerMessage::PlayerDead { player_id } => {
                 self.set_player_health(player_id, 0);
@@ -891,12 +912,14 @@ impl SharedState {
                     .insert(monster.id.clone(), monster.clone());
             }
             ServerMessage::MonsterDead { monster_id, .. } => {
+                self.combat_monsters.remove(monster_id);
                 if let Some(monster) = self.nearby_monsters.get_mut(monster_id) {
                     monster.health = 0;
                     monster.state = MonsterState::Dead;
                 }
             }
             ServerMessage::MonsterRemoved { monster_id } => {
+                self.combat_monsters.remove(monster_id);
                 self.forget_monster(monster_id);
             }
             // The server just said this monster does not exist: its

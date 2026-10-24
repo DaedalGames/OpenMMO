@@ -13,6 +13,20 @@ pub struct NpcDefinition {
     pub npc_name: String,
     #[serde(rename = "spawnAtSchedule", default)]
     pub spawn_at_schedule: bool,
+    #[serde(rename = "respawnAtSpawn", default)]
+    pub respawn_at_spawn: bool,
+    #[serde(rename = "minLevel", default)]
+    pub min_level: u32,
+    #[serde(rename = "minMaxHp", default)]
+    pub min_max_hp: u32,
+    #[serde(rename = "minGuard", default)]
+    pub min_guard: u8,
+    #[serde(rename = "unarmedDamageRoll", default)]
+    pub unarmed_damage_roll: Option<String>,
+    #[serde(rename = "selfDefense", default)]
+    pub self_defense: bool,
+    #[serde(rename = "walkSpeed", default)]
+    pub walk_speed: Option<f32>,
     /// Item def ids this NPC wants to buy from players. Empty = the NPC
     /// does not trade as a resident.
     #[serde(default, deserialize_with = "crate::semicolon_list::deserialize")]
@@ -80,6 +94,12 @@ impl NpcDefs {
             serde_json::from_str(data).expect("Failed to parse npcs.json");
 
         for def in by_id.values() {
+            assert!(
+                def.walk_speed
+                    .is_none_or(|speed| speed.is_finite() && speed > 0.0),
+                "NPC {} has an invalid walk speed",
+                def.npc_name
+            );
             // A name must resolve to exactly one trading model: an NPC is
             // either a merchant (catalog shop) or a resident trader.
             assert!(

@@ -378,6 +378,7 @@ pub struct SharedState {
     /// entrances), keyed by a typed id. Entry fires a [Sighted] event so the
     /// LLM reacts mid-walk instead of at the next scheduled turn.
     sighted_pois: HashSet<String>,
+    combat_monsters: HashMap<String, tokio::time::Instant>,
     /// Synthetic agent-side events (e.g. "player appeared nearby")
     agent_events: Vec<String>,
     /// Commands an agent action put on the wire, ever. Read only as a
@@ -525,6 +526,7 @@ impl SharedState {
             tips_noticed: 0,
             bad_song_title_refused: false,
             sighted_pois: HashSet::new(),
+            combat_monsters: HashMap::new(),
             agent_events: Vec::new(),
             action_commands_sent: 0,
             action_events_pushed: 0,

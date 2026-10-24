@@ -8,6 +8,7 @@ mod google_auth;
 mod item_defs;
 mod llm_scheduler;
 mod minimax;
+mod monster_defs;
 mod openai;
 mod openrouter;
 mod orchestrator;

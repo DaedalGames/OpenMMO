@@ -7,6 +7,129 @@ use onlinerpg_shared::ServerMessage;
 use tokio::sync::mpsc;
 use tokio::time::{timeout, Duration};
 
+async fn combat_walker() -> (Arc<Mutex<SharedState>>, mpsc::Receiver<ClientMessage>) {
+    let (state, rx) = walker();
+    {
+        let mut s = state.lock().await;
+        let me = s.self_player.as_mut().unwrap();
+        me.name = "Ysolde".into();
+        me.is_official_npc = true;
+        s.nearby_monsters
+            .insert("m21".into(), crate::state::tests::monster("m21"));
+    }
+    (state, rx)
+}
+
+async fn start_combat(state: &Arc<Mutex<SharedState>>) {
+    let mut s = state.lock().await;
+    let player = s.self_player.as_ref().unwrap();
+    let event = ServerMessage::MonsterAttackedPlayer {
+        monster_id: "m21".into(),
+        player_id: player.id,
+        hit: false,
+        roll: 1,
+        damage: 0,
+        current_health: player.health,
+        ranged: false,
+    };
+    s.push_event(event);
+}
+
+async fn end_combat(state: &Arc<Mutex<SharedState>>) {
+    state
+        .lock()
+        .await
+        .push_event(ServerMessage::MonsterRemoved {
+            monster_id: "m21".into(),
+        });
+}
+
+#[tokio::test(start_paused = true)]
+async fn combat_stops_a_patrol_and_resumes_its_destination_when_safe() {
+    let (state, mut rx) = combat_walker().await;
+    let task = spawn_move(
+        &state,
+        ScheduleEntry {
+            pos: [8.5, 1.3, 0.5],
+            ..Default::default()
+        },
+    );
+    next_goal(&mut rx, 8.5).await;
+    start_combat(&state).await;
+    assert!(matches!(
+        rx.recv().await,
+        Some(ClientMessage::PlayerMoveStop { .. })
+    ));
+    tokio::time::advance(Duration::from_secs(3)).await;
+    tokio::task::yield_now().await;
+    assert!(rx.try_recv().is_err());
+    end_combat(&state).await;
+    let request = next_goal(&mut rx, 8.5).await;
+    state
+        .lock()
+        .await
+        .push_event(progress(request, 8.5, MoveStatus::Arrived));
+    timeout(Duration::from_secs(1), task)
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(matches!(
+        rx.try_recv(),
+        Ok(ClientMessage::PlayerFace { .. })
+    ));
+    assert!(rx.try_recv().is_err());
+}
+
+#[tokio::test(start_paused = true)]
+async fn combat_interrupts_excavation_and_holds_the_next_scheduled_move() {
+    let (state, mut rx) = combat_walker().await;
+    let task = spawn_move(
+        &state,
+        ScheduleEntry {
+            pos: [8.5, 1.3, 0.5],
+            waypoints: vec![[0.5, 1.3, 0.5]],
+            waypoint_activities: vec![onlinerpg_shared::schedule::WaypointActivity {
+                waypoint: 0,
+                emote: "excavate".into(),
+                duration_secs: 18,
+                rotation: 90.0,
+                radius: 0.0,
+                probability: 1.0,
+            }],
+            ..Default::default()
+        },
+    );
+    assert!(matches!(
+        rx.recv().await,
+        Some(ClientMessage::PlayerFace { .. })
+    ));
+    assert!(
+        matches!(rx.recv().await, Some(ClientMessage::ChatMessage { message }) if message == "/emote excavate")
+    );
+    start_combat(&state).await;
+    assert!(matches!(
+        timeout(Duration::from_secs(1), rx.recv()).await.unwrap(),
+        Some(ClientMessage::StopInteraction)
+    ));
+    tokio::time::advance(Duration::from_secs(3)).await;
+    tokio::task::yield_now().await;
+    assert!(rx.try_recv().is_err());
+    end_combat(&state).await;
+    let request = next_goal(&mut rx, 8.5).await;
+    state
+        .lock()
+        .await
+        .push_event(progress(request, 8.5, MoveStatus::Arrived));
+    timeout(Duration::from_secs(1), task)
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(matches!(
+        rx.try_recv(),
+        Ok(ClientMessage::PlayerFace { .. })
+    ));
+}
+
 #[tokio::test(start_paused = true)]
 async fn excavation_waits_for_arrival_holds_the_pose_and_stops_before_walking() {
     for status in [MoveStatus::Arrived, MoveStatus::Blocked] {

@@ -5,6 +5,7 @@ use onlinerpg_shared::pathfinding::{self, PassabilityCache, PathTermination, Pat
 use onlinerpg_shared::{
     dungeon, shortest_world_delta_x, wrap_world_x, MAX_MOVE_TARGET_DISTANCE, PLAYER_MOVE_SPEED,
 };
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::Instant;
@@ -108,6 +109,26 @@ fn move_speed(mult: f32, sprinting: bool) -> f32 {
 }
 
 impl GameState {
+    async fn movement_profiles_for(&self, ids: &[PlayerId]) -> HashMap<PlayerId, (f32, bool)> {
+        let mut profiles = self.hunger_movement_profiles_for(ids).await;
+        let players = self.players.read().await;
+        for id in ids {
+            let Some(player) = players
+                .get(id)
+                .filter(|player| player.is_official_npc && player.mount.is_none())
+            else {
+                continue;
+            };
+            if let Some(speed) = crate::npc_defs::npc_defs()
+                .get_by_npc_name(&player.name)
+                .and_then(|def| def.walk_speed)
+            {
+                profiles.entry(*id).or_insert((1.0, true)).0 *= speed / PLAYER_MOVE_SPEED;
+            }
+        }
+        profiles
+    }
+
     async fn leave_pose_for_move(&self, id: PlayerId, request_id: u32) {
         let fresh = self
             .goal_moves
@@ -315,7 +336,7 @@ impl GameState {
             };
             let height_revision = self.height_sampler.revision().await;
             let route = self.find_goal_route(&player, goal).await;
-            let profile = self.hunger_movement_profiles_for(&[id]).await;
+            let profile = self.movement_profiles_for(&[id]).await;
             let (mult, sprint_allowed) = profile.get(&id).copied().unwrap_or((1.0, true));
             let mut goals = entry.clone().lock_owned().await;
             let Some(state) = goals.as_mut() else {
@@ -525,7 +546,7 @@ impl GameState {
 
     async fn settle_goal_players(&self, ids: &[PlayerId]) -> Vec<direction::DirectionPrediction> {
         let predictions = self.advance_direction_players(ids).await;
-        let profiles = self.hunger_movement_profiles_for(ids).await;
+        let profiles = self.movement_profiles_for(ids).await;
         let mut activities = Vec::new();
         let mut steps = Vec::new();
         for &id in ids {

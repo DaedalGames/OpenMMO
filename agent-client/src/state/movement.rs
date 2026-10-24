@@ -127,7 +127,11 @@ impl SharedState {
         };
         let mut found: Vec<(String, f32)> = self
             .monsters_on_my_floor()
-            .filter(|m| m.monster_type.eq_ignore_ascii_case(species))
+            .filter(|m| {
+                m.monster_type.eq_ignore_ascii_case(species)
+                    || crate::monster_defs::monster_name(&m.monster_type)
+                        .eq_ignore_ascii_case(species)
+            })
             .map(|m| (m.id.clone(), m.position.dist_xz_sq(&sp.position).sqrt()))
             .collect();
         found.sort_by(|a, b| a.1.total_cmp(&b.1));
@@ -326,6 +330,7 @@ impl SharedState {
 
     /// Relocation invalidates any active walk.
     pub(super) fn relocate_self(&mut self, position: Position, rotation: f32, floor_level: i8) {
+        self.combat_monsters.clear();
         self.apply_move_progress(position, rotation, floor_level);
         self.invalidate_position();
         self.teleport_pending_until = None;

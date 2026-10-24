@@ -616,7 +616,7 @@ pub async fn llm_driver(
                         .is_some_and(|i| schedule[i].action.is_some());
                     let skip_movement = {
                         let s = state.lock().await;
-                        has_action || s.trade_busy || s.self_fishing
+                        has_action || s.trade_busy || s.self_fishing || s.schedule_combat_active()
                     };
                     let target = handle_response(
                         &state,
@@ -1167,7 +1167,11 @@ pub async fn llm_driver(
                 let routine_walk = running(&visit_walk) || running(&unload_trip);
                 let skip_movement = {
                     let s = state.lock().await;
-                    has_scheduled_action || s.trade_busy || s.self_fishing || routine_walk
+                    has_scheduled_action
+                        || s.trade_busy
+                        || s.self_fishing
+                        || routine_walk
+                        || s.schedule_combat_active()
                 };
                 let new_target =
                     handle_response(&state, &response, &memory_file, &favor_file, skip_movement)

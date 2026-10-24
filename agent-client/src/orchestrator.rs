@@ -970,20 +970,23 @@ fn songbook_prompt() -> String {
     section
 }
 
-/// Build the system prompt for an NPC by layering, outermost first.
-///
-/// Every agent starts from the shared prompt — the JSON schema and the action
-/// types they all speak — so a new action is documented in one place. Its role
-/// goes on top (a registry NPC's class template, else `user_prompt.txt`),
-/// then its personality, shop knowledge and memories.
+/// Combine base instructions, role, personality and shop knowledge.
 fn build_system_prompt(npc: &NpcConfig) -> anyhow::Result<String> {
-    let role = npc.template_prompt.as_deref().or_else(|| {
-        std::path::Path::new(USER_PROMPT_FILE)
-            .exists()
-            .then_some(USER_PROMPT_FILE)
-    });
-    let files: Vec<&str> = npc
-        .system_prompt_file()
+    let dialogue_only = npc
+        .character_name
+        .as_deref()
+        .is_some_and(crate::shop_info::dialogue_only);
+    let (base, role) = if dialogue_only {
+        (Some("data/resident_system_prompt.txt"), None)
+    } else {
+        let role = npc.template_prompt.as_deref().or_else(|| {
+            std::path::Path::new(USER_PROMPT_FILE)
+                .exists()
+                .then_some(USER_PROMPT_FILE)
+        });
+        (npc.system_prompt_file(), role)
+    };
+    let files: Vec<&str> = base
         .into_iter()
         .chain(role)
         .chain(npc.instance_prompt.as_deref())
@@ -994,9 +997,7 @@ fn build_system_prompt(npc: &NpcConfig) -> anyhow::Result<String> {
         .map(|path| driver::load_system_prompt(path))
         .collect::<anyhow::Result<Vec<_>>>()?;
 
-    // Merchants get their catalog and prices for roleplay; the server
-    // re-validates every trade and haggle. Resident traders get their
-    // wishlist per turn instead (driver/prompt.rs) so it can satiate.
+    // Resident wishlists are added per turn.
     if let Some(shop) = npc
         .character_name
         .as_deref()
@@ -1004,15 +1005,9 @@ fn build_system_prompt(npc: &NpcConfig) -> anyhow::Result<String> {
     {
         parts.push(shop);
     }
-    // A bard announces the song before playing it, so it needs the titles in
-    // front of it — both to pick one and to match a listener's request.
-    if npc.plays_music() {
+    if !dialogue_only && npc.plays_music() {
         parts.push(songbook_prompt());
     }
-    // Memories are deliberately NOT baked in here: the driver re-reads the
-    // memory file into every prompt (load_memory_tail), so notes written
-    // mid-session reach even a stateless backend.
-
     info!("[{}] Prompt layers: {}", npc.label(), files.join(" + "));
     Ok(parts.join("\n\n"))
 }
@@ -1174,6 +1169,22 @@ fn spawn_llm_task(
 pub(crate) mod tests {
     use super::*;
     use onlinerpg_shared::CharacterAttributes;
+
+    #[test]
+    fn ysolde_dialogue_prompt_contains_research_and_exchange_instructions() {
+        let npc: NpcConfig = toml::from_str(
+            "character_name = 'Ysolde'\ninstance_prompt = 'data/npcs/ysolde/instance.txt'\ntemplate_prompt = 'data/templates/merchant.txt'",
+        ).unwrap();
+        let prompt = build_system_prompt(&npc).unwrap();
+        assert!(prompt.contains("Terraclash") && prompt.contains("Barkan"));
+        assert!(prompt.contains("open_trade") && prompt.contains("offer_deal"));
+        for excluded in ["monster", "flee", "warn visitors", "combat", "gnoll"] {
+            assert!(
+                !prompt.to_lowercase().contains(excluded),
+                "{excluded}: {prompt}"
+            );
+        }
+    }
 
     #[tokio::test]
     async fn a_world_snapshot_does_not_send_a_move_that_can_cancel_a_new_pose() {

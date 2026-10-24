@@ -80,7 +80,7 @@ impl GameState {
         {
             self.leave_pose_for_move(id, request_id).await;
         }
-        let profiles = self.hunger_movement_profiles_for(&[id]).await;
+        let profiles = self.movement_profiles_for(&[id]).await;
         let (mult, allowed) = profiles.get(&id).copied().unwrap_or((1.0, true));
         let height_revision = self.height_sampler.revision().await;
         let mut goals = self.goal_moves.lock(id).await;
@@ -183,7 +183,7 @@ impl GameState {
         &self,
         ids: &[PlayerId],
     ) -> Vec<DirectionPrediction> {
-        let profiles = self.hunger_movement_profiles_for(ids).await;
+        let profiles = self.movement_profiles_for(ids).await;
 
         let mut steps = Vec::new();
         let mut activities = Vec::new();

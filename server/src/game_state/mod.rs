@@ -672,6 +672,24 @@ impl GameState {
             })
     }
 
+    pub(super) fn npc_respawn_schedule(&self, npc_name: &str) -> Option<ScheduleEntry> {
+        let definition = crate::npc_defs::npc_defs().get_by_npc_name(npc_name)?;
+        if !definition.respawn_at_spawn {
+            return None;
+        }
+        self.npc_schedules
+            .read()
+            .expect("npc schedules lock poisoned")
+            .get(npc_name)?
+            .first()
+            .filter(|entry| {
+                entry.pos.iter().all(|value| value.is_finite())
+                    && entry.rotation.is_finite()
+                    && i8::try_from(entry.floor_level).is_ok()
+            })
+            .cloned()
+    }
+
     fn with_active_npc_schedule<R>(
         &self,
         npc_name: &str,

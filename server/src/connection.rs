@@ -1443,12 +1443,26 @@ async fn handle_client_message(
                 }
             };
 
-            let max_hp = selected_character.max_hp;
-            let character_xp = selected_character.xp;
+            let npc_def = state
+                .is_official_npc
+                .then(|| crate::npc_defs::npc_defs().get_by_npc_name(&selected_character.name))
+                .flatten();
+            let max_hp = selected_character
+                .max_hp
+                .max(npc_def.map_or(0, |def| def.min_max_hp));
+            let character_xp = selected_character
+                .xp
+                .max(onlinerpg_shared::xp::xp_for_level(
+                    npc_def.map_or(1, |def| def.min_level),
+                ));
+            let mut attributes = selected_character.attributes.clone();
+            attributes.guard = attributes.guard.max(npc_def.map_or(0, |def| def.min_guard));
 
             let mut player = new_player(
                 selected_character.name.clone(),
-                selected_character.level,
+                selected_character
+                    .level
+                    .max(npc_def.map_or(1, |def| def.min_level)),
                 max_hp,
                 selected_character.class.clone(),
                 selected_character.gender,
@@ -1527,7 +1541,7 @@ async fn handle_client_message(
                     &id,
                     character_id,
                     character_xp,
-                    selected_character.attributes.clone(),
+                    attributes,
                     selected_character.gold,
                     (!state.is_official_npc).then_some(selected_character.satiation),
                 )
@@ -2745,7 +2759,7 @@ mod tests {
     use std::net::Ipv4Addr;
 
     #[tokio::test]
-    async fn official_npc_enters_at_its_schedule_position() {
+    async fn ysolde_enters_at_its_schedule_position_with_combat_stats() {
         let auth = Arc::new(crate::game_state::tests::make_test_auth(
             "npc_schedule_entry",
         ));
@@ -2813,6 +2827,16 @@ mod tests {
             assert_eq!(player.floor_level, 0);
             if official {
                 assert!((player.rotation - std::f32::consts::FRAC_PI_2).abs() < 0.001);
+                assert_eq!(player.level, 30);
+                assert_eq!(player.max_health, 360);
+                assert_eq!(game.effective_guard(&player.id).await, 24);
+            } else {
+                assert_eq!(player.level, 1);
+                assert_eq!(player.max_health, 16);
+                assert_eq!(
+                    game.effective_guard(&player.id).await,
+                    i32::from(character.attributes.guard)
+                );
             }
         }
     }

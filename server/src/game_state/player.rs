@@ -1179,7 +1179,18 @@ impl super::GameState {
     /// standing beside them when every bed is taken.
     pub async fn respawn_player(&self, player_id: &PlayerId) {
         let respawn = &world_config().respawn;
+        let npc_spawn = self
+            .official_npc_def(player_id)
+            .await
+            .and_then(|def| self.npc_respawn_schedule(&def.npc_name));
         let mut destinations = vec![respawn.position()];
+        if let Some(entry) = &npc_spawn {
+            destinations.push(Position {
+                x: entry.pos[0],
+                y: entry.pos[1],
+                z: entry.pos[2],
+            });
+        }
         destinations.extend(self.respawn_beds().iter().map(|bed| Position {
             x: bed.x,
             y: bed.y,
@@ -1222,8 +1233,19 @@ impl super::GameState {
             let old_floor = player.floor_level;
             let old_position = player.position;
             player.floor_level = respawn.floor_level;
-            match free_bed {
-                Some(bed) => {
+            match (npc_spawn.as_ref(), free_bed) {
+                (Some(entry), _) => {
+                    player.position = Position {
+                        x: entry.pos[0],
+                        y: entry.pos[1],
+                        z: entry.pos[2],
+                    };
+                    player.floor_level = entry.floor_level as i8;
+                    player.rotation = entry.rotation.to_radians();
+                    player.object_type = None;
+                    player.object_id = None;
+                }
+                (None, Some(bed)) => {
                     player.position = Position {
                         x: bed.x,
                         y: bed.y,
@@ -1233,7 +1255,7 @@ impl super::GameState {
                     player.object_type = Some(bed.type_id.clone());
                     player.object_id = Some(bed.id);
                 }
-                None => {
+                (None, None) => {
                     player.position = respawn.position();
                     player.rotation = respawn.rotation_deg.to_radians();
                     player.object_type = None;

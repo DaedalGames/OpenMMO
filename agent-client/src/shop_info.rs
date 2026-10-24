@@ -70,6 +70,8 @@ pub struct NpcRow {
     /// character's class (e.g. "guard", "merchant").
     #[serde(default)]
     pub class: String,
+    #[serde(rename = "dialogueOnly", default)]
+    dialogue_only: bool,
     #[serde(default)]
     wishlist: String,
     #[serde(rename = "wishlistRatePercent", default)]
@@ -96,6 +98,12 @@ impl NpcRow {
 /// reference the registry instead of spelling every field out.
 pub fn npc_by_id(id: &str) -> Option<&'static NpcRow> {
     npcs().get(id)
+}
+
+pub fn dialogue_only(npc_name: &str) -> bool {
+    npcs()
+        .values()
+        .any(|row| row.npc_name == npc_name && row.dialogue_only)
 }
 
 pub fn chat_mentions(npc_name: &str, message: &str) -> bool {

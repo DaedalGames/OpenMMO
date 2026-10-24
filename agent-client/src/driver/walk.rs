@@ -251,6 +251,24 @@ async fn walk_inner(
         if s.relocations != relocations {
             return Walked::Lost(LostReason::Desynced);
         }
+        if schedule && s.schedule_combat_active() {
+            if request_id == Some(s.move_request_id)
+                && s.send_flagged_command(
+                    ClientMessage::PlayerMoveStop { request_id: 0 },
+                    background,
+                )
+                .await
+                .is_err()
+            {
+                return Walked::Error;
+            }
+            request_id = None;
+            *owned_request = None;
+            last_goal = None;
+            drop(s);
+            tokio::time::sleep(Duration::from_millis(50)).await;
+            continue;
+        }
         let Some(target) = to.position(&s) else {
             return Walked::Lost(LostReason::TargetGone);
         };

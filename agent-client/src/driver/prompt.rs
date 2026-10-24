@@ -29,19 +29,31 @@ pub(super) fn build_prompt(
     tale: Option<String>,
 ) -> String {
     let mut prompt = String::new();
+    let dialogue_only = state.dialogue_only();
+    let relevant = |line: &str| !dialogue_only || !crate::monster_defs::is_combat_report(line);
 
     prompt.push_str("=== CURRENT STATE ===\n");
     prompt.push_str(&state.format_world_state());
     prompt.push_str("\nUse player names without titles in actions and favor updates.\n");
+    if !dialogue_only && state.schedule_combat_active() {
+        prompt.push_str("Your routine is paused during combat. Defend yourself; patrols and excavation resume when safe.\n");
+    }
     if let Some(terrain) = terrain {
         prompt.push_str(terrain.trim_end());
         prompt.push('\n');
     }
 
     if let Some(memory) = memory {
-        prompt.push_str("\n=== YOUR MEMORIES (notes you wrote in past turns) ===\n");
-        prompt.push_str(memory);
-        prompt.push('\n');
+        let memory = memory
+            .lines()
+            .filter(|line| relevant(line))
+            .collect::<Vec<_>>()
+            .join("\n");
+        if !memory.is_empty() {
+            prompt.push_str("\n=== YOUR MEMORIES (notes you wrote in past turns) ===\n");
+            prompt.push_str(&memory);
+            prompt.push('\n');
+        }
     }
 
     // A customer is mid-trade: stay put and keep helping them. Movement is
@@ -84,7 +96,7 @@ pub(super) fn build_prompt(
     }
 
     if let (Some(info), Some(p)) = (state.pricing.as_ref(), state.self_player.as_ref()) {
-        if crate::shop_info::merchant_shop(&p.name).is_some() {
+        if !dialogue_only && crate::shop_info::merchant_shop(&p.name).is_some() {
             let at_meeting = active_schedule_idx.is_some_and(|i| {
                 schedule[i].condition
                     == Some(onlinerpg_shared::schedule::ScheduleCondition::Meeting)
@@ -108,6 +120,9 @@ pub(super) fn build_prompt(
             "\n=== RECENT CONVERSATION (background only; do not answer old lines again) ===\n",
         );
         for line in state.chat_history() {
+            if !relevant(line) {
+                continue;
+            }
             prompt.push_str(line);
             prompt.push('\n');
         }
@@ -135,6 +150,9 @@ pub(super) fn build_prompt(
             }
         }
         for line in agent_events {
+            if dialogue_only && (line.starts_with("[CombatEnded]") || !relevant(line)) {
+                continue;
+            }
             prompt.push_str(line);
             prompt.push('\n');
         }
@@ -147,6 +165,9 @@ pub(super) fn build_prompt(
 /// Format a server event as a human-readable line for LLM prompts.
 /// Returns `None` for events that should not be forwarded to the LLM.
 pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<String> {
+    if state.dialogue_ignores_event(msg) {
+        return None;
+    }
     match msg {
         ServerMessage::JoinSuccess { player, .. } => Some(format!(
             "[Join] You joined as {} at ({:.1}, {:.1}, {:.1})",
@@ -155,22 +176,28 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
         ServerMessage::GameState {
             players, monsters, ..
         } => {
-            let mut lines = vec![format!(
-                "[World] {} player(s), {} monster(s)",
-                players.len(),
-                monsters.len()
-            )];
+            let dialogue_only = state.dialogue_only();
+            let mut lines = vec![if dialogue_only {
+                format!("[World] {} player(s)", players.len())
+            } else {
+                format!("[World] {} player(s), {} monster(s)", players.len(), monsters.len())
+            }];
             for p in players.iter() {
                 lines.push(format!(
                     "  Player: {} Lv.{} HP {}/{}",
                     p.name, p.level, p.health, p.max_health
                 ));
             }
-            for m in monsters.values() {
+            if !dialogue_only {
+                for m in monsters.values() {
                 lines.push(format!(
                     "  Monster: {} [{}] HP {}/{}",
-                    m.monster_type, m.id, m.health, m.max_health
+                    crate::monster_defs::monster_name(&m.monster_type),
+                    m.id,
+                    m.health,
+                    m.max_health
                 ));
+                }
             }
             Some(lines.join("\n"))
         }
@@ -341,7 +368,8 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
         )),
         ServerMessage::MonsterSpawned { monster } => Some(format!(
             "[MonsterSpawned] {} ({})",
-            monster.id, monster.monster_type
+            monster.id,
+            crate::monster_defs::monster_name(&monster.monster_type)
         )),
         ServerMessage::MonsterDead { monster_id, .. } => {
             Some(format!("[MonsterDead] {monster_id}"))
@@ -881,6 +909,97 @@ fn format_schedule_context(
 #[cfg(test)]
 mod tests {
     use super::{build_prompt, caught_line, format_event};
+
+    #[test]
+    fn ysolde_dialogue_keeps_the_question_and_omits_incidental_combat_context() {
+        let (mut state, _rx) = test_state();
+        let mut me = test_player(0.0, 0.0);
+        me.name = "Ysolde".into();
+        me.is_official_npc = true;
+        state.self_player_id = Some(me.id);
+        state.self_player = Some(me.clone());
+        let mut visitor = test_player(2.0, 0.0);
+        visitor.id = PlayerId::from(me.id.get() + 1);
+        visitor.name = "jake5".into();
+        state.nearby_players.insert(visitor.id, visitor.clone());
+        state.push_event(ServerMessage::ChatMessage {
+            player_id: me.id,
+            message: "The gnoll still prowls southeast of camp. Keep clear.".into(),
+        });
+        state.drain_events();
+        state.finish_conversation();
+        let mut gnoll = crate::state::tests::monster("m3");
+        gnoll.monster_type = "gnoll".into();
+        gnoll.aggressive = true;
+        let combat = vec![
+            ServerMessage::MonsterSpawned { monster: gnoll },
+            ServerMessage::MonsterAttackedPlayer {
+                monster_id: "m3".into(),
+                player_id: me.id,
+                hit: false,
+                roll: 1,
+                damage: 0,
+                current_health: me.health,
+                ranged: false,
+            },
+        ];
+        for event in &combat {
+            assert_eq!(
+                state.push_event(event.clone()),
+                crate::state::EventUrgency::Noise
+            );
+            assert!(format_event(&state, event).is_none());
+        }
+        assert!(state.schedule_combat_active());
+        assert!(state.nearby_monsters.contains_key("m3"));
+        let sightings = state.drain_agent_events();
+        assert!(sightings.iter().all(|line| !line.starts_with("[Sighted]")));
+        state.push_event(ServerMessage::ChatMessage {
+            player_id: visitor.id,
+            message: "여기서 뭐해?".into(),
+        });
+        let prompt = build_prompt(&state, &combat, &sightings, &[], None,
+            Some("Warned jake5 about a gnoll.\njake5 prefers Korean.\nBarkan stole Terraclash's heart."), None, None);
+        assert!(prompt.contains("여기서 뭐해?"));
+        assert!(prompt.contains("jake5 prefers Korean"));
+        assert!(prompt.contains("Barkan stole Terraclash's heart"));
+        for excluded in [
+            "Gnoll",
+            "gnoll",
+            "Monster:",
+            "MonsterAttacked",
+            "Defend yourself",
+            "Warned",
+        ] {
+            assert!(!prompt.contains(excluded), "{excluded}: {prompt}");
+        }
+    }
+
+    #[test]
+    fn monster_events_use_display_names() {
+        let (state, _rx) = test_state();
+        let mut monster = crate::state::tests::monster("m21");
+        monster.monster_type = "scp939".into();
+        let spawned = ServerMessage::MonsterSpawned {
+            monster: monster.clone(),
+        };
+        assert_eq!(
+            format_event(&state, &spawned).unwrap(),
+            "[MonsterSpawned] m21 (Stalker)"
+        );
+        let world = ServerMessage::GameState {
+            players: Vec::new(),
+            monsters: [(monster.id.clone(), monster)].into(),
+            ground_items: Vec::new(),
+            campfires: Vec::new(),
+            stalls: Vec::new(),
+            tip_hats: Vec::new(),
+            meals: Vec::new(),
+        };
+        let prompt = build_prompt(&state, &[world, spawned], &[], &[], None, None, None, None);
+        assert!(prompt.contains("Monster: Stalker [m21]"), "{prompt}");
+        assert!(!prompt.contains("scp939"), "{prompt}");
+    }
 
     #[test]
     fn the_dining_cue_names_the_meal_and_the_menu() {

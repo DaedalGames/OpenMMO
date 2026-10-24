@@ -227,6 +227,27 @@ async fn rica_can_use_her_inn_chair_and_return_home() {
 }
 
 #[tokio::test]
+async fn ysolde_walk_speed_matches_her_animation_and_the_announced_path() {
+    for official in [false, true] {
+        let (game, id, mut rx) = walker(&format!("ysolde_walk_{official}"), false).await;
+        {
+            let mut players = game.players.write().await;
+            let player = players.get_mut(&id).unwrap();
+            player.name = "Ysolde".into();
+            player.is_official_npc = official;
+        }
+        let expected_speed = if official { 1.1 } else { PLAYER_MOVE_SPEED };
+        game.request_move_goal(id, 1, 6.5, 1.5, false).await;
+        let reply = next_path(&mut rx).await;
+        assert!(matches!(reply, ServerMessage::PlayerMovePath { speed, .. }
+            if (speed - expected_speed).abs() < 0.001));
+        advance(&game, id, 0.5).await;
+        let distance = game.players.read().await[&id].position.x - 1.5;
+        assert!((distance - expected_speed * 0.5).abs() < 0.1, "{distance}");
+    }
+}
+
+#[tokio::test]
 async fn goal_is_approved_before_tick_and_uses_only_time_since_approval() {
     for (sprinting, expected_speed) in [(false, 3.0), (true, 4.5)] {
         let (game, id, mut rx) = walker(&format!("goal_clock_{sprinting}"), false).await;

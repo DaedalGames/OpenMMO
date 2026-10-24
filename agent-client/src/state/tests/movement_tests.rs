@@ -1,5 +1,23 @@
 use super::*;
 
+#[test]
+fn monster_species_accepts_display_names_and_internal_ids() {
+    let (mut s, _rx) = test_state();
+    s.self_player = Some(test_player(0.0, 0.0));
+    let mut m = monster("m21");
+    m.monster_type = "scp939".into();
+    s.nearby_monsters.insert(m.id.clone(), m);
+    for name in ["Stalker", "stalker", "scp939"] {
+        assert_eq!(
+            s.resolve_move_target(name),
+            Err(MoveTargetError::SpeciesNotId {
+                species: name.into(),
+                candidates: vec![("m21".into(), 0.0)],
+            })
+        );
+    }
+}
+
 fn targetable_state() -> (SharedState, mpsc::Receiver<ClientMessage>) {
     let (mut s, rx) = test_state();
     let me = test_player(0.0, 0.0);

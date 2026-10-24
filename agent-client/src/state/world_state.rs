@@ -337,19 +337,20 @@ Use the readiness and ward status above. Wait for server success or failure feed
             }
         }
 
-        // Exclude monsters beyond LLM sight radius
-        for m in self.monsters_on_my_floor() {
-            lines.push(format!(
-                "Monster: {} [{}] HP {}/{} state={} at ({:.1}, {:.1}, {:.1})",
-                m.monster_type,
-                m.id,
-                m.health,
-                m.max_health,
-                m.state,
-                m.position.x,
-                m.position.y,
-                m.position.z
-            ));
+        if !self.dialogue_only() {
+            for m in self.monsters_on_my_floor() {
+                lines.push(format!(
+                    "Monster: {} [{}] HP {}/{} state={} at ({:.1}, {:.1}, {:.1})",
+                    crate::monster_defs::monster_name(&m.monster_type),
+                    m.id,
+                    m.health,
+                    m.max_health,
+                    m.state,
+                    m.position.x,
+                    m.position.y,
+                    m.position.z
+                ));
+            }
         }
 
         // Items on the ground. Drops linger for minutes, so a busy hunting

@@ -1,4 +1,43 @@
 use super::*;
+
+#[tokio::test(start_paused = true)]
+async fn schedule_combat_survives_event_drains_and_expires_when_fighting_stops() {
+    let (mut s, _rx) = test_state();
+    let mut me = test_player(0.0, 0.0);
+    me.is_official_npc = true;
+    let id = me.id;
+    s.self_player_id = Some(id);
+    s.self_player = Some(me.clone());
+    let attack = |player_id, monster_id: &str| ServerMessage::PlayerAttacked {
+        player_id,
+        monster_id: monster_id.into(),
+        hit: false,
+        roll: 1,
+        damage: 0,
+        ammo_item_def_id: None,
+        dagger_strike: None,
+    };
+    s.push_event(attack(PlayerId::from(id.get() + 1), "m_other"));
+    assert!(!s.schedule_combat_active());
+    s.push_event(attack(id, "m21"));
+    s.drain_events();
+    assert!(s.schedule_combat_active());
+    tokio::time::advance(std::time::Duration::from_secs(9)).await;
+    s.push_event(attack(id, "m22"));
+    s.push_event(ServerMessage::MonsterDead {
+        monster_id: "m21".into(),
+        dropped_weapon_item_def_id: None,
+    });
+    assert!(s.schedule_combat_active());
+    tokio::time::advance(std::time::Duration::from_secs(9)).await;
+    assert!(s.schedule_combat_active());
+    tokio::time::advance(std::time::Duration::from_secs(1)).await;
+    assert!(!s.schedule_combat_active());
+    s.push_event(attack(id, "m23"));
+    assert!(s.schedule_combat_active());
+    s.push_event(ServerMessage::PlayerRespawned { player: me });
+    assert!(!s.schedule_combat_active());
+}
 use onlinerpg_shared::messages::SkillVictim;
 
 #[test]

@@ -1,6 +1,63 @@
 use super::*;
 
+const COMBAT_IDLE_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+
 impl SharedState {
+    pub(crate) fn dialogue_only(&self) -> bool {
+        self.self_player.as_ref().is_some_and(|player| {
+            player.is_official_npc && crate::shop_info::dialogue_only(&player.name)
+        })
+    }
+
+    pub(crate) fn dialogue_ignores_event(&self, event: &ServerMessage) -> bool {
+        self.dialogue_only()
+            && matches!(
+                event,
+                ServerMessage::MonsterSpawned { .. }
+                    | ServerMessage::MonsterMoved { .. }
+                    | ServerMessage::MonsterRemoved { .. }
+                    | ServerMessage::MonsterDead { .. }
+                    | ServerMessage::MonsterAttackedPlayer { .. }
+                    | ServerMessage::MonsterSkillStarted { .. }
+                    | ServerMessage::MonsterSkillStruck { .. }
+                    | ServerMessage::MonsterGroundStrike { .. }
+                    | ServerMessage::PlayerAttacked { .. }
+                    | ServerMessage::PlayerAttackRejected { .. }
+                    | ServerMessage::PlayerAttackStopped { .. }
+                    | ServerMessage::PlayerDead { .. }
+                    | ServerMessage::PlayerHealthUpdate { .. }
+                    | ServerMessage::XpGained { .. }
+                    | ServerMessage::DaggerDoubleSlashStarted { .. }
+                    | ServerMessage::DaggerDoubleSlashRejected { .. }
+                    | ServerMessage::DaggerDoubleSlashSkipped { .. }
+            )
+    }
+
+    pub(super) fn record_self_combat(&mut self, monster_id: &str) {
+        self.combat_monsters
+            .retain(|_, at| at.elapsed() < COMBAT_IDLE_TIMEOUT);
+        self.combat_monsters
+            .insert(monster_id.into(), tokio::time::Instant::now());
+    }
+
+    pub(crate) fn schedule_combat_active(&self) -> bool {
+        let Some(player) = self
+            .self_player
+            .as_ref()
+            .filter(|player| player.is_official_npc && player.health > 0)
+        else {
+            return false;
+        };
+        self.combat_monsters.iter().any(|(id, at)| {
+            at.elapsed() < COMBAT_IDLE_TIMEOUT
+                && self.nearby_monsters.get(id).is_none_or(|monster| {
+                    monster.health > 0
+                        && monster.state != MonsterState::Dead
+                        && monster.floor_level == player.floor_level
+                })
+        })
+    }
+
     /// Characters on our own floor. Someone a floor above is a dot straight
     /// overhead, not a neighbour, so nothing the LLM sees or names should
     /// reach them.
@@ -35,6 +92,7 @@ impl SharedState {
         // Keys still close enough to stay "seen" — a wider ring than the entry
         // radius so a POI hovering at the edge doesn't announce every tick.
         let mut nearby: HashSet<String> = HashSet::new();
+        let dialogue_only = self.dialogue_only();
         let sighted = &self.sighted_pois;
         // Ring bookkeeping shared by every POI kind; hands the key back only
         // when the POI just entered sight.
@@ -49,7 +107,11 @@ impl SharedState {
         // monster in sight — one event line per grazing mob would flood the
         // prompt in a dense spawn field.
         for (id, m) in &self.nearby_monsters {
-            if m.floor_level != self_floor || m.state == MonsterState::Dead || !m.aggressive {
+            if dialogue_only
+                || m.floor_level != self_floor
+                || m.state == MonsterState::Dead
+                || !m.aggressive
+            {
                 continue;
             }
             let d = crate::geom::PlanarDelta::to_xz(&self_pos, m.position.x, m.position.z);
@@ -58,7 +120,7 @@ impl SharedState {
                     key,
                     format!(
                         "[Sighted] {} [{id}] HP {}/{} — at ({:.0}, {:.0}), {:.0}m {}.",
-                        m.monster_type,
+                        crate::monster_defs::monster_name(&m.monster_type),
                         m.health,
                         m.max_health,
                         m.position.x,
