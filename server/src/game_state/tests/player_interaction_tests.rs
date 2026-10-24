@@ -186,6 +186,79 @@ async fn field_cot_inside_tent_requires_the_entrance_and_can_stand_inside() {
 }
 
 #[tokio::test]
+async fn ysolde_camp_routine_lights_the_fire_sleeps_and_patrols() {
+    let game = make_flat_world_game_state("ysolde_camp_route");
+    let tent = FurniturePlacement {
+        id: 1,
+        type_id: "ysolde_tent".into(),
+        x: -1881.9769,
+        y: 0.0,
+        z: 5517.6353,
+        rotation_deg: 270.0,
+        floor_level: 0,
+    };
+    let cot = FurniturePlacement {
+        id: 2,
+        type_id: "ysolde_field_cot".into(),
+        x: -1881.95,
+        z: 5517.4097,
+        ..tent.clone()
+    };
+    game.sync_region_furniture(-2, 5, &[tent, cot.clone()]);
+    let file: crate::npc_schedule::ScheduleFile = serde_json::from_str(include_str!(
+        "../../../../agent-client/data/npcs/ysolde/schedule.json"
+    ))
+    .unwrap();
+    let evening = &file.schedule[1];
+    let mut player = make_player("ysolde_camp", evening.pos[0], evening.pos[2]);
+    player.rotation = evening.rotation.to_radians();
+    player.is_official_npc = true;
+    let id = player.id;
+    game.add_player(player).await;
+    let mut rx = game.register_direct_channel(&id).await;
+    let auth = make_test_auth("ysolde_camp_fire");
+    game.send_chat_message(&id, "/light_campfire".into(), &auth)
+        .await;
+    {
+        let fires = game.campfires.read().await;
+        assert_eq!(fires.len(), 1);
+        let fire = &fires.values().next().unwrap().campfire;
+        assert!((fire.position.x - -1881.0).abs() < 0.001);
+        assert!((fire.position.z - 5524.3).abs() < 0.001);
+    }
+    for entry in [&file.schedule[2], &file.schedule[0]] {
+        for pos in entry.waypoints.iter().chain(std::iter::once(&entry.pos)) {
+            let goal = Position {
+                x: pos[0],
+                y: 0.0,
+                z: pos[2],
+            };
+            game.request_test_move(&id, move_cmd(goal, false), true)
+                .await;
+            game.advance_test_movement(60.0).await;
+            let arrived = game.players.read().await[&id].position;
+            assert!(
+                arrived.dist_xz_sq(&goal) < 0.25,
+                "failed to reach {goal:?}: {arrived:?}; {:?}",
+                drain(&mut rx)
+            );
+        }
+        if entry.is_sleeping() {
+            game.set_player_interaction(&id, entry.action.clone(), entry.object_id)
+                .await;
+            assert_eq!(
+                game.players.read().await[&id].object_id,
+                Some(cot.id),
+                "{:?}",
+                drain(&mut rx)
+            );
+            game.set_player_interaction(&id, None, None).await;
+            assert!(game.players.read().await[&id].object_id.is_none());
+        }
+    }
+}
+
+#[tokio::test]
 async fn interaction_rejects_missing_distant_wrong_floor_and_dead_requests() {
     for case in ["missing", "distance", "floor", "dead", "mounted"] {
         let (game, id, mut rx) = setup(case, &[chair()]).await;

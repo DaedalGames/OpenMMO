@@ -22,6 +22,7 @@ export const localEmoteAnim = writable<string | null>(null)
  *  for it. Must match `MUSIC_EMOTE` in `shared/src/messages.rs` — the server
  *  and agent-client read it from there. */
 export const MUSIC_EMOTE_ANIM = 'guitar_playing'
+export const EXCAVATE_EMOTE_ANIM = 'excavate'
 
 /** Played instead of the pickup crouch when the item would not fit. */
 export const REFUSE_PICKUP_ANIM = 'shake_head'
@@ -68,12 +69,17 @@ export function isSelfEndingEmote(anim: string): boolean {
 /** Performances held until the player moves or presses Escape. */
 export const HELD_EMOTE_ANIMS = new Set([
   MUSIC_EMOTE_ANIM,
+  EXCAVATE_EMOTE_ANIM,
   ...LOOPING_EMOTE_ANIMS,
 ])
 
 /** Every emote clip. Unlike placed-object interactions, these play where the
  *  player stands. */
-export const EMOTE_ANIMS = new Set([MUSIC_EMOTE_ANIM, ...SLASH_EMOTE_ANIMS])
+export const EMOTE_ANIMS = new Set([
+  MUSIC_EMOTE_ANIM,
+  EXCAVATE_EMOTE_ANIM,
+  ...SLASH_EMOTE_ANIMS,
+])
 
 /** [`EMOTE_ANIMS`] plus the session's `/anim` clips. */
 export function isEmoteAnim(anim: string): boolean {

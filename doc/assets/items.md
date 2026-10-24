@@ -1,5 +1,34 @@
 # Item Assets
 
+## Shield of the Earth — 대지의 방패
+
+- [concept_v1](../../assets/items/earth_shield/concept_v1/concept.png) — 이졸데의 테라클래시 파편 교환 장비 원화. 거친 화강암 돌판을 검게 그을린 철제 테두리와 십자 띠로 고정하고, 중앙 봉인 문양·주황빛 균열·소량의 이끼로 테라클래시와 대지의 아뮬렛의 외형을 잇는다. [설계](../TIER5_FIELD_RAID.md#증표-교환과-장비-공급량).
+  - OpenAI Codex built-in ImageGen, **ChatGPT Pro 20x**, 2026-10-24. OpenAI 출력물 이용 조건 적용, 별도 CC 라이선스 없음.
+  - [프롬프트](../../assets/items/earth_shield/concept_v1/prompt.txt) · [생성 기록](../../assets/items/earth_shield/concept_v1/generation.json). 원화 초안 단계의 기록이다.
+
+- **현재 Tripo v1**(2026-10-24). 위 원화 한 장을 Tripo API로 변환했다. 실사풍 화강암·금속 프레임·봉인 문양·주황색 균열·이끼와 후면 가로 손잡이 두 개를 포함한다. `pc4090`의 Blender MCP로 앞·뒤·측면을 검수하고 크기·축·원점만 정리했다. 생성된 형상은 단순화하거나 다시 그리지 않았다.
+  - **3,505 triangles**, 메시·재질 각 1개, 높이 **0.80m**, 폭 **0.533m**, 손잡이 포함 깊이 **0.159m**. 원점은 후면 위쪽 가로 손잡이 중심. Blender 정면 **+Y**·위 **+Z**, glTF 정면 **−Z**·위 **+Y**. 위치·회전 0, scale 1인 장착용 원본이다.
+  - 원본 PBR 텍스처는 **4096²** base color·ORM·normal, 현재 런타임은 **512² KTX2 UASTC·10단계 밉맵·Meshopt**다. **869,564 bytes**, 텍스처 GPU 메모리는 BC7/ASTC 지원 장치에서 약 1MiB(이전 2K WebP는 약 64MiB)다. Tripo가 별도 발광 맵을 제공하지 않아 주황색 균열은 base color로 표현된다.
+  - Tripo API **유료 크레딧**, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, `delight=true`, seed `102424`, 목표 4,000 triangles. **120크레딧**, 추가 유료 생성 없음. [Tripo 이용 조건](https://developers.tripo3d.ai/en/terms) 적용. 입력 원화의 출처·조건은 위 ImageGen 기록과 같다.
+  - 게임 등록(2026-10-24): `earth_shield`, 왼손 방패, 방어 **+3**, 무게 **8**, 기준가 **30,000**. 일반 거래 가능, 상자·직접 드롭 없음. 이졸데에게 파편 **30개**로 교환하고 CHA 흥정도 적용한다. 128² 투명 아이콘을 기존 Cycles 레시피로 렌더했다. `handProps.ts`에서 방패가 세워지고 돌판이 바깥을 향하도록 파지 회전을 맞췄다.
+  - [Blender](../../assets/items/earth_shield/tripo_v1/earth_shield.blend) · [Tripo 원본 GLB](../../assets/items/earth_shield/tripo_v1/source/model_url.glb) · [정리한 4K GLB](../../assets/items/earth_shield/tripo_v1/earth_shield.glb) · [현재 런타임 GLB](../../client/public/models/armor/earth_shield.glb).
+  - [생성 명세](../../assets/items/earth_shield/tripo_v1/build.json) · [요청·비용 기록](../../assets/items/earth_shield/tripo_v1/generation.json) · [정리 스크립트](../../assets/items/earth_shield/tripo_v1/prepare.py) · [최적화·게임 등록·검증 기록](../../assets/items/earth_shield/tripo_v1/integration.json). 중간 압축본·검수 렌더·임시 페이지는 사용자 요청으로 2026-10-25 정리했다. 현재 게임은 위 512² 런타임을 사용한다.
+
+- **[미사용: Blender v2, Tripo v1로 대체]** 실사풍 수정(2026-10-24). 원화의 주요 돌조각 11개를 따라 메시를 재구성하고 `ReferenceUV`로 전면 암석 질감을 투영했다. 철·청동·가죽은 별도 PBR 재질로 만들고, 산화·미세 요철·모서리 반사를 추가했다. 균열 발광은 원화의 주황색 영역에 한정한다. Blender MCP로 `pc4090`에서 모델링·렌더 비교·베이크·GLB 재임포트를 수행했다.
+  - **4,854 triangles**, 메시·재질 각 1개, 높이 **0.80m**, 폭 **0.543m**, 손잡이 포함 깊이 **0.173m**. 원점·축·장착용 원본 규약은 v1과 같다. 원본 v1은 별도 폴더에 보존했다.
+  - 원화의 이미지 질감을 사용하므로 그 방향성 명암 일부가 base color에 남는다. 금속 반사·거칠기·법선·발광은 독립된 PBR 채널이다. 텍스처는 2048²로 베이크하고, 런타임 GLB에는 WebP q90으로 넣었다. 임시 투영 UV는 최종 베이크 후 제거했다.
+  - [Blender](../../assets/items/earth_shield/blender_v2_realistic/earth_shield.blend) · [베이크 전 원본](../../assets/items/earth_shield/blender_v2_realistic/earth_shield_realistic_procedural.blend) · [제작 스크립트](../../tools/blender-scripts/build_earth_shield_realistic.py).
+  - [제작·출처·검증 기록](../../assets/items/earth_shield/blender_v2_realistic/generation.json). 미사용 GLB·비교 렌더·개별 검사 파일은 2026-10-25 정리하고 Blender 원본·텍스처를 보존했다.
+  - 원화에서 파생한 텍스처의 출처·조건은 위 ImageGen 기록과 같다(**ChatGPT Pro 20x**, 2026-10-24). 새 이미지 생성·외부 3D 생성 서비스는 사용하지 않았다. 직접 제작한 메시·절차적 재질은 저장소 라이선스를 따른다.
+
+- **[미사용: v1, v2로 대체]** 3D 모델(2026-10-24): 위 원화를 바탕으로 Blender에서 직접 메시·절차적 재질을 제작했다. `pc4090`의 Blender 5.2.3 LTS에 Blender MCP로 연결해 원화와 뷰포트를 비교하고 재질을 수정·베이크했다. 외부 3D 모델이나 유료 3D 생성 서비스는 사용하지 않았다. 메시·재질 제작물은 저장소 라이선스를 따르며 원화의 출처·조건은 위와 같다.
+  - 높이 **0.80m**, 폭 **0.54m**, 본체 두께 약 **0.06m**. 손잡이·장식 포함 깊이 0.173m. **4,870 triangles**, 메시 1개·재질 1개. 돌판·철제 테두리·보강대·피라미드 리벳·중앙 봉인 문양과 후면 가죽 손잡이·팔 끈을 포함한다.
+  - 원점은 후면 손잡이 중심, Blender 정면 **+Y**·위 **+Z**, 위치·회전 0, scale 1. glTF 표준 변환 후 정면은 **−Z**, 위는 **+Y**다. 바닥 원점 모델과는 다른 장착용 원본이며, 아이템 등록·착용 피팅·교환 연결은 후속 작업이다.
+  - 2048² base color·roughness·metallic·normal·emission을 베이크했다. 금속의 색이 어두워지는 diffuse 베이크를 입력 색상의 emission 베이크로 수정했다. GLB에는 roughness·metallic을 합쳐 텍스처 4장을 넣는다.
+  - [작업 파일](../../assets/items/earth_shield/blender_v1/earth_shield.blend) · [절차적 재질 원본](../../assets/items/earth_shield/blender_v1/earth_shield_procedural.blend).
+  - [제작 스크립트](../../tools/blender-scripts/build_earth_shield.py) · [제작·검증 기록](../../assets/items/earth_shield/blender_v1/generation.json).
+  - 미사용 GLB·미리보기 Blender·비교 렌더·개별 검사 파일은 2026-10-25 정리하고 Blender 원본·텍스처를 보존했다.
+
 ## Helm of Brilliance — 광휘의 투구
 
 - 게임 등록(2026-10-17): `helm_of_brilliance` 머리 장비, 지능 +1(`int+1`), 조명(`light`), 방어 2, 무게 3, 기준가 30000. 상자·드롭 목록에 넣지 않았다. 테라클래시 토벌 시 소환자에게 지급한다(2026-10-21, [설계](../TIER5_FIELD_RAID.md)).

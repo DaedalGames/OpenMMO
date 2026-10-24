@@ -1,12 +1,41 @@
 {
   "schedule": [
     {
-      "at": "00:00",
+      "at": "*:00",
       "pos": [-1880.7, 6.9, 5522.7],
-      "rotation": 90.0,
+      "rotation": 0.0,
       "floor_level": 0,
-      "label": "studying the runes near the Sundered Bastion and answering visitors",
+      "label": "walking around the tent each hour from 06:00 to 18:00, occasionally kneeling at random nearby spots to excavate Terraclash fragments with a small trowel, and answering visitors",
+      "waypoints": [
+        [-1884.8, 6.9, 5521.0],
+        [-1884.8, 6.9, 5517.6],
+        [-1884.8, 6.9, 5514.5],
+        [-1878.8, 6.9, 5514.5],
+        [-1878.8, 6.9, 5521.0]
+      ],
+      "waypoint_activities": [
+        { "waypoint": 0, "emote": "excavate", "duration_secs": 18, "rotation": 270.0, "radius": 1.25, "probability": 0.65 },
+        { "waypoint": 4, "emote": "excavate", "duration_secs": 15, "rotation": 90.0, "radius": 1.25, "probability": 0.65 }
+      ]
+    },
+    {
+      "at": "18:00-21:00",
+      "pos": [-1881.0, 6.9, 5523.3],
+      "rotation": 0.0,
+      "floor_level": 0,
+      "label": "lighting a campfire at (-1881.0, 6.9, 5524.3) and keeping visitors company until 21:00",
+      "action": "campfire",
       "waypoints": []
+    },
+    {
+      "at": "21:00-06:00",
+      "pos": [-1882.5, 6.65, 5518.35],
+      "rotation": 270.0,
+      "floor_level": 0,
+      "label": "sleeping in the field cot inside the tent until 06:00",
+      "action": "ysolde_field_cot",
+      "object_id": 2,
+      "waypoints": [[-1884.0, 6.65, 5517.65]]
     }
   ]
 }

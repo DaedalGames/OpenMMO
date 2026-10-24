@@ -32,6 +32,7 @@ import items from '../../../../data/items.json'
 import { initSharedWasm } from '../utils/ability.fixture'
 import * as sharedWasm from '../wasm/onlinerpg_shared'
 import { landClaimReason } from './landClaim'
+import { npcDisplayName } from './npcs'
 
 beforeAll(initSharedWasm)
 
@@ -146,6 +147,19 @@ describe('catalog integrity', () => {
 })
 
 describe('message rendering', () => {
+  it('localizes Ysolde’s exchange without changing NPC identity', () => {
+    languagePreference.set('ko')
+    const name = npcDisplayName('Ysolde')
+    expect(name).toBe('이졸데')
+    expect(get(t)('trade.exchangeTitle', { name })).toBe('이졸데 · 교환')
+    expect(get(t)('trade.offerMessage', { name })).toBe(
+      '이졸데가 거래를 제안했습니다'
+    )
+    expect(npcDisplayName('Unknown NPC')).toBe('Unknown NPC')
+    languagePreference.set('en')
+    expect(npcDisplayName('Ysolde')).toBe('Ysolde')
+  })
+
   it.each(['en', 'ko', 'ja', 'zh-Hans', 'zh-Hant'] as const)(
     '%s uses the shared land level in descriptions and claim guidance',
     (language) => {

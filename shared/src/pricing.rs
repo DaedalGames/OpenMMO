@@ -2,6 +2,10 @@
 
 use serde::{Deserialize, Serialize};
 
+pub fn item_currency_price(base: i64, modifier_pct: i32) -> i64 {
+    ((base * (100 + i64::from(modifier_pct)) + 99) / 100).max(1)
+}
+
 /// Unit base for a merchant purchase: consumables carry the index.
 pub fn indexed_base_price(base: i64, consumable: bool, index_percent: u32) -> i64 {
     if consumable {

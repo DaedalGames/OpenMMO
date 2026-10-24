@@ -15,11 +15,28 @@ pub struct MerchantDefinition {
     /// Item def ids the merchant sells (unlimited stock).
     #[serde(default, deserialize_with = "crate::semicolon_list::deserialize")]
     pub catalog: Vec<String>,
+    #[serde(rename = "currencyItem", default)]
+    pub currency_item: Option<String>,
+    #[serde(rename = "catalogPrices", default)]
+    pub catalog_prices: String,
+    #[serde(rename = "discountBudget", default)]
+    pub discount_budget: Option<i64>,
+    #[serde(rename = "playerDiscountCap", default)]
+    pub player_discount_cap: Option<i64>,
 }
 
 impl MerchantDefinition {
     pub fn sells(&self, item_def_id: &str) -> bool {
         self.catalog.iter().any(|id| id == item_def_id)
+    }
+
+    pub fn currency_price(&self, item_def_id: &str) -> Option<i64> {
+        self.catalog_prices.split(';').find_map(|entry| {
+            let (id, price) = entry.split_once(':')?;
+            (id == item_def_id)
+                .then(|| price.parse::<i64>().ok().filter(|price| *price > 0))
+                .flatten()
+        })
     }
 }
 
@@ -39,6 +56,21 @@ impl MerchantDefs {
         // The advertised flat sell rate must hold at index 100; lower
         // indexes are covered by the payout cap.
         for def in by_id.values() {
+            if let Some(currency) = &def.currency_item {
+                assert!(!def.sells(currency), "an exchange cannot sell its currency");
+                assert_eq!(
+                    def.sell_rate_percent, 0,
+                    "currency exchanges cannot buy items"
+                );
+                assert!(
+                    def.catalog
+                        .iter()
+                        .all(|id| def.currency_price(id).is_some()),
+                    "exchange catalog requires positive prices"
+                );
+                assert!(def.discount_budget.is_some_and(|value| value >= 0));
+                assert!(def.player_discount_cap.is_some_and(|value| value >= 0));
+            }
             assert!(
                 crate::game_state::band_invariant_holds(def.sell_rate_percent),
                 "merchant {} sellRatePercent {} breaks the haggling band invariant",

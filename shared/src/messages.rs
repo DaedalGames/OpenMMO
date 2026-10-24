@@ -365,6 +365,7 @@ pub struct ClientEnvReport {
 /// contract, not a private constant: the server sets it, and both clients
 /// compare `PlayerInteractionChanged` against it to know a tune is over.
 pub const MUSIC_EMOTE: &str = "guitar_playing";
+pub const EXCAVATE_EMOTE: &str = "excavate";
 
 pub const INSTRUMENT_NOTE_COUNT: u8 = 22;
 pub const INSTRUMENT_BATCH_MS: u16 = 250;
@@ -1864,7 +1865,7 @@ pub enum ServerMessage {
         player_name: String,
         item_def_id: String,
         kind: DealKind,
-        /// Gold that changed hands (smallest unit).
+        /// Price in the merchant's currency; gold uses the smallest unit.
         price: i64,
         /// The NPC's wallet after the trade.
         npc_gold: i64,

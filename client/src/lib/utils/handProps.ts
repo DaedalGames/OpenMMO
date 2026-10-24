@@ -140,7 +140,11 @@ export function poseOffHandProp(
       ? MODULAR_TORCH_GRIP_OFFSET
       : HAND_GRIP_OFFSET
   )
-  prop.rotation.y = Math.PI
+  if (worldModel === 'armor/earth_shield.glb') {
+    prop.rotation.set(0.170659, 0.002636, 1.657126)
+  } else {
+    prop.rotation.set(0, Math.PI, 0)
+  }
   fitFemaleHandProp(prop, worldModel, modelPath)
 }
 

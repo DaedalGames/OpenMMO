@@ -496,7 +496,7 @@ pub async fn llm_driver(
     let mut pending_urgency = LlmPriority::Idle;
     let mut active_schedule: (Option<usize>, Option<u32>) = (None, None);
     let mut last_fishing_check = Instant::now();
-    let mut campfire_meal: Option<(usize, campfire_meal::CampfireMeal)> = None;
+    let mut campfire_meal: Option<(usize, campfire_meal::ScheduledCampfire)> = None;
     // A trip to sell the catch; it owns the body until it finishes.
     let mut unload_trip: Option<tokio::task::JoinHandle<()>> = None;
     let mut unload_retry_at: Option<Instant> = None;
@@ -1068,13 +1068,13 @@ pub async fn llm_driver(
                 let transition_now = match (wrapup, due.0) {
                     _ if due.0 == active_schedule.0 => true,
                     (_, None) => true,
-                    (_, Some(i)) if schedule[i].is_campfire_meal() => true,
+                    (_, Some(i)) if schedule[i].is_campfire() => true,
                     (Some((deadline, prompted)), _) => {
                         (prompted && llm_in_flight.is_none()) || Instant::now() >= deadline
                     }
                     (None, Some(i)) => {
                         let automatic_departure = active_schedule.0.is_some_and(|j| {
-                            schedule[j].is_sleeping() || schedule[j].is_campfire_meal()
+                            schedule[j].is_sleeping() || schedule[j].is_campfire()
                         });
                         let mut start_now = true;
                         if !automatic_departure {
@@ -1110,11 +1110,9 @@ pub async fn llm_driver(
             .0
             .is_some_and(|i| schedule[i].action.is_some());
 
-        let meal_entry = active_schedule
-            .0
-            .filter(|&i| schedule[i].is_campfire_meal());
+        let meal_entry = active_schedule.0.filter(|&i| schedule[i].is_campfire());
         if meal_entry != campfire_meal.as_ref().map(|(i, _)| *i) {
-            campfire_meal = meal_entry.map(|i| (i, campfire_meal::CampfireMeal::default()));
+            campfire_meal = meal_entry.map(|i| (i, campfire_meal::ScheduledCampfire::default()));
         }
         if attack_target.is_none() && visit_until.is_none() {
             if let Some((i, meal)) = &mut campfire_meal {

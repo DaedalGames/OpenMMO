@@ -1669,6 +1669,39 @@ async fn emote_shows_the_pose_to_neighbours_and_performer() {
     assert_emote_broadcast("emote", "excited").await;
 }
 
+#[tokio::test]
+async fn excavation_is_an_npc_work_pose_and_is_broadcast_until_stopped() {
+    let game = make_test_game_state("excavation_pose");
+    let auth = make_test_auth("excavation_pose");
+    let worker = pid("worker");
+    let watcher = pid("watcher");
+    let mut npc = make_player("worker", 0.0, 0.0);
+    npc.is_official_npc = true;
+    game.add_player(npc).await;
+    game.add_player(make_player("watcher", 2.0, 0.0)).await;
+    let mut rx = game.register_direct_channel(&watcher).await;
+    game.send_chat_message(&watcher, "/emote excavate".into(), &auth)
+        .await;
+    assert!(game.players.read().await[&watcher].object_type.is_none());
+    drain(&mut rx);
+    game.send_chat_message(&worker, "/emote excavate".into(), &auth)
+        .await;
+    assert_eq!(
+        game.players.read().await[&worker].object_type.as_deref(),
+        Some("excavate")
+    );
+    assert!(drain(&mut rx).iter().any(|m| matches!(m, ServerMessage::PlayerInteractionChanged { object_type: Some(kind), object_id: None, .. } if kind == "excavate")));
+    game.set_player_interaction(&worker, None, None).await;
+    assert!(game.players.read().await[&worker].object_type.is_none());
+    assert!(drain(&mut rx).iter().any(|m| matches!(
+        m,
+        ServerMessage::PlayerInteractionChanged {
+            object_type: None,
+            ..
+        }
+    )));
+}
+
 /// A typo or a bare `/emote` sets no pose; the sender alone gets the list of
 /// emotes back.
 #[tokio::test]

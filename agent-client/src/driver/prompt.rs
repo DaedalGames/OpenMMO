@@ -636,7 +636,10 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
                     format!("bought {item_def_id} from you"),
                 onlinerpg_shared::messages::DealKind::Sell => format!("sold you {item_def_id}"),
             },
-            crate::shop_info::format_price(*price),
+            crate::shop_info::format_shop_price(
+                state.self_player.as_ref().map_or("", |player| player.name.as_str()),
+                *price,
+            ),
             crate::shop_info::format_price(*npc_gold),
         )),
         ServerMessage::TradeError { message, .. } => Some(format!("[TradeError] {message}")),

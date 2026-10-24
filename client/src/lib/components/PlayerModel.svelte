@@ -86,6 +86,13 @@
   import { onDestroy, onMount, untrack } from 'svelte'
   import { BoatMount, ROWBOAT_MODEL_PATH } from '../utils/boatMount'
   import { disposeObjectTree } from '../utils/disposeObjectTree'
+  import {
+    EXCAVATION_CLIP_PATH,
+    EXCAVATION_TOOL_PATH,
+    poseExcavationTool,
+    excavationFingerGrip,
+    applyExcavationGrip,
+  } from '../utils/ysoldeExcavation'
   import { BoatWaterEffects } from '../effects/boat-water'
   import { seatedFishingClip } from '../utils/seatedFishing'
   import type { MountKind } from '../network/networkTypes'
@@ -128,6 +135,7 @@
     getWeaponModelPath,
     isModularModel,
     usesOwnClips,
+    YSOLDE_CHARACTER_MODEL_PATH,
   } from '../utils/modelPaths'
   import { loadGLB } from '../utils/gltfCache'
   import {
@@ -203,6 +211,7 @@
   import TargetRing from './TargetRing.svelte'
   import {
     DEBUG_ANIM_NAMES,
+    EXCAVATE_EMOTE_ANIM,
     HELD_EMOTE_ANIMS,
     isSelfEndingEmote,
     MUSIC_EMOTE_ANIM,
@@ -918,12 +927,7 @@
     createSecondaryMotionScheduler(remotePlayerId ?? npcPlayerId)
   )
 
-  // ── Music emote prop ────────────────────────────────────
-  // The server requires an instrument in the performer's inventory, but the
-  // prop rides the emote rather than the equip slot and is deliberately one
-  // fixed model. It keys off `interactionAnim`, which the server broadcasts
-  // for /play_music — remote players see the instrument too, and the equipped
-  // weapon is already hidden for the duration by `playAnimationForState`.
+  // The performance prop follows the broadcast interaction.
   let musicPropObject: THREE.Object3D | null = null
   let musicPropAttached = false
   let musicPropGeneration = 0
@@ -963,7 +967,48 @@
     })
   })
 
-  // ── Torch fire particles ────────────────────────────────
+  $effect(() => {
+    const root = modelRoot
+    if (!root || modelPath !== YSOLDE_CHARACTER_MODEL_PATH) return
+    let cancelled = false
+    let prop: THREE.Object3D | undefined
+    void Promise.all([
+      loadWarmGLB(EXCAVATION_TOOL_PATH),
+      loadGLB(EXCAVATION_CLIP_PATH),
+    ])
+      .then(([gltf, pack]) => {
+        if (cancelled) return
+        const hand = findBoneByName(root, 'RightHand')
+        if (!hand) return
+        prop = gltf.scene.clone()
+        poseExcavationTool(prop)
+        hand.add(prop)
+        excavationTool = prop
+        updateHeldPropVisibility()
+        const clip = getGltfAnimations(pack).find(
+          (clip) => clip.name === EXCAVATE_EMOTE_ANIM
+        )
+        excavationGrip = excavationFingerGrip(root, clip)
+        for (const clip of getGltfAnimations(pack))
+          socialClipsByName.set(clip.name, clip)
+      })
+      .catch((error) =>
+        console.error('Failed to load excavation trowel', error)
+      )
+    return () => {
+      cancelled = true
+      if (prop) {
+        prop.removeFromParent()
+        disposeObjectTree(prop)
+      }
+      excavationTool = null
+      excavationGrip = []
+    }
+  })
+  let excavationTool: THREE.Object3D | null = null
+  let excavationGrip: { bone: THREE.Object3D; rotation: THREE.Quaternion }[] =
+    []
+
   let torchFire: TorchFireParticles | null = null
   let torchFireGroup = $state<THREE.Group | null>(null)
   const _torchTipWorld = new THREE.Vector3()
@@ -1017,6 +1062,11 @@
           clip.trim()
         }
         socialClipsByName.set(clip.name, clip)
+      }
+      if (modelPath === YSOLDE_CHARACTER_MODEL_PATH) {
+        const excavation = await loadGLB(EXCAVATION_CLIP_PATH)
+        for (const clip of getGltfAnimations(excavation))
+          socialClipsByName.set(clip.name, clip)
       }
       if (mixer && playerState === 'interact') playAnimationForState()
     })()
@@ -1197,6 +1247,9 @@
         enchantClip ??
         weaponClip ??
         torchIdle ??
+        (modelPath === YSOLDE_CHARACTER_MODEL_PATH
+          ? validAnimations[AnimationIndex.IDLE1]
+          : undefined) ??
         pickClassIdleClip() ??
         pickRandom(DEFAULT_IDLE_INDICES.map((i) => validAnimations[i]))
       if (armorEnchant && !enchantClip && clip) clip = getArmorEnchantHold(clip)
@@ -1312,7 +1365,12 @@
     if (currentAction && newAction !== currentAction) {
       newAction.crossFadeFrom(
         currentAction,
-        clip === daggerClip ? 0.065 : 0.3,
+        clip === daggerClip
+          ? 0.065
+          : clip.name === EXCAVATE_EMOTE_ANIM ||
+              currentAction.getClip().name === EXCAVATE_EMOTE_ANIM
+            ? 0.85
+            : 0.3,
         false
       )
     }
@@ -1613,6 +1671,11 @@
   }
 
   function updateHeldPropVisibility() {
+    if (excavationTool)
+      excavationTool.visible =
+        !riding &&
+        playerState !== 'dead' &&
+        (playerState !== 'interact' || interactionAnim === EXCAVATE_EMOTE_ANIM)
     const handsOnOars =
       boating && canRow && (rowing || (boatMount?.rowingWeight ?? 0) >= 0.001)
     if (weaponObject) {
@@ -1822,6 +1885,9 @@
     // Update mixer with provided deltaTime
     if (currentAction) {
       mixer.update(deltaTime)
+      if (excavationTool?.visible) {
+        applyExcavationGrip(excavationGrip)
+      }
 
       const clip = currentAction.getClip()
       if (clip && clip.duration > 0) {

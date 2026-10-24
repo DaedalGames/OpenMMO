@@ -17,6 +17,45 @@ struct MerchantRow {
     sell_rate_percent: u32,
     #[serde(default)]
     catalog: String,
+    #[serde(rename = "currencyItem", default)]
+    currency_item: Option<String>,
+    #[serde(rename = "catalogPrices", default)]
+    catalog_prices: String,
+    #[serde(rename = "discountBudget", default)]
+    discount_budget: Option<i64>,
+    #[serde(rename = "playerDiscountCap", default)]
+    player_discount_cap: Option<i64>,
+}
+
+pub fn currency_item_for(npc_name: &str) -> Option<&'static str> {
+    merchants()
+        .values()
+        .find(|m| m.npc_name.eq_ignore_ascii_case(npc_name))?
+        .currency_item
+        .as_deref()
+}
+
+pub fn format_shop_price(npc_name: &str, price: i64) -> String {
+    if let Some(currency) = currency_item_for(npc_name) {
+        let name = crate::item_defs::get(currency).map_or(currency, |item| item.name.as_str());
+        format!("{price} {name}")
+    } else {
+        format_price(price)
+    }
+}
+
+fn shelf_price(npc_name: &str, item_id: &str, index_percent: u32) -> Option<i64> {
+    let merchant = merchants()
+        .values()
+        .find(|m| m.npc_name.eq_ignore_ascii_case(npc_name))?;
+    if merchant.currency_item.is_some() {
+        merchant.catalog_prices.split(';').find_map(|entry| {
+            let (id, price) = entry.split_once(':')?;
+            (id == item_id).then(|| price.parse::<i64>().ok()).flatten()
+        })
+    } else {
+        indexed_price(crate::item_defs::get(item_id)?, index_percent)
+    }
 }
 
 /// One row of the NPC registry (`data/npcs.json`). The trading fields are
@@ -142,17 +181,21 @@ pub fn shop_line_for(npc_name: &str, index_percent: u32) -> Option<String> {
     let stock: Vec<String> = catalog
         .iter()
         .filter_map(|id| {
-            let def = crate::item_defs::get(id)?;
-            let price = indexed_price(def, index_percent)?;
-            Some(format!("{id} {}", format_price(price)))
+            let price = shelf_price(npc_name, id, index_percent)?;
+            Some(format!("{id} {}", format_shop_price(npc_name, price)))
         })
         .collect();
     if stock.is_empty() {
         return None;
     }
     Some(format!(
-        "{npc_name} sells: {} — and pays {sell_rate_percent}% of base for what you sell them.",
-        stock.join(", ")
+        "{npc_name} offers: {} — {}",
+        stock.join(", "),
+        if sell_rate_percent == 0 {
+            "does not buy items.".to_string()
+        } else {
+            format!("pays {sell_rate_percent}% of base for what you sell them.")
+        }
     ))
 }
 
@@ -180,8 +223,26 @@ pub fn merchant_prompt_for(npc_name: &str) -> Option<String> {
         let Some(item) = crate::item_defs::get(item_id) else {
             continue;
         };
-        let price = item.base_price.map_or("?".to_string(), format_price);
+        let price = shelf_price(npc_name, item_id, 100)
+            .map_or("?".to_string(), |price| format_shop_price(npc_name, price));
         section.push_str(&format!("- {item_id} ({}): {price}\n", item.name));
+    }
+    if let Some(currency) = currency_item_for(npc_name) {
+        let merchant = merchants()
+            .values()
+            .find(|merchant| merchant.npc_name == npc_name)?;
+        let npc_budget = merchant.discount_budget.unwrap_or(0);
+        let player_cap = merchant.player_discount_cap.unwrap_or(0);
+        section.push_str(&format!(
+            "Accept only {currency} from the customer's unlocked bag, never gold. \
+             You do not buy items or shards. Prices ignore the market index. \
+             Use open_trade to show the exchange window. You can haggle with offer_deal \
+             (kind buy); a deal covers one item, and fractional shard costs round up. \
+             Daily discount budgets are {npc_budget} {currency} for you and {player_cap} \
+             per customer, separate from gold budgets. \
+             Wait for the server's Trade notice before claiming an exchange succeeded.\n"
+        ));
+        return Some(section);
     }
     section.push_str(&format!(
         "Consumable prices move with the market index in the \"Market\" section; the other \
@@ -312,6 +373,17 @@ pub fn resident_trade_prompt_for(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn ysolde_quotes_shards_and_only_offers_the_available_shield() {
+        let line = shop_line_for("Ysolde", 150).unwrap();
+        assert!(line.contains("earth_shield 30 Terraclash Shard"));
+        assert!(line.contains("does not buy items"));
+        let prompt = merchant_prompt_for("Ysolde").unwrap();
+        assert!(prompt.contains("Accept only terraclash_token"));
+        assert!(!prompt.contains("Rift Ring"));
+        assert_eq!(format_shop_price("Ysolde", 23), "23 Terraclash Shard");
+    }
 
     #[test]
     fn formats_mixed_denominations() {

@@ -214,3 +214,11 @@ Not used right now, but for future reference.
 
 - Procedural Northern European French Town in Geometry nodes Blender 5.0 — **[미사용]** 참고용, 아직 미도입
   https://github.com/IRCSS/Blender-Geometry-Node-French-Houses
+
+## Ysolde's excavation trowel / 이졸데의 발굴용 모종삽 (2026-10-24)
+
+- 출처: 프로젝트에서 직접 만든 Blender 메시와 NumPy 절차적 텍스처. 프로젝트와 같은 라이선스. 로컬 Blender 5.2.0 LTS 사용, 유료 생성 호출 없음.
+- 길이 약 **31.8cm**, 나무 손잡이·금속 테·오목하고 뾰족한 철제 삽날. 손잡이 중앙이 원점이며 길이 방향은 glTF +X다. **792 triangles**, 256² 색상 텍스처 3개를 JPEG q92로 패킹했다.
+- 원본: `assets/items/excavation_trowel/excavation_trowel.blend`, 제작 기록 `provenance.json`. 게임 파일: `client/public/models/props/excavation_trowel.glb`, 약 75KB. 별도 판매 아이템이 아닌 이졸데의 작업 소품이다.
+- `tools/blender-scripts/build_excavation_trowel.py`로 재현한 뒤 `.venv/bin/python tools/repack-glb-textures.py client/public/models/props/excavation_trowel.glb`로 압축한다. 기존 캐릭터 메시·텍스처는 변경하지 않는다.
+- 오른손에 부착하고 기존 여성 캐릭터의 강철 장검 그립을 이식한 발굴 클립의 손가락 자세로 쥐게 한다. 손바닥 관통을 줄이도록 손가락 쪽으로 옮긴 부착 위치는 `RightHand` 로컬 `(0, 0.1, 0.03)m`다(2026-10-25). 손목을 꺾어 삽끝을 땅에 맞추지 않는다(2026-10-24 사용자 지정). 삽날은 주먹의 위쪽·앞쪽을 향하며 넓은 면이 바깥쪽에서 보이도록 자루 축으로 90° 돌렸다. 게임과 이졸데 미리보기는 같은 부착 함수를 쓴다. 대기·이동·발굴 때 보이며 수면·사망·다른 상호작용 때 숨긴다. Khronos glTF Validator 오류·경고 0개.

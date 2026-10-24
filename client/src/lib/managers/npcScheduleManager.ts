@@ -9,6 +9,14 @@ export interface NpcScheduleEntry {
   action?: string
   object_id?: number
   waypoints: [number, number, number][]
+  waypoint_activities?: {
+    waypoint: number
+    emote: string
+    duration_secs: number
+    rotation: number
+    radius?: number
+    probability?: number
+  }[]
 }
 
 export interface NpcScheduleData {

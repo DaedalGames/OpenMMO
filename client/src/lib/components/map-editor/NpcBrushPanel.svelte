@@ -82,6 +82,17 @@
     const updated = structuredClone(schedule)
     const updatedEntry = updated.schedule[schedIdx]
     updatedEntry.waypoints.splice(wpIdx, 1)
+    if (updatedEntry.waypoint_activities) {
+      updatedEntry.waypoint_activities = updatedEntry.waypoint_activities
+        .filter((activity) => activity.waypoint !== wpIdx)
+        .map((activity) => ({
+          ...activity,
+          waypoint:
+            activity.waypoint > wpIdx
+              ? activity.waypoint - 1
+              : activity.waypoint,
+        }))
+    }
     selectedNpcSchedule.set(updated)
   }
 

@@ -9,7 +9,24 @@ use serde::{Deserialize, Serialize};
 pub const BED_OBJECT_TYPE: &str = "bed";
 pub const FISHING_ACTION: &str = "fishing";
 pub const CAMPFIRE_MEAL_ACTION: &str = "campfire_meal";
+pub const CAMPFIRE_ACTION: &str = "campfire";
 const MEAL_DURATION_HOURS: f64 = 0.5;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WaypointActivity {
+    pub waypoint: usize,
+    pub emote: String,
+    pub duration_secs: u32,
+    pub rotation: f32,
+    #[serde(default)]
+    pub radius: f32,
+    #[serde(default = "full_probability")]
+    pub probability: f32,
+}
+
+fn full_probability() -> f32 {
+    1.0
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SchedulePeriod {
@@ -76,6 +93,8 @@ pub struct ScheduleEntry {
     /// Optional patrol route: waypoints to visit before going to `pos`.
     #[serde(default)]
     pub waypoints: Vec<[f32; 3]>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub waypoint_activities: Vec<WaypointActivity>,
     /// Parsed condition (set after deserialization).
     #[serde(skip)]
     pub condition: Option<ScheduleCondition>,
@@ -83,7 +102,10 @@ pub struct ScheduleEntry {
 
 impl ScheduleEntry {
     pub fn is_sleeping(&self) -> bool {
-        matches!(self.action.as_deref(), Some(BED_OBJECT_TYPE | "rustic_bed"))
+        matches!(
+            self.action.as_deref(),
+            Some(BED_OBJECT_TYPE | "rustic_bed" | "ysolde_field_cot")
+        )
     }
 
     pub fn is_fishing(&self) -> bool {
@@ -92,6 +114,10 @@ impl ScheduleEntry {
 
     pub fn is_campfire_meal(&self) -> bool {
         self.action.as_deref() == Some(CAMPFIRE_MEAL_ACTION)
+    }
+
+    pub fn is_campfire(&self) -> bool {
+        self.is_campfire_meal() || self.action.as_deref() == Some(CAMPFIRE_ACTION)
     }
 
     pub fn fishing_target(&self) -> Option<crate::Position> {

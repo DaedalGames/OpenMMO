@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { locale, t } from '../i18n'
+  import { npcDisplayName } from '../i18n/npcs'
   import {
     pendingTradeOffer,
     acceptTradeOffer,
@@ -48,16 +50,18 @@
 
 {#if offer}
   <ConsentToast
-    label="Trade offer"
+    label={$t('trade.offerTitle')}
     top="14%"
     accent="#f0c040"
-    acceptLabel="Open"
-    declineLabel="Not now"
+    acceptLabel={$t('trade.open')}
+    declineLabel={$t('trade.notNow')}
     onaccept={() => accept(offer)}
     ondecline={() => decline(offer)}
   >
-    <strong>{offer.session.merchantName}</strong> wants to trade with you
-    {#if withDeal}<span class="deal-note">— holding a price for you</span>{/if}
+    {$t('trade.offerMessage', {
+      name: npcDisplayName(offer.session.merchantName, $locale),
+    })}
+    {#if withDeal}<span class="deal-note">{$t('trade.dealNote')}</span>{/if}
   </ConsentToast>
 {/if}
 

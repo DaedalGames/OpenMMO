@@ -62,6 +62,12 @@ These guidelines were confirmed by the user on 2026-09-20 and apply until the us
 - Do not author a one-metre character and apply its intended height through a later game multiplier.
 - The player reference is approximately **1.9m**. Barkan's bind-pose height is **2.5m**, measured from the soles to the highest horn/wing point.
 
+## Human Concept Art: A/T Pose
+
+- 사람 캐릭터의 리깅용 A/T 포즈 원화부터 **손바닥이 몸쪽을 향하도록** 그린다. 정면에 손바닥을 보여 주려고 하완·손목을 바깥으로 비틀지 않는다. T 포즈로 팔을 벌렸을 때는 손바닥이 아래를 향하는 자연스러운 방향을 유지한다.
+- 손목은 하완과 자연스럽게 이어지고, 손가락은 곧게 펴서 서로 구분되게 한다. 정면·측면에서 손바닥 방향과 손가락 형태를 확인한 뒤 3D 생성과 Mixamo 리깅으로 넘긴다.
+- 사용자 재확인: **2026-10-25**. 이졸데의 원화·모델은 손바닥이 앞을 향한 상태로 제작되어 기존 여성 강철 장검 그립을 옮길 때 손가락 방향을 따로 보정해야 했다. 이후 사람 원화 프롬프트와 결과 검수에 이 기준을 적용한다.
+
 ## Mixamo Upload Preparation
 
 - For Mixamo characters, prepare the neutral A/T pose with palms facing down/toward the body, not forward (user-confirmed project requirement, 2026-09-28). Inspect finger separation from a side view instead of twisting the forearms to expose the palms in front views.

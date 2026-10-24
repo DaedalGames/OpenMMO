@@ -17,12 +17,12 @@ enum Step {
 }
 
 #[derive(Default)]
-pub(super) struct CampfireMeal {
+pub(super) struct ScheduledCampfire {
     step: Step,
     retry_at: Option<Instant>,
 }
 
-impl CampfireMeal {
+impl ScheduledCampfire {
     pub(super) async fn tick(
         &mut self,
         s: &mut SharedState,
@@ -94,6 +94,10 @@ impl CampfireMeal {
             return Ok(());
         }
 
+        if !entry.is_campfire_meal() {
+            return Ok(());
+        }
+
         let fish = s
             .self_bag
             .iter()
@@ -158,13 +162,35 @@ mod tests {
     }
 
     #[tokio::test(start_paused = true)]
+    async fn campfire_only_keeps_a_fire_without_cooking_or_spending_food() {
+        let (mut state, mut rx, mut entry) = breakfast();
+        entry.action = Some(onlinerpg_shared::schedule::CAMPFIRE_ACTION.into());
+        state.self_bag = vec![bag_item(4, "raw_minnow", 1)];
+        let mut routine = ScheduledCampfire::default();
+        routine.tick(&mut state, &entry).await.unwrap();
+        assert!(
+            matches!(rx.try_recv(), Ok(ClientMessage::ChatMessage { message }) if message == "/light_campfire")
+        );
+        light_fire(&mut state);
+        tokio::time::advance(Duration::from_secs(10)).await;
+        routine.tick(&mut state, &entry).await.unwrap();
+        assert!(rx.try_recv().is_err());
+        state.push_event(ServerMessage::CampfireRemoved { campfire_id: 1 });
+        tokio::time::advance(Duration::from_secs(10)).await;
+        routine.tick(&mut state, &entry).await.unwrap();
+        assert!(
+            matches!(rx.try_recv(), Ok(ClientMessage::ChatMessage { message }) if message == "/light_campfire")
+        );
+    }
+
+    #[tokio::test(start_paused = true)]
     async fn breakfast_lights_a_fire_cooks_a_cheap_fish_and_eats_only_once() {
         let (mut state, mut rx, entry) = breakfast();
         state.self_bag = vec![
             bag_item(1, "trophy_raw_minnow", 1),
             bag_item(2, "raw_minnow", 1),
         ];
-        let mut meal = CampfireMeal::default();
+        let mut meal = ScheduledCampfire::default();
         meal.tick(&mut state, &entry).await.unwrap();
         assert!(
             matches!(rx.try_recv(), Ok(ClientMessage::ChatMessage { message }) if message == "/light_campfire")
@@ -204,7 +230,7 @@ mod tests {
     async fn breakfast_waits_for_usable_fish_and_retries_an_interrupted_grill() {
         let (mut state, mut rx, entry) = breakfast();
         light_fire(&mut state);
-        let mut meal = CampfireMeal::default();
+        let mut meal = ScheduledCampfire::default();
         meal.tick(&mut state, &entry).await.unwrap();
         assert!(rx.try_recv().is_err());
         let mut fish = bag_item(4, "raw_perch", 1);

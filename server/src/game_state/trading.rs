@@ -49,6 +49,21 @@ pub(crate) enum TraderDef {
 }
 
 impl TraderDef {
+    pub(crate) fn currency_item(&self) -> Option<&str> {
+        match self {
+            Self::Merchant(def) => def.currency_item.as_deref(),
+            Self::Resident(_) => None,
+        }
+    }
+
+    pub(crate) fn purchase_price(&self, base: i64, modifier_pct: i32) -> i64 {
+        if self.currency_item().is_some() {
+            onlinerpg_shared::pricing::item_currency_price(base, modifier_pct)
+        } else {
+            buy_price(base, modifier_pct)
+        }
+    }
+
     pub(super) fn is_land_registrar(&self) -> bool {
         matches!(self, Self::Merchant(def) if def.id == "steward")
     }
@@ -589,6 +604,11 @@ impl super::GameState {
         item_def_id: &str,
         index_pct: u32,
     ) -> Option<i64> {
+        if let TraderDef::Merchant(merchant) = def {
+            if merchant.currency_item.is_some() {
+                return merchant.currency_price(item_def_id);
+            }
+        }
         let item = self.item_defs.get(item_def_id)?;
         let indexed = item.consumable
             && matches!(def, TraderDef::Merchant(_))
@@ -625,6 +645,19 @@ impl super::GameState {
             Ok(def) => def,
             Err(reason) => return self.send_trade_error(player_id, reason).await,
         };
+
+        if def.currency_item().is_some() {
+            return self
+                .buy_items(
+                    player_id,
+                    npc_player_id,
+                    vec![TradeLineItem {
+                        item_def_id: item_def_id.to_string(),
+                        qty: 1,
+                    }],
+                )
+                .await;
+        }
 
         match &def {
             TraderDef::Merchant(m) => {
@@ -886,6 +919,7 @@ impl super::GameState {
         };
         let npc_name = def.npc_name().to_string();
         let is_resident = matches!(def, TraderDef::Resident(_));
+        let currency_item = def.currency_item();
 
         struct Plan {
             item_def_id: String,
@@ -1005,16 +1039,6 @@ impl super::GameState {
             .iter()
             .map(|p| self.item_defs.weight_with(&p.item_def_id, armor_mult) * p.qty as f32)
             .sum();
-        if self.calc_total_weight(&inventories[player_id], armor_mult) + added_weight > max_weight {
-            drop(inventories);
-            drop(gold_map);
-            return self
-                .send_trade_error(
-                    player_id,
-                    localized("server.tooHeavy", "Too heavy to carry"),
-                )
-                .await;
-        }
 
         let mut total_price: i64 = 0;
         let taken = {
@@ -1025,9 +1049,10 @@ impl super::GameState {
         for (plan, deal) in plans.iter_mut().zip(taken) {
             let deal_units: u32 = if deal.is_some() { 1 } else { 0 };
             let normal_units = plan.qty - deal_units;
-            let price = buy_price(plan.base_price, deal.as_ref().map_or(0, |d| d.modifier_pct))
+            let price = def
+                .purchase_price(plan.base_price, deal.as_ref().map_or(0, |d| d.modifier_pct))
                 * deal_units as i64
-                + buy_price(plan.base_price, 0) * normal_units as i64;
+                + def.purchase_price(plan.base_price, 0) * normal_units as i64;
             plan.deal_taken = deal;
             plan.price = price;
             total_price += price;
@@ -1041,11 +1066,35 @@ impl super::GameState {
             .any(|p| r.keeps(&p.item_def_id) && p.deal_taken.is_none()))
         {
             Some(localized("server.wontSell", "They won't part with that"))
+        } else if let Some(currency) = currency_item {
+            let available: u64 = inventories[player_id]
+                .bag
+                .iter()
+                .filter(|item| item.item_def_id == currency && !item.locked)
+                .map(|item| u64::from(item.quantity))
+                .sum();
+            if total_price > i64::from(u32::MAX) || available < total_price as u64 {
+                Some(localized(
+                    "server.insufficientExchangeCurrency",
+                    "Not enough unlocked shards",
+                ))
+            } else {
+                None
+            }
         } else if gold < total_price {
             Some(localized("server.insufficientGold", "Not enough gold"))
         } else {
             None
         };
+        let removed_weight = currency_item.map_or(0.0, |currency| {
+            self.item_defs.weight_with(currency, armor_mult) * total_price as f32
+        });
+        let refusal = refusal.or_else(|| {
+            (self.calc_total_weight(&inventories[player_id], armor_mult) + added_weight
+                - removed_weight
+                > max_weight)
+                .then(|| localized("server.tooHeavy", "Too heavy to carry"))
+        });
         if let Some(message) = refusal {
             let restore: Vec<(&str, DealEntry)> = plans
                 .iter()
@@ -1091,6 +1140,9 @@ impl super::GameState {
 
         {
             let inv = inventories.get_mut(player_id).expect("checked above");
+            if let Some(currency) = currency_item {
+                draw_from_bag(&mut inv.bag, currency, total_price as u32, false);
+            }
             for purchase in &purchases {
                 let stackable = self.item_defs.stackable(purchase.item_def_id);
                 next_id += stack_into_bag(
@@ -1118,7 +1170,9 @@ impl super::GameState {
                 .clone()
         });
 
-        *gold_map.get_mut(player_id).expect("checked above") -= total_price;
+        if currency_item.is_none() {
+            *gold_map.get_mut(player_id).expect("checked above") -= total_price;
+        }
         if is_resident {
             *gold_map.entry(*npc_player_id).or_insert(0) += total_price;
         }
@@ -1141,7 +1195,7 @@ impl super::GameState {
                 "{player_name} bought {}x{} from {npc_name} for {}",
                 plan.qty, plan.item_def_id, plan.price
             );
-            if !is_resident {
+            if !is_resident && currency_item.is_none() {
                 self.record_gold_sink(
                     crate::metrics::GoldSink::ItemPurchase {
                         item_def_id: plan.item_def_id.clone(),
@@ -1178,11 +1232,11 @@ impl super::GameState {
         }
         let npc_gold = self.get_player_gold(npc_player_id).await;
         for plan in &plans {
-            let normal_price = buy_price(plan.base_price, 0);
+            let normal_price = def.purchase_price(plan.base_price, 0);
             for unit in 0..plan.qty {
                 let unit_price = if unit == 0 {
                     plan.deal_taken.as_ref().map_or(normal_price, |deal| {
-                        buy_price(plan.base_price, deal.modifier_pct)
+                        def.purchase_price(plan.base_price, deal.modifier_pct)
                     })
                 } else {
                     normal_price

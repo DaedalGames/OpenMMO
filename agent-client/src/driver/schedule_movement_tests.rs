@@ -7,6 +7,88 @@ use onlinerpg_shared::ServerMessage;
 use tokio::sync::mpsc;
 use tokio::time::{timeout, Duration};
 
+#[tokio::test(start_paused = true)]
+async fn excavation_waits_for_arrival_holds_the_pose_and_stops_before_walking() {
+    for status in [MoveStatus::Arrived, MoveStatus::Blocked] {
+        let (state, mut rx) = walker();
+        let state2 = Arc::clone(&state);
+        let task = tokio::spawn(async move {
+            let entry = ScheduleEntry {
+                waypoints: vec![[5.5, 1.3, 0.5]],
+                ..Default::default()
+            };
+            let activity = onlinerpg_shared::schedule::WaypointActivity {
+                waypoint: 0,
+                emote: "excavate".into(),
+                duration_secs: 10,
+                rotation: 90.0,
+                radius: 0.0,
+                probability: 1.0,
+            };
+            perform_waypoint_activity(&state2, &entry, &activity).await;
+        });
+        let request = next_goal(&mut rx, 5.5).await;
+        state.lock().await.push_event(progress(
+            request,
+            if status == MoveStatus::Arrived {
+                5.5
+            } else {
+                0.5
+            },
+            status,
+        ));
+        if status == MoveStatus::Arrived {
+            assert!(matches!(
+                rx.recv().await,
+                Some(ClientMessage::PlayerFace { .. })
+            ));
+            assert!(
+                matches!(rx.recv().await, Some(ClientMessage::ChatMessage { message }) if message == "/emote excavate")
+            );
+            tokio::time::advance(Duration::from_secs(9)).await;
+            assert!(rx.try_recv().is_err());
+            tokio::time::advance(Duration::from_secs(1)).await;
+            assert!(matches!(
+                rx.recv().await,
+                Some(ClientMessage::StopInteraction)
+            ));
+        }
+        timeout(Duration::from_secs(1), task)
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(rx.try_recv().is_err());
+    }
+}
+
+#[test]
+fn excavation_spots_vary_within_the_camp_radius_and_can_be_skipped() {
+    use rand::SeedableRng;
+    let mut file: serde_json::Value =
+        serde_json::from_str(include_str!("../../data/npcs/ysolde/schedule.json")).unwrap();
+    let entry: ScheduleEntry = serde_json::from_value(file["schedule"][0].take()).unwrap();
+    let mut rng = rand::rngs::StdRng::seed_from_u64(1024);
+    for activity in &entry.waypoint_activities {
+        let anchor = entry.waypoints[activity.waypoint];
+        let mut chosen = Vec::new();
+        let mut skipped = 0;
+        for _ in 0..100 {
+            match activity_destination(&entry, activity, &mut rng) {
+                Some((x, z)) => {
+                    assert!(
+                        (x - anchor[0]).powi(2) + (z - anchor[2]).powi(2)
+                            <= (activity.radius + 0.001).powi(2)
+                    );
+                    chosen.push((x, z));
+                }
+                None => skipped += 1,
+            }
+        }
+        assert!(skipped > 0 && chosen.len() > 1);
+        assert!(chosen.windows(2).any(|pair| pair[0] != pair[1]));
+    }
+}
+
 fn walker() -> (Arc<Mutex<SharedState>>, mpsc::Receiver<ClientMessage>) {
     walker_on_floor(0)
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { locale } from '../i18n'
+  import { locale, t } from '../i18n'
+  import { npcDisplayName } from '../i18n/npcs'
   import { SvelteMap } from 'svelte/reactivity'
   import './tradePanel.css'
   import { get } from 'svelte/store'
@@ -31,12 +32,17 @@
     type ItemDefinition,
   } from '../data/itemDefs'
   import { getNpcCapabilities } from '../data/traderDefs'
-  import { isStockedByAnyMerchant } from '../data/merchantDefs'
+  import {
+    exchangePrice,
+    getMerchantByNpcName,
+    isStockedByAnyMerchant,
+  } from '../data/merchantDefs'
   import {
     DEAL_MAX_HALF_BAND_PCT,
     MAX_TRADE_DISTANCE_METERS,
   } from '../data/tradeConstants'
   import GoldAmount from './GoldAmount.svelte'
+  import TradeAmount from './TradeAmount.svelte'
   import LandTaxDetails from './LandTaxDetails.svelte'
   import LandGoldDialog from './LandGoldDialog.svelte'
   import {
@@ -55,6 +61,20 @@
   } from './inventoryGroups'
 
   const session = $derived($shopSession)
+  const traderName = $derived(
+    session ? npcDisplayName(session.merchantName, $locale) : ''
+  )
+  const merchant = $derived(
+    session ? getMerchantByNpcName(session.merchantName) : undefined
+  )
+  const currencyItem = $derived(merchant?.currencyItem)
+  const currencyBalance = $derived(
+    currencyItem
+      ? $inventoryStore.bag
+          .filter((item) => item.item_def_id === currencyItem && !item.locked)
+          .reduce((sum, item) => sum + item.quantity, 0)
+      : $playerGold
+  )
   const isFurnitureShop = $derived(
     session?.merchantName === furnitureShop.clerkNpcName
   )
@@ -167,7 +187,13 @@
   })
 
   const sellEntries = $derived.by((): SelectableGroup[] => {
-    if (!session || isRegistrar) return []
+    if (
+      !session ||
+      isRegistrar ||
+      session.sellRatePercent === 0 ||
+      currencyItem
+    )
+      return []
     const wishlist = session.wishlist
     return groupBagForSelection(
       $inventoryStore.bag.filter((item) => !item.locked)
@@ -226,6 +252,7 @@
 
   // Mirrors the server's integer price math (deals.rs / trade_base_price).
   function indexedBase(def: ItemDefinition): number {
+    if (currencyItem && merchant) return exchangePrice(merchant, def.id) ?? 0
     const base = def.basePrice ?? 0
     if (!session || !def.consumable || !isStockedByAnyMerchant(def.id))
       return base
@@ -233,7 +260,8 @@
   }
 
   function buyPrice(def: ItemDefinition, pct: number): number {
-    return Math.max(1, Math.floor((indexedBase(def) * (100 + pct)) / 100))
+    const price = (indexedBase(def) * (100 + pct)) / 100
+    return Math.max(1, currencyItem ? Math.ceil(price) : Math.floor(price))
   }
 
   function sellPrice(def: ItemDefinition, pct: number): number {
@@ -261,14 +289,14 @@
   const netCost = $derived(buyTotal - sellTotal)
   const canConfirm = $derived(
     cartEntries.length > 0 &&
-      netCost <= $playerGold &&
+      netCost <= currencyBalance &&
       !furnitureCheckoutPending
   )
 
   const DEFAULT_BUY_QTY = 10
 
   function affordableQty(unitPrice: number): number {
-    return Math.max(1, Math.floor($playerGold / Math.max(1, unitPrice)))
+    return Math.max(1, Math.floor(currencyBalance / Math.max(1, unitPrice)))
   }
 
   function addBuy(itemDefId: string, def: ItemDefinition, stockMax?: number) {
@@ -487,7 +515,11 @@
     class="trade-window"
     class:estate-window={isRegistrar}
     role="dialog"
-    aria-label={isRegistrar ? 'Real estate' : 'Trade'}
+    aria-label={isRegistrar
+      ? $t('trade.estate')
+      : currencyItem
+        ? $t('trade.exchange')
+        : $t('trade.title')}
     data-panel="trade"
     use:draggablePanel={'trade'}
   >
@@ -495,7 +527,7 @@
       <img
         class="merchant-portrait"
         src={portraitSrc}
-        alt={session.merchantName}
+        alt={traderName}
         draggable="false"
         onerror={() => (portraitFailed = true)}
       />
@@ -503,20 +535,28 @@
     <div class="panel-header" data-drag-handle>
       <span class="panel-title">
         {isRegistrar
-          ? `${session.merchantName} · Real Estate`
+          ? $t('trade.estateTitle', { name: traderName })
           : isResident
-            ? `Trade with ${session.merchantName}`
-            : `${session.merchantName}'s Shop`}
+            ? $t('trade.residentTitle', { name: traderName })
+            : currencyItem
+              ? $t('trade.exchangeTitle', { name: traderName })
+              : $t('trade.shopTitle', { name: traderName })}
       </span>
-      <button class="close-btn" onclick={() => shopSession.set(null)}
-        >&times;</button
+      <button
+        class="close-btn"
+        aria-label={$t('common.close')}
+        onclick={() => shopSession.set(null)}>&times;</button
       >
     </div>
 
     <div class="trade-columns">
       <div class="trade-column">
         <div class="column-title">
-          {isRegistrar ? 'Estate supplies' : 'Buy'}
+          {isRegistrar
+            ? $t('trade.estateSupplies')
+            : currencyItem
+              ? $t('trade.exchange')
+              : $t('trade.buy')}
         </div>
         <div class="item-list">
           {#each buyCatalog as itemDefId (itemDefId)}
@@ -542,8 +582,9 @@
                   >
                 {/if}
                 <span class="item-price"
-                  ><GoldAmount
-                    copper={isFurnitureShop
+                  ><TradeAmount
+                    {currencyItem}
+                    amount={isFurnitureShop
                       ? (furnitureProduct(itemDefId)?.price ?? 0)
                       : buyPrice(def, pct)}
                   /></span
@@ -584,11 +625,11 @@
             {/if}
           {:else}
             {#if isResident}
-              <div class="empty-note">Nothing for sale</div>
+              <div class="empty-note">{$t('trade.nothingForSale')}</div>
             {/if}
           {/each}
           {#if !isRegistrar && session.buyback.length > 0}
-            <div class="column-title buyback-title">Buy back</div>
+            <div class="column-title buyback-title">{$t('trade.buyback')}</div>
             {#each session.buyback as entry (entry.entryId)}
               {@const def = getItemDef(entry.itemDefId)}
               {#if def}
@@ -633,18 +674,26 @@
               $playerGold <= 0 ||
               $landTransferPending}
             onclick={() => (transfer = 'deposit')}
-            title="Deposit gold into your tax account"
+            title={$t('trade.depositTitle')}
           >
-            <span>Your gold</span><GoldAmount copper={$playerGold} />
+            <span>{$t('trade.yourGold')}</span><GoldAmount
+              copper={$playerGold}
+            />
           </button>
-          <p class="deposit-hint">Click your gold to deposit.</p>
+          <p class="deposit-hint">{$t('trade.depositHint')}</p>
         {:else}
           <div class="cart-line cart-current">
-            <span class="cart-label">Current</span>
-            <GoldAmount copper={$playerGold} />
+            <span class="cart-label">{$t('trade.current')}</span>
+            <TradeAmount amount={currencyBalance} {currencyItem} />
           </div>
         {/if}
-        <div class="column-title">{isRegistrar ? 'Purchase' : 'Cart'}</div>
+        <div class="column-title">
+          {isRegistrar
+            ? $t('trade.purchase')
+            : currencyItem
+              ? $t('trade.exchangeCart')
+              : $t('trade.cart')}
+        </div>
         <div class="item-list">
           {#each cartEntries as entry (entry.kind + ':' + (entry.groupKey ?? entry.entryId ?? entry.itemDefId) + (entry.dealPct ? ':deal' : ''))}
             {@const def = getItemDef(entry.itemDefId)}
@@ -655,8 +704,19 @@
                 onclick={() => removeOne(entry)}
                 use:itemTooltip={{ def, side: 'left' }}
               >
-                <span class="cart-kind {entry.kind}">
-                  {entry.kind === 'sell' ? 'S' : 'B'}
+                <span
+                  class="cart-kind {entry.kind}"
+                  title={entry.kind === 'sell'
+                    ? $t('trade.sellLabel')
+                    : currencyItem
+                      ? $t('trade.exchange')
+                      : $t('trade.buy')}
+                >
+                  {entry.kind === 'sell'
+                    ? $t('trade.sellShort')
+                    : currencyItem
+                      ? $t('trade.exchangeShort')
+                      : $t('trade.buyShort')}
                 </span>
                 <img
                   class="item-icon"
@@ -681,14 +741,15 @@
                   </span>
                 {/if}
                 <span class="item-price {entry.kind}">
-                  {entry.kind === 'sell' ? '+' : '−'}<GoldAmount
-                    copper={entry.unitPrice * entry.qty}
+                  {entry.kind === 'sell' ? '+' : '−'}<TradeAmount
+                    {currencyItem}
+                    amount={entry.unitPrice * entry.qty}
                   />
                 </span>
               </button>
             {/if}
           {:else}
-            <div class="empty-note">Click items to add</div>
+            <div class="empty-note">{$t('trade.emptyCart')}</div>
           {/each}
         </div>
         <div class="cart-footer">
@@ -696,31 +757,36 @@
             <p class="checkout-error" role="status">{$furnitureShopError}</p>
           {/if}
           <div class="cart-line">
-            <span class="cart-label">Total</span>
+            <span class="cart-label">{$t('trade.total')}</span>
             <span class="cart-total" class:earn={netCost < 0}>
-              {netCost === 0 ? '' : netCost < 0 ? '+' : '−'}<GoldAmount
-                copper={Math.abs(netCost)}
+              {netCost === 0 ? '' : netCost < 0 ? '+' : '−'}<TradeAmount
+                {currencyItem}
+                amount={Math.abs(netCost)}
               />
             </span>
           </div>
           <div class="cart-line">
-            <span class="cart-label">After</span>
-            <GoldAmount copper={$playerGold - netCost} />
+            <span class="cart-label">{$t('trade.after')}</span>
+            <TradeAmount amount={currencyBalance - netCost} {currencyItem} />
           </div>
           <button
             class="confirm-btn"
             disabled={!canConfirm}
             onclick={onConfirm}
           >
-            {furnitureCheckoutPending ? 'Paying…' : 'Confirm'}
+            {furnitureCheckoutPending
+              ? $t('trade.paying')
+              : currencyItem
+                ? $t('trade.exchange')
+                : $t('common.confirm')}
           </button>
         </div>
       </div>
 
-      {#if !isRegistrar}
+      {#if !isRegistrar && !currencyItem && session.sellRatePercent > 0}
         <div class="trade-column">
           <div class="column-title">
-            Sell ({session.sellRatePercent}%)
+            {$t('trade.sell', { rate: session.sellRatePercent })}
           </div>
           <div class="item-list">
             {#each sellEntries as group (group.key)}
@@ -769,7 +835,7 @@
                 </button>
               {/if}
             {:else}
-              <div class="empty-note">Nothing to sell</div>
+              <div class="empty-note">{$t('trade.nothingToSell')}</div>
             {/each}
           </div>
         </div>

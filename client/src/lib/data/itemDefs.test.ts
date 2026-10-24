@@ -45,6 +45,7 @@ describe('shield armor type', () => {
   it.each([
     ['wooden_shield', 1],
     ['raven_shield', 2],
+    ['earth_shield', 3],
   ] as const)(
     'classifies %s as a shield without changing its guard',
     (id, guard) => {

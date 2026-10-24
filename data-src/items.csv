@@ -4,6 +4,7 @@ worn_iron_sword,Worn Iron Sword,A well-used iron longsword. Merchants won't pay 
 notched_iron_sword,Notched Iron Sword,Hobgoblin issue — a nicked edge and no maker's mark. Cuts the same but sells for far less.,3,main_hand,false,weapons/iron_sword.png,weapons/sword.glb,weapon,sword,1d8,metal,2500,,,,,,,,,,,,,,,,,,,,,,
 wooden_shield,Wooden Shield,A round wooden shield.,6,off_hand,false,armor/shield_wooden.png,armor/shield_wooden.glb,armor,,,wood,2500,1,,,,,,,,,,,,,,,,,,,,,shield
 raven_shield,Raven Shield,A round wooden shield painted with a black raven crest.,6,off_hand,false,armor/shield_raven.png,armor/shield_raven.glb,armor,,,wood,7000,2,,,,,2,0.2,,,,,,,,,,,,,,,shield
+earth_shield,Shield of the Earth,Slabs of the earth guardian bound in scorched iron. Faint orange light lingers in the cracks beneath its seal.,8,off_hand,false,armor/earth_shield.png,armor/earth_shield.glb,armor,,,stone,30000,3,,,,,,,,,,,,,,,,,,,,,shield
 leather_helmet,Leather Helmet,A simple leather helmet.,1,head,false,armor/leather_helmet.png,armor/leather_helmet.glb,armor,,,leather,1500,1,,,,,1,,,,,,,,,,,,,,,,
 iron_helmet,Iron Helmet,A heavy iron great helm that guards the whole head.,4,head,false,armor/iron_helmet.png,armor/iron_helmet.glb,armor,,,metal,6000,2,,,,,2,0.37,,,,,,,,,,,,,,,
 breastplate,Breastplate,A polished steel breastplate that turns aside all but the truest blows.,20,chest,false,armor/plate_armor.png,armor/plate_armor.glb,armor,,,metal,40000,7,,,,,4,,,,,,,,,,,,,,,,

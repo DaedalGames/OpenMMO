@@ -6,6 +6,21 @@ export interface MerchantDefinition {
   sellRatePercent: number
   /** Semicolon-separated item def ids. */
   catalog?: string
+  currencyItem?: string
+  catalogPrices?: string
+  discountBudget?: number
+  playerDiscountCap?: number
+}
+
+export function exchangePrice(
+  merchant: MerchantDefinition,
+  itemDefId: string
+): number | undefined {
+  const entry = merchant.catalogPrices
+    ?.split(';')
+    .find((entry) => entry.split(':')[0] === itemDefId)
+  const price = Number(entry?.split(':')[1])
+  return Number.isSafeInteger(price) && price > 0 ? price : undefined
 }
 
 const merchantDefs = merchantsJson as Record<string, MerchantDefinition>

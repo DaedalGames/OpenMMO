@@ -3,6 +3,13 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { disposeObjects } from './dispose-objects'
+import {
+  EXCAVATION_CLIP_PATH,
+  EXCAVATION_TOOL_PATH,
+  applyExcavationGrip,
+  excavationFingerGrip,
+  poseExcavationTool,
+} from '../lib/utils/ysoldeExcavation'
 
 export let ysoldePreview:
   | {
@@ -21,7 +28,7 @@ export async function showYsolde(
   document.title = '이졸데 · 캐릭터 미리보기'
   document.querySelector('h1')!.textContent = '이졸데 미리보기'
   document.querySelector('header p:last-child')!.textContent =
-    '고고학자 이졸데의 외형과 대기·걷기·달리기를 살펴보세요.'
+    '작은 삽을 든 이졸데의 대기·걷기·달리기와 무릎 꿇고 발굴하는 동작을 살펴보세요.'
   document
     .querySelector('nav[aria-label="광휘의 투구 착용 비교"]')
     ?.setAttribute('hidden', '')
@@ -38,6 +45,7 @@ export async function showYsolde(
         <option value="idle1" selected>대기</option>
         <option value="walk">걷기</option>
         <option value="run">달리기</option>
+        <option value="excavate">무릎 꿇고 발굴</option>
       </select>
       <div class="buttons">
         <button id="ysolde-pause" type="button">일시정지</button>
@@ -62,6 +70,7 @@ export async function showYsolde(
       </select>
       <label class="toggle"><input id="ysolde-skeleton" type="checkbox" /> 뼈대 보기</label>
       <label class="toggle"><input id="ysolde-wireframe" type="checkbox" /> 와이어프레임</label>
+      <label class="toggle"><input id="ysolde-trowel" type="checkbox" checked /> 작은 삽 보이기</label>
       <button id="ysolde-reset" type="button">시점 초기화</button>
     </fieldset>
     <p id="ysolde-stats" class="details"></p>
@@ -77,12 +86,15 @@ export async function showYsolde(
   const speed = el<HTMLSelectElement>('speed')
   const params = new URLSearchParams(location.search)
   status.textContent = '이졸데를 불러오는 중…'
-  const gltf = await new GLTFLoader().loadAsync(
-    '/__modular-character/parts/ysolde.glb'
-  )
-  resources.push(gltf.scene)
+  const loader = new GLTFLoader()
+  const [gltf, excavation, tool] = await Promise.all([
+    loader.loadAsync('/__modular-character/parts/ysolde.glb'),
+    loader.loadAsync(EXCAVATION_CLIP_PATH),
+    loader.loadAsync(EXCAVATION_TOOL_PATH),
+  ])
+  resources.push(gltf.scene, tool.scene)
   if (disposed()) {
-    disposeObjects([gltf.scene])
+    disposeObjects([gltf.scene, tool.scene])
     return
   }
   const model = gltf.scene
@@ -101,6 +113,24 @@ export async function showYsolde(
         materials.add(material)
     if (node instanceof THREE.SkinnedMesh) meshes.push(node)
   })
+  const workClip = excavation.animations.find(
+    (clip) => clip.name === 'excavate'
+  )
+  if (!workClip) throw new Error('발굴 동작을 찾을 수 없습니다.')
+  const hand = model.getObjectByName('RightHand')
+  if (!hand) throw new Error('오른손 본을 찾을 수 없습니다.')
+  const grip = excavationFingerGrip(model, workClip)
+  poseExcavationTool(tool.scene)
+  hand.add(tool.scene)
+  const trowel = el<HTMLInputElement>('trowel')
+  const updateGrip = () => {
+    tool.scene.visible = motion.value !== 'Bind' && trowel.checked
+    if (tool.scene.visible) applyExcavationGrip(grip)
+  }
+  trowel.onchange = () => {
+    mixer.update(0)
+    updateGrip()
+  }
   el('stats').textContent =
     `기준 높이 ${bounds.getSize(new THREE.Vector3()).y.toFixed(2)}m · ${triangles.toLocaleString()}삼각형 · ${meshes[0].skeleton.bones.length}본`
   const skeleton = new THREE.SkeletonHelper(model)
@@ -154,7 +184,7 @@ export async function showYsolde(
   const views: Record<string, [number, number, number]> = {
     angle: [0.5, 0.15, 1],
     front: [0, 0.05, 1],
-    side: [1, 0.05, 0],
+    side: [-1, 0.2, 0.25],
     back: [0, 0.05, -1],
     face: [0, 0.05, 1],
     hand: [-1, 0.25, 1],
@@ -168,13 +198,18 @@ export async function showYsolde(
     history.replaceState(null, '', `?${query}`)
   }
   const reset = () => {
-    const sphere = bounds.getBoundingSphere(new THREE.Sphere())
+    model.updateMatrixWorld(true)
+    const poseBounds =
+      motion.value === 'excavate'
+        ? new THREE.Box3().setFromObject(model, true)
+        : bounds
+    const sphere = poseBounds.getBoundingSphere(new THREE.Sphere())
     if (view.value === 'face' || view.value === 'hand') {
       model.updateMatrixWorld(true)
       const name = view.value === 'face' ? 'Head' : 'RightHand'
       model.getObjectByName(name)!.getWorldPosition(sphere.center)
       sphere.center.y += view.value === 'face' ? 0.05 : -0.04
-      sphere.radius = view.value === 'face' ? 0.25 : 0.17
+      sphere.radius = view.value === 'face' ? 0.25 : 0.24
     }
     const halfFov = Math.atan(
       Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) *
@@ -184,7 +219,15 @@ export async function showYsolde(
     camera.position
       .fromArray(views[view.value])
       .normalize()
-      .multiplyScalar((sphere.radius * 1.1) / Math.sin(halfFov))
+      .multiplyScalar(
+        (sphere.radius *
+          (motion.value === 'excavate' &&
+          view.value !== 'face' &&
+          view.value !== 'hand'
+            ? 0.85
+            : 1.1)) /
+          Math.sin(halfFov)
+      )
       .add(sphere.center)
     controls.update()
   }
@@ -208,7 +251,9 @@ export async function showYsolde(
     mixer.uncacheRoot(model)
     ysoldePreview = undefined
   })
-  const clips = new Map(gltf.animations.map((clip) => [clip.name, clip]))
+  const clips = new Map(
+    [...gltf.animations, workClip].map((clip) => [clip.name, clip])
+  )
   let action: THREE.AnimationAction | undefined
   let paused = false
   const play = () => {
@@ -220,6 +265,7 @@ export async function showYsolde(
     pause.textContent = '일시정지'
     pause.disabled = replay.disabled = scrub.disabled = !action
     mixer.update(0)
+    updateGrip()
     remember()
   }
   const requested = params.get('motion') ?? 'idle1'
@@ -242,6 +288,7 @@ export async function showYsolde(
       action.getClip().duration - 1e-6
     )
     mixer.update(0)
+    updateGrip()
   }
   play()
   reset()
@@ -251,6 +298,7 @@ export async function showYsolde(
     const dt = Math.min((now - previous) / 1000, 0.1)
     previous = now
     if (!paused) mixer.update(dt * Number(speed.value))
+    updateGrip()
     controls.update()
     const duration = action?.getClip().duration ?? 0
     const time = action?.time ?? 0

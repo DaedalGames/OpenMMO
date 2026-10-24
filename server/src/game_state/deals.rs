@@ -141,7 +141,7 @@ pub(crate) struct DealEntry {
 pub(crate) struct DealLedgers {
     game_day: i64,
     npc_granted: HashMap<String, i64>,
-    player_received: HashMap<String, i64>,
+    player_received: HashMap<(String, Option<String>), i64>,
     /// (merchant name, player name) → real-time ms of the last accepted offer.
     last_accepted_offer: HashMap<(String, String), u64>,
 }
@@ -283,7 +283,7 @@ impl super::GameState {
         // What the deal costs the merchant against undiscounted prices;
         // markups and lowball sell offers cost nothing.
         let cost = match kind {
-            DealKind::Buy => buy_base - buy_price(buy_base, applied),
+            DealKind::Buy => buy_base - def.purchase_price(buy_base, applied),
             DealKind::Sell => {
                 let cap = self.sell_cap(&def, item_def_id, index_pct);
                 sell_payout(base_price, rate, applied, cap) - sell_payout(base_price, rate, 0, cap)
@@ -293,6 +293,16 @@ impl super::GameState {
 
         let now_ms = Self::now_ms();
         let game_day = self.current_game_day();
+        let (npc_budget, player_cap) = match def {
+            super::trading::TraderDef::Merchant(merchant) if merchant.currency_item.is_some() => (
+                merchant.discount_budget.expect("validated exchange budget"),
+                merchant
+                    .player_discount_cap
+                    .expect("validated exchange cap"),
+            ),
+            _ => (MERCHANT_DAILY_DISCOUNT_BUDGET, PLAYER_DAILY_DISCOUNT_CAP),
+        };
+        let player_budget_key = (target_name.clone(), def.currency_item().map(str::to_owned));
 
         // Cooldown + daily budgets, all under the ledger lock.
         {
@@ -310,16 +320,16 @@ impl super::GameState {
                 .npc_granted
                 .entry(merchant_name.clone())
                 .or_default();
-            if *npc_granted + cost > MERCHANT_DAILY_DISCOUNT_BUDGET {
+            if *npc_granted + cost > npc_budget {
                 drop(ledgers);
                 return reject("your discount budget for today is exhausted").await;
             }
             *npc_granted += cost;
             let player_received = ledgers
                 .player_received
-                .entry(target_name.clone())
+                .entry(player_budget_key)
                 .or_default();
-            if *player_received + cost > PLAYER_DAILY_DISCOUNT_CAP {
+            if *player_received + cost > player_cap {
                 // Roll back the merchant ledger we just charged.
                 *ledgers
                     .npc_granted
@@ -540,7 +550,11 @@ impl super::GameState {
             ledgers.npc_granted.get(merchant_name).copied().unwrap_or(0),
             ledgers
                 .player_received
-                .get(player_name)
+                .get(&(
+                    player_name.to_string(),
+                    trader_def_by_name(merchant_name)
+                        .and_then(|def| def.currency_item().map(str::to_owned)),
+                ))
                 .copied()
                 .unwrap_or(0),
             ledgers

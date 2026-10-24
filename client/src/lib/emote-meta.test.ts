@@ -8,6 +8,10 @@ import {
   emoteLabel,
 } from './emote-meta'
 import {
+  EXCAVATE_EMOTE_ANIM,
+  HELD_EMOTE_ANIMS,
+  isEmoteAnim,
+  isSelfEndingEmote,
   LOOPING_EMOTE_ANIMS,
   MUSIC_EMOTE_ANIM,
   ONE_SHOT_EMOTE_ANIMS,
@@ -31,6 +35,21 @@ function rustEmoteList(constName: string): string[] {
 }
 
 describe('emote panel metadata', () => {
+  it('recognizes NPC excavation as a held interaction without exposing it in the player menu', () => {
+    const rust = readFileSync(
+      path.resolve(__dirname, '../../../shared/src/messages.rs'),
+      'utf-8'
+    )
+    expect(rust).toContain(
+      `pub const EXCAVATE_EMOTE: &str = "${EXCAVATE_EMOTE_ANIM}";`
+    )
+    expect(isEmoteAnim(EXCAVATE_EMOTE_ANIM)).toBe(true)
+    expect(HELD_EMOTE_ANIMS.has(EXCAVATE_EMOTE_ANIM)).toBe(true)
+    expect(isSelfEndingEmote(EXCAVATE_EMOTE_ANIM)).toBe(false)
+    expect(EMOTE_LIST.some((emote) => emote.anim === EXCAVATE_EMOTE_ANIM)).toBe(
+      false
+    )
+  })
   it('mirrors ONE_SHOT_EMOTES from shared/src/messages.rs', () => {
     expect(new Set(rustEmoteList('ONE_SHOT_EMOTES'))).toEqual(
       ONE_SHOT_EMOTE_ANIMS

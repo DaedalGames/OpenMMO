@@ -539,7 +539,14 @@ impl super::GameState {
     async fn play_emote(&self, player_id: &PlayerId, name: &str) {
         let one_shot = onlinerpg_shared::messages::ONE_SHOT_EMOTES;
         let looping = onlinerpg_shared::messages::LOOPING_EMOTES;
-        if !one_shot.contains(&name) && !looping.contains(&name) {
+        let npc_work = name == onlinerpg_shared::messages::EXCAVATE_EMOTE
+            && self
+                .players
+                .read()
+                .await
+                .get(player_id)
+                .is_some_and(|p| p.is_official_npc);
+        if !one_shot.contains(&name) && !looping.contains(&name) && !npc_work {
             let list = [one_shot, looping].concat().join(", ");
             self.send_system_message(player_id, format!("Emotes: {list}"))
                 .await;

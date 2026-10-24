@@ -10,6 +10,7 @@ use std::sync::Arc;
 use onlinerpg_shared::furniture::FurniturePlacement;
 use onlinerpg_shared::ClientMessage;
 use onlinerpg_terrain::coords::{tile_to_region, world_to_tile};
+use rand::Rng;
 use tokio::sync::Mutex;
 use tracing::{debug, error, info, warn};
 
@@ -168,7 +169,11 @@ pub(super) async fn execute_schedule_move(state: &Arc<Mutex<SharedState>>, entry
             floor: entry.floor_level,
         };
         match execute_walk(state, &to, Some(false)).await {
-            MoveResult::Arrived => {}
+            MoveResult::Arrived => {
+                for activity in entry.waypoint_activities.iter().filter(|a| a.waypoint == i) {
+                    perform_waypoint_activity(state, entry, activity).await;
+                }
+            }
             MoveResult::Blocked => {
                 warn!("Patrol waypoint {i} blocked — skipping ({wx:.1}, {wz:.1})");
             }
@@ -203,6 +208,91 @@ pub(super) async fn execute_schedule_move(state: &Arc<Mutex<SharedState>>, entry
         error!("Failed to face schedule target: {e}");
     }
     send_interact_if_needed(&mut s, entry).await;
+}
+
+async fn perform_waypoint_activity(
+    state: &Arc<Mutex<SharedState>>,
+    entry: &ScheduleEntry,
+    activity: &onlinerpg_shared::schedule::WaypointActivity,
+) {
+    let allowed = onlinerpg_shared::messages::LOOPING_EMOTES.contains(&activity.emote.as_str())
+        || activity.emote == onlinerpg_shared::messages::EXCAVATE_EMOTE;
+    if !allowed || activity.duration_secs == 0 {
+        return;
+    }
+    let Some((x, z)) = activity_destination(entry, activity, &mut rand::thread_rng()) else {
+        return;
+    };
+    let to = walk::WalkTo::Schedule {
+        x,
+        z,
+        floor: entry.floor_level,
+    };
+    if !matches!(
+        execute_walk(state, &to, Some(false)).await,
+        MoveResult::Arrived
+    ) {
+        return;
+    }
+    {
+        let mut s = state.lock().await;
+        if s.player_trade_in_progress()
+            || s.self_player.as_ref().is_none_or(|p| {
+                p.health == 0
+                    || p.mount.is_some()
+                    || (p.position.x - x).powi(2) + (p.position.z - z).powi(2) > 0.25
+            })
+        {
+            return;
+        }
+        if s.send_background_command(ClientMessage::PlayerFace {
+            rotation: activity.rotation.to_radians(),
+        })
+        .await
+        .is_err()
+            || s.send_background_command(ClientMessage::ChatMessage {
+                message: format!("/emote {}", activity.emote),
+            })
+            .await
+            .is_err()
+        {
+            return;
+        }
+    }
+    tokio::time::sleep(std::time::Duration::from_secs(u64::from(
+        activity.duration_secs.min(120),
+    )))
+    .await;
+    let mut s = state.lock().await;
+    if let Err(error) = s
+        .send_background_command(ClientMessage::StopInteraction)
+        .await
+    {
+        warn!("Failed to finish waypoint activity: {error}");
+    }
+}
+
+fn activity_destination(
+    entry: &ScheduleEntry,
+    activity: &onlinerpg_shared::schedule::WaypointActivity,
+    rng: &mut impl Rng,
+) -> Option<(f32, f32)> {
+    let waypoint = entry.waypoints.get(activity.waypoint)?;
+    if !activity.probability.is_finite() || rng.gen::<f32>() >= activity.probability.clamp(0.0, 1.0)
+    {
+        return None;
+    }
+    let radius = if activity.radius.is_finite() {
+        activity.radius.clamp(0.0, 8.0)
+    } else {
+        0.0
+    };
+    let angle = rng.gen_range(0.0..std::f32::consts::TAU);
+    let distance = radius * rng.gen::<f32>().sqrt();
+    Some((
+        onlinerpg_shared::wrap_world_x(waypoint[0] + angle.cos() * distance),
+        waypoint[2] + angle.sin() * distance,
+    ))
 }
 
 pub(super) async fn execute_move(
@@ -342,6 +432,30 @@ mod tests {
         let mut schedule = serde_json::from_str::<File>(json).unwrap().schedule;
         assert!(onlinerpg_shared::schedule::parse_conditions(&mut schedule).is_empty());
         schedule
+    }
+
+    #[test]
+    fn ysolde_patrol_yields_to_campfire_and_sleep_across_midnight() {
+        let schedule = npc_schedule(include_str!("../../data/npcs/ysolde/schedule.json"));
+        for (hour, minute, index, recurring) in [
+            (0, 0, 2, None),
+            (5, 59, 2, None),
+            (6, 0, 0, Some(6)),
+            (7, 0, 0, Some(7)),
+            (17, 59, 0, Some(17)),
+            (18, 0, 1, None),
+            (20, 59, 1, None),
+            (21, 0, 2, None),
+            (23, 59, 2, None),
+        ] {
+            assert_eq!(
+                resolve_active_schedule(&schedule, None, Some(hour), Some(minute), None),
+                (Some(index), recurring)
+            );
+        }
+        assert!(schedule[1].is_campfire());
+        assert!(!schedule[1].is_campfire_meal());
+        assert!(schedule[2].is_sleeping());
     }
 
     fn fishing_state(
