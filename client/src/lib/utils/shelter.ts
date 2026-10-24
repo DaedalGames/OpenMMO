@@ -9,7 +9,7 @@ export function normalizeYaw(yaw: number): number {
 export function isInsideShelter(
   point: Position,
   placement: ObjectPlacement,
-  cutaway: NonNullable<ObjectDef['cutaway']>
+  perimeter: NonNullable<ObjectDef['perimeter']>
 ): boolean {
   const yaw = (placement.rotation * Math.PI) / 180
   const dx = shortestWrappedDeltaX(placement.x, point.x)
@@ -18,9 +18,9 @@ export function isInsideShelter(
   const z = dx * Math.sin(yaw) + dz * Math.cos(yaw)
   const y = point.y - placement.y
   return (
-    Math.abs(x) < cutaway.width / 2 &&
-    Math.abs(z) < cutaway.depth / 2 &&
+    Math.abs(x) < perimeter.width / 2 &&
+    Math.abs(z) < perimeter.depth / 2 &&
     y > -0.3 &&
-    y < cutaway.height
+    y < perimeter.height
   )
 }

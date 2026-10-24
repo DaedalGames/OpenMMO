@@ -1,4 +1,4 @@
-use super::{passability::regions_around, GameState};
+use super::{passability::regions_around, player_interaction::interaction_pose, GameState};
 use crate::types::{Player, PlayerId, Position};
 use onlinerpg_shared::estate_storage::{estate_storage_def, INTERACTION_RANGE};
 use onlinerpg_shared::furniture::FurniturePlacement;
@@ -10,10 +10,7 @@ use tokio::time::Instant;
 pub(super) type BedIndex = HashMap<(i32, i32), Vec<FurniturePlacement>>;
 
 pub(super) fn is_bed(object_type: &str) -> bool {
-    matches!(
-        object_type,
-        "bed" | "rustic_bed" | "ysolde_field_cot" | "furniture_bed" | "furniture_rustic_bed"
-    )
+    interaction_pose(object_type).is_some_and(|pose| pose.sleep)
 }
 
 pub(super) fn within_reach(player: &Player, position: Position, floor: i8) -> bool {

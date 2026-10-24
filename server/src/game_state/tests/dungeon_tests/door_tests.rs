@@ -803,10 +803,8 @@ async fn a_monster_inside_a_sealed_stair_room_still_sees_the_players_there() {
     let stair_room = generate_dungeon_for(&entrance.id)[depth as usize - 1].rooms[0];
     let (a, b) = door_side_positions(&entrance, depth, &door, false);
     let ep = entrance.position();
-    let in_room = |p: &Position| {
-        let (x, z) = onlinerpg_shared::dungeon::world_to_cell(&ep, p.x, p.z);
-        stair_room.contains(x, z)
-    };
+    let in_room =
+        |p: &Position| crate::game_state::dungeon::in_stair_room(&ep, Some(&stair_room), p);
     let (by_door, beyond) = if in_room(&a) { (a, b) } else { (b, a) };
     let step = |from: Position, cells: f32| Position {
         x: from.x + (from.x - beyond.x) * cells,

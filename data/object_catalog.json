@@ -10,12 +10,7 @@
       "height": 2.3,
       "entranceWidth": 1.8
     },
-    "cutaway": {
-      "node": "tent_front",
-      "width": 2.4,
-      "depth": 3.2,
-      "height": 2.3
-    }
+    "cutaway": "tent_front"
   },
   {
     "id": "ysolde_field_cot",

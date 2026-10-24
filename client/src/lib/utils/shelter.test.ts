@@ -4,7 +4,7 @@ import { isInsideShelter, normalizeYaw } from './shelter'
 import type { ObjectPlacement } from '../stores/editorStore'
 import { WORLD_WIDTH_X } from '../terrain/world-wrap'
 
-const cutaway = { node: 'tent_front', width: 2.4, depth: 3.2, height: 2.3 }
+const perimeter = { width: 2.4, depth: 3.2, height: 2.3, entranceWidth: 1.8 }
 const placement: ObjectPlacement = {
   id: 1,
   type: 'ysolde_tent',
@@ -35,17 +35,17 @@ describe('rotated tent cutaway', () => {
         )
         return { x: point.x + placed.x, y: placed.y, z: point.z + placed.z }
       }
-      expect(isInsideShelter(world(0, 1.4), placed, cutaway)).toBe(true)
-      expect(isInsideShelter(world(1.3, 0), placed, cutaway)).toBe(false)
-      expect(isInsideShelter(world(0, 1.7), placed, cutaway)).toBe(false)
+      expect(isInsideShelter(world(0, 1.4), placed, perimeter)).toBe(true)
+      expect(isInsideShelter(world(1.3, 0), placed, perimeter)).toBe(false)
+      expect(isInsideShelter(world(0, 1.7), placed, perimeter)).toBe(false)
     }
   )
 
   it('keeps the front visible on another floor', () => {
-    expect(isInsideShelter({ x: 10, y: 10.1, z: 20 }, placement, cutaway)).toBe(
-      false
-    )
-    expect(isInsideShelter({ x: 10, y: 6, z: 20 }, placement, cutaway)).toBe(
+    expect(
+      isInsideShelter({ x: 10, y: 10.1, z: 20 }, placement, perimeter)
+    ).toBe(false)
+    expect(isInsideShelter({ x: 10, y: 6, z: 20 }, placement, perimeter)).toBe(
       false
     )
   })
@@ -55,7 +55,7 @@ describe('rotated tent cutaway', () => {
       isInsideShelter(
         { x: 10 + WORLD_WIDTH_X, y: 7, z: 20 },
         placement,
-        cutaway
+        perimeter
       )
     ).toBe(true)
   })

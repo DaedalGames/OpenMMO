@@ -16,8 +16,14 @@ struct CatalogInteraction {
     interact_offset: Option<Position>,
 }
 
-fn interaction_offset(kind: &str) -> Option<Position> {
-    static POSES: OnceLock<HashMap<String, Position>> = OnceLock::new();
+#[derive(Clone, Copy)]
+pub(super) struct InteractionPose {
+    pub sleep: bool,
+    pub offset: Position,
+}
+
+pub(super) fn interaction_pose(kind: &str) -> Option<InteractionPose> {
+    static POSES: OnceLock<HashMap<String, InteractionPose>> = OnceLock::new();
     let model = estate_storage_def(kind).map_or(kind, |definition| definition.model_id.as_str());
     POSES
         .get_or_init(|| {
@@ -27,14 +33,17 @@ fn interaction_offset(kind: &str) -> Option<Position> {
             entries
                 .into_iter()
                 .filter_map(|entry| {
-                    matches!(entry.interaction.as_deref(), Some("sit" | "sleep")).then_some((
-                        entry.id,
-                        entry.interact_offset.unwrap_or(Position {
-                            x: 0.0,
-                            y: 0.0,
-                            z: 0.0,
-                        }),
-                    ))
+                    let sleep = match entry.interaction.as_deref()? {
+                        "sit" => false,
+                        "sleep" => true,
+                        _ => return None,
+                    };
+                    let offset = entry.interact_offset.unwrap_or(Position {
+                        x: 0.0,
+                        y: 0.0,
+                        z: 0.0,
+                    });
+                    Some((entry.id, InteractionPose { sleep, offset }))
                 })
                 .collect()
         })
@@ -99,9 +108,9 @@ impl GameState {
         player: &Player,
         kind: &str,
         id: u32,
-    ) -> Option<(FurniturePlacement, PassabilityCache)> {
-        let (placement, key, others) = if let Some(definition) = estate_storage_def(kind) {
-            interaction_offset(&definition.model_id)?;
+    ) -> Option<(FurniturePlacement, PassabilityCache, Position)> {
+        let offset = interaction_pose(kind)?.offset;
+        let (placement, key, others) = if estate_storage_def(kind).is_some() {
             let chests = self.estate_chests.read().await;
             let chest = chests
                 .get(i64::from(id))
@@ -118,7 +127,6 @@ impl GameState {
                     .collect::<Vec<_>>(),
             )
         } else {
-            interaction_offset(kind)?;
             let index = self
                 .interaction_furniture
                 .read()
@@ -148,7 +156,7 @@ impl GameState {
         };
         let mut cache = (*self.passability.snapshot()).clone();
         furniture::sync_passability(&mut cache, &key, &others);
-        Some((placement, cache))
+        Some((placement, cache, offset))
     }
 
     async fn interaction_exit(&self, player: &Player) -> Position {
@@ -156,7 +164,7 @@ impl GameState {
             (Some(kind), Some(id)) => self
                 .interaction_placement(player, kind, id)
                 .await
-                .map(|(_, cache)| cache),
+                .map(|(_, cache, _)| cache),
             _ => return player.position,
         }
         .unwrap_or_else(|| (*self.passability.snapshot()).clone());
@@ -223,10 +231,8 @@ impl GameState {
         let mut rejection = None;
         if let (Some(kind), Some(id)) = (object_type.as_deref(), object_id) {
             match self.interaction_placement(&previous, kind, id).await {
-                Some((placement, cache)) => {
+                Some((placement, cache, offset)) => {
                     position = placement_position(&placement);
-                    let offset = interaction_offset(kind)
-                        .expect("interaction_placement validates catalog poses");
                     let yaw = placement.rotation_deg.to_radians();
                     position.x =
                         wrap_world_x(position.x + offset.x * yaw.cos() + offset.z * yaw.sin());

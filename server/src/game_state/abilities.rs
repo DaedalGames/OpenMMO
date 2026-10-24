@@ -350,7 +350,7 @@ impl GameState {
                 (Some(kind), Some(id)) => self
                     .interaction_placement(player, kind, id)
                     .await
-                    .map(|(_, cache)| cache),
+                    .map(|(_, cache, _)| cache),
                 _ => None,
             }
         } else {

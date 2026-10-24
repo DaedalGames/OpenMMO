@@ -85,9 +85,6 @@
   let isEditorMode = $state(false)
   let currentFloor = $state(0)
   let currentHouseId = $state<string | null>(null)
-  const shelters = $derived(
-    placements.filter((p) => objectDefsById.get(p.type)?.cutaway)
-  )
 
   let lastLoadedRegion = { rx: NaN, rz: NaN }
   let regionLoadGeneration = 0
@@ -296,6 +293,14 @@
   /** objectId → its placement clone in `group`, so the transform-only fast path
    *  can move an existing clone instead of tearing the whole region down. */
   const cloneById = new SvelteMap<number, THREE.Object3D>()
+  const shelters = $derived(
+    placements.flatMap((placement) => {
+      const def = objectDefsById.get(placement.type)
+      if (!def?.cutaway || !def.perimeter) return []
+      const panel = cloneById.get(placement.id)?.getObjectByName(def.cutaway)
+      return panel ? [{ placement, perimeter: def.perimeter, panel }] : []
+    })
+  )
   const isEditing = () => isEditorMode && tool === 'object'
 
   // Keep shared fire materials outside the model group's rebuild/disposal sweep.
@@ -368,13 +373,9 @@
   }
 
   export function update(deltaTime: number, camera: THREE.Camera | undefined) {
-    for (const placement of shelters) {
-      const cutaway = objectDefsById.get(placement.type)?.cutaway
-      if (!cutaway) continue
-      const panel = cloneById.get(placement.id)?.getObjectByName(cutaway.node)
-      if (panel)
-        panel.visible =
-          !debugInfo || !isInsideShelter(debugInfo.position, placement, cutaway)
+    for (const { placement, perimeter, panel } of shelters) {
+      panel.visible =
+        !debugInfo || !isInsideShelter(debugInfo.position, placement, perimeter)
     }
     for (const w of takeFieldBossWakes()) startWake(w)
     for (const s of takeFieldBossSleeps()) startSleep(s)

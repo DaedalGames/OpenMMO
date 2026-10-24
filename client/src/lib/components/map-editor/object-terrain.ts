@@ -12,6 +12,9 @@ type Placement = Pick<
   'type' | 'x' | 'z' | 'rotation' | 'floorLevel'
 >
 
+/** Tight blend so flattening doesn't bleed into surrounding terrain (e.g. river banks). */
+const FLATTEN_BLEND_RADIUS = 2
+
 export function foundationHeight(
   placement: Placement,
   heights: Pick<TerrainHeightManager, 'getHeightAtWorldPosition'>
@@ -68,7 +71,7 @@ export async function flattenObjectTerrain(
       rect.minZ,
       rect.maxZ,
       target,
-      2,
+      FLATTEN_BLEND_RADIUS,
       protectedGround
     )
   }

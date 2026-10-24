@@ -109,6 +109,13 @@ export function getNpcModelPath(npcName: string): string | undefined {
   return NPC_MODEL_OVERRIDES[npcName]
 }
 
+/** Models whose own baked clips win over the shared animation packs. */
+const OWN_CLIP_MODEL_PATHS = new Set([YSOLDE_CHARACTER_MODEL_PATH])
+
+export function usesOwnClips(path: string): boolean {
+  return OWN_CLIP_MODEL_PATHS.has(path)
+}
+
 const NPC_CLASSES: CharacterClass[] = ['merchant', 'guard', 'maid']
 export const PLAYER_CLASSES = (
   Object.keys(CLASS_GENDER_MODELS) as CharacterClass[]

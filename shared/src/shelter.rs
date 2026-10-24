@@ -118,25 +118,30 @@ pub fn build_passability(placements: &[FurniturePlacement]) -> Option<RuntimePas
     if floors.is_empty() {
         return None;
     }
+    let (min_x, max_x, min_z, max_z) = floors.iter().fold(
+        (
+            f32::INFINITY,
+            f32::NEG_INFINITY,
+            f32::INFINITY,
+            f32::NEG_INFINITY,
+        ),
+        |(min_x, max_x, min_z, max_z), f| {
+            let (x, z) = (f.origin_x as f32, f.origin_z as f32);
+            (
+                min_x.min(x),
+                max_x.max(x + f.width as f32),
+                min_z.min(z),
+                max_z.max(z + f.depth as f32),
+            )
+        },
+    );
     Some(RuntimePassability {
         house_origin_x: 0.0,
         house_origin_z: 0.0,
-        min_x: floors
-            .iter()
-            .map(|f| f.origin_x as f32)
-            .fold(f32::INFINITY, f32::min),
-        max_x: floors
-            .iter()
-            .map(|f| f.origin_x as f32 + f.width as f32)
-            .fold(f32::NEG_INFINITY, f32::max),
-        min_z: floors
-            .iter()
-            .map(|f| f.origin_z as f32)
-            .fold(f32::INFINITY, f32::min),
-        max_z: floors
-            .iter()
-            .map(|f| f.origin_z as f32 + f.depth as f32)
-            .fold(f32::NEG_INFINITY, f32::max),
+        min_x,
+        max_x,
+        min_z,
+        max_z,
         floors,
         stairwells: Vec::new(),
         yields_to_trapped_mover: false,

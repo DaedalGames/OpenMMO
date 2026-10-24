@@ -16,11 +16,7 @@
     ObjectSubTool,
   } from '../../stores/editorStore'
   import { objectManager } from '../../managers/objectManager'
-  import {
-    getObjectDef,
-    objectDefs,
-    objectDefsById,
-  } from '../../data/objectCatalog'
+  import { objectDefs, objectDefsById } from '../../data/objectCatalog'
   import { furnitureManager } from '../../managers/furnitureManager'
   import { normalizeYaw } from '../../utils/shelter'
   import {
@@ -91,8 +87,7 @@
   })
 
   function selectType(id: string) {
-    if (getObjectDef(id)?.cutaway)
-      objectRotation.update((yaw) => normalizeYaw(Math.round(yaw / 90) * 90))
+    objectRotation.update((yaw) => furnitureManager.snapRotation(id, yaw))
     selectedObjectType.set(id)
     objectSubTool.set('place')
     selectedObjectPlacementId.set(null)
@@ -192,14 +187,15 @@
     )
     if (!p) return
     const dir = e.deltaY < 0 ? 1 : -1
-    // Solid furniture yaw steps by 90° so each notch moves a full cell-aligned
-    // turn (applyPatch would otherwise snap a sub-90° nudge back to the same value).
+    // applyPatch would otherwise snap a sub-90° nudge back to the same value.
     const effStep =
-      field === 'rotation' && furnitureManager.isSolid(p.type) ? 90 : step
+      field === 'rotation' && furnitureManager.turnsInQuarters(p.type)
+        ? 90
+        : step
     const cur = p[field] ?? 0
     let next = Math.round((cur + dir * effStep) / effStep) * effStep
     if (field === 'rotation' || field === 'rotationX') {
-      next = ((next % 360) + 360) % 360
+      next = normalizeYaw(next)
     }
     applyPatch({ [field]: next })
     // Re-anchor the X/Y/Z slider window so its thumb follows the wheeled value
@@ -385,12 +381,14 @@
           'rotation',
           0,
           360,
-          selectedDef?.cutaway ? 90 : 15,
+          selectedDef && furnitureManager.turnsInQuarters(selectedDef.id)
+            ? 90
+            : 15,
           0,
           '°'
         )}
         <!-- Walkable decks and shelter interiors use yaw only. -->
-        {#if selectedDef?.kind !== 'bridge' && !selectedDef?.cutaway}
+        {#if selectedDef?.kind !== 'bridge' && !selectedDef?.perimeter}
           {@render coordRow('RotX', 'rotationX', 0, 360, 15, 0, '°')}
         {/if}
         <div class="coord-row">

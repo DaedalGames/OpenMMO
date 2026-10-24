@@ -220,30 +220,30 @@ pub fn passability_set_furniture(key: &str, val: JsValue) -> Result<JsValue, JsE
             floor_level: p.floor_level,
         })
         .collect();
-    if let Some(perimeter) = crate::shelter::build_passability(&placements) {
-        for floor in perimeter.floors {
-            let mut cells = Vec::new();
-            let mut edges = Vec::new();
-            for (i, &edge) in floor.cells.iter().enumerate() {
-                if edge == 0 {
-                    continue;
-                }
-                cells.push((
-                    floor.origin_x + (i % floor.width as usize) as i32,
-                    floor.origin_z + (i / floor.width as usize) as i32,
-                ));
-                edges.push(edge);
+    let perimeter = crate::shelter::build_passability(&placements);
+    for floor in perimeter.iter().flat_map(|p| &p.floors) {
+        let mut cells = Vec::new();
+        let mut edges = Vec::new();
+        for (i, &edge) in floor.cells.iter().enumerate() {
+            if edge == 0 {
+                continue;
             }
-            debug.push(FurnitureDebugPieceJs {
-                cells,
-                edges: Some(edges),
-                y_base: floor.y_base,
-                floor_level: floor.floor_level,
-            });
+            cells.push((
+                floor.origin_x + (i % floor.width as usize) as i32,
+                floor.origin_z + (i / floor.width as usize) as i32,
+            ));
+            edges.push(edge);
         }
+        debug.push(FurnitureDebugPieceJs {
+            cells,
+            edges: Some(edges),
+            y_base: floor.y_base,
+            floor_level: floor.floor_level,
+        });
     }
+    let solid = pathfinding::build_furniture_passability(&pieces);
     with_cache_mut(|cache| {
-        furniture::sync_passability(cache, key, &placements);
+        furniture::store_passability(cache, key, solid, perimeter);
     });
     to_js(&debug)
 }

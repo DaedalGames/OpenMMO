@@ -382,15 +382,23 @@ pub fn sync_passability(
     key: &str,
     placements: &[FurniturePlacement],
 ) -> bool {
+    store_passability(
+        cache,
+        key,
+        build_furniture_passability_for_placements(placements),
+        crate::shelter::build_passability(placements),
+    )
+}
+
+pub fn store_passability(
+    cache: &mut crate::pathfinding::PassabilityCache,
+    key: &str,
+    solid: Option<RuntimePassability>,
+    perimeter: Option<RuntimePassability>,
+) -> bool {
     let entries = [
-        (
-            key.to_owned(),
-            build_furniture_passability_for_placements(placements),
-        ),
-        (
-            format!("{key}:perimeter"),
-            crate::shelter::build_passability(placements),
-        ),
+        (key.to_owned(), solid),
+        (format!("{key}:perimeter"), perimeter),
     ];
     let mut present = false;
     for (key, entry) in entries {

@@ -1,5 +1,7 @@
 import type { ObjectPlacement } from '../stores/editorStore'
 import { isNeighbourRegion } from '../terrain/terrain-constants'
+import { getObjectDef } from '../data/objectCatalog'
+import { normalizeYaw } from '../utils/shelter'
 import {
   passability_set_furniture,
   passability_remove_furniture,
@@ -52,11 +54,15 @@ class FurnitureManager {
     return furniture_is_solid(type)
   }
 
-  /** Solid furniture is constrained to 90° yaw so its footprint lands on whole
-   *  cells; other objects keep their free rotation. */
+  /** Solid furniture and walled shelters turn in 90° steps so their cells
+   *  land on the grid; other objects keep their free rotation. */
+  turnsInQuarters(type: string): boolean {
+    return this.isSolid(type) || getObjectDef(type)?.perimeter !== undefined
+  }
+
   snapRotation(type: string, rotationDeg: number): number {
-    if (!this.isSolid(type)) return rotationDeg
-    return (((Math.round(rotationDeg / 90) * 90) % 360) + 360) % 360
+    if (!this.turnsInQuarters(type)) return rotationDeg
+    return normalizeYaw(Math.round(rotationDeg / 90) * 90)
   }
 
   /** Re-register a region's furniture from its raw object placements. wasm

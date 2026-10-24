@@ -655,8 +655,8 @@ impl GameState {
     }
 
     pub fn is_npc_asleep(&self, npc_name: &str) -> bool {
-        self.active_npc_schedule(npc_name)
-            .is_some_and(|entry| entry.is_sleeping())
+        self.with_active_npc_schedule(npc_name, ScheduleEntry::is_sleeping)
+            .unwrap_or(false)
     }
 
     pub fn npc_login_schedule(&self, npc_name: &str) -> Option<ScheduleEntry> {
@@ -664,14 +664,19 @@ impl GameState {
         if !definition.spawn_at_schedule {
             return None;
         }
-        self.active_npc_schedule(npc_name).filter(|entry| {
-            entry.pos.iter().all(|value| value.is_finite())
-                && entry.rotation.is_finite()
-                && i8::try_from(entry.floor_level).is_ok()
-        })
+        self.with_active_npc_schedule(npc_name, ScheduleEntry::clone)
+            .filter(|entry| {
+                entry.pos.iter().all(|value| value.is_finite())
+                    && entry.rotation.is_finite()
+                    && i8::try_from(entry.floor_level).is_ok()
+            })
     }
 
-    fn active_npc_schedule(&self, npc_name: &str) -> Option<ScheduleEntry> {
+    fn with_active_npc_schedule<R>(
+        &self,
+        npc_name: &str,
+        f: impl FnOnce(&ScheduleEntry) -> R,
+    ) -> Option<R> {
         let datetime = self.current_game_datetime();
         let schedules = self
             .npc_schedules
@@ -687,7 +692,7 @@ impl GameState {
                 onlinerpg_shared::moon::game_day_index(&datetime),
             )),
         );
-        active.map(|i| schedule[i].clone())
+        active.map(|i| f(&schedule[i]))
     }
 
     #[allow(clippy::too_many_arguments)]

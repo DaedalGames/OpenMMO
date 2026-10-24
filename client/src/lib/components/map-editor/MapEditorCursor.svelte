@@ -897,8 +897,7 @@
       if (event.key === 'r' || event.key === 'R') {
         const step =
           currentObjectType &&
-          (furnitureManager.isSolid(currentObjectType) ||
-            getObjectDef(currentObjectType)?.cutaway !== undefined)
+          furnitureManager.turnsInQuarters(currentObjectType)
             ? 90
             : 45
         objectRotation.update((r) => (r + step) % 360)

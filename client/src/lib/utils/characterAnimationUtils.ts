@@ -562,7 +562,8 @@ export async function retargetOrderedCharacterAnimationsForModel(
 export function selectOrderedCharacterAnimations(
   baseAnimations: THREE.AnimationClip[],
   locomotionAnimations: THREE.AnimationClip[],
-  combatMeleeAnimations: THREE.AnimationClip[]
+  combatMeleeAnimations: THREE.AnimationClip[],
+  { preferBaseClips = false }: { preferBaseClips?: boolean } = {}
 ): OrderedAnimationSelection[] {
   const baseClipByName = new Map(
     baseAnimations.map((clip) => [clip.name, clip])
@@ -587,12 +588,23 @@ export function selectOrderedCharacterAnimations(
       return []
     }
 
+    const baseClip = baseClipByName.get(name)
+    if (preferBaseClips && baseClip) {
+      orderedSelections.push({
+        name,
+        clip: baseClip,
+        source: 'base',
+        fromFallback: false,
+      })
+      continue
+    }
+
     const selectedClip =
       source === 'locomotion'
         ? locomotionClipByName.get(name)
         : source === 'combat_melee'
           ? combatMeleeClipByName.get(name)
-          : baseClipByName.get(name)
+          : baseClip
 
     let clip = selectedClip
     let fromFallback = false

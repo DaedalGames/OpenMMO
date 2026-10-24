@@ -143,10 +143,7 @@ export async function showYsoldeTent(
   const grid = new THREE.GridHelper(10, 10, '#6f8881', '#354b47')
   grid.position.y = -0.015
   scene.add(grid)
-  cleanup.push(() => {
-    grid.geometry.dispose()
-    for (const material of [grid.material].flat()) material.dispose()
-  })
+  cleanup.push(() => grid.dispose())
   const renderer = new THREE.WebGLRenderer({ antialias: true })
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
   renderer.setClearColor('#17252d')

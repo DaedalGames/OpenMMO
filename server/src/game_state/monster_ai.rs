@@ -434,7 +434,8 @@ impl super::GameState {
                     continue;
                 }
                 let mut players = players_near(&m.position, m.floor_level);
-                if players.iter().any(|p| sealed.contains(&p.id))
+                if !sealed.is_empty()
+                    && players.iter().any(|p| sealed.contains(&p.id))
                     && !sees_sealed(&m.position, m.floor_level)
                 {
                     players.retain(|p| !sealed.contains(&p.id));
