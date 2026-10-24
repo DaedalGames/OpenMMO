@@ -95,6 +95,7 @@ label {
   color: #c1d1d6;
 }
 select,
+input[type='number'],
 button {
   width: 100%;
   font: inherit;

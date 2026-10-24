@@ -37,7 +37,7 @@ async fn vitals(game: &GameState, id: &PlayerId) -> (u32, u32) {
 
 #[tokio::test(start_paused = true)]
 async fn bed_rest_doubles_hp_and_mp_only_after_a_full_interval_and_stops_on_standing() {
-    for kind in ["bed", "rustic_bed"] {
+    for kind in ["bed", "rustic_bed", "ysolde_field_cot"] {
         let game = make_test_game_state(kind);
         let id = sleeper(&game, kind).await;
         game.set_player_interaction(&id, Some(kind.into()), Some(7))

@@ -94,6 +94,98 @@ async fn interaction_approval_owns_position_rotation_and_exit_before_next_move()
 }
 
 #[tokio::test]
+async fn field_cot_sleep_uses_rotated_foot_anchor_and_can_stand_up() {
+    for rotation_deg in [0.0_f32, 90.0, 180.0, 270.0] {
+        let cot = FurniturePlacement {
+            type_id: "ysolde_field_cot".into(),
+            rotation_deg,
+            ..chair()
+        };
+        let (game, id, mut rx) = setup(
+            &format!("cot_sleep_{rotation_deg}"),
+            std::slice::from_ref(&cot),
+        )
+        .await;
+        game.players.write().await.get_mut(&id).unwrap().position.x = cot.x - 1.0;
+        game.set_player_interaction(&id, Some(cot.type_id.clone()), Some(cot.id))
+            .await;
+        let lying = game.players.read().await[&id].clone();
+        let yaw = rotation_deg.to_radians();
+        assert_eq!(lying.object_type.as_deref(), Some("ysolde_field_cot"));
+        assert_eq!(lying.object_id, Some(cot.id));
+        assert!((lying.position.x - (cot.x + 0.9 * yaw.sin())).abs() < 0.0001);
+        assert!((lying.position.z - (cot.z + 0.9 * yaw.cos())).abs() < 0.0001);
+        assert_eq!(lying.position.y, cot.y);
+        assert_eq!(lying.rotation, yaw);
+        assert!(drain(&mut rx).iter().any(|message| matches!(message,
+            ServerMessage::PlayerInteractionChanged { object_type: Some(kind), position, .. }
+            if kind == "ysolde_field_cot" && *position == lying.position
+        )));
+        game.set_player_interaction(&id, None, None).await;
+        let standing = game.players.read().await[&id].clone();
+        assert!(standing.object_id.is_none());
+        assert_ne!(standing.position, lying.position);
+        assert!(!onlinerpg_shared::pathfinding::is_circle_blocked_on_floor(
+            &game.passability_read(),
+            standing.position.x,
+            standing.position.z,
+            0.31,
+            0,
+            Some(standing.position.y),
+        ));
+    }
+}
+
+#[tokio::test]
+async fn field_cot_inside_tent_requires_the_entrance_and_can_stand_inside() {
+    let tent = FurniturePlacement {
+        id: 1,
+        type_id: "ysolde_tent".into(),
+        rotation_deg: 270.0,
+        ..chair()
+    };
+    let cot = FurniturePlacement {
+        id: 2,
+        type_id: "ysolde_field_cot".into(),
+        x: tent.x + 0.027,
+        z: tent.z - 0.225,
+        ..tent.clone()
+    };
+    let (game, id, mut rx) = setup("cot_tent_entrance", &[tent.clone(), cot.clone()]).await;
+    let outside = Position {
+        x: tent.x + 2.5,
+        y: tent.y,
+        z: tent.z,
+    };
+    game.players.write().await.get_mut(&id).unwrap().position = outside;
+    game.set_player_interaction(&id, Some(cot.type_id.clone()), Some(cot.id))
+        .await;
+    assert!(game.players.read().await[&id].object_id.is_none());
+    assert!(drain(&mut rx).iter().any(|message| matches!(message,
+        ServerMessage::InteractionRejected { reason } if reason == "Something blocks the furniture."
+    )));
+    game.players.write().await.get_mut(&id).unwrap().position = Position {
+        x: tent.x - 1.2,
+        y: tent.y,
+        z: tent.z,
+    };
+    game.set_player_interaction(&id, Some(cot.type_id.clone()), Some(cot.id))
+        .await;
+    assert_eq!(game.players.read().await[&id].object_id, Some(cot.id));
+    game.set_player_interaction(&id, None, None).await;
+    let standing = game.players.read().await[&id].clone();
+    assert!(standing.object_id.is_none());
+    assert!(!onlinerpg_shared::pathfinding::is_circle_blocked_on_floor(
+        &game.passability_read(),
+        standing.position.x,
+        standing.position.z,
+        0.31,
+        0,
+        Some(standing.position.y),
+    ));
+}
+
+#[tokio::test]
 async fn interaction_rejects_missing_distant_wrong_floor_and_dead_requests() {
     for case in ["missing", "distance", "floor", "dead", "mounted"] {
         let (game, id, mut rx) = setup(case, &[chair()]).await;

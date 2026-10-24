@@ -183,6 +183,18 @@ describe('seat lookup', () => {
     expect(pose.interactOffset).toEqual({ x: 0, y: 0.56, z: 0 })
     expect(pose.rotation).toBeCloseTo(Math.PI / 2)
   })
+
+  it('resolves the field cot sleep pose for local and remote approvals', async () => {
+    const manager = new ObjectManager()
+    const cot = { ...chair(42, 10, 20), type: 'ysolde_field_cot', rotation: 90 }
+    const state = manager as unknown as { cache: Map<string, unknown> }
+    state.cache.set('0,0', { placements: [cot] })
+    const pose = await manager.resolvePose(cot.type, 10.9, 20, cot.id)
+    expect(pose.placement).toEqual(cot)
+    expect(pose.anim).toBe('sleep')
+    expect(pose.interactOffset).toEqual({ x: 0, y: 0.34, z: 0.9 })
+    expect(pose.rotation).toBeCloseTo(Math.PI / 2)
+  })
 })
 
 const house = {

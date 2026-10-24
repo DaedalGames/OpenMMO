@@ -432,16 +432,7 @@ impl super::GameState {
         let key = furniture::region_cache_key(rx, rz);
         let solid = self.without_woken_stand_in(placements);
         let mut cache = self.passability_write();
-        match furniture::build_furniture_passability_for_placements(&solid) {
-            Some(rp) => {
-                cache.insert(key, rp);
-                true
-            }
-            None => {
-                cache.remove(&key);
-                false
-            }
-        }
+        furniture::sync_passability(&mut cache, &key, &solid)
     }
 
     /// Validate the map editor's region-object payload before it is persisted,

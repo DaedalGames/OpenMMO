@@ -62,6 +62,7 @@
   } from '../../stores/fieldBossWakeStore'
   import { getObjectModelPath } from '../../utils/modelPaths'
   import { createSelectionBox } from '../../utils/objectSelectionBox'
+  import { isInsideShelter } from '../../utils/shelter'
   import {
     buildShopSignBoard,
     buildShopSignText,
@@ -84,6 +85,9 @@
   let isEditorMode = $state(false)
   let currentFloor = $state(0)
   let currentHouseId = $state<string | null>(null)
+  const shelters = $derived(
+    placements.filter((p) => objectDefsById.get(p.type)?.cutaway)
+  )
 
   let lastLoadedRegion = { rx: NaN, rz: NaN }
   let regionLoadGeneration = 0
@@ -364,6 +368,14 @@
   }
 
   export function update(deltaTime: number, camera: THREE.Camera | undefined) {
+    for (const placement of shelters) {
+      const cutaway = objectDefsById.get(placement.type)?.cutaway
+      if (!cutaway) continue
+      const panel = cloneById.get(placement.id)?.getObjectByName(cutaway.node)
+      if (panel)
+        panel.visible =
+          !debugInfo || !isInsideShelter(debugInfo.position, placement, cutaway)
+    }
     for (const w of takeFieldBossWakes()) startWake(w)
     for (const s of takeFieldBossSleeps()) startSleep(s)
     if (camera) stepShell(camera)

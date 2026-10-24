@@ -49,11 +49,12 @@
   import { objectManager } from '../../managers/objectManager'
   import { furnitureManager } from '../../managers/furnitureManager'
   import {
-    commitPlacements,
+    placeObject,
     deleteSelectedPlacement,
     duplicateSelectedPlacement,
     nextPlacementId,
   } from './object-edit'
+  import { foundationHeight } from './object-terrain'
   import { findAncestorWithUserData } from '../../managers/inputHandler'
   import { housingManager } from '../../managers/housingManager'
   import { playerVisualFloorLevel } from '../../stores/housingStore'
@@ -466,7 +467,13 @@
       const terrainY = heightManager
         ? heightManager.getHeightAtWorldPosition(snapped.x, snapped.z)
         : 0
-      const y = objectSpawnY(currentObjectType, terrainY, currentPlayerFloor)
+      const y = objectSpawnY(
+        currentObjectType,
+        terrainY,
+        currentPlayerFloor,
+        snapped.x,
+        snapped.z
+      )
       objectPreviewPos.set({ x: snapped.x, y, z: snapped.z })
     } else if (currentTool !== 'object') {
       objectPreviewPos.set(null)
@@ -613,15 +620,31 @@
     selectedObjectPlacementId.set(null)
   }
 
-  /** Spawn height for a new placement: the catalog's absolute `defaultY` if set
-   *  (e.g. shop signs), otherwise the terrain height plus the floor base. */
   function objectSpawnY(
     objectType: string,
     terrainY: number,
-    floor: number
+    floor: number,
+    x: number,
+    z: number
   ): number {
     const def = getObjectDef(objectType)
-    return def?.defaultY ?? terrainY + floorYBase(floor, DEFAULT_WALL_HEIGHT)
+    const foundation = heightManager
+      ? foundationHeight(
+          {
+            type: objectType,
+            x,
+            z,
+            rotation: currentObjectRot,
+            floorLevel: floor,
+          },
+          heightManager
+        )
+      : null
+    return (
+      def?.defaultY ??
+      foundation ??
+      terrainY + floorYBase(floor, DEFAULT_WALL_HEIGHT)
+    )
   }
 
   async function handleObjectMouseDown(
@@ -635,7 +658,13 @@
       const terrainY = heightManager
         ? heightManager.getHeightAtWorldPosition(snapped.x, snapped.z)
         : 0
-      const y = objectSpawnY(currentObjectType, terrainY, currentPlayerFloor)
+      const y = objectSpawnY(
+        currentObjectType,
+        terrainY,
+        currentPlayerFloor,
+        snapped.x,
+        snapped.z
+      )
       const data = get(currentObjectData)
       const placement = {
         id: nextPlacementId(data),
@@ -649,7 +678,7 @@
         ),
         floorLevel: currentPlayerFloor,
       }
-      await commitPlacements([...data.placements, placement])
+      await placeObject(placement, heightManager, grassDataManager)
     } else {
       // Precise pick first: cast a ray at the actual object meshes so clicking
       // a small prop on top of a larger one selects the prop (and re-clicking
@@ -866,10 +895,10 @@
     }
     if (currentTool === 'object') {
       if (event.key === 'r' || event.key === 'R') {
-        // Solid furniture rotates in 90° steps so its footprint lands on whole
-        // cells; other objects keep the finer 45° step.
         const step =
-          currentObjectType && furnitureManager.isSolid(currentObjectType)
+          currentObjectType &&
+          (furnitureManager.isSolid(currentObjectType) ||
+            getObjectDef(currentObjectType)?.cutaway !== undefined)
             ? 90
             : 45
         objectRotation.update((r) => (r + step) % 360)

@@ -11,6 +11,7 @@ import {
  *  its floor level (the overlay draws only the player's floor). */
 export interface FurnitureDebugPiece {
   cells: [number, number][]
+  edges?: number[]
   yBase: number
   floorLevel: number
 }

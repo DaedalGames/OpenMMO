@@ -186,6 +186,8 @@ pub fn passability_remove_house(house_id: &str) {
 #[serde(rename_all = "camelCase")]
 struct FurnitureDebugPieceJs {
     cells: Vec<(i32, i32)>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    edges: Option<Vec<u8>>,
     y_base: f32,
     floor_level: u8,
 }
@@ -209,24 +211,40 @@ fn to_placements(val: JsValue) -> Result<Vec<furniture::FurniturePlacement>, JsE
 pub fn passability_set_furniture(key: &str, val: JsValue) -> Result<JsValue, JsError> {
     let placements = to_placements(val)?;
     let pieces = furniture::furniture_pieces(&placements);
-    let debug: Vec<FurnitureDebugPieceJs> = pieces
+    let mut debug: Vec<FurnitureDebugPieceJs> = pieces
         .iter()
         .map(|p| FurnitureDebugPieceJs {
             cells: p.cells.clone(),
+            edges: None,
             y_base: p.y_base,
             floor_level: p.floor_level,
         })
         .collect();
-    with_cache_mut(
-        |c| match pathfinding::build_furniture_passability(&pieces) {
-            Some(rp) => {
-                c.insert(key.to_string(), rp);
+    if let Some(perimeter) = crate::shelter::build_passability(&placements) {
+        for floor in perimeter.floors {
+            let mut cells = Vec::new();
+            let mut edges = Vec::new();
+            for (i, &edge) in floor.cells.iter().enumerate() {
+                if edge == 0 {
+                    continue;
+                }
+                cells.push((
+                    floor.origin_x + (i % floor.width as usize) as i32,
+                    floor.origin_z + (i / floor.width as usize) as i32,
+                ));
+                edges.push(edge);
             }
-            None => {
-                c.remove(key);
-            }
-        },
-    );
+            debug.push(FurnitureDebugPieceJs {
+                cells,
+                edges: Some(edges),
+                y_base: floor.y_base,
+                floor_level: floor.floor_level,
+            });
+        }
+    }
+    with_cache_mut(|cache| {
+        furniture::sync_passability(cache, key, &placements);
+    });
     to_js(&debug)
 }
 
@@ -289,9 +307,7 @@ pub fn monster_body_engage_point(monster_id: &str, px: f32, pz: f32) -> Option<V
 
 #[wasm_bindgen]
 pub fn passability_remove_furniture(key: &str) {
-    with_cache_mut(|c| {
-        c.remove(key);
-    });
+    with_cache_mut(|cache| furniture::remove_passability(cache, key));
 }
 
 /// Whether an object type is solid furniture (blocks movement). The editor uses

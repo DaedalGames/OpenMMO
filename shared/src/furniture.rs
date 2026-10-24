@@ -377,6 +377,38 @@ pub fn build_furniture_passability_for_placements(
     build_furniture_passability(&furniture_pieces(placements))
 }
 
+pub fn sync_passability(
+    cache: &mut crate::pathfinding::PassabilityCache,
+    key: &str,
+    placements: &[FurniturePlacement],
+) -> bool {
+    let entries = [
+        (
+            key.to_owned(),
+            build_furniture_passability_for_placements(placements),
+        ),
+        (
+            format!("{key}:perimeter"),
+            crate::shelter::build_passability(placements),
+        ),
+    ];
+    let mut present = false;
+    for (key, entry) in entries {
+        if let Some(entry) = entry {
+            cache.insert(key, entry);
+            present = true;
+        } else {
+            cache.remove(&key);
+        }
+    }
+    present
+}
+
+pub fn remove_passability(cache: &mut crate::pathfinding::PassabilityCache, key: &str) {
+    cache.remove(key);
+    cache.remove(&format!("{key}:perimeter"));
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

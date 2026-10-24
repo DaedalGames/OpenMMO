@@ -6,6 +6,41 @@ use onlinerpg_shared::estate_storage::{
 use onlinerpg_shared::furniture::{self, FurniturePlacement};
 use onlinerpg_shared::pathfinding::{self, PassabilityCache};
 use onlinerpg_shared::{shortest_world_delta_x, wrap_world_x};
+use std::{collections::HashMap, sync::OnceLock};
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct CatalogInteraction {
+    id: String,
+    interaction: Option<String>,
+    interact_offset: Option<Position>,
+}
+
+fn interaction_offset(kind: &str) -> Option<Position> {
+    static POSES: OnceLock<HashMap<String, Position>> = OnceLock::new();
+    let model = estate_storage_def(kind).map_or(kind, |definition| definition.model_id.as_str());
+    POSES
+        .get_or_init(|| {
+            let entries: Vec<CatalogInteraction> =
+                serde_json::from_str(include_str!("../../../data/object_catalog.json"))
+                    .expect("object_catalog.json is malformed");
+            entries
+                .into_iter()
+                .filter_map(|entry| {
+                    matches!(entry.interaction.as_deref(), Some("sit" | "sleep")).then_some((
+                        entry.id,
+                        entry.interact_offset.unwrap_or(Position {
+                            x: 0.0,
+                            y: 0.0,
+                            z: 0.0,
+                        }),
+                    ))
+                })
+                .collect()
+        })
+        .get(model)
+        .copied()
+}
 
 pub(super) type FurnitureIndex = std::collections::HashMap<(i32, i32), Vec<FurniturePlacement>>;
 
@@ -66,9 +101,7 @@ impl GameState {
         id: u32,
     ) -> Option<(FurniturePlacement, PassabilityCache)> {
         let (placement, key, others) = if let Some(definition) = estate_storage_def(kind) {
-            if !matches!(definition.model_id.as_str(), "chair" | "bed" | "rustic_bed") {
-                return None;
-            }
+            interaction_offset(&definition.model_id)?;
             let chests = self.estate_chests.read().await;
             let chest = chests
                 .get(i64::from(id))
@@ -85,9 +118,7 @@ impl GameState {
                     .collect::<Vec<_>>(),
             )
         } else {
-            if !matches!(kind, "chair" | "bed" | "rustic_bed") {
-                return None;
-            }
+            interaction_offset(kind)?;
             let index = self
                 .interaction_furniture
                 .read()
@@ -116,10 +147,7 @@ impl GameState {
             )
         };
         let mut cache = (*self.passability.snapshot()).clone();
-        cache.remove(&key);
-        if let Some(rest) = furniture::build_furniture_passability_for_placements(&others) {
-            cache.insert(key, rest);
-        }
+        furniture::sync_passability(&mut cache, &key, &others);
         Some((placement, cache))
     }
 
@@ -197,6 +225,12 @@ impl GameState {
             match self.interaction_placement(&previous, kind, id).await {
                 Some((placement, cache)) => {
                     position = placement_position(&placement);
+                    let offset = interaction_offset(kind)
+                        .expect("interaction_placement validates catalog poses");
+                    let yaw = placement.rotation_deg.to_radians();
+                    position.x =
+                        wrap_world_x(position.x + offset.x * yaw.cos() + offset.z * yaw.sin());
+                    position.z += -offset.x * yaw.sin() + offset.z * yaw.cos();
                     let floor = placement.floor_level;
                     position.y = self
                         .surface_ground_y(floor, &position, position.y, None)

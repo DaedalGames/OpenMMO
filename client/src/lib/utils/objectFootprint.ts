@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { ObjectDef } from '../stores/editorStore'
 
 export interface FootprintRect {
   minX: number
@@ -17,6 +18,18 @@ export interface FootprintData {
 const GRID_STEP = 1
 /** Triangles within this distance of the model's minY count as ground contact. */
 const Y_EPSILON = 0.3
+
+export function foundationFootprint(
+  foundation: NonNullable<ObjectDef['foundation']>
+): FootprintData {
+  // Include border vertices so interpolation stays flat at support edges.
+  const x = foundation.width / 2 + GRID_STEP
+  const z = foundation.depth / 2 + GRID_STEP
+  return {
+    rects: [{ minX: -x, maxX: x, minZ: -z, maxZ: z }],
+    minLocalY: 0,
+  }
+}
 
 /**
  * Auto-detect ground-contact footprint by rasterizing triangles near the

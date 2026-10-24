@@ -12,7 +12,7 @@ pub(super) type BedIndex = HashMap<(i32, i32), Vec<FurniturePlacement>>;
 pub(super) fn is_bed(object_type: &str) -> bool {
     matches!(
         object_type,
-        "bed" | "rustic_bed" | "furniture_bed" | "furniture_rustic_bed"
+        "bed" | "rustic_bed" | "ysolde_field_cot" | "furniture_bed" | "furniture_rustic_bed"
     )
 }
 
@@ -26,7 +26,7 @@ impl GameState {
     pub(super) fn sync_beds(&self, rx: i32, rz: i32, placements: &[FurniturePlacement]) {
         let beds: Vec<_> = placements
             .iter()
-            .filter(|p| matches!(p.type_id.as_str(), "bed" | "rustic_bed"))
+            .filter(|p| is_bed(&p.type_id))
             .cloned()
             .collect();
         let mut index = self.beds.write().unwrap_or_else(|e| e.into_inner());

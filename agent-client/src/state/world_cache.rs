@@ -74,8 +74,10 @@ impl WorldCache {
                 .insert(dungeon_cache_key(&dungeon.id), dungeon.passability());
         }
         for region in self.furniture_placements.keys() {
-            self.passability_cache
-                .remove(&furniture::region_cache_key(region.0, region.1));
+            furniture::remove_passability(
+                &mut self.passability_cache,
+                &furniture::region_cache_key(region.0, region.1),
+            );
         }
         self.furniture_placements.clear();
         self.fetched_furniture_regions.clear();
@@ -602,14 +604,7 @@ impl WorldCache {
     /// `furniture` resolution). Empty/non-solid regions clear the entry.
     pub fn sync_furniture(&mut self, rx: i32, rz: i32, placements: Vec<FurniturePlacement>) {
         let key = furniture::region_cache_key(rx, rz);
-        match furniture::build_furniture_passability_for_placements(&placements) {
-            Some(rp) => {
-                self.passability_cache.insert(key, rp);
-            }
-            None => {
-                self.passability_cache.remove(&key);
-            }
-        }
+        furniture::sync_passability(&mut self.passability_cache, &key, &placements);
         self.furniture_placements.insert((rx, rz), placements);
     }
 

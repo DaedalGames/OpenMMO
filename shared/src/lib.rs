@@ -36,6 +36,7 @@ pub mod mount_movement;
 pub mod pathfinding;
 pub mod pricing;
 pub mod schedule;
+pub mod shelter;
 pub mod skills;
 pub mod stall;
 pub mod tales;

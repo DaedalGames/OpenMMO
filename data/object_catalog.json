@@ -1,5 +1,31 @@
 [
   {
+    "id": "ysolde_tent",
+    "name": "이졸데의 발굴 텐트",
+    "model": "objects/ysolde_tent.glb",
+    "foundation": { "width": 4.4, "depth": 4.8 },
+    "perimeter": {
+      "width": 2.4,
+      "depth": 3.2,
+      "height": 2.3,
+      "entranceWidth": 1.8
+    },
+    "cutaway": {
+      "node": "tent_front",
+      "width": 2.4,
+      "depth": 3.2,
+      "height": 2.3
+    }
+  },
+  {
+    "id": "ysolde_field_cot",
+    "name": "낮은 야전침대",
+    "model": "objects/ysolde_field_cot.glb",
+    "interaction": "sleep",
+    "interactOffset": { "x": 0, "y": 0.34, "z": 0.9 },
+    "solid": true
+  },
+  {
     "id": "bed",
     "name": "Bed",
     "model": "objects/bed.glb",

@@ -66,7 +66,9 @@
     - 원화는 ChatGPT 이미지 생성 (ChatGPT Pro 20x, 2026-08-30) ![원화](../images/props/rustic_bed.png)
 
 - 이졸데 텐트 잠자리 후보(2026-10-24): [바닥 매트리스](../../assets/items/ysolde_camp_bed/ground-mattress.glb)·[낮은 목제 야전침대](../../assets/items/ysolde_camp_bed/field-cot.glb). 기존 `rustic_bed`의 매트리스·담요·베개 메시와 텍스처를 분리해 재사용했다. 야전침대의 가로대·세로대·교차 다리는 같은 침대의 목재 기둥 메시와 UV로 로컬 조립했다. 원본 Meshy **Pro**, 생성 2026-08-30, 상업 이용 조건을 유지하며 새로운 AI·유료 생성은 없다.
-    - Blender 5.2.0, 실제 미터·오브젝트 배율 1·바닥 중심 원점. 매트리스 0.84×2.10m·높이 0.22m·1,666 triangles, 야전침대 0.91×2.10m·높이 0.45m·2,062 triangles. 텐트 개발 미리보기의 선택 후보이며 게임 월드에는 아직 배치하지 않았다.
+    - Blender 5.2.0, 실제 미터·오브젝트 배율 1·바닥 중심 원점. 매트리스 0.84×2.10m·높이 0.22m·1,666 triangles, 야전침대 0.91×2.10m·높이 0.45m·2,062 triangles. 야전침대는 [런타임 GLB](../../client/public/models/objects/ysolde_field_cot.glb)(299,996바이트)로 복사해 맵 에디터 Object → **낮은 야전침대**(`ysolde_field_cot`)에 등록했다. 원본과 같은 SHA-256·재질이며 일반 가구처럼 `solid` 충돌과 90° 회전을 사용한다. 미리보기도 같은 런타임 모델을 읽는다. 바닥 매트리스는 미리보기 후보로 유지한다.
+    - 클릭하면 기존 `sleep` 동작으로 눕는다. 중앙 원점인 모델에 맞춰 서버가 발끝 기준 위치를 로컬 +Z 0.9m만큼 회전·이동해 승인하고, 클라이언트는 매트리스 높이 0.34m를 더한다. 모델과 기존 배치 좌표는 유지한다. 네 방향의 눕기·일어나기와 방송 위치를 테스트했고, 기사 모델의 수면 자세를 사선·측면에서 렌더해 매트리스 위에 맞는 것을 확인했다. 기존 침대의 휴식 회복 규칙도 적용된다.
+    - 실내에서 숨긴 텐트 전면이 침대 클릭을 가로채지 않도록 오브젝트 클릭 검사에서 자신 또는 상위 그룹이 숨겨진 면을 제외한다. 실제 배치 좌표·모델과 기본 게임 카메라로 침대 위 9개 지점을 검사해 모두 수면 요청으로 처리됨을 확인했다.
     - [Blender 원본](../../assets/items/ysolde_camp_bed/bedding.blend), [재생성 소스](../../assets/items/ysolde_camp_bed/build.py), [출처·라이선스·해시](../../assets/items/ysolde_camp_bed/sources.json), [매트리스 렌더](../images/props/ysolde-camp-bedding/ground-mattress.png)·[야전침대 렌더](../images/props/ysolde-camp-bedding/field-cot.png).
 
 ## Mounts

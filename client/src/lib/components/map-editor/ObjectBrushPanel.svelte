@@ -22,14 +22,12 @@
     objectDefsById,
   } from '../../data/objectCatalog'
   import { furnitureManager } from '../../managers/furnitureManager'
+  import { normalizeYaw } from '../../utils/shelter'
   import {
     deleteSelectedPlacement,
     duplicateSelectedPlacement,
   } from './object-edit'
-  import {
-    rotatedRectAabb,
-    type FootprintRect,
-  } from '../../utils/objectFootprint'
+  import { flattenObjectTerrain } from './object-terrain'
   import {
     playerVisualFloorLevel,
     playerInsideHouseId,
@@ -58,9 +56,6 @@
 
   const Y_RANGE = 5
   const XZ_RANGE = 5
-  /** Tight blend so flattening doesn't bleed into surrounding terrain (e.g. river banks). */
-  const FLATTEN_BLEND_RADIUS = 2
-
   const unsubs = [
     selectedObjectType.subscribe((v) => (selected = v)),
     objectRotation.subscribe((v) => (rotation = v)),
@@ -96,6 +91,8 @@
   })
 
   function selectType(id: string) {
+    if (getObjectDef(id)?.cutaway)
+      objectRotation.update((yaw) => normalizeYaw(Math.round(yaw / 90) * 90))
     selectedObjectType.set(id)
     objectSubTool.set('place')
     selectedObjectPlacementId.set(null)
@@ -242,44 +239,7 @@
 
     flattening = true
     try {
-      const fp = await objectManager.fetchFootprint(p.type)
-      if (!fp || fp.rects.length === 0) return
-
-      const buryDepth = getObjectDef(p.type)?.flattenBuryDepth ?? 0
-      const targetY = p.y + fp.minLocalY + buryDepth
-      // Flatten using the local rect + placement rotation so footprints rotated
-      // off-axis (e.g. 45°) carve the right oriented region instead of bleeding
-      // into the rotated rect's AABB corners.
-      for (const r of fp.rects) {
-        hm.flattenRotatedRect(
-          p.x,
-          p.z,
-          p.rotation,
-          r.minX,
-          r.maxX,
-          r.minZ,
-          r.maxZ,
-          targetY,
-          FLATTEN_BLEND_RADIUS
-        )
-      }
-      await hm.saveAllDirty()
-
-      // World AABB of each rotated rect, used for grass-removal tile bucketing.
-      // (removeGrassInRect is AABB-only — at non-90° rotations this over-clears
-      // grass slightly into the AABB corners, which is acceptable.)
-      const rot = (p.rotation * Math.PI) / 180
-      const worldRects: FootprintRect[] = fp.rects.map((r) => {
-        const a = rotatedRectAabb(r.minX, r.maxX, r.minZ, r.maxZ, rot)
-        return {
-          minX: p.x + a.minX,
-          maxX: p.x + a.maxX,
-          minZ: p.z + a.minZ,
-          maxZ: p.z + a.maxZ,
-        }
-      })
-
-      await grassManager?.removeGrassInRects(worldRects)
+      await flattenObjectTerrain(p, hm, grassManager)
     } finally {
       flattening = false
     }
@@ -420,10 +380,17 @@
           2,
           ''
         )}
-        {@render coordRow('Rot', 'rotation', 0, 360, 15, 0, '°')}
-        <!-- Bridges derive their walkable deck from yaw only; a pitched bridge
-             would render tilted while its collision/deck-Y stays flat. -->
-        {#if selectedDef?.kind !== 'bridge'}
+        {@render coordRow(
+          'Rot',
+          'rotation',
+          0,
+          360,
+          selectedDef?.cutaway ? 90 : 15,
+          0,
+          '°'
+        )}
+        <!-- Walkable decks and shelter interiors use yaw only. -->
+        {#if selectedDef?.kind !== 'bridge' && !selectedDef?.cutaway}
           {@render coordRow('RotX', 'rotationX', 0, 360, 15, 0, '°')}
         {/if}
         <div class="coord-row">

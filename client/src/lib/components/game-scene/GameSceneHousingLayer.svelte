@@ -137,16 +137,14 @@
       addDebugLines(vertices, debugLineMaterial)
     }
 
-    // Solid furniture: each sealed cell is drawn as a full box (all four edges),
-    // matching how EDGE_ALL is stored in the cache.
     const EDGE_ALL = 15
     const furnitureVerts: number[] = []
     for (const piece of furnitureManager.getDebugPieces()) {
       if (piece.floorLevel !== playerInsideFloor) continue
-      for (const [cellX, cellZ] of piece.cells) {
+      for (const [index, [cellX, cellZ]] of piece.cells.entries()) {
         pushPassabilityEdges(
           furnitureVerts,
-          [EDGE_ALL],
+          [piece.edges?.[index] ?? EDGE_ALL],
           1,
           1,
           cellX,

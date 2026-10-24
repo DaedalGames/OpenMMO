@@ -15,6 +15,13 @@ import {
 import type { Position } from '../utils/movementUtils'
 import type { WallDirection } from '../utils/house-geometry'
 
+function isObjectVisible(obj: THREE.Object3D): boolean {
+  for (let node: THREE.Object3D | null = obj; node; node = node.parent) {
+    if (!node.visible) return false
+  }
+  return true
+}
+
 function hasAncestorBridge(obj: THREE.Object3D | null): boolean {
   for (let o = obj; o; o = o.parent) {
     if (o.userData?.objectKind === 'bridge') return true
@@ -561,10 +568,12 @@ class InputHandler {
     // Check intersection with object meshes. No distance gate: the player walks
     // up to a far chair/bench and sits on arrival.
     if (context.objectMeshes.length > 0) {
-      const objectHits = raycaster.intersectObjects(context.objectMeshes, true)
-      if (objectHits.length > 0) {
-        const hitPoint = objectHits[0].point
-        let obj: THREE.Object3D | null = objectHits[0].object
+      const objectHit = raycaster
+        .intersectObjects(context.objectMeshes, true)
+        .find((hit) => isObjectVisible(hit.object))
+      if (objectHit) {
+        const hitPoint = objectHit.point
+        let obj: THREE.Object3D | null = objectHit.object
         while (obj) {
           const d = obj.userData
           if (d && d.objectId != null && d.objectAltar) {
@@ -595,11 +604,11 @@ class InputHandler {
           }
           obj = obj.parent
         }
-        const face = objectHits[0].face
+        const face = objectHit.face
         if (
           face &&
           face.normal.y > 0.5 &&
-          hasAncestorBridge(objectHits[0].object)
+          hasAncestorBridge(objectHit.object)
         ) {
           return {
             type: 'move_to_ground',

@@ -139,6 +139,15 @@ export interface ObjectDef {
   /** GLB path relative to /models/ (e.g. "objects/bed.glb", or "weapons/sword.glb"
    *  for a model shared with an item's worldModel). Omitted for procedural objects. */
   model?: string
+  cutaway?: { node: string; width: number; depth: number; height: number }
+  /** Ground support area, leveled at local Y=0 on ground-floor placement. */
+  foundation?: { width: number; depth: number }
+  perimeter?: {
+    width: number
+    depth: number
+    height: number
+    entranceWidth: number
+  }
   /** Procedural builder id (e.g. "shopSign"). When set, geometry is generated
    *  in code instead of loaded from a GLB. */
   procedural?: string

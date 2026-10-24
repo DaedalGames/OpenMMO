@@ -1,4 +1,10 @@
 {
+  "ysolde_field_cot": {
+    "minX": -0.455,
+    "maxX": 0.455,
+    "minZ": -1.051,
+    "maxZ": 1.051
+  },
   "bed": {
     "minX": -0.642,
     "maxX": 0.625,

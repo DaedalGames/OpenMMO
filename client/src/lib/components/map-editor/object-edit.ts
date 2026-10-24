@@ -3,11 +3,16 @@ import {
   currentEditorRegion,
   currentObjectData,
   selectedObjectPlacementId,
+  editorHeightManager,
+  editorGrassDataManager,
   type ObjectPlacement,
   type ObjectRegionData,
 } from '../../stores/editorStore'
 import { objectManager } from '../../managers/objectManager'
 import { furnitureManager } from '../../managers/furnitureManager'
+import { foundationHeight, flattenObjectTerrain } from './object-terrain'
+import type { TerrainHeightManager } from '../../managers/terrainHeightManager'
+import type { TerrainGrassDataManager } from '../../managers/terrainGrassDataManager'
 
 export function nextPlacementId(data: ObjectRegionData): number {
   return (
@@ -21,11 +26,27 @@ export function nextPlacementId(data: ObjectRegionData): number {
 /** Publish a new placement set to the store and persist it. */
 export async function commitPlacements(
   placements: ObjectPlacement[]
-): Promise<void> {
+): Promise<boolean> {
   const updated: ObjectRegionData = { placements }
   currentObjectData.set(updated)
   const region = get(currentEditorRegion)
-  if (region) await objectManager.saveObject(region.rx, region.rz, updated)
+  return region
+    ? objectManager.saveObject(region.rx, region.rz, updated)
+    : false
+}
+
+export async function placeObject(
+  placement: ObjectPlacement,
+  heights: TerrainHeightManager | null,
+  grass: TerrainGrassDataManager | null
+): Promise<void> {
+  const y = heights ? foundationHeight(placement, heights) : null
+  const placed = y === null ? placement : { ...placement, y }
+  const data = get(currentObjectData)
+  if (await commitPlacements([...data.placements, placed])) {
+    if (y !== null && heights)
+      await flattenObjectTerrain(placed, heights, grass)
+  }
 }
 
 export async function deleteSelectedPlacement(): Promise<void> {
@@ -52,5 +73,5 @@ export async function duplicateSelectedPlacement(): Promise<void> {
     z: src.z + step,
   }
   selectedObjectPlacementId.set(copy.id)
-  await commitPlacements([...data.placements, copy])
+  await placeObject(copy, get(editorHeightManager), get(editorGrassDataManager))
 }

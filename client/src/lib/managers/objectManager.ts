@@ -15,7 +15,11 @@ import {
 import { regionKey, tileToRegion } from '../terrain/terrain-constants'
 import { loadGLB } from '../utils/gltfCache'
 import { getObjectModelPath } from '../utils/modelPaths'
-import { detectFootprint, type FootprintData } from '../utils/objectFootprint'
+import {
+  detectFootprint,
+  foundationFootprint,
+  type FootprintData,
+} from '../utils/objectFootprint'
 import type { HouseData } from '../types/housing'
 import { roomContainsXZ } from './housing-queries'
 
@@ -82,6 +86,7 @@ export class ObjectManager {
     const cached = this.footprintCache.get(objectType)
     if (cached) return cached
     const def = getObjectDef(objectType)
+    if (def?.foundation) return foundationFootprint(def.foundation)
     if (!def || !def.model) return null
     const gltf = await loadGLB(getObjectModelPath(def.model))
     const data = detectFootprint(gltf.scene)

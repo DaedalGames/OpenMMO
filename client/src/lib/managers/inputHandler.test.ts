@@ -23,6 +23,7 @@ import {
 import { alwaysRun } from '../stores/movementSettings'
 import { DEFAULT_PICKUP_KEY, pickupKeyCode } from '../stores/pickupSettings'
 import { estateFurnitureInteractionData } from '../utils/estateFurnitureModels'
+import { getObjectDef } from '../data/objectCatalog'
 import { KeyboardDirectionSender } from '../components/player-control/keyboard-direction'
 
 describe('movement keys', () => {
@@ -235,6 +236,70 @@ describe('processCanvasClick cast-vs-walk', () => {
     inputHandler.clearTransientInput()
     alwaysRun.set(false)
   })
+
+  it('clicks the field cot to request sleep at its placed rotation', () => {
+    const definition = getObjectDef('ysolde_field_cot')!
+    const visual = new THREE.Group()
+    visual.add(new THREE.Mesh(new THREE.BoxGeometry(0.91, 0.45, 2.1)))
+    visual.rotation.y = Math.PI / 2
+    Object.assign(visual.userData, {
+      objectId: 42,
+      objectType: definition.id,
+      objectInteraction: definition.interaction,
+      objectInteractOffset: definition.interactOffset,
+    })
+    visual.updateMatrixWorld(true)
+    expect(
+      inputHandler.processCanvasClick(
+        centerClick(),
+        contextWith({ objectMeshes: [visual] })
+      )
+    ).toMatchObject({
+      type: 'interact_object',
+      objectId: 42,
+      objectType: 'ysolde_field_cot',
+      interaction: 'sleep',
+      rotation: Math.PI / 2,
+      interactOffset: { x: 0, y: 0.34, z: 0.9 },
+    })
+  })
+
+  it.each(['mesh', 'parent', 'visible'])(
+    'respects %s visibility when clicking a cot under the tent canopy',
+    (visibility) => {
+      const cot = new THREE.Group()
+      cot.add(new THREE.Mesh(new THREE.BoxGeometry(0.91, 0.45, 2.1)))
+      Object.assign(cot.userData, {
+        objectId: 42,
+        objectType: 'ysolde_field_cot',
+        objectInteraction: 'sleep',
+      })
+      const tent = new THREE.Group()
+      const front = new THREE.Group()
+      const canopy = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 4))
+      canopy.position.y = 2
+      canopy.visible = visibility !== 'mesh'
+      front.visible = visibility !== 'parent'
+      front.add(canopy)
+      tent.add(front)
+      const objects = new THREE.Group()
+      objects.add(tent, cot)
+      objects.updateMatrixWorld(true)
+      const intent = inputHandler.processCanvasClick(
+        centerClick(),
+        contextWith({ objectMeshes: [objects] })
+      )
+      if (visibility === 'visible') {
+        expect(intent.type).toBe('move_to_ground')
+      } else {
+        expect(intent).toMatchObject({
+          type: 'interact_object',
+          objectId: 42,
+          interaction: 'sleep',
+        })
+      }
+    }
+  )
 
   it.each([
     ['furniture_bed', 0.78],
