@@ -17,7 +17,7 @@ WorkingDirectory=/home/ubuntu/work/OnlineRPG/agent-client
 Environment=HOME=/home/ubuntu
 # codex lives in the nvm node bindir, which is not on the default unit PATH.
 # Bumping the node version means updating this line.
-Environment=PATH=/home/ubuntu/.nvm/versions/node/v25.2.1/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PATH=/home/ubuntu/.nvm/versions/node/v24.22.1/bin:/usr/local/bin:/usr/bin:/bin
 EnvironmentFile=-/etc/openmmo/agent-client.env
 ExecStart=/home/ubuntu/work/OnlineRPG/target/release/agent-client
 
