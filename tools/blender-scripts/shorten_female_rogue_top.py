@@ -16,7 +16,7 @@ from outfits.mesh_components import welded_islands
 DIRECTORY = ROOT / 'assets/items/female_rogue_top/tripo_v1'
 SOURCE = DIRECTORY / 'fitted_v1/top_female_rogue.glb'
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
-OUTPUT = DIRECTORY / 'fitted_v3'
+OUTPUT = DIRECTORY / 'fitted_v4'
 OUTPUT.mkdir(exist_ok=True)
 
 
@@ -51,11 +51,13 @@ for label in np.unique(labels):
         points[chosen, 1] = original[chosen, 1] + lift[chosen].mean()
 main_label = max(np.unique(labels), key=lambda label: len(np.unique(welded[labels == label])))
 main_vertices = labels == main_label
+placket = (1-smooth((np.abs(original[:, 0]-.013)-.025)/.045))
+placket *= smooth((original[:, 2]-.04)/.04)*main_vertices
 for i in np.flatnonzero(changed & main_vertices):
     hit, normal, _, _ = surface.find_nearest(Vector(points[i]))
     target = np.array(hit) + np.array(normal)*.009
     blend = 1-smooth((original[i, 1]-1.13)/.15)
-    points[i, [0, 2]] += blend * (target[[0, 2]]-points[i, [0, 2]])
+    points[i, [0, 2]] += blend * (target[[0, 2]]-points[i, [0, 2]]) * [1-placket[i], 1]
 edges = welded[faces[:, [0, 1, 1, 2, 2, 0]].reshape(-1, 2)]
 neighbors = [set() for _ in first]
 for a, b in edges:
@@ -69,7 +71,7 @@ for _ in range(18):
         adjacent = list(neighbors[i])
         if adjacent:
             mean = points[first[adjacent]].mean(0)
-            unique[i, [0, 2]] += .3*blend[i]*(mean[[0, 2]]-unique[i, [0, 2]])
+            unique[i, [0, 2]] += .3*blend[i]*(mean[[0, 2]]-unique[i, [0, 2]]) * [1-placket[first[i]], 1]
     points = unique[welded]
 for _ in range(20):
     delta, count = np.zeros((len(first), 3)), np.zeros(len(first))
@@ -84,7 +86,7 @@ for _ in range(20):
                 change = np.array(normal)*(.006-signed)
                 change[1] = 0
                 for i in set(welded[face[changed[face] & main_vertices[face]]]):
-                    delta[i] += change
+                    delta[i] += change * [1-placket[first[i]], 1, 1]
                     count[i] += 1
                 maximum = max(maximum, .006-signed)
     points += 1.2*(delta/np.maximum(count[:, None], 1))[welded]
@@ -146,12 +148,14 @@ if 'TANGENT' in attrs:
     attrs['TANGENT'] = add_accessor(doc, binary, tangent, 'VEC4')
 doc['buffers'][0]['byteLength'] = len(binary)
 write_glb(OUTPUT / 'top_female_rogue.glb', doc, binary)
-report = {'revision': 'v3', 'date': '2026-10-25', 'source': str(SOURCE.relative_to(ROOT)),
+report = {'revision': 'v4', 'date': '2026-10-26', 'source': str(SOURCE.relative_to(ROOT)),
           'source_sha256': hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
           'body_sha256': hashlib.sha256(BODY.read_bytes()).hexdigest(), 'triangles': len(faces),
           'hem_raise_m': .036, 'hem_before_minimum_m': float(original[:, 1].min()),
           'hem_after_minimum_m': float(points[:, 1].min()), 'changed_vertices': int(changed.sum()),
-          'method': 'Raise the accepted corset hem with a 150mm smooth falloff, smooth the lower torso horizontally and refit clearance; conform lower accessories while preserving upper geometry, sleeves, UVs and textures.',
+          'method': 'Raise and smooth the lower corset while anchoring the front placket width to the accepted source; refit depth clearance and lower accessories while preserving sleeves, UVs and textures.',
+          'placket_center_x_m': .013, 'placket_protected_half_width_m': .025,
+          'placket_horizontal_maximum_change_m': float(np.abs(points[placket == 1, 0]-original[placket == 1, 0]).max()),
           'existing_skeleton_preserved': True, 'lower_accessories_follow_cloth': True,
           'lower_corset_smoothing_iterations': 18, 'upper_geometry_preserved': True,
           'original_uv_and_textures_preserved': True, 'no_new_api_requests': True}

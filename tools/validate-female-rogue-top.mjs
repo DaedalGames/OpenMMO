@@ -4,7 +4,7 @@ import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
 
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
-const directory = 'assets/items/female_rogue_top/tripo_v1/fitted_v3'
+const directory = 'assets/items/female_rogue_top/tripo_v1/fitted_v4'
 const topPath = `${directory}/top_female_rogue.glb`
 const { server, load } = await headlessThree()
 try {
@@ -74,7 +74,7 @@ try {
     clips.push({ name: clip.name, samples: 33, maximum_motion_m: maximumMotion, maximum_edge_ratio: maximumEdgeRatio, worst_edge: worstEdge })
   }
   writeFileSync(`${directory}/animation-samples.json`, JSON.stringify(snapshots))
-  const report = { date: '2026-10-25', base_sha256: hash(basePath), top_sha256: hash(topPath),
+  const report = { date: '2026-10-26', base_sha256: hash(basePath), top_sha256: hash(topPath),
     triangles: indices.count / 3, vertices: position.count, bones: bones.length,
     exact_runtime_bind: true, normalized_weights: true, finite_deformation: true, no_opposite_arm_influence: true,
     clips, scope: 'Actual bindModularPart runtime binding and all nine base clips. Mesh clearance and visual review recorded separately.' }

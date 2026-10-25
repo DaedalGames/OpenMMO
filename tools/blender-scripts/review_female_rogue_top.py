@@ -16,7 +16,7 @@ from lib.glb import read_glb
 from lib.glb_accessors import accessor
 from outfits.skinning import deform
 
-DIRECTORY = ROOT / 'assets/items/female_rogue_top/tripo_v1/fitted_v3'
+DIRECTORY = ROOT / 'assets/items/female_rogue_top/tripo_v1/fitted_v4'
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
 TOP = DIRECTORY / 'top_female_rogue.glb'
 

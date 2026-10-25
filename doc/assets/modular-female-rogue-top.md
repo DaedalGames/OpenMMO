@@ -111,10 +111,32 @@ blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_rogue_top
   치마 v4와 함께 앞·뒤·옆 확대와 대기·걷기, 착탈 복원을 확인했다.
   `npm run check`, `npm run lint`를 통과했다. 큰 동작의 기존 관통 보정 범위는 유지한다.
 
-[현재 GLB](../../assets/items/female_rogue_top/tripo_v1/fitted_v3/top_female_rogue.glb),
-[현재 Blender](../../assets/items/female_rogue_top/tripo_v1/fitted_v3/female-rogue-top.blend),
+[v3 GLB](../../assets/items/female_rogue_top/tripo_v1/fitted_v3/top_female_rogue.glb),
+[v3 Blender](../../assets/items/female_rogue_top/tripo_v1/fitted_v3/female-rogue-top.blend),
 [피팅·검사 통합 기록](../../assets/items/female_rogue_top/tripo_v1/fitted_v3/fitting.json),
 [가림 정보](../../assets/items/female_rogue_top/tripo_v1/fitted_v3/body-occlusion.json).
+
+## 단추 앞섶 폭 복원 v4 — 2026-10-26
+
+- 하단 평활화가 단추가 붙은 앞섶의 가로 좌표까지 바꿔, 아래 단추 두 줄이 벌어졌다.
+  v1 앞섶 중심 X=0.013m, 반폭 25mm 구간의 가로 좌표를 고정하고 바깥쪽 45mm에서 부드럽게 연결했다.
+  피부 여유를 맞추거나 평활화할 때도 이 구간은 앞뒤 방향만 보정한다.
+- 앞쪽 보호 구간 37개 정점의 원본 대비 최대 가로 변위는 v3 약 19.8mm에서 v4 0mm로 복원됐다.
+  밑단의 36mm 단축과 매끄러운 옆선은 유지했다. 소매·상단 정점 좌표와 원본 UV 삼각형·텍스처 바이트도 유지했다.
+- 기본 자세의 정점·면 중심 피부 간격은 약 6mm 이상이다. 기존 65본 연결과 9개 동작 각각 33프레임의
+  가중치·유한 변형 검사를 통과했다. 대기·걷기 각각 5시점에서 단추 배열을 확대 검수했다.
+  상하의 착탈 복원과 리소스 로드도 확인했으며 페이지 오류는 0개다.
+  `npm run check`, `npm run lint`를 통과했다.
+- 치마 v4와 함께 현재 프리뷰에 연결했다. 상의 3,751 triangles, 숨김 포함 조합 28,636 triangles,
+  가림 적용 후 24,198 triangles다. 기존 머리·얼굴 배분과 큰 동작의 추가 관통 보정 범위는 유지한다.
+
+[현재 GLB](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/top_female_rogue.glb),
+[현재 Blender](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/female-rogue-top.blend),
+[피팅·검사 통합 기록](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/fitting.json),
+[가림 정보](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/body-occlusion.json),
+[옆면 확대](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/review/detail-side.png).
+
+![단추 앞섶 폭 복원](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/review/detail-front.png)
 
 ## 출처·라이선스
 
