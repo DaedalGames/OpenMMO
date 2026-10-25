@@ -50,7 +50,7 @@
     "assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/body-occlusion.json": "6378efeef545061f5a1cece86b3795a9e595191d32b562ad6280c7888e5789bb"
   },
   "outputs": {
-    "client/public/models/characters/modular_female/base.glb": "628216b190a027eb69e39b43ff3e26bd57a3cabae5e0e38b8134f28f5fb3bb4c",
+    "client/public/models/characters/modular_female/base.glb": "f74db41b18925fc14bc82783002cd0e954f300c7cc60219fcc7d0da60cd4f269",
     "client/public/models/characters/modular_female/hair.glb": "60af2aeff3ef428b4743e79bde3036c238fa44155b8069d12c30825b5b3b6395",
     "client/public/models/characters/modular_female/top.glb": "e191ee0f1c91a8b0dbd9e459080c07ca5116f76a2059be9d57621714ade464ca",
     "client/public/models/characters/modular_female/bottom.glb": "4c230bf4679cefd762f24ef2cf40b5c548f0c85c85e114061346703b9120dc98",
@@ -81,5 +81,56 @@
     "scope": "80 lower outer cup vertex influences only; runtime geometry, rig, animations and embedded equipment masks unchanged.",
     "tool_sha256": "85fdeed7b7c9db71357bf00013d4ee46ce4caf5a0a7d3d49b8cd781ede6c7f99",
     "validation": "assets/modular_human_female_01/underwear_fit_v1/validation.json"
+  },
+  "base_optimization": {
+    "date": "2026-10-25",
+    "asset": "client/public/models/characters/modular_female/base.glb",
+    "tool": "tools/compress-glb-meshes.mjs",
+    "flags": [
+      "--lossless"
+    ],
+    "input_sha256": "628216b190a027eb69e39b43ff3e26bd57a3cabae5e0e38b8134f28f5fb3bb4c",
+    "output_sha256": "f74db41b18925fc14bc82783002cd0e954f300c7cc60219fcc7d0da60cd4f269",
+    "bytes": {
+      "before": 4552916,
+      "after": 2107164
+    },
+    "gzip_level_6_bytes": {
+      "before": 2953392,
+      "after": 1572907
+    },
+    "removed": {
+      "materials": 1,
+      "textures": 1,
+      "unused_eyelash_png_bytes": 1170347
+    },
+    "validation": {
+      "three_loader": "passed",
+      "headless_default_meshopt": "passed",
+      "triangles": 22175,
+      "animations": 27,
+      "tracks": 642,
+      "vertex_attributes": "exact",
+      "skin_and_node_transforms": "exact",
+      "animation_keyframes": "exact",
+      "used_texture_bytes": "exact",
+      "triangle_ordinal_and_winding": "preserved; cyclic vertex rotations only",
+      "gltf_validator_errors": 0,
+      "gltf_validator_warnings": 1,
+      "gltf_validator_limitation": "EXT_meshopt_compression is not validated by gltf-validator; decoded data compared through Three.js",
+      "regression_tests": {
+        "files": [
+          "client/src/lib/utils/femaleCharacter.test.ts",
+          "client/src/lib/utils/modularDaggerPack.test.ts"
+        ],
+        "passed": 12
+      },
+      "generator_part_base": "passed with isolated output: Meshopt required, unused eyelash material and texture absent"
+    },
+    "tool_sha256": "c16a88851f44cbde31e619a663abc3ab2b8e371354c4e76abdffa460dd96c69c",
+    "regeneration_tools": {
+      "tools/prepare-female-knight.mjs": "7f9d6f925bded2dec9afb283e4e6c12c48c7004c31d6a3a3a31b87fc6675d7bb",
+      "tools/lib/headless-three.mjs": "faac7bfcb28679a50316a22f7eb5aac2d8732ce721bab6501200a2853e9333d6"
+    }
   }
 }

@@ -18,7 +18,7 @@ export const CANONICAL_CLIPS = [
 export const CANONICAL_CLIPS_WITH_DYING = [[CANONICAL_CLIPS[0][0], [...CANONICAL_CLIPS[0][1], 'dying']], CANONICAL_CLIPS[1]]
 
 // Vite SSR loads the client's TypeScript; materials are stubbed because Node has no image decoder.
-export async function headlessThree({ material = () => new THREE.MeshBasicMaterial(), meshopt = false, plugins = [] } = {}) {
+export async function headlessThree({ material = () => new THREE.MeshBasicMaterial(), meshopt = true, plugins = [] } = {}) {
   const server = await createServer({
     root: fileURLToPath(new URL('client/', root)), configFile: false, plugins,
     optimizeDeps: { noDiscovery: true, include: [] },

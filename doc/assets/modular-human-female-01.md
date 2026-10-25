@@ -69,7 +69,7 @@ PBR·detailed 텍스처 `v3.5-20260815`, 시드 101101, **120크레딧**. 결과
 
 - 눈 알베도 편집 v2·v3: 최종 텍스처에 구워졌다. [v2](modular-human-female-01-eyes-v2-sources.json), [v3](modular-human-female-01-eyes-v3-sources.json).
   v3 편집 출력 [`eyes_v3/face-albedo-edited.png`](../../assets/modular_human_female_01/eyes_v3/face-albedo-edited.png)을 눈 전체 UV에 다시 매핑한 것이 최종 눈이다([매핑 기록](modular-human-female-01-eyes-v6-sources.json)).
-- **[미사용]** 속눈썹 알파 텍스처(2172×724 RGBA): GLB에 `Natural eyelash fringe alpha`로 남아 있지만 현재 가닥 메시는 쓰지 않는다. [프롬프트](modular-human-female-01-eyelashes-v1-sources.json).
+- **[미사용]** 속눈썹 알파 텍스처(2172×724 RGBA): 제작 원본 GLB에 `Natural eyelash fringe alpha`로 남아 있지만 현재 가닥 메시는 쓰지 않는다. 게임용 베이스에서는 2026-10-25 다운로드 최적화로 제거했다. [프롬프트](modular-human-female-01-eyelashes-v1-sources.json).
 - **[미사용]** 눈 보정 v1: 채택하지 않은 Tripo API v1 모델 대상. [프롬프트](modular-human-female-01-eyes-v1-sources.json).
 - 출력 없음: 비키니 속옷 편집과 대머리·맨발 접지 편집은 안전 필터에 차단됐다. [속옷 요청](modular-human-female-01-sources.json), [대머리·맨발 요청](modular-human-female-01-bald-flatfeet-attempt.json).
 

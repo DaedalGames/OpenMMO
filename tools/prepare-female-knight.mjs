@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { NodeIO, PropertyType, VertexLayout } from '@gltf-transform/core'
-import { ALL_EXTENSIONS, EXTTextureWebP } from '@gltf-transform/extensions'
+import { ALL_EXTENSIONS, EXTMeshoptCompression, EXTTextureWebP } from '@gltf-transform/extensions'
 import { prune } from '@gltf-transform/functions'
+import { MeshoptDecoder, MeshoptEncoder } from 'meshoptimizer'
 import sharp from 'sharp'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { GLTFExporter } from '../client/node_modules/three/examples/jsm/exporters/GLTFExporter.js'
@@ -76,9 +77,17 @@ function writeReport() {
   writeFileSync(reportPath, JSON.stringify({ ...previous, ...report }, null, 2) + '\n')
 }
 for (const path of ['tools/prepare-female-knight.mjs', 'client/src/lib/utils/female-clip-bake.ts', 'client/src/lib/utils/female-boot-ground.ts']) record(path)
+await Promise.all([MeshoptEncoder.ready, MeshoptDecoder.ready])
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS)
+  .registerDependencies({ 'meshopt.encoder': MeshoptEncoder, 'meshopt.decoder': MeshoptDecoder })
 // Replaces the file instead of rewriting it, since worktrees may hard-link these GLBs.
 async function write(path, doc) {
+  if (path === `${output}/base.glb`) {
+    await doc.transform(prune({ propertyTypes: [PropertyType.MATERIAL, PropertyType.TEXTURE] }))
+    // Preserve vertex and triangle numbering for outfit masks; do not quantize.
+    doc.createExtension(EXTMeshoptCompression).setRequired(true)
+      .setEncoderOptions({ method: EXTMeshoptCompression.EncoderMethod.QUANTIZE })
+  }
   // Pelt rigs rewrite positions in place, which interleaved attributes do not support.
   const pelt = doc.getRoot().listNodes().some(node => node.getExtras().pelt_physics)
   io.setVertexLayout(pelt ? VertexLayout.SEPARATE : VertexLayout.INTERLEAVED)
@@ -203,7 +212,7 @@ if (selectedPart) {
 await ensureFemalePreview('animations')
 const preparedPath = previewOutput('animations')
 for (const path of dependencies('animations')) record(path)
-const { server, load } = await headlessThree()
+const { server, load } = await headlessThree({ meshopt: true })
 globalThis.FileReader = class {
   readAsArrayBuffer(blob) { blob.arrayBuffer().then(result => { this.result = result; this.onloadend?.() }) }
 }
