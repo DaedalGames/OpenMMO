@@ -78,6 +78,95 @@ blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_rogue_ski
 `fitting.json`에 통합했다. 원화·생성 입력·원본 모델·현재 Blender 편집본·리깅 GLB·가림 정보와
 원본 정면 및 피팅 앞뒤 문서 이미지는 보존했다. 재현 명령은 삭제한 검수 중간 파일을 다시 생성한다.
 
+## 골반에 걸치는 타이트 핏 v2 — 2026-10-25
+
+사용자가 치마를 몸에 더 붙이고 윗단을 낮춰 골반에 걸친 형태를 요청했다.
+v1은 수정 전 보관본이며, v2는 첫 번째 골반 핏 보정본이다.
+
+- 밑단 높이 약 0.835m를 유지하며 세로 길이를 89%로 줄여 윗단을 약 32.4mm 내렸다.
+  가로·앞뒤 축소 후 피부 여유를 다시 보정했다. 최종 전체 폭은 약 443 → 410mm,
+  앞뒤 두께는 약 323 → 299mm로 각각 약 7.4% 줄었다.
+- 벨트·버클·고리도 같은 피팅에 포함하며, 원본 2,710 triangles와 UV·4K PBR 텍스처는 유지한다.
+  기준 몸체와 65본 리그, 오브젝트 스케일 1도 유지했다. 새 생성 요청은 없다.
+- 기본 자세의 정점·삼각형 중심 피부 간격은 약 4.9mm 이상이며 3mm 초과 관통 후보는 0개다.
+  기존 9개 동작 각각 33프레임에서 리그·가중치·유한 변형을 재검사했다.
+  큰 다리 굽힘에서 남는 관통은 v1과 마찬가지로 최종 게임 적용 전 추가 보정 범위다.
+- 가림 정보는 새 형상에서 다시 계산했다. 프리뷰에서 착탈 후 피부·삼각형 수 복원,
+  몸체 정점 좌표 유지와 7개 동작 전환을 확인했다. 페이지 오류·리소스 로드 실패는 0개다.
+  `npm run check`, `npm run lint`를 통과했다.
+- 몸체+상의+치마는 숨김 포함 28,636 triangles, 가림 적용 시 24,230 triangles다.
+  기존 머리·얼굴 배분은 v1과 같다. 위에서 보이는 흰 속옷 무늬는 기본 몸체 표면에 남아 있으며,
+  이번 변경에서 몸체 텍스처나 정점은 수정하지 않았다.
+
+[검사 기록](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v2/fitting.json).
+**[미사용]** 중간 모델·Blender·가림 파일은 현재 보정본으로 대체해 정리했다.
+앞의 재현 명령은 최신 피팅을 생성한다.
+
+![타이트한 골반 핏 앞뒤](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v2/review/fitting.png)
+
+## 허리 밀착과 벨트 고리 보정 v3 — 2026-10-25
+
+치마 v3는 [밑단을 줄인 상의 v2](modular-female-rogue-top.md)와 함께 검수한 이전 보정본이다.
+
+- 허리 윗단을 피부 표면 쪽으로 추가 수렴시키고 목표 여유를 3mm로 줄였다.
+  윗단 가중치는 피부 접촉 지점의 가중치를 유지해 대기 중 몸통 움직임을 따른다.
+  v2의 골반 높이·밑단 위치·치마 전체 폭은 유지했다.
+  기본 자세·대기 33프레임에서 검사한 앞 허리 정점의 평균 피부 간격은
+  약 30.9 → 7.7mm, 최대 간격은 약 35.3 → 8.7mm로 줄었다.
+- 기존의 작은 분리 장식은 허벅지 가중치를 제거하고 골반·척추에만 고정했다.
+  치마 천과 다른 변형 때문에 고리가 천 안에 들어가는 문제가 있었다.
+  장식을 천의 바깥면에서 최소 4mm 떨어지도록 옮기고, 해당 천 삼각형의 barycentric
+  가중치를 전사했다. 고리의 정점별 가중치는 바로 아래 천의 변형을 따른다.
+- 양쪽 앞 벨트 고리의 정점·삼각형 중심에서 실제 변형된 천의 바깥면을 향해 광선을 쏘아 검사했다.
+  기본 자세와 대기·걷기 각 33프레임에서 묻히는 샘플 및 광선 누락은 0개이며,
+  최소 간격은 약 4.1mm다. 달리기 등 다른 자세의 수치도 통합 기록에 포함했다.
+- 기본 자세에서 피부 관통 후보 0개, 기존 65본 연결·9개 동작 변형 검사를 통과했다.
+  브라우저에서 대기·걷기 각 5시점, 상·하의 착탈과 원상 복원, 다른 동작 전환을 확인했다.
+  숨김 포함 28,636 triangles, 새 상의와 가림 적용 시 24,234 triangles다.
+  머리·얼굴 배분은 v1과 같다. 큰 다리 굽힘의 기존 관통 보정 범위는 남아 있다.
+
+[검사 기록](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v3/fitting.json).
+**[미사용]** 중간 모델·Blender·가림 파일은 현재 보정본으로 대체해 정리했다.
+
+고리 검사는 `node tools/validate-female-rogue-skirt.mjs`로 동작 샘플을 만든 뒤
+`blender -b --python-exit-code 1 -P tools/blender-scripts/validate_female_rogue_belt.py`로 재현한다.
+
+![허리와 벨트 고리 보정 앞뒤](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v3/review/fitting.png)
+
+## 고리·버클 밀착과 뒤 허리 여유 보정 v4 — 2026-10-25
+
+현재 여성 프리뷰는 치마 v4와 [윤곽을 다듬은 상의 v3](modular-female-rogue-top.md)를 사용한다.
+
+- v3의 장식 전체를 바깥으로 옮기는 방식은 고리와 버클의 윗부분을 띄웠다.
+  이번에는 정점별로 천 바깥면에 투영한 뒤 장식의 두께와 삼각형 중심 간격을 보정했다.
+  허리밴드는 피부·속옷 바깥면의 접촉 지점에서 가중치를 직접 전사한다.
+  장식도 바로 아래 천의 가중치를 전사해 같은 움직임을 따른다.
+  허리 전체를 골반에 고정하는 방식은 옆 피부가 관통해 폐기했다.
+- 뒤 허리는 피부와 별도 속옷 메시를 함께 기준으로 삼아 둘레 방향으로 약 7mm의 여유를 확보했다.
+  최근접 면의 노멀 방향으로 밀면 뒤 허리 옆부분이 벌어져, 바깥쪽 광선으로 간격을 계산하도록 수정했다.
+  몸체·속옷 원본, 골반에 걸치는 높이, 원본 UV와 텍스처는 유지했다.
+- 기본 자세와 대기·걷기 각각 33프레임에서 앞 고리·버클의 바깥쪽 면 중심에서 1mm 초과 묻힘 샘플은 0개다.
+  장식 뒷면은 천에 최대 약 2mm 겹치며, 검사는 3mm를 상한으로 별도 제한한다.
+  실제 천 바깥면과의 최대 간격은 고리 약 5.3mm, 버클 약 6.7mm다.
+  금속 앞면을 포함하므로 고리는 6mm, 버클은 7mm를 상한으로 검사한다.
+  뒤 중앙 허리 정점·삼각형 중심의 속옷 관통 샘플은 0개이며, 속옷 경계를 벗어난 광선 누락은 별도 기록한다.
+- 65본 연결과 9개 동작 각각 33프레임의 유한 변형·가중치 검사를 통과했다.
+  브라우저의 앞·뒤·옆 확대, 대기·걷기, 착탈 복원과 리소스 로드를 확인했다.
+  큰 다리 굽힘·앉기에서 남는 관통 보정 범위는 이전 버전과 같다.
+- 치마 2,710 triangles, 상의 3,751 triangles를 유지한다. 조합의 숨김 포함 합계는 28,636 triangles, 가림 적용 후는 24,198 triangles다.
+  머리·얼굴 배분은 v1과 같다. 검수 중간 파일은 통합 기록과 대표 이미지로 정리했다.
+
+[현재 GLB](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/bottom_female_rogue.glb),
+[현재 Blender](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/female-rogue-skirt.blend),
+[피팅·동작·고리·속옷 간격 통합 기록](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/fitting.json),
+[가림 정보](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/body-occlusion.json).
+
+[정면 확대](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/review/detail-front.png),
+[옆면 확대](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/review/detail-side.png),
+[뒷면 확대](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/review/detail-back.png).
+
+![고리·버클과 뒤 허리 보정 앞뒤](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/review/fitting.png)
+
 ## 출처·라이선스
 
 - 원화: OpenAI Codex built-in ImageGen(`codex exec`, codex-cli 0.162.1), **ChatGPT Pro 20x**, 2026-10-25.

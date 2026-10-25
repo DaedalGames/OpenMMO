@@ -76,6 +76,46 @@ blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_rogue_top
 - 동작 여유 보정에서 가슴을 지나는 손까지 피하려 하면 컵이 과도하게 변형됐다.
   몸통 보정에서는 팔 표면을 제외하고 마지막에 전체 피부와 촘촘한 삼각형 샘플을 다시 검사했다.
 
+## 밑단 단축 v2 — 2026-10-25
+
+- 사용자가 표시한 밑단 곡선을 따라 코르셋 하단을 약 36mm 올렸다.
+  두 갈래 곡선과 끝단 장식은 함께 이동하며, 허리 위쪽으로 변형을 완만하게 줄였다.
+  소매·가슴·후드의 기존 정점 위치는 유지했다.
+- 승인된 v1 GLB를 직접 입력으로 사용해 기존 피팅 보정을 유지했다.
+  하단을 피부에 다시 맞추고 노멀을 갱신했다. 3,751 triangles, UV·4K PBR 텍스처,
+  스켈레톤·가중치·inverse bind 정보는 유지했다. 유료 생성 요청은 없다.
+- 기본 자세에서 정점·삼각형 중심의 3mm 초과 피부 관통 후보는 0개다.
+  기존 65본 및 9개 동작 각각 33프레임의 변형 검사를 통과했다.
+  치마 v3와 함께 프리뷰에 연결했고, 착탈과 동작 전환을 확인했다.
+  조합은 숨김 포함 28,636 triangles, 가림 적용 시 24,234 triangles다.
+  기존 머리·얼굴은 그대로이며 큰 동작의 관통 보정은 별도 범위다.
+
+[검사 기록](../../assets/items/female_rogue_top/tripo_v1/fitted_v2/fitting.json).
+**[미사용]** 중간 모델·Blender·가림 파일은 현재 보정본으로 대체해 정리했다.
+
+```bash
+blender -b --python-exit-code 1 -P tools/blender-scripts/shorten_female_rogue_top.py
+node tools/validate-female-rogue-top.mjs
+blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_rogue_top.py
+```
+
+## 앞 단추 아래 윤곽·옆 밑단 보정 v3 — 2026-10-25
+
+- v2의 짧은 보정 구간 때문에 앞 단추 근처에서 꺾이던 윤곽을 수정했다.
+  기존 v1 피팅본에서 36mm의 밑단 단축은 유지하고, 높이 방향 보정 구간을 150mm로 넓혔다.
+  하단의 가로 윤곽을 평활화하고 피부 여유를 다시 맞춰 옆으로 튀어나온 가장자리도 줄였다.
+- 아래 단추와 장식은 바뀐 천 표면에 밀착시키고 가중치를 전사했다.
+  허리 보정 구간을 벗어난 장식과 소매·상단 정점 좌표는 v1과 같으며,
+  3,751 triangles, 원본 UV 삼각형과 내장 텍스처 바이트, 65본 스켈레톤을 보존했다.
+- 기존 런타임 연결 및 9개 동작 각각 33프레임 변형 검사를 통과했다.
+  치마 v4와 함께 앞·뒤·옆 확대와 대기·걷기, 착탈 복원을 확인했다.
+  `npm run check`, `npm run lint`를 통과했다. 큰 동작의 기존 관통 보정 범위는 유지한다.
+
+[현재 GLB](../../assets/items/female_rogue_top/tripo_v1/fitted_v3/top_female_rogue.glb),
+[현재 Blender](../../assets/items/female_rogue_top/tripo_v1/fitted_v3/female-rogue-top.blend),
+[피팅·검사 통합 기록](../../assets/items/female_rogue_top/tripo_v1/fitted_v3/fitting.json),
+[가림 정보](../../assets/items/female_rogue_top/tripo_v1/fitted_v3/body-occlusion.json).
+
 ## 출처·라이선스
 
 - 원화: OpenAI Codex built-in ImageGen(`codex exec`, codex-cli 0.162.1), **ChatGPT Pro 20x**, 2026-10-25.

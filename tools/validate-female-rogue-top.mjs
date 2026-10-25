@@ -4,7 +4,7 @@ import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
 
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
-const directory = 'assets/items/female_rogue_top/tripo_v1/fitted_v1'
+const directory = 'assets/items/female_rogue_top/tripo_v1/fitted_v3'
 const topPath = `${directory}/top_female_rogue.glb`
 const { server, load } = await headlessThree()
 try {

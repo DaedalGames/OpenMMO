@@ -15,34 +15,17 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools'))
 from lib.glb import read_glb, write_glb
 from lib.glb_accessors import accessor, add_accessor
+from outfits.mesh_components import welded_islands as islands
 
 SOURCE = ROOT / 'assets/items/female_rogue_skirt/tripo_v1/source/model_url.glb'
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
-OUTPUT = SOURCE.parents[1] / 'fitted_v1'
+OUTPUT = SOURCE.parents[1] / 'fitted_v4'
 OUTPUT.mkdir(exist_ok=True)
 
 
 def smooth(value):
     t = np.clip(value, 0, 1)
     return t * t * (3 - 2 * t)
-
-
-def islands(points, faces):
-    _, first, welded = np.unique(np.round(points, 6), axis=0, return_index=True, return_inverse=True)
-    welded = welded.ravel()
-    parent = np.arange(len(first))
-
-    def root(i):
-        while parent[i] != i:
-            parent[i] = parent[parent[i]]
-            i = parent[i]
-        return i
-
-    for face in welded[faces]:
-        a = root(face[0])
-        for b in face[1:]:
-            parent[root(b)] = a
-    return first, welded, np.array([root(i) for i in welded])
 
 
 bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -63,6 +46,13 @@ _, _, labels = islands(bp, bf)
 skin_label = np.bincount(labels).argmax()
 skin_faces = bf[(labels[bf] == skin_label).all(1)]
 surface = BVHTree.FromPolygons([Vector(p) for p in bp], skin_faces.tolist())
+underwear_faces = []
+for label in np.unique(labels):
+    q = bp[labels == label]
+    if label != skin_label and len(q) > 100 and q[:, 2].min() > .85 and q[:, 2].max() < 1.15:
+        underwear_faces.extend(bf[(labels[bf] == label).all(1)].tolist())
+clearance_faces = np.concatenate([skin_faces, np.array(underwear_faces, dtype=int)])
+clearance_surface = BVHTree.FromPolygons([Vector(p) for p in bp], clearance_faces.tolist())
 names = [bone.name for bone in rig.data.bones]
 body_weights = np.zeros((len(bp), len(names)))
 for v in body.data.vertices:
@@ -86,8 +76,19 @@ points[:, 2] += .9825
 height = points[:, 2].copy()
 points[:, 0] *= np.interp(height, [.835, .98, 1.07, 1.13], [1.04, 1.04, .94, .85])
 points[:, 1] += np.interp(height, [.835, .98, 1.13], [.01, .03, -.015])
+points[:, 2] = .835 + (points[:, 2] - .835) * .89
+points[:, 0] *= .87
+points[:, 1] = .015 + (points[:, 1] - .015) * .89
+main_label = max(np.unique(labels), key=lambda label: len(np.unique(welded[labels == label])))
+main_vertices = labels == main_label
+rim = smooth((points[:, 2] - 1.005) / .055)
+for i in np.flatnonzero(main_vertices & (rim > 0)):
+    hit, normal, _, _ = surface.find_nearest(Vector(points[i]))
+    target = np.array(hit) + np.array(normal) * .003
+    points[i, :2] += .85 * rim[i] * (target[:2] - points[i, :2])
 
-def clear_rest(points, iterations=30):
+def clear_rest(points, iterations=24):
+    main_faces = faces[main_vertices[faces].all(1)]
     barycentric = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1/3, 1/3, 1/3),
                    (.5, .5, 0), (.5, 0, .5), (0, .5, .5)]
     for _ in range(iterations):
@@ -95,17 +96,22 @@ def clear_rest(points, iterations=30):
         count = np.zeros(len(first))
         maximum = 0
         for bary in barycentric:
-            for face, p in zip(faces, np.einsum('fkj,k->fj', points[faces], bary)):
-                hit, normal, _, _ = surface.find_nearest(Vector(p))
-                signed = np.dot(p - np.array(hit), normal)
-                if signed < .005:
-                    change = np.array(normal) * (.005 - signed)
-                    change[2] = 0
+            for face, p in zip(main_faces, np.einsum('fkj,k->fj', points[main_faces], bary)):
+                axis = np.array([p[0], p[1]-.015, 0])
+                axis /= np.linalg.norm(axis)
+                hit, _, _, distance = clearance_surface.ray_cast(Vector(p+axis*.1), Vector(-axis), .2)
+                if hit is None:
+                    continue
+                gap = distance-.1
+                rear = smooth((p[1]-.01)/.06)
+                clearance = .004 + .003*rear
+                if gap < clearance:
+                    change = axis*(clearance-gap)
                     for i in set(welded[face]):
                         delta[i] += change
                         count[i] += 1
-                    maximum = max(maximum, .005 - signed)
-        points += 1.3 * (delta / np.maximum(count[:, None], 1))[welded]
+                    maximum = max(maximum, clearance-gap)
+        points += 1.15*(delta/np.maximum(count[:, None], 1))[welded]
         if maximum < .0003:
             break
     return points
@@ -114,8 +120,12 @@ def clear_rest(points, iterations=30):
 points = clear_rest(points)
 weights = np.zeros((len(points), len(names)))
 for i, p in enumerate(points):
-    hit, _, fi, _ = surface.find_nearest(Vector(p))
-    indices = skin_faces[fi]
+    axis = np.array([p[0], p[1]-.015, 0])
+    axis /= np.linalg.norm(axis)
+    hit, _, fi, _ = clearance_surface.ray_cast(Vector(p+axis*.1), Vector(-axis), .2)
+    if hit is None:
+        hit, _, fi, _ = clearance_surface.find_nearest(Vector(p))
+    indices = clearance_faces[fi]
     a, b, c = bp[indices]
     uv = np.linalg.lstsq(np.column_stack((b-a, c-a)), np.array(hit)-a, rcond=None)[0]
     bary = np.clip([1-uv.sum(), *uv], 0, 1)
@@ -130,6 +140,7 @@ for i, p in enumerate(points):
     weights[i, names.index('RightUpLeg')] = thigh * (1-left)
 
 unique = weights[first]
+contact_weights = unique.copy()
 tree = KDTree(len(first))
 for i, p in enumerate(points[first]):
     tree.insert(Vector(p), i)
@@ -142,13 +153,76 @@ for _ in range(3):
         kernel = np.exp(-(np.array([item[2] for item in adjacent]) / .012)**2)
         updated[i] = (unique[ids] * kernel[:, None]).sum(0) / kernel.sum()
     unique = updated
+contact_blend = smooth((points[first, 2] - .94) / .04)[:, None]
+unique = unique * (1-contact_blend) + contact_weights * contact_blend
 weights = unique[welded]
+main_faces = faces[main_vertices[faces].all(1)]
+cloth_surface = BVHTree.FromPolygons([Vector(p) for p in points], main_faces.tolist())
+accessory_fit = []
 for label in np.unique(labels):
     chosen = labels == label
-    if len(np.unique(welded[chosen])) < 120:
-        weights[chosen] = weights[chosen].mean(0)
-        weights[chosen, names.index('Hips')] += weights[chosen, names.index('LeftUpLeg')] + weights[chosen, names.index('RightUpLeg')]
-        weights[np.ix_(chosen, [names.index('LeftUpLeg'), names.index('RightUpLeg')])] = 0
+    if label == main_label:
+        continue
+    center = points[chosen].mean(0)
+    outward = center.copy()
+    outward[1] -= .015
+    outward[2] = 0
+    outward /= np.linalg.norm(outward)
+    original_accessory = points[chosen].copy()
+    if abs(center[0]) < .04 and center[1] < -.06:
+        points[chosen, 2] += .0001
+    hits, gaps = [], []
+    for p in points[chosen]:
+        hit, _, _, distance = cloth_surface.ray_cast(Vector(p + outward * .08), Vector(-outward), .16)
+        if hit is None:
+            hit, _, _, _ = cloth_surface.find_nearest(Vector(p))
+        hits.append(np.array(hit))
+        gaps.append(np.dot(p-np.array(hit), outward))
+    gaps = np.array(gaps)
+    loop = (abs(center[0]) > .055 or center[1] > .02) and np.ptp(points[chosen, 2]) > .025
+    backing = .0008 if loop else .0012
+    thickness = .0018 if loop else .003
+    offsets = backing + thickness*(gaps-gaps.min())/max(np.ptp(gaps), 1e-9)
+    points[chosen] = np.array(hits) + offsets[:, None]*outward
+    component_faces = faces[(labels[faces] == label).all(1)]
+    for _ in range(40):
+        correction = np.zeros((len(first), 3))
+        counts = np.zeros(len(first))
+        maximum = 0
+        for bary in [(1, 0, 0), (0, 1, 0), (0, 0, 1), (1/3, 1/3, 1/3), (.5, .5, 0), (0, .5, .5), (.5, 0, .5)]:
+            for face, p in zip(component_faces, np.einsum('fkj,k->fj', points[component_faces], bary)):
+                axis = np.array([p[0], p[1]-.015, 0])
+                axis /= np.linalg.norm(axis)
+                hit, _, _, distance = cloth_surface.ray_cast(Vector(p+axis*.06), Vector(-axis), .12)
+                if hit is None:
+                    continue
+                gap = distance-.06
+                error = float(np.clip(gap, .0016, .0038)-gap)
+                maximum = max(maximum, abs(error))
+                for vertex in set(welded[face]):
+                    correction[vertex] += axis*error
+                    counts[vertex] += 1
+        points[chosen] += 1.15*(correction/np.maximum(counts[:, None], 1))[welded[chosen]]
+        if maximum < .0001:
+            break
+    if abs(center[0]) < .04 and center[1] < -.06:
+        points[chosen] += outward*.0005
+    for i in np.flatnonzero(chosen):
+        axis = np.array([points[i, 0], points[i, 1]-.015, 0])
+        axis /= np.linalg.norm(axis)
+        hit, _, fi, _ = cloth_surface.ray_cast(Vector(points[i]+axis*.06), Vector(-axis), .12)
+        if hit is None:
+            hit, _, fi, _ = cloth_surface.find_nearest(Vector(points[i]))
+        indices = main_faces[fi]
+        a, b, c = points[indices]
+        uv = np.linalg.lstsq(np.column_stack((b-a, c-a)), np.array(hit)-a, rcond=None)[0]
+        bary = np.clip([1-uv.sum(), *uv], 0, 1)
+        bary /= bary.sum()
+        weights[i] = bary @ weights[indices]
+    accessory_fit.append({'component': int(label), 'initial_backing_gap_m': backing,
+                          'initial_maximum_gap_m': backing+thickness,
+                          'maximum_correction_m': float(np.linalg.norm(points[chosen]-original_accessory, axis=1).max()),
+                          'center_blender': points[chosen].mean(0).tolist()})
 order = np.argsort(weights, axis=1)[:, -4:][:, ::-1]
 values = np.take_along_axis(weights, order, axis=1)
 values[values < .002] = 0
@@ -224,7 +298,14 @@ bpy.ops.wm.save_as_mainfile(filepath=str(OUTPUT / 'female-rogue-skirt.blend'))
 report = {'date': '2026-10-25', 'source_sha256': hashlib.sha256(SOURCE.read_bytes()).hexdigest(),
           'body_sha256': hashlib.sha256(BODY.read_bytes()).hexdigest(), 'triangles': len(faces),
           'bones': len(names), 'blender_version': bpy.app.version_string, 'units': 'metres',
-          'method': 'Aligned source axes, waist taper and skin clearance; barycentric skin weight transfer, spatial smoothing across nearby surfaces, rigid accessory islands; exact canonical hierarchy and inverse bind matrices.',
+          'revision': 'v4', 'accessory_fitting': accessory_fit,
+          'shape_adjustment': {'height_scale_from_hem': .89,
+          'hem_anchor_m': .835, 'width_scale': .87, 'depth_scale': .89,
+          'upper_edge_lowering_m': .0324, 'front_radial_clearance_m': .004, 'rim_clearance_m': .003,
+          'rim_contact_blend': .85, 'rear_radial_underwear_clearance_m': .007,
+          'waist_body_weight_blend_m': [.94, .98],
+          'accessory_relaxation_target_m': [.0016, .0038], 'buckle_height_offset_m': .0001, 'buckle_outward_bias_m': .0005},
+          'method': 'Low-rise waist with radial skin and underwear clearance; waistband weights sampled from the same outer body surface; per-vertex accessory projection and relaxation against the outer cloth with barycentric weight transfer; exact canonical hierarchy and inverse bind matrices.',
           'no_new_api_requests': True,
           'status': 'Fitted and rigged; validation and visual review recorded separately'}
 (OUTPUT / 'fitting.json').write_text(json.dumps(report, indent=2)+'\n')

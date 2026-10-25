@@ -17,10 +17,10 @@ from lib.glb import read_glb
 from lib.glb_accessors import accessor
 from outfits.skinning import deform
 
-DIRECTORY = ROOT / 'assets/items/female_rogue_skirt/tripo_v1/fitted_v1'
+DIRECTORY = ROOT / 'assets/items/female_rogue_skirt/tripo_v1/fitted_v4'
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
 SKIRT = DIRECTORY / 'bottom_female_rogue.glb'
-TOP = ROOT / 'assets/items/female_rogue_top/tripo_v1/fitted_v1/top_female_rogue.glb'
+TOP = ROOT / 'assets/items/female_rogue_top/tripo_v1/fitted_v3/top_female_rogue.glb'
 
 
 def load_mesh(path):
@@ -132,7 +132,7 @@ for face in body.data.polygons:
     c = body.matrix_world @ face.center
     tree.insert(Vector((c.x, c.z, -c.y)), face.index)
 tree.balance()
-top_mask = json.loads((ROOT / 'assets/items/female_rogue_top/tripo_v1/fitted_v1/body-occlusion.json').read_text())
+top_mask = json.loads((ROOT / 'assets/items/female_rogue_top/tripo_v1/fitted_v3/body-occlusion.json').read_text())
 hidden[top_mask['hide_triangle_indices']] = True
 matched = {tree.find(Vector(c))[1] for c in bp[bf[hidden]].mean(1)}
 assert len(matched) == int(hidden.sum())

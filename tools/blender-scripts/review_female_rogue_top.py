@@ -16,7 +16,7 @@ from lib.glb import read_glb
 from lib.glb_accessors import accessor
 from outfits.skinning import deform
 
-DIRECTORY = ROOT / 'assets/items/female_rogue_top/tripo_v1/fitted_v1'
+DIRECTORY = ROOT / 'assets/items/female_rogue_top/tripo_v1/fitted_v3'
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
 TOP = DIRECTORY / 'top_female_rogue.glb'
 
@@ -76,6 +76,9 @@ mask = {'body': str(BODY.relative_to(ROOT)), 'body_sha256': hashlib.sha256(BODY.
 (DIRECTORY / 'body-occlusion.json').write_text(json.dumps(mask, indent=2) + '\n')
 
 samples = json.loads((DIRECTORY / 'animation-samples.json').read_text())
+validation = json.loads((DIRECTORY / 'animation-validation.json').read_text())
+assert validation['base_sha256'] == hashlib.sha256(BODY.read_bytes()).hexdigest()
+assert validation['top_sha256'] == hashlib.sha256(TOP.read_bytes()).hexdigest()
 report = {}
 for sample in [{'clip': 'rest', 'sample': 0, 'phase': 0, 'matrices': np.tile(np.eye(4).T.ravel(), (65, 1)).tolist()}, *samples]:
     matrices = np.array(sample['matrices']).reshape(-1, 4, 4).transpose(0, 2, 1)
@@ -101,7 +104,8 @@ for sample in [{'clip': 'rest', 'sample': 0, 'phase': 0, 'matrices': np.tile(np.
     name = sample['clip']
     if name not in report or result['centroids_full_skin']['deeper_than_3mm'] > report[name]['centroids_full_skin']['deeper_than_3mm']:
         report[name] = result
-(DIRECTORY / 'clearance-validation.json').write_text(json.dumps({'scope': 'Signed nearest full-skin triangle distance at garment vertices and triangle centroids, 33 samples per clip. Visible counts exclude queries whose nearest full-skin triangle is masked; visual review remains necessary.', 'clips': report}, indent=2) + '\n')
+(DIRECTORY / 'clearance-validation.json').write_text(json.dumps({'base_sha256': validation['base_sha256'], 'top_sha256': validation['top_sha256'],
+    'scope': 'Signed nearest full-skin triangle distance at garment vertices and triangle centroids, 33 samples per clip. Visible counts exclude queries whose nearest full-skin triangle is masked; visual review remains necessary.', 'clips': report}, indent=2) + '\n')
 print(json.dumps(report), flush=True)
 if '--metrics-only' in sys.argv:
     sys.exit(0)

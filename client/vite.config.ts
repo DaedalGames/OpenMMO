@@ -166,19 +166,19 @@ function modularCharacterPreview(): Plugin {
       import.meta.url
     ),
     female_rogue_top: new URL(
-      '../assets/items/female_rogue_top/tripo_v1/fitted_v1/top_female_rogue.glb',
+      '../assets/items/female_rogue_top/tripo_v1/fitted_v3/top_female_rogue.glb',
       import.meta.url
     ),
     'female-rogue-top-occlusion.json': new URL(
-      '../assets/items/female_rogue_top/tripo_v1/fitted_v1/body-occlusion.json',
+      '../assets/items/female_rogue_top/tripo_v1/fitted_v3/body-occlusion.json',
       import.meta.url
     ),
     female_rogue_bottom: new URL(
-      '../assets/items/female_rogue_skirt/tripo_v1/fitted_v1/bottom_female_rogue.glb',
+      '../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/bottom_female_rogue.glb',
       import.meta.url
     ),
     'female-rogue-bottom-occlusion.json': new URL(
-      '../assets/items/female_rogue_skirt/tripo_v1/fitted_v1/body-occlusion.json',
+      '../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/body-occlusion.json',
       import.meta.url
     ),
     'female-barbarian-top-occlusion.json': new URL(
