@@ -54,6 +54,7 @@ export async function showFemaleBase(
         <option value="none">없음</option>
         <option value="knight">은빛 기사 갑옷</option>
         <option value="barbarian">야만전사 가죽 철갑</option>
+        <option value="rogue">로그 가죽 코르셋</option>
       </select>
       <label for="female-bottom">하의</label>
       <select id="female-bottom">
