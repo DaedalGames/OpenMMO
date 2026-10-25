@@ -8,6 +8,7 @@ pub struct EffectiveStats {
     pub cha: i32,
     pub int: i32,
     pub max_hp_bonus: u32,
+    pub critical_chance_percent: u8,
 }
 
 impl From<EffectiveStats> for ServerMessage {
@@ -17,6 +18,7 @@ impl From<EffectiveStats> for ServerMessage {
             cha: s.cha,
             int: s.int,
             max_hp_bonus: s.max_hp_bonus,
+            critical_chance_percent: s.critical_chance_percent,
         }
     }
 }
@@ -383,10 +385,7 @@ impl super::GameState {
             .sum()
     }
 
-    /// A player's effective stats (base attribute plus equipped-gear bonuses),
-    /// read under one pass of each lock. Guard is the target number an
-    /// attacker must beat; CHA drives haggling bands. Reported to the client
-    /// so it never recomputes the formula itself.
+    /// Server-computed stats, shared by gameplay and the character panel.
     pub async fn effective_stats(&self, player_id: &PlayerId) -> EffectiveStats {
         let (mut stats, level) = {
             let chars = self.player_characters.read().await;
@@ -398,6 +397,7 @@ impl super::GameState {
                         cha: i32::from(a.cha),
                         int: i32::from(a.int),
                         max_hp_bonus: 0,
+                        critical_chance_percent: combat::BASE_CRITICAL_CHANCE_PERCENT,
                     };
                     (stats, xp::level_from_xp(*xp))
                 })
@@ -407,12 +407,14 @@ impl super::GameState {
                         cha: 10,
                         int: 10,
                         max_hp_bonus: 0,
+                        critical_chance_percent: combat::BASE_CRITICAL_CHANCE_PERCENT,
                     },
                     1,
                 ))
         };
         if let Some(inv) = self.inventories.read().await.get(player_id) {
             stats.guard += self.equipped_guard(inv);
+            stats.critical_chance_percent = self.equipped_critical_chance_percent(inv);
             // Same formula as `Player::set_base_max_health`; read from here so
             // a login reports it before the player joins the roster.
             stats.max_hp_bonus = self.equipped_max_health_per_level(inv) * level;
@@ -423,6 +425,7 @@ impl super::GameState {
                     ItemEffect::Light
                     | ItemEffect::Invisibility
                     | ItemEffect::Sustenance
+                    | ItemEffect::CriticalChance(_)
                     | ItemEffect::MaxHpPerLevel(_) => {}
                 }
             }
@@ -437,6 +440,24 @@ impl super::GameState {
 
     pub fn equipped_max_health_per_level(&self, inv: &PlayerInventory) -> u32 {
         self.equipped_defs(inv).map(|d| d.max_hp_per_level()).sum()
+    }
+
+    pub(super) fn equipped_critical_chance_percent(&self, inv: &PlayerInventory) -> u8 {
+        let mut seen = std::collections::HashSet::new();
+        self.equipped_defs(inv)
+            .filter(|def| {
+                def.effects().iter().any(
+                    |effect| matches!(effect, ItemEffect::CriticalChance(amount) if *amount > 0),
+                )
+            })
+            .filter(|def| seen.insert(&def.id))
+            .flat_map(|def| def.effects())
+            .filter_map(|effect| match effect {
+                ItemEffect::CriticalChance(amount) => Some(*amount),
+                _ => None,
+            })
+            .fold(combat::BASE_CRITICAL_CHANCE_PERCENT, u8::saturating_add)
+            .min(100)
     }
 
     pub async fn effective_guard(&self, player_id: &PlayerId) -> i32 {
@@ -994,15 +1015,19 @@ impl super::GameState {
             .await
             .marks_target(player_id, &monster_id);
 
-        let (result_hit, result_roll, result_damage) = {
+        let critical_chance_percent = self
+            .inventories
+            .read()
+            .await
+            .get(player_id)
+            .map(|inv| self.equipped_critical_chance_percent(inv))
+            .unwrap_or(combat::BASE_CRITICAL_CHANCE_PERCENT);
+        let result = {
             let def = self.monster_defs.get(&monster_type);
             let target_guard = def.map(|d| i32::from(d.guard)).unwrap_or(10);
             let attack_bonus =
                 combat::level_attack_bonus(player_level) + ability_mod + weapon.enchant + hit_mod;
-            // The round rolls its own die on top of the weapon's, as a
-            // monster's wielded weapon does on top of its own damage. The bow
-            // is deliberately a token 1d1: the arrow is what decides the hurt.
-            let result = combat::roll_attack_with_accuracy(
+            let mut result = combat::roll_attack_with_accuracy(
                 attack_bonus,
                 target_guard,
                 &weapon.dice,
@@ -1010,12 +1035,13 @@ impl super::GameState {
                 ability_mod + weapon.enchant,
                 guaranteed,
             );
-            (result.hit, result.roll, result.damage)
+            result.apply_critical(critical_chance_percent, &mut rand::thread_rng());
+            result
         };
 
         debug!(
             "Dice roll: {}, Hit: {}, Damage: {}",
-            result_roll, result_hit, result_damage
+            result.roll, result.hit, result.damage
         );
 
         // Update player combat timestamp and damage logic
@@ -1037,9 +1063,10 @@ impl super::GameState {
             ServerMessage::PlayerAttacked {
                 player_id: *player_id,
                 monster_id: monster_id.clone(),
-                hit: result_hit,
-                roll: result_roll,
-                damage: result_damage,
+                hit: result.hit,
+                roll: result.roll,
+                damage: result.damage,
+                critical: result.critical,
                 ammo_item_def_id: ammo.map(|round| round.item_def_id),
                 dagger_strike,
             },
@@ -1047,7 +1074,7 @@ impl super::GameState {
         )
         .await;
 
-        if !result_hit {
+        if !result.hit {
             self.brain_hit(&monster_id, player_id, false, 0).await;
         } else {
             // Damage and the kill claim share one guard, so a second attacker
@@ -1063,9 +1090,9 @@ impl super::GameState {
                         return; // Already dead
                     }
 
-                    dealt = result_damage.min(monster.health);
+                    dealt = result.damage.min(monster.health);
                     field_raid_boss = monster.lifecycle == MonsterLifecycle::FieldRaid;
-                    monster.health = monster.health.saturating_sub(result_damage);
+                    monster.health = monster.health.saturating_sub(result.damage);
                     self.interest_lock().refresh_monster(monster);
                     debug!(
                         "Monster {} HP: {}/{}",
@@ -1099,7 +1126,7 @@ impl super::GameState {
                 self.record_field_raid_hit(player_id, dealt).await;
             }
             if !is_dead {
-                self.brain_hit(&monster_id, player_id, true, result_damage)
+                self.brain_hit(&monster_id, player_id, true, result.damage)
                     .await;
             } else {
                 // Loot lands where the monster fell, which is not where the
@@ -1820,6 +1847,7 @@ impl super::GameState {
                 hit: true,
                 roll: 0,
                 damage,
+                critical: false,
             },
             SkillDamage::Scaled {
                 multiplier,

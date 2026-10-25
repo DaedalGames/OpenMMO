@@ -39,6 +39,7 @@ import { stallManager } from '../managers/stallManager'
 import { refreshBardZone } from '../managers/bardZone'
 
 export interface PlayerDamageInfo {
+  critical?: boolean
   damage: number
   hit: boolean
   trigger: number

@@ -4,6 +4,18 @@ pub struct AttackResult {
     pub hit: bool,
     pub roll: u8,
     pub damage: u32,
+    pub critical: bool,
+}
+
+pub const BASE_CRITICAL_CHANCE_PERCENT: u8 = 5;
+
+impl AttackResult {
+    pub fn apply_critical<R: Rng>(&mut self, chance_percent: u8, rng: &mut R) {
+        if self.hit && !self.critical && rng.gen_range(0..100u8) < chance_percent.min(100) {
+            self.critical = true;
+            self.damage = self.damage.saturating_mul(2);
+        }
+    }
 }
 
 /// Parse dice notation like "1d6", "2d8" into (count, sides)
@@ -135,12 +147,63 @@ pub fn roll_attack_with_accuracy(
         damage = total.max(1) as u32;
     }
 
-    AttackResult { hit, roll, damage }
+    AttackResult {
+        hit,
+        roll,
+        damage,
+        critical: false,
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn critical_doubles_weapon_ammo_and_bonus_damage_once() {
+        let mut result = roll_attack_with_accuracy(0, 1000, "1d1", Some("2d1"), 9, true);
+        assert_eq!(result.damage, 12);
+        result.apply_critical(100, &mut rand::thread_rng());
+        assert!(result.critical);
+        assert_eq!(result.damage, 24);
+        result.apply_critical(100, &mut rand::thread_rng());
+        assert_eq!(result.damage, 24);
+    }
+
+    #[test]
+    fn critical_never_turns_a_miss_into_a_hit() {
+        let mut result = AttackResult {
+            hit: false,
+            roll: 20,
+            damage: 0,
+            critical: false,
+        };
+        result.apply_critical(100, &mut rand::thread_rng());
+        assert!(!result.hit);
+        assert!(!result.critical);
+        assert_eq!(result.damage, 0);
+    }
+
+    #[test]
+    fn critical_chance_is_independent_of_attack_roll() {
+        use rand::SeedableRng;
+        let mut rng = rand::rngs::StdRng::seed_from_u64(102525);
+        for chance in [0, BASE_CRITICAL_CHANCE_PERCENT, 10, 100] {
+            let mut criticals = 0;
+            for _ in 0..100_000 {
+                let mut result = AttackResult {
+                    hit: true,
+                    roll: 1,
+                    damage: 7,
+                    critical: false,
+                };
+                result.apply_critical(chance, &mut rng);
+                assert_eq!(result.damage, if result.critical { 14 } else { 7 });
+                criticals += u32::from(result.critical);
+            }
+            assert!((f64::from(criticals) / 1000.0 - f64::from(chance)).abs() < 0.3);
+        }
+    }
 
     #[test]
     fn guaranteed_hit_keeps_weapon_ammo_and_bonus_damage() {

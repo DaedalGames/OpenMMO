@@ -34,6 +34,23 @@ fn line(qty: u32) -> TradeLineItem {
 }
 
 #[tokio::test]
+async fn ysolde_exchanges_thirty_shards_for_one_rift_ring() {
+    let game = make_test_game_state("exchange_rift_ring");
+    let mut rx = setup_exchange(&game, 59).await;
+    game.buy_item(&pid("buyer"), &pid("npc_ysolde"), "rift_ring")
+        .await;
+    assert_eq!(count(&game, "rift_ring").await, 1);
+    assert_eq!(count(&game, "terraclash_token").await, 29);
+    assert_eq!(game.get_player_gold(&pid("buyer")).await, 100_000);
+    drain(&mut rx);
+    game.buy_item(&pid("buyer"), &pid("npc_ysolde"), "rift_ring")
+        .await;
+    expect_trade_error(&mut rx, "shards");
+    assert_eq!(count(&game, "rift_ring").await, 1);
+    assert_eq!(count(&game, "terraclash_token").await, 29);
+}
+
+#[tokio::test]
 async fn ysolde_field_cot_sleep_closes_the_exchange_until_six() {
     let game = make_test_game_state("ysolde_sleep_exchange");
     let mut rx = setup_exchange(&game, 30).await;

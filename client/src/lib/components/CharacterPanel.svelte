@@ -256,6 +256,14 @@
               <span class="stat-value guard-value">{withBonus('guard')}</span>
             </div>
             <div class="stat-row">
+              <span class="stat-label">{$t('stat.criticalChance')}</span>
+              <span class="stat-value"
+                >{$playerEffectiveStats
+                  ? `${$playerEffectiveStats.criticalChancePercent}%`
+                  : '—'}</span
+              >
+            </div>
+            <div class="stat-row">
               <span class="stat-label">{$t('stat.str')}</span>
               <span class="stat-value">{attributes.str}</span>
             </div>

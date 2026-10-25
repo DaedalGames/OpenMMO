@@ -334,7 +334,8 @@ class MonsterManager {
     /** The round the server spent, so the arrow drawn is the one that left
      *  the quiver — a remote shooter's bag is not visible from here. */
     ammoItemDefId?: string | null,
-    daggerSkill = false
+    daggerSkill = false,
+    critical = false
   ) {
     const monster = this.monsters.get(monsterId)
     if (!monster || monster.state === 'dead') return
@@ -351,7 +352,7 @@ class MonsterManager {
       monster.targetPlayerId = playerId
       monster.isLastHitSuccess = hit
       if (isLocalPlayerAttack) {
-        this.emitDamageText(monster, damage, hit)
+        this.emitDamageText(monster, damage, hit, critical)
         if (hit)
           playSwordHitSound(
             getMaterialHitSoundUrl(
@@ -424,6 +425,7 @@ class MonsterManager {
         delay: monster.impactDelay + DAMAGE_TEXT_AFTER_IMPACT_MS,
         damage,
         hit,
+        critical,
       }
     }
 
@@ -515,12 +517,16 @@ class MonsterManager {
     )
   }
 
-  // Bump the floating damage number above a monster's head. The trigger counter
-  // is what DamageText watches to spawn a new text item.
-  private emitDamageText(monster: MonsterData, damage: number, hit: boolean) {
+  private emitDamageText(
+    monster: MonsterData,
+    damage: number,
+    hit: boolean,
+    critical = false
+  ) {
     monster.lastDamageInfo = {
       damage,
       hit,
+      critical,
       trigger: (monster.lastDamageInfo?.trigger || 0) + 1,
     }
   }
@@ -621,9 +627,9 @@ class MonsterManager {
       if (monster.pendingDamageText) {
         monster.pendingDamageText.delay -= deltaTime
         if (monster.pendingDamageText.delay <= 0) {
-          const { damage, hit } = monster.pendingDamageText
+          const { damage, hit, critical } = monster.pendingDamageText
           monster.pendingDamageText = undefined
-          this.emitDamageText(monster, damage, hit)
+          this.emitDamageText(monster, damage, hit, critical)
           damageTextFired = true
         }
       }

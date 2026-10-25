@@ -717,6 +717,43 @@ async fn helm_of_brilliance_raises_reported_int() {
     assert_eq!(game.effective_stats(&id).await.int, 11);
 }
 
+#[tokio::test]
+async fn rift_ring_bonus_applies_once_across_both_ring_slots() {
+    let game = make_test_game_state("rift_ring_critical");
+    let id = pid("ring_wearer");
+    game.add_player(make_player("ring_wearer", 0.0, 0.0)).await;
+    let mut rx = game.register_direct_channel(&id).await;
+    let inv = PlayerInventory {
+        bag: vec![bag_item(1, "rift_ring", 1), bag_item(2, "rift_ring", 1)],
+        ..Default::default()
+    };
+    game.inventories.write().await.insert(id, inv);
+    assert_eq!(game.effective_stats(&id).await.critical_chance_percent, 5);
+    game.equip_item(&id, 1).await;
+    assert_eq!(game.effective_stats(&id).await.critical_chance_percent, 10);
+    game.equip_item(&id, 2).await;
+    assert_eq!(game.inventories.read().await[&id].equipped.len(), 2);
+    assert_eq!(game.effective_stats(&id).await.critical_chance_percent, 10);
+    assert!(drain(&mut rx).iter().any(|message| matches!(
+        message,
+        ServerMessage::EffectiveStatsUpdated {
+            critical_chance_percent: 10,
+            ..
+        }
+    )));
+    game.unequip_item(&id, EquipSlot::Ring).await;
+    assert_eq!(game.effective_stats(&id).await.critical_chance_percent, 10);
+    game.unequip_item(&id, EquipSlot::RingLeft).await;
+    assert_eq!(game.effective_stats(&id).await.critical_chance_percent, 5);
+    assert!(drain(&mut rx).iter().any(|message| matches!(
+        message,
+        ServerMessage::EffectiveStatsUpdated {
+            critical_chance_percent: 5,
+            ..
+        }
+    )));
+}
+
 async fn amulet_wearer(game_state: &GameState) -> PlayerId {
     let mut player = make_player("amulet", 100.0, 50.0);
     player.level = 13;

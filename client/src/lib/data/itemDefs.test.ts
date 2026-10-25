@@ -13,6 +13,15 @@ import itemDefs, {
 } from './itemDefs'
 import { PLAYER_ATTACK_RANGE_METERS } from './combatTiming'
 
+describe('rift ring', () => {
+  it('shows critical chance and duplicate effect restrictions in Korean', () => {
+    expect(statLabels(itemDefs.rift_ring, 0, 'ko')).toEqual([
+      '치명타 확률 +5%p',
+      '동일 아이템 효과 중복 불가',
+    ])
+  })
+})
+
 describe('weapon types', () => {
   it.each(Object.entries(WEAPON_TYPE_LABELS))(
     'labels %s as %s',

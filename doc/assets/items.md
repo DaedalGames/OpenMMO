@@ -1,5 +1,16 @@
 # Item Assets
 
+## Rift Ring — 균열의 반지 (2026-10-25)
+
+- 게임 아이템 `rift_ring`: 반지 슬롯, 무게 **0.1**, 기준가 **30,000**, 치명타 확률 **+5%p**. 기본 5%에서 착용 시 총 10%이며 같은 반지 두 개의 효과는 중복되지 않는다. 이졸데에게 테라클래시 파편 **30개**로 교환한다. [치명타·강화 비교](../CRITICAL_HITS.md).
+- [원화](../../assets/items/rift_ring/concept_v1/concept.png): 프로젝트 자체 디자인을 Codex 내장 ImageGen으로 생성했다. **ChatGPT Pro 20x**, 생성일 **2026-10-25**, 1254² PNG. 대지의 방패와 이어지는 그을린 철 고리·금이 간 암석·주황빛 균열·봉인 문양이다. [프롬프트](../../assets/items/rift_ring/concept_v1/prompt.txt)와 [생성·출처 기록](../../assets/items/rift_ring/concept_v1/generation.json)을 보존한다. 이용 조건: [OpenAI Terms of Use](https://openai.com/policies/terms-of-use/).
+- 3D 원본은 위 원화 한 장을 **Tripo API 유료 크레딧**으로 변환했다. `P2-20260801`, 목표 4,000폴리곤, PBR·detailed 텍스처 `v3.5-20260815`. 생성일 **2026-10-25**, 태스크 `952fe81b-d5f8-4e04-a24d-fd1bc03d081a`, 실제 **120크레딧**. 결과 **4,132삼각형**, base color·normal·ORM 각 4096². 원본 형상은 단순화하지 않고 보존했다. Tripo가 별도 발광 맵을 주지 않아 주황빛 균열은 base color에 포함된다. 이용 조건: [Tripo Terms of Service](https://developers.tripo3d.ai/en/terms).
+- [Tripo 원본 GLB](../../assets/items/rift_ring/tripo_v1/source/model_url.glb), [4K Blender 원본](../../assets/items/rift_ring/tripo_v1/rift_ring.blend), 원본 PNG 텍스처를 보존한다. [요청·태스크·비용 기록](../../assets/items/rift_ring/tripo_v1/generation.json), [준비 스크립트](../../assets/items/rift_ring/tripo_v1/prepare.py), [처리 기록](../../assets/items/rift_ring/tripo_v1/preparation.json).
+- 게임 바닥 모델: [rift_ring.glb](../../client/public/models/accessory/rift_ring.glb), **925,372바이트**, Meshopt + 512² KTX2 UASTC. 기존 금반지와 같은 긴 변 **0.15m**, Blender 기준 크기 약 **0.150 × 0.135 × 0.085m**, 원점은 바닥 중심, 회전 0·스케일 1. 고리 면을 바닥 쪽으로 눕혀 배치한다. [런타임 검사](../../assets/items/rift_ring/tripo_v1/runtime-checks.json): KTX2 세 장 개별 검증, Meshopt·KTX2 디코딩 후 glTF Validator 오류·경고 0개. 압축본 자체의 Validator 경고 6개는 도구의 KTX2 미지원에 따른 것이다.
+- 인벤토리 [아이콘](../../client/public/items/accessory/rift_ring.png): 동일 모델을 공용 Cycles 레시피로 512² 렌더 후 **128² 투명 PNG**로 축소했다. 정면의 균열·문양과 고리 구멍을 함께 보여준다. [Blender 아이콘 작업 파일](../../assets/items/rift_ring/rift_ring.blend).
+- 정리(2026-10-25): 미리보기 PNG 3개·상세 검증 보고서 3개·재생성 가능한 중간 4K GLB·Blender 백업을 삭제했다. 최종 모델·아이콘, 원화·Tripo 원본·현재 Blender 파일·원본 텍스처와 간결한 검증·출처 기록은 보존했다.
+- 재현: `blender -b --python-exit-code 1 -P assets/items/rift_ring/tripo_v1/prepare.py`로 4K 원본과 임시 GLB를 생성한다. `tools/blender-scripts/export_item_asset.py`에 `--source assets/items/rift_ring/tripo_v1/rift_ring.glb --name rift_ring --size 0.15 --category accessory --icon-rotation 28 -8 -102`를 주어 바닥 모델·아이콘·Blender 작업 파일을 출력하고, `tools/optimize-modular-part.mjs`에 `--ktx2 --size=512`를 주어 원본 GLB에서 런타임 모델을 압축한다.
+
 ## Shield of the Earth — 대지의 방패
 
 - [concept_v1](../../assets/items/earth_shield/concept_v1/concept.png) — 이졸데의 테라클래시 파편 교환 장비 원화. 거친 화강암 돌판을 검게 그을린 철제 테두리와 십자 띠로 고정하고, 중앙 봉인 문양·주황빛 균열·소량의 이끼로 테라클래시와 대지의 아뮬렛의 외형을 잇는다. [설계](../TIER5_FIELD_RAID.md#증표-교환과-장비-공급량).
@@ -10,7 +21,7 @@
   - **3,505 triangles**, 메시·재질 각 1개, 높이 **0.80m**, 폭 **0.533m**, 손잡이 포함 깊이 **0.159m**. 원점은 후면 위쪽 가로 손잡이 중심. Blender 정면 **+Y**·위 **+Z**, glTF 정면 **−Z**·위 **+Y**. 위치·회전 0, scale 1인 장착용 원본이다.
   - 원본 PBR 텍스처는 **4096²** base color·ORM·normal, 현재 런타임은 **512² KTX2 UASTC·10단계 밉맵·Meshopt**다. **869,564 bytes**, 텍스처 GPU 메모리는 BC7/ASTC 지원 장치에서 약 1MiB(이전 2K WebP는 약 64MiB)다. Tripo가 별도 발광 맵을 제공하지 않아 주황색 균열은 base color로 표현된다.
   - Tripo API **유료 크레딧**, 모델 `P2-20260801`, 텍스처 `v3.5-20260815`, detailed PBR, `delight=true`, seed `102424`, 목표 4,000 triangles. **120크레딧**, 추가 유료 생성 없음. [Tripo 이용 조건](https://developers.tripo3d.ai/en/terms) 적용. 입력 원화의 출처·조건은 위 ImageGen 기록과 같다.
-  - 게임 등록(2026-10-24): `earth_shield`, 왼손 방패, 방어 **+3**, 무게 **8**, 기준가 **30,000**. 일반 거래 가능, 상자·직접 드롭 없음. 이졸데에게 파편 **30개**로 교환하고 CHA 흥정도 적용한다. 128² 투명 아이콘을 기존 Cycles 레시피로 렌더했다. `handProps.ts`에서 방패가 세워지고 돌판이 바깥을 향하도록 파지 회전을 맞췄다.
+  - 게임 등록(2026-10-24): `earth_shield`, 왼손 방패, 방어 **+3**, 무게 **5**, 기준가 **30,000**. 일반 거래 가능, 상자·직접 드롭 없음. 이졸데에게 파편 **30개**로 교환하고 CHA 흥정도 적용한다. 128² 투명 아이콘을 기존 Cycles 레시피로 렌더했다. `handProps.ts`에서 방패가 세워지고 돌판이 바깥을 향하도록 파지 회전을 맞췄다.
   - [Blender](../../assets/items/earth_shield/tripo_v1/earth_shield.blend) · [Tripo 원본 GLB](../../assets/items/earth_shield/tripo_v1/source/model_url.glb) · [정리한 4K GLB](../../assets/items/earth_shield/tripo_v1/earth_shield.glb) · [현재 런타임 GLB](../../client/public/models/armor/earth_shield.glb).
   - [생성 명세](../../assets/items/earth_shield/tripo_v1/build.json) · [요청·비용 기록](../../assets/items/earth_shield/tripo_v1/generation.json) · [정리 스크립트](../../assets/items/earth_shield/tripo_v1/prepare.py) · [최적화·게임 등록·검증 기록](../../assets/items/earth_shield/tripo_v1/integration.json). 중간 압축본·검수 렌더·임시 페이지는 사용자 요청으로 2026-10-25 정리했다. 현재 게임은 위 512² 런타임을 사용한다.
 

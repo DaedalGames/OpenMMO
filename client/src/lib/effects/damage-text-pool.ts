@@ -114,8 +114,10 @@ export class DamageTextEmitter {
     if (damage && damage.trigger !== this.lastDamageTrigger) {
       this.lastDamageTrigger = damage.trigger
       this.spawn(
-        damage.hit ? `${damage.damage}` : translate('combat.missLabel'),
-        damage.hit ? '#ff4d4d' : '#a0aec0',
+        damage.hit
+          ? `${damage.damage}${damage.critical ? '!' : ''}`
+          : translate('combat.missLabel'),
+        damage.hit ? (damage.critical ? '#ffbf47' : '#ff4d4d') : '#a0aec0',
         yOffset
       )
     }

@@ -379,10 +379,11 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             monster_id,
             hit,
             damage,
+            critical,
             dagger_strike,
             ..
         } => Some(format!(
-            "[Attack] {} -> {monster_id}: hit={hit} dmg={damage}{}",
+            "[Attack] {} -> {monster_id}: hit={hit} dmg={damage} critical={critical}{}",
             player_name(state, player_id),
             dagger_strike.map_or_else(String::new, |strike| format!(
                 " (Double Slash strike {strike})"

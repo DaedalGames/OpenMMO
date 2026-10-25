@@ -258,6 +258,7 @@ async fn double_slash_readiness_and_feedback_follow_server_events() {
         hit: true,
         roll: 18,
         damage: 5,
+        critical: false,
         ammo_item_def_id: None,
         dagger_strike: Some(1),
     };

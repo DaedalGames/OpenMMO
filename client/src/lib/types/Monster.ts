@@ -1,3 +1,5 @@
+import type { PlayerDamageInfo } from '../stores/gameStore'
+
 export interface MonsterData {
   id: string
   type: string
@@ -27,15 +29,9 @@ export interface MonsterData {
   isLastHitSuccess?: boolean // Whether the last attack was a hit
   isDeadPending?: boolean // Death packet received, waiting for impact/hit visuals
   droppedWeaponItemDefId?: string
-  lastDamageInfo?: {
-    damage: number
-    hit: boolean
-    trigger: number
-  }
+  lastDamageInfo?: PlayerDamageInfo
   pendingSwordHitSoundUrl?: string
-  // Damage number scheduled from the attack start. Captures damage/hit at
-  // schedule time so a follow-up attack cannot overwrite it.
-  pendingDamageText?: { delay: number; damage: number; hit: boolean }
+  pendingDamageText?: Omit<PlayerDamageInfo, 'trigger'> & { delay: number }
   health: number
   maxHealth: number
   /** Wire floor_level: 0 = overworld, 1..3 housing, negative = dungeon depth. */

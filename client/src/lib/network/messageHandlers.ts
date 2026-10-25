@@ -1393,7 +1393,13 @@ export function handleServerMessage(
           translate('chat.unknown')
 
       addCombatMessage({
-        text: attackLog(data.roll, data.hit, data.damage, data.dagger_strike),
+        text: attackLog(
+          data.roll,
+          data.hit,
+          data.damage,
+          data.dagger_strike,
+          data.critical
+        ),
         sender: isLocalAttacker ? 'local' : 'remote',
         name: attackerName,
         hit: data.hit,
@@ -1405,7 +1411,8 @@ export function handleServerMessage(
         data.hit,
         data.damage,
         data.ammo_item_def_id,
-        data.dagger_strike != null
+        data.dagger_strike != null,
+        data.critical
       )
       break
     }
@@ -2347,6 +2354,7 @@ export function handleServerMessage(
         cha: Number(data.cha),
         int: Number(data.int),
         maxHpBonus: Number(data.max_hp_bonus ?? 0),
+        criticalChancePercent: Number(data.critical_chance_percent),
       })
       break
 

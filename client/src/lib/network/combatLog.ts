@@ -4,10 +4,11 @@ export function attackLog(
   roll: number,
   hit: boolean,
   damage: number,
-  strike?: number | null
+  strike?: number | null,
+  critical = false
 ) {
   const result = hit
-    ? translate('combat.hit', { roll, damage })
+    ? translate(critical ? 'combat.critical' : 'combat.hit', { roll, damage })
     : translate('combat.miss', { roll })
   return strike == null
     ? result

@@ -14,6 +14,7 @@ async fn schedule_combat_survives_event_drains_and_expires_when_fighting_stops()
         hit: false,
         roll: 1,
         damage: 0,
+        critical: false,
         ammo_item_def_id: None,
         dagger_strike: None,
     };

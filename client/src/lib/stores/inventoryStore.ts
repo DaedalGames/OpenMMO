@@ -79,12 +79,14 @@ export function displacedByEquip(
 /** The local player's gold in the smallest currency unit (copper). */
 export const playerGold = writable(0)
 
-/** The local player's effective stats (base attribute + equipped-gear bonuses),
- *  computed server-side and pushed on join and after each equipment change.
- *  `null` until the first EffectiveStatsUpdated arrives. */
+/** Server-computed stats, updated on join and equipment changes. */
 export type EffectiveStatKey = 'guard' | 'cha' | 'int'
 export const playerEffectiveStats = writable<
-  (Pick<CharacterAttributes, EffectiveStatKey> & { maxHpBonus: number }) | null
+  | (Pick<CharacterAttributes, EffectiveStatKey> & {
+      maxHpBonus: number
+      criticalChancePercent: number
+    })
+  | null
 >(null)
 
 /** Item defs that act as a carried light source (mirrors shared TORCH_ITEM_IDS). */

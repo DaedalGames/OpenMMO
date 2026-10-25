@@ -225,7 +225,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// marked spots, and `MonsterSkillStruck` in place of a `MonsterAttackedPlayer`
 /// per skill victim.
 /// v128: raid tokens in `FieldRaidNotice`.
-pub const PROTOCOL_VERSION: u32 = 128;
+/// v129: player critical hits and effective critical strike chance.
+pub const PROTOCOL_VERSION: u32 = 129;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from
@@ -432,6 +433,7 @@ mod tests {
                 hit: true,
                 roll: 20,
                 damage: 17,
+                critical: true,
                 ammo_item_def_id: None,
                 dagger_strike: Some(1),
             },
@@ -781,8 +783,16 @@ mod tests {
                 hit: true,
                 roll: 18,
                 damage: 5,
+                critical: false,
                 ammo_item_def_id: None,
                 dagger_strike: None,
+            },
+            ServerMessage::EffectiveStatsUpdated {
+                guard: 13,
+                cha: 10,
+                int: 11,
+                max_hp_bonus: 0,
+                critical_chance_percent: 10,
             },
             ServerMessage::Kicked {
                 player_id: 1.into(),

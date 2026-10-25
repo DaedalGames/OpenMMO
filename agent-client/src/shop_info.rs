@@ -383,13 +383,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn ysolde_quotes_shards_and_only_offers_the_available_shield() {
+    fn ysolde_quotes_shards_for_both_raid_rewards() {
         let line = shop_line_for("Ysolde", 150).unwrap();
         assert!(line.contains("earth_shield 30 Terraclash Shard"));
+        assert!(line.contains("rift_ring 30 Terraclash Shard"));
         assert!(line.contains("does not buy items"));
         let prompt = merchant_prompt_for("Ysolde").unwrap();
         assert!(prompt.contains("Accept only terraclash_token"));
-        assert!(!prompt.contains("Rift Ring"));
+        assert!(prompt.contains("Rift Ring"));
         assert_eq!(format_shop_price("Ysolde", 23), "23 Terraclash Shard");
     }
 

@@ -24,12 +24,23 @@ pub enum ItemEffect {
     Light,
     /// Max HP bonus per character level (doc/TIER5_FIELD_RAID.md).
     MaxHpPerLevel(u32),
+    CriticalChance(u8),
     /// Slows satiation drain while equipped (doc/HUNGER.md).
     Sustenance,
 }
 
 impl ItemEffect {
     fn parse(token: &str) -> Option<Self> {
+        if let Some(amount) = token
+            .strip_prefix("crit+")
+            .and_then(|s| s.strip_suffix('%'))
+        {
+            return amount
+                .parse::<u8>()
+                .ok()
+                .filter(|n| *n <= 100)
+                .map(ItemEffect::CriticalChance);
+        }
         if let Some(amount) = token.strip_prefix("cha") {
             return amount.parse().ok().map(ItemEffect::Cha);
         }
@@ -740,6 +751,20 @@ mod tests {
         for tier in 1..=5 {
             assert!(!table_ids(&defs, tier).contains(&helm.id));
         }
+    }
+
+    #[test]
+    fn rift_ring_grants_critical_chance_and_is_exchange_only() {
+        let defs = ItemDefs::load();
+        let ring = defs.get("rift_ring").unwrap();
+        assert_eq!(ring.equip_slot, Some(EquipSlot::Ring));
+        assert_eq!(ring.effects(), &[ItemEffect::CriticalChance(5)]);
+        for tier in 1..=5 {
+            assert!(!table_ids(&defs, tier).contains(&ring.id));
+        }
+        assert_eq!(ItemEffect::parse("crit+101%"), None);
+        assert_eq!(ItemEffect::parse("crit+-5%"), None);
+        assert_eq!(ItemEffect::parse("crit+5"), None);
     }
 
     #[test]

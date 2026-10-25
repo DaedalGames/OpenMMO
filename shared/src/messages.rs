@@ -1329,6 +1329,7 @@ pub enum ServerMessage {
         hit: bool,
         roll: u8,
         damage: u32,
+        critical: bool,
         /// The round spent, for a weapon that spends one — the clients draw
         /// this arrow rather than guessing from the shooter's bag, which they
         /// cannot see for anyone but themselves.
@@ -1819,6 +1820,7 @@ pub enum ServerMessage {
         int: i32,
         /// Gear's share of max HP, already counted in `max_health`.
         max_hp_bonus: u32,
+        critical_chance_percent: u8,
     },
     /// Direct message: the receiving player gained loose currency from a
     /// pickup. `amount` is in the smallest unit (copper).
