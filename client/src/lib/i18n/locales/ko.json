@@ -288,6 +288,8 @@
   "combat.invalid_target": "대상을 찾을 수 없음",
   "loading.world": "세계를 준비하고 있습니다...",
   "loading.loading": "불러오는 중...",
+  "loading.failed": "화면을 불러오지 못했습니다.",
+  "loading.retry": "다시 시도",
   "hunger.normal": "배부름",
   "hunger.hungry": "배고픔",
   "hunger.weak": "허약",

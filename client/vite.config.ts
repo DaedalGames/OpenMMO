@@ -400,7 +400,28 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    build: { target: 'esnext' },
+    build: {
+      target: 'esnext',
+      rollupOptions: {
+        output: {
+          onlyExplicitManualChunks: true,
+          manualChunks(id) {
+            if (id.includes('/node_modules/three/build/three.core.js'))
+              return 'three-core'
+            if (id.includes('/node_modules/three/build/three.webgpu.js'))
+              return 'three-webgpu'
+            if (id.includes('/node_modules/three/build/three.module.js'))
+              return 'three-webgl'
+            if (id.includes('/node_modules/@threlte/')) return 'threlte'
+            if (
+              id.includes('/node_modules/svelte/') ||
+              id.includes('/node_modules/i18next/')
+            )
+              return 'vendor'
+          },
+        },
+      },
+    },
     optimizeDeps: { esbuildOptions: { target: 'esnext' } },
     test: { setupFiles: ['./src/test-setup.ts'] },
   }

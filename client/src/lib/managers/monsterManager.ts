@@ -32,7 +32,7 @@ import {
   passability_remove_monster_body,
   passability_set_monster_body,
 } from '../wasm/onlinerpg_shared'
-import { MONSTER_SKILLS } from '../effects/monster-skills'
+import { MONSTER_SKILL_DEFS } from '../data/monsterSkills'
 import {
   shortestWrappedDeltaX,
   unwrapWorldXNear,
@@ -441,7 +441,8 @@ class MonsterManager {
     halfAngle: number
   ) {
     const monster = this.monsters.get(monsterId)
-    if (!monster || monster.state === 'dead' || !MONSTER_SKILLS[skill]) return
+    if (!monster || monster.state === 'dead' || !MONSTER_SKILL_DEFS[skill])
+      return
     this.applyMonsterPose(monster, { rotation, state: 'attack' })
     monster.skill = {
       id: skill,
@@ -467,7 +468,7 @@ class MonsterManager {
     const skill = monster.skill
     if (!skill || monster.state === 'dead') return false
     const now = globalThis.performance?.now() ?? Date.now()
-    return now - skill.startedAt < MONSTER_SKILLS[skill.id].durationMs
+    return now - skill.startedAt < MONSTER_SKILL_DEFS[skill.id].durationMs
   }
 
   // Facing is the client's call: the server's rotation lags the target.

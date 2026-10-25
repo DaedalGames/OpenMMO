@@ -288,6 +288,8 @@
   "combat.invalid_target": "対象が見つからない",
   "loading.world": "ワールドを準備しています…",
   "loading.loading": "読み込み中…",
+  "loading.failed": "読み込めませんでした。",
+  "loading.retry": "再試行",
   "hunger.normal": "満腹",
   "hunger.hungry": "空腹",
   "hunger.weak": "衰弱",

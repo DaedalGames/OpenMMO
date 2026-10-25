@@ -288,6 +288,8 @@
   "combat.invalid_target": "target unavailable",
   "loading.world": "Preparing world...",
   "loading.loading": "Loading...",
+  "loading.failed": "Unable to load this content.",
+  "loading.retry": "Retry",
   "hunger.normal": "Normal",
   "hunger.hungry": "Hungry",
   "hunger.weak": "Weak",

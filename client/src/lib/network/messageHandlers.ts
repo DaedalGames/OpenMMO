@@ -19,7 +19,7 @@ import {
   cancelLocalTeleportRequest,
 } from '../stores/teleportEffectStore'
 import { playGroundEruption } from '../stores/groundEruptionStore'
-import { MONSTER_SKILLS } from '../effects/monster-skills'
+import { MONSTER_SKILL_DEFS } from '../data/monsterSkills'
 import {
   inspectionResult,
   type InspectionResult,
@@ -2874,7 +2874,7 @@ export function markMonsterSkillSpots(
   spots: Position[],
   radius: number
 ) {
-  const marks = MONSTER_SKILLS[skill]?.marks
+  const marks = MONSTER_SKILL_DEFS[skill]?.marks
   const monster = monsterManager.monsters.get(monsterId)
   if (!marks || !monster) return
   const startedAt = Date.now()

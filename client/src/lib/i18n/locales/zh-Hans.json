@@ -288,6 +288,8 @@
   "combat.invalid_target": "目标不可用",
   "loading.world": "正在准备世界……",
   "loading.loading": "正在加载……",
+  "loading.failed": "无法加载此内容。",
+  "loading.retry": "重试",
   "hunger.normal": "饱腹",
   "hunger.hungry": "饥饿",
   "hunger.weak": "虚弱",

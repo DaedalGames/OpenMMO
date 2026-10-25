@@ -5,7 +5,7 @@ import {
   floorYBase,
   getStairwellYOffset,
   type WallDirection,
-} from '../utils/house-geometry'
+} from '../utils/house-dimensions'
 import {
   ALL_WALL_DIRS,
   getWallByDir,

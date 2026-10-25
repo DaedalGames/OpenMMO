@@ -3,7 +3,7 @@ import { bridgeManager } from './bridgeManager'
 import { dungeonManager } from './dungeonManager'
 import { housingManager } from './housingManager'
 import type { TerrainHeightManager } from './terrainHeightManager'
-import { FLOOR_THICKNESS } from '../utils/house-geometry'
+import { FLOOR_THICKNESS } from '../utils/house-dimensions'
 
 export function localPlayerRenderY(
   floorLevel: number,

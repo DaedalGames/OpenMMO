@@ -5,8 +5,11 @@ import type {
   WallConfig,
   WallVariant,
 } from '../types/housing'
-import { floorYBase, type WallDirection } from '../utils/house-geometry'
-import { WALL_DIR_INFO } from '../utils/house-geo-utils'
+import {
+  floorYBase,
+  WALL_DIR_INFO,
+  type WallDirection,
+} from '../utils/house-dimensions'
 
 export function getWallByDir(room: RoomData, dir: WallDirection): WallConfig[] {
   switch (dir) {

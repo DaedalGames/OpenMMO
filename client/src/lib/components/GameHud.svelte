@@ -8,8 +8,7 @@
   import Minimap from './Minimap.svelte'
   import CelestialDebugDialog from './CelestialDebugDialog.svelte'
   import WeatherRadarDialog from './WeatherRadarDialog.svelte'
-  import MapEditorPanel from './map-editor/MapEditorPanel.svelte'
-  import HousingEditorPanel from './map-editor/HousingEditorPanel.svelte'
+  import LazyContent from './LazyContent.svelte'
   import CharacterPanel from './CharacterPanel.svelte'
   import InventoryPanel from './InventoryPanel.svelte'
   import InspectionPanel from './InspectionPanel.svelte'
@@ -207,10 +206,18 @@
   <CelestialDebugDialog />
   <WeatherRadarDialog />
   {#if $mapEditorMode}
-    <MapEditorPanel />
+    <LazyContent load={() => import('./map-editor/MapEditorPanel.svelte')}>
+      {#snippet children({ default: Panel })}
+        <Panel />
+      {/snippet}
+    </LazyContent>
   {/if}
   {#if $housingEditorMode}
-    <HousingEditorPanel />
+    <LazyContent load={() => import('./map-editor/HousingEditorPanel.svelte')}>
+      {#snippet children({ default: Panel })}
+        <Panel />
+      {/snippet}
+    </LazyContent>
   {/if}
   {#if selectedCharacter && !$mapEditorMode}
     <CharacterPanel

@@ -92,12 +92,8 @@
     takeArrowRequests,
   } from '../stores/arrowStore'
   import { instrumentPanelVisible } from '../stores/instrumentStore'
-  import MapEditorCursor from './map-editor/MapEditorCursor.svelte'
-  import ZoneOverlay from './map-editor/ZoneOverlay.svelte'
-  import RoadOverlay from './map-editor/RoadOverlay.svelte'
-  import NpcWaypointOverlay from './map-editor/NpcWaypointOverlay.svelte'
+  import LazyContent from './LazyContent.svelte'
   import ObjectOverlay from './map-editor/ObjectOverlay.svelte'
-  import HousingEditorCursor from './map-editor/HousingEditorCursor.svelte'
   import { type PlayerState } from '../utils/movementUtils'
   import {
     SUN_MAX_INTENSITY,
@@ -1659,18 +1655,19 @@
 </T>
 
 {#if $mapEditorMode}
-  <MapEditorCursor
-    {camera}
-    {terrainMeshes}
-    {terrainTiles}
-    heightManager={terrainHeightManager}
-    splatManager={terrainSplatManager}
-    grassDataManager={terrainGrassDataManager}
-    getObjectGroup={() => objectOverlayRef?.getGroup() ?? null}
-  />
-  <ZoneOverlay />
-  <RoadOverlay />
-  <NpcWaypointOverlay />
+  <LazyContent load={() => import('./map-editor/MapEditorTools.svelte')}>
+    {#snippet children({ default: Tools })}
+      <Tools
+        {camera}
+        {terrainMeshes}
+        {terrainTiles}
+        heightManager={terrainHeightManager}
+        splatManager={terrainSplatManager}
+        grassDataManager={terrainGrassDataManager}
+        getObjectGroup={() => objectOverlayRef?.getGroup() ?? null}
+      />
+    {/snippet}
+  </LazyContent>
 {/if}
 <ObjectOverlay bind:this={objectOverlayRef} />
 
@@ -1703,11 +1700,15 @@
 {/if}
 
 {#if $housingEditorMode}
-  <HousingEditorCursor
-    {camera}
-    {terrainMeshes}
-    heightManager={terrainHeightManager}
-    grassDataManager={terrainGrassDataManager}
-    housingGroup={housingLayerRef?.getGroup() ?? null}
-  />
+  <LazyContent load={() => import('./map-editor/HousingEditorCursor.svelte')}>
+    {#snippet children({ default: Cursor })}
+      <Cursor
+        {camera}
+        {terrainMeshes}
+        heightManager={terrainHeightManager}
+        grassDataManager={terrainGrassDataManager}
+        housingGroup={housingLayerRef?.getGroup() ?? null}
+      />
+    {/snippet}
+  </LazyContent>
 {/if}

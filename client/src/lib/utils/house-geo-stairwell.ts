@@ -195,36 +195,4 @@ export function collectStairwellGeometries(
   }
 }
 
-/**
- * Calculate the Y offset for a player standing on a stairwell.
- * Returns the height above ground based on position along the stair.
- * wx/wz are world coordinates, house is the containing house.
- */
-export function getStairwellYOffset(
-  room: RoomData,
-  houseOriginX: number,
-  houseOriginZ: number,
-  wx: number,
-  wz: number
-): number {
-  const { localX, localZ, sizeX, sizeZ, wallHeight, floorLevel } = room
-  const alongZ = sizeZ >= sizeX
-  const stairLen = alongZ ? sizeZ : sizeX
-  const totalRise = wallHeight + FLOOR_THICKNESS
-  const baseY = floorYBase(floorLevel, wallHeight)
-  const reversed = room.stairReversed ?? false
-
-  const roomStartX = houseOriginX + localX
-  const roomStartZ = houseOriginZ + localZ
-  let posAlongStair = alongZ ? wz - roomStartZ : wx - roomStartX
-  if (reversed) posAlongStair = stairLen - posAlongStair
-
-  const t = Math.max(0, Math.min(stairLen, posAlongStair))
-
-  if (t <= LANDING_DEPTH) return baseY + FLOOR_THICKNESS / 2
-  if (t >= stairLen - LANDING_DEPTH)
-    return baseY + totalRise + FLOOR_THICKNESS / 2
-
-  const stairT = (t - LANDING_DEPTH) / (stairLen - LANDING_DEPTH * 2)
-  return baseY + stairT * totalRise + FLOOR_THICKNESS / 2
-}
+export { getStairwellYOffset } from './house-dimensions'

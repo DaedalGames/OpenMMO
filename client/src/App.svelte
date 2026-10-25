@@ -1,21 +1,14 @@
 <script lang="ts">
   import { t } from './lib/i18n'
   import { onMount } from 'svelte'
-  import { Canvas } from '@threlte/core'
-  import { PCFShadowMap } from 'three'
-  import GameScene from './lib/components/GameScene.svelte'
-  import GameHud from './lib/components/GameHud.svelte'
+  import type SceneCanvasComponent from './lib/components/SceneCanvas.svelte'
   import LoginScreen from './lib/components/LoginScreen.svelte'
   import CharacterSelectScreen from './lib/components/CharacterSelectScreen.svelte'
-  import CharacterSelectScene from './lib/components/CharacterSelectScene.svelte'
   import type { CharacterSlotLayout } from './lib/utils/characterSelectLayout'
   import CharacterCreateScreen from './lib/components/CharacterCreateScreen.svelte'
-  import CharacterCreateScene from './lib/components/CharacterCreateScene.svelte'
   import RenameCharacterDialog from './lib/components/RenameCharacterDialog.svelte'
-  import RenderFrameLimiter from './lib/components/RenderFrameLimiter.svelte'
   import { gameStore } from './lib/stores/gameStore'
   import { localStr } from './lib/stores/inventoryStore'
-  import { createWebGPURenderer } from './lib/utils/renderer'
   import {
     networkManager,
     type AccountCharacter,
@@ -34,6 +27,8 @@
   import { instrumentPanelVisible } from './lib/stores/instrumentStore'
 
   let showSettings = $state(false)
+  let SceneCanvas = $state<typeof SceneCanvasComponent>()
+  let gameScreen = $state<typeof import('./lib/components/game-screen')>()
 
   type AppScreen = 'login' | 'character-select' | 'character-create' | 'game'
   type DeathUiState =
@@ -66,16 +61,13 @@
     isPlayerDead && deathUiState === 'dialog_closed'
   )
   let wasPlayerDead = false
-  // Whether we've seen the current player alive this game session. Used to
-  // tell a live death (alive→dead, play the dying animation first) apart from
-  // reconnecting/reloading while already dead (show the dialog at once).
+  // Reconnected dead characters skip the dying animation.
   let hasObservedCurrentPlayerAlive = false
   let isCurrentPlayerLoading = $state(false)
   let isSceneCompiling = $state(true)
   let kickedMessage = $state('')
 
-  // Owned here, not by the select screen: entry starts both from its Start
-  // button and from a slot double-click on the Canvas.
+  // Start buttons and Canvas double-clicks share the rename dialog.
   let renameCharacterId = $state<number | null>(null)
 
   // Character create screen state
@@ -87,21 +79,13 @@
   })
   let createFacePreview = $state(false)
 
-  // First launch on this browser: measure the GPU while the login screen is
-  // up and pick a preset from it. A stored choice, however it got there,
-  // always wins, so this runs at most once.
+  // Benchmark once; preserve an existing graphics preference.
   let gpuProbePending = $state(needsAutoQuality())
 
-  // Whether the shared Canvas should be mounted (all screens except login).
-  // Also held back until the probe settles: `antialias` is baked in at
-  // `new WebGPURenderer()`, so a result arriving after mount could not be
-  // applied and would raise "restart required" on a first launch. The probe
-  // caps itself at 3s and normally finishes long before login completes.
+  // Antialiasing must be chosen before creating the shared renderer.
   let showCanvas = $derived(screen !== 'login' && !gpuProbePending)
 
-  // Bound here so it works on the login and character screens too, ahead of
-  // Edge's own Ctrl+M tab mute. `code` keeps it working under the Korean IME;
-  // Shift is excluded so the browser keeps Ctrl+Shift+M (profile menu).
+  // Handle Ctrl+M before browser tab mute, including under the Korean IME.
   function handleKeydown(event: KeyboardEvent) {
     if ($instrumentPanelVisible) return
     if (event.ctrlKey && !event.shiftKey && event.code === 'KeyM') {
@@ -151,6 +135,13 @@
     googleIdToken: string
   ): Promise<{ ok: boolean; message?: string }> {
     kickedMessage = ''
+    try {
+      SceneCanvas ??= (await import('./lib/components/SceneCanvas.svelte'))
+        .default
+    } catch (error) {
+      console.error('Unable to load character screen', error)
+      return { ok: false, message: $t('loading.failed') }
+    }
     const result = await networkManager.requestAuthentication(
       url,
       googleIdToken
@@ -234,10 +225,18 @@
   async function handleStartGame(
     characterId: number
   ): Promise<{ ok: boolean; message?: string; renameRequired?: boolean }> {
+    const startingAccount = accountName
+    try {
+      gameScreen ??= await import('./lib/components/game-screen')
+    } catch (error) {
+      console.error('Unable to load game screen', error)
+      return { ok: false, message: $t('loading.failed') }
+    }
+    if (screen !== 'character-select' || accountName !== startingAccount)
+      return { ok: false, message: $t('characterSelect.enterFailed') }
     const result = await networkManager.requestEnterGame(characterId)
     if (result.ok) {
-      // Fresh death tracking for the new session so an already-dead character
-      // (entered while dead) opens the respawn dialog immediately.
+      // Reset death tracking for each game session.
       deathUiState = 'alive'
       isPlayerDead = false
       wasPlayerDead = false
@@ -344,18 +343,13 @@
     currentPlayerTotalXp = state.currentPlayer?.totalXp ?? null
   })
 
-  // Drive the death UI from a reactive effect (not the store subscription) so
-  // it re-evaluates when `screen` flips to 'game' as well: on a reload while
-  // dead, JoinSuccess sets health=0 before the screen switches, and there may
-  // be no later store update for a subscription to react to.
+  // Re-evaluate on screen changes; JoinSuccess may have already set health.
   $effect(() => {
     const hp = currentPlayerHp
     const inGame = screen === 'game'
     const deadNow = inGame && hp !== null && hp <= 0
     if (deadNow && !wasPlayerDead) {
-      // First sighting already dead (reconnected/reloaded while dead): open the
-      // respawn dialog right away. A live alive→dead transition still plays the
-      // dying animation before the dialog opens.
+      // Only a live-to-dead transition plays the dying animation.
       deathUiState = hasObservedCurrentPlayerAlive
         ? 'waiting_dying'
         : 'dialog_open'
@@ -376,58 +370,44 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <main onclick={startBgm}>
-  <!-- Shared Canvas: one WebGPU device across character select, create, and game.
-       Pipelines compiled during character select are reused in game. -->
-  {#if showCanvas}
+  <!-- Keep one renderer across character screens and the game. -->
+  {#if showCanvas && SceneCanvas}
     <div class="canvas-layer" class:dead={screen === 'game' && isPlayerDead}>
-      <!-- "manual", not "on-demand": the character scenes' useTask callbacks
-           auto-invalidate every frame, which would defeat the render cap. -->
-      <Canvas
-        renderMode="manual"
-        shadows={PCFShadowMap}
-        createRenderer={createWebGPURenderer}
-      >
-        <!-- Manual mode draws nothing until something invalidates. GameScene
-             does that from its simulation step; every other screen needs this. -->
-        {#if screen !== 'game'}
-          <RenderFrameLimiter />
-        {/if}
-        {#if screen === 'character-select'}
-          <CharacterSelectScene
-            characters={accountCharacters}
-            {selectedCharacterId}
-            onSlotClick={handleCharacterSlotClick}
-            onSlotLayout={(layout) => (characterSlotLayout = layout)}
-            onSlotDoubleClick={(i) => {
-              const c = accountCharacters[i]
-              if (c) {
-                handleSelectCharacter(c.id)
-                handleStartGame(c.id)
-              }
-            }}
-          />
-        {:else if screen === 'character-create'}
-          <CharacterCreateScene
-            characterClass={createSelectedClass}
-            gender={createSelectedGender}
-            appearance={createAppearance}
-            facePreview={createFacePreview}
-          />
-        {:else if screen === 'game'}
-          <GameScene
-            {serverUrl}
-            onCurrentPlayerDyingFinished={handleCurrentPlayerDyingFinished}
-            bind:isCurrentPlayerLoading
-            bind:isSceneCompiling
-          />
-        {/if}
-      </Canvas>
+      <SceneCanvas
+        {screen}
+        selection={{
+          characters: accountCharacters,
+          selectedCharacterId,
+          onSlotClick: handleCharacterSlotClick,
+          onSlotLayout: (layout) => (characterSlotLayout = layout),
+          onSlotDoubleClick: (i) => {
+            const c = accountCharacters[i]
+            if (c) {
+              handleSelectCharacter(c.id)
+              void handleStartGame(c.id)
+            }
+          },
+        }}
+        creation={{
+          characterClass: createSelectedClass,
+          gender: createSelectedGender,
+          appearance: createAppearance,
+          facePreview: createFacePreview,
+        }}
+        game={{
+          serverUrl,
+          onCurrentPlayerDyingFinished: handleCurrentPlayerDyingFinished,
+        }}
+        GameScene={gameScreen?.GameScene}
+        bind:isCurrentPlayerLoading
+        bind:isSceneCompiling
+      />
     </div>
   {/if}
 
   <!-- UI overlays (outside Canvas) -->
-  {#if screen === 'game'}
-    <GameHud
+  {#if screen === 'game' && gameScreen}
+    <gameScreen.GameHud
       {selectedCharacter}
       {currentPlayerLevel}
       {currentPlayerTotalXp}

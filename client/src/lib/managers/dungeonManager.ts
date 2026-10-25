@@ -36,7 +36,7 @@ import {
 import { DUNGEON_ENTRANCES, type DungeonEntranceDef } from '../data/dungeonDefs'
 import { shortestWrappedDeltaX } from '../terrain/world-wrap'
 import type { DungeonWall } from '../utils/dungeon-geo-constants'
-import { shaftRect } from '../utils/dungeon-geo-shaft'
+import { shaftRect } from '../utils/dungeon-shaft'
 
 export interface DungeonRoom {
   x: number

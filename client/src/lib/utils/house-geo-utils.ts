@@ -1,17 +1,20 @@
-/**
- * house-geo-utils.ts — Shared constants, types, and geometry helpers for house building.
- */
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 import type { RoomData } from '../types/housing'
 import { getHousingMaterial, HOUSING_TEXTURES } from './housing-textures'
+import { floorYBase, type WallDirection } from './house-dimensions'
+export {
+  FLOOR_THICKNESS,
+  LANDING_DEPTH,
+  floorYBase,
+  WALL_DIR_INFO,
+  type WallDirection,
+  type WallDirInfo,
+} from './house-dimensions'
 
 export const WALL_THICKNESS = 0.1
-export const FLOOR_THICKNESS = 0.1
 export const DEFAULT_WALL_HEIGHT = 3
-export const LANDING_DEPTH = 0.5
-// Keep in sync with shared housing::MAX_FLOOR_LEVEL (the dungeon base derives
-// from the Rust value; only this housing-UI copy needs manual bumping).
+// Match shared housing::MAX_FLOOR_LEVEL.
 export const MAX_FLOOR_LEVEL = 3
 export const ROOF_OVERHANG = 0.3
 // Keep in sync with shared housing::FLOOR_OVERHANG_PER_LEVEL.
@@ -39,27 +42,6 @@ export function floorOverhang(floorLevel: number): number {
 
 /** Y offset used to hide front walls instead of toggling visible (WebGPU workaround) */
 export const OFFSCREEN_Y = -10000
-
-export type WallDirection = 'north' | 'south' | 'east' | 'west'
-
-/** Compute the Y base for a given floor level, accounting for floor thickness. */
-export function floorYBase(floorLevel: number, wallHeight: number): number {
-  return floorLevel * (wallHeight + FLOOR_THICKNESS)
-}
-
-// Wall direction descriptors
-export interface WallDirInfo {
-  isNS: boolean
-  isFront: boolean
-  opposite: WallDirection
-}
-
-export const WALL_DIR_INFO: Record<WallDirection, WallDirInfo> = {
-  north: { isNS: true, isFront: false, opposite: 'south' },
-  south: { isNS: true, isFront: true, opposite: 'north' },
-  east: { isNS: false, isFront: false, opposite: 'west' },
-  west: { isNS: false, isFront: true, opposite: 'east' },
-}
 
 export interface DoorMeshInfo {
   /** Hinge pivot group (rotate .rotation.y to open/close) */

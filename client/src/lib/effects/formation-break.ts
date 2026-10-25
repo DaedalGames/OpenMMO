@@ -20,6 +20,7 @@ import {
   vec3,
 } from 'three/tsl'
 import { createRng } from '../utils/simplex-noise'
+import { FORMATION_BREAK_STRIKE_MS } from '../data/monsterSkills'
 import {
   ZERO_SCALE,
   dustMaterial,
@@ -44,11 +45,6 @@ import type { BodyFootprint } from './earth-roar'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type N = any
 
-/** `FORMATION_BREAK.strike_ms` and `cast_ms` on the server. */
-export const FORMATION_BREAK_STRIKE_MS = 2800
-export const FORMATION_BREAK_CAST_MS = 4400
-/** `Pools::ticks * tick_ms`: how long the magma burns after the strike. */
-export const FORMATION_BREAK_POOL_MS = 10_000
 /** The shock front crosses the fan in this long. */
 const WAVE_MS = 450
 const COOL_MS = 2600

@@ -1,22 +1,8 @@
 import * as THREE from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import { EnchantWeaponGrip } from './enchantAnimation'
-
-export const BARKAN_RUNE_SLASH = {
-  windup: 1.6,
-  slashEntry: 0.3,
-  transitionEnd: 2.15,
-  swingEase: 0.16,
-  strikeStart: 2.25,
-  strikeEnd: 2.78,
-  // The blade's low sideways pass (doc/assets/barkan-rune-slash-bake.json);
-  // the server's RUNE_SLASH strike_ms lands at sweepStart.
-  sweepStart: 2.55,
-  sweepEnd: 2.73,
-  sweepBearings: [-81, 89],
-  recoveryEnd: 3.9,
-  duration: 4.2,
-} as const
+import { BARKAN_RUNE_SLASH } from '../data/monsterSkills'
+export { BARKAN_RUNE_SLASH } from '../data/monsterSkills'
 
 export function createBarkanRuneSlash(
   source: THREE.Object3D,

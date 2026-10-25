@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { createRng } from '../utils/simplex-noise'
+import { EARTHQUAKE_STRIKE_MS } from '../data/monsterSkills'
 import {
   dustMaterial,
   instancedMesh,
@@ -14,9 +15,6 @@ import {
 } from './dormant-wake'
 import type { BodyFootprint } from './earth-roar'
 
-/** `EARTHQUAKE.strike_ms` and `cast_ms` on the server. */
-export const EARTHQUAKE_STRIKE_MS = 3500
-export const EARTHQUAKE_CAST_MS = 5000
 /** The warning pound in the `Quake` clip. */
 const FIRST_POUND_MS = 1150
 const END_MS = EARTHQUAKE_STRIKE_MS + 2600

@@ -1,24 +1,13 @@
 import * as THREE from 'three'
-import { BARKAN_RUNE_SLASH } from '../utils/barkanRuneSlash'
+import {
+  MONSTER_SKILL_DEFS,
+  type MonsterSkillDefinition,
+} from '../data/monsterSkills'
 import { createBarkanRuneSlashEffect } from './barkan-rune-slash'
 import { BarkanFireFan } from './barkan-fire-fan'
-import {
-  EarthRoarEffect,
-  parseFootprint,
-  EARTH_ROAR_CAST_MS,
-  EARTH_ROAR_STRIKE_MS,
-} from './earth-roar'
-import {
-  FormationBreakEffect,
-  FORMATION_BREAK_CAST_MS,
-  FORMATION_BREAK_POOL_MS,
-  FORMATION_BREAK_STRIKE_MS,
-} from './formation-break'
-import {
-  EarthquakeEffect,
-  EARTHQUAKE_CAST_MS,
-  EARTHQUAKE_STRIKE_MS,
-} from './earthquake'
+import { EarthRoarEffect, parseFootprint } from './earth-roar'
+import { FormationBreakEffect } from './formation-break'
+import { EarthquakeEffect } from './earthquake'
 import { preloadMonsterSound } from '../managers/sfxManager'
 
 export interface MonsterSkillCast {
@@ -40,20 +29,12 @@ export interface MonsterSkillEffects {
   dispose(): void
 }
 
-// Seconds after a cast before its effects stop updating; covers the last
-// flames' lifetime.
+// Let the last flames expire after a cast.
 const SETTLE_SECONDS = 1
 /** Telegraphed monster skills by the server's `MonsterSkillId`. */
 export const MONSTER_SKILLS: Record<
   string,
-  {
-    clip: string
-    durationMs: number
-    /** Played once per cast as the clip passes `atMs`. */
-    sound?: { url: string; atMs: number }
-    /** The cast's marked spots split open at `impactMs` with `sound`, then
-     *  stay molten `lingerMs` longer. */
-    marks?: { impactMs: number; lingerMs?: number; sound?: string }
+  MonsterSkillDefinition & {
     createEffects(
       scene: THREE.Object3D,
       model: THREE.Object3D,
@@ -66,8 +47,7 @@ export const MONSTER_SKILLS: Record<
   }
 > = {
   rune_slash: {
-    clip: 'RuneSlash',
-    durationMs: BARKAN_RUNE_SLASH.duration * 1000,
+    ...MONSTER_SKILL_DEFS.rune_slash,
     createEffects(scene, model, weapon, clip, cast) {
       const blade = createBarkanRuneSlashEffect(model, weapon!, clip, {
         light: false,
@@ -96,13 +76,7 @@ export const MONSTER_SKILLS: Record<
     },
   },
   earth_roar: {
-    clip: 'Roar',
-    durationMs: EARTH_ROAR_CAST_MS,
-    // The roar takes 0.3s to reach full voice.
-    sound: {
-      url: '/sounds/terraclash-roar.ogg',
-      atMs: EARTH_ROAR_STRIKE_MS - 300,
-    },
+    ...MONSTER_SKILL_DEFS.earth_roar,
     createEffects(scene, _model, _weapon, _clip, cast, footprint) {
       const roar = new EarthRoarEffect(cast.range, parseFootprint(footprint))
       scene.add(roar.group)
@@ -120,16 +94,7 @@ export const MONSTER_SKILLS: Record<
     },
   },
   formation_break: {
-    clip: 'Smash',
-    durationMs: FORMATION_BREAK_CAST_MS,
-    sound: {
-      url: '/sounds/terraclash-smash.ogg',
-      atMs: FORMATION_BREAK_STRIKE_MS,
-    },
-    marks: {
-      impactMs: FORMATION_BREAK_STRIKE_MS,
-      lingerMs: FORMATION_BREAK_POOL_MS,
-    },
+    ...MONSTER_SKILL_DEFS.formation_break,
     createEffects(scene, _model, _weapon, _clip, cast, footprint) {
       const smash = new FormationBreakEffect(
         cast.range,
@@ -151,17 +116,7 @@ export const MONSTER_SKILLS: Record<
     },
   },
   earthquake: {
-    clip: 'Quake',
-    durationMs: EARTHQUAKE_CAST_MS,
-    // The swell runs 3.03s and peaks as it ends.
-    sound: {
-      url: '/sounds/terraclash-quake.ogg',
-      atMs: EARTHQUAKE_STRIKE_MS - 3030,
-    },
-    marks: {
-      impactMs: EARTHQUAKE_STRIKE_MS,
-      sound: '/sounds/terraclash-eruption.ogg',
-    },
+    ...MONSTER_SKILL_DEFS.earthquake,
     createEffects(scene, _model, _weapon, _clip, _cast, footprint) {
       const quake = new EarthquakeEffect(parseFootprint(footprint))
       scene.add(quake.group)
