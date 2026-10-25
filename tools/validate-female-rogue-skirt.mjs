@@ -1,16 +1,25 @@
 import assert from 'node:assert/strict'
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
 import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
 
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
-const directory = 'assets/items/female_rogue_skirt/tripo_v1/fitted_v4'
+const directory = 'assets/items/female_rogue_skirt/tripo_v1/fitted_v5'
+const sourcePath = 'assets/items/female_rogue_skirt/tripo_v1/fitted_v4/bottom_female_rogue.glb'
 const skirtPath = `${directory}/bottom_female_rogue.glb`
 const { server, load } = await headlessThree()
 try {
   const { bindModularPart } = await server.ssrLoadModule('/src/lib/utils/modularCharacter.ts')
+  const { updateModularPoseCorrectives } = await server.ssrLoadModule('/src/lib/utils/modularPoseCorrectives.ts')
   const { scene: body, animations } = await load(basePath)
+  for (const data of JSON.parse(readFileSync('assets/modular_human_female_01/preview/animations.json')).clips) {
+    const clip = THREE.AnimationClip.parse(data)
+    const index = animations.findIndex(entry => entry.name === clip.name)
+    if (index < 0) animations.push(clip)
+    else animations[index] = clip
+  }
   const [skirt, ...extra] = bindModularPart(body, (await load(skirtPath)).scene)
+  const [accepted] = bindModularPart(body, (await load(sourcePath)).scene)
   assert.equal(extra.length, 0)
   let reference
   body.traverse(object => { if (object.isSkinnedMesh && !reference) reference = object })
@@ -50,10 +59,18 @@ try {
     }
   const samples = clipSampler(body, { samples: 33, restore: bones })
   const snapshots = [], clips = []
+  let otherMotionMaximumDifference = 0
   for (const clip of animations) {
+    updateModularPoseCorrectives(body, clip.name)
+    assert.equal(skirt.morphTargetInfluences[skirt.morphTargetDictionary.pose_sit_idle], clip.name === 'sit_idle' ? 1 : 0)
     let maximumMotion = 0, maximumEdgeRatio = 0, worstEdge
     for (const { sample, time } of samples(clip)) {
       const posed = rest.map((_, i) => skirt.getVertexPosition(i, new THREE.Vector3()))
+      if (clip.name !== 'sit_idle') {
+        for (let i = 0; i < posed.length; i++)
+          otherMotionMaximumDifference = Math.max(otherMotionMaximumDifference,
+            posed[i].distanceTo(accepted.getVertexPosition(i, new THREE.Vector3())))
+      }
       posed.forEach((p, i) => {
         assert.ok(p.toArray().every(Number.isFinite))
         maximumMotion = Math.max(maximumMotion, p.distanceTo(rest[i]))
@@ -72,10 +89,13 @@ try {
     clips.push({ name: clip.name, samples: 33, maximum_motion_m: maximumMotion, maximum_edge_ratio: maximumEdgeRatio, worst_edge: worstEdge })
   }
   writeFileSync(`${directory}/animation-samples.json`, JSON.stringify(snapshots))
-  const report = { date: '2026-10-25', base_sha256: hash(basePath), skirt_sha256: hash(skirtPath),
+  assert.equal(otherMotionMaximumDifference, 0)
+  const report = { date: '2026-10-26', base_sha256: hash(basePath), skirt_sha256: hash(skirtPath),
     triangles: indices.count / 3, vertices: position.count, bones: bones.length,
     exact_runtime_bind: true, normalized_weights: true, finite_deformation: true, allowed_pelvis_spine_thigh_influences: true,
-    clips, scope: 'Actual bindModularPart runtime binding and all nine base clips. Mesh clearance and visual review recorded separately.' }
+    seated_corrective_only: true, other_motion_maximum_difference_m: otherMotionMaximumDifference,
+    source_sha256: hash(sourcePath),
+    clips, scope: 'Actual preview clips and modular binding. Sitting enables the corrective; every other clip matches the accepted v4 vertices exactly. Clearance and visual review recorded separately.' }
   writeFileSync(`${directory}/animation-validation.json`, JSON.stringify(report, null, 2) + '\n')
   console.log(JSON.stringify(report, null, 2))
   assert.ok(clips.every(c => c.maximum_edge_ratio < 5), 'Excessive edge stretching; see worst_edge in report')

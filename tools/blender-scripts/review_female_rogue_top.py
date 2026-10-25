@@ -16,7 +16,7 @@ from lib.glb import read_glb
 from lib.glb_accessors import accessor
 from outfits.skinning import deform
 
-DIRECTORY = ROOT / 'assets/items/female_rogue_top/tripo_v1/fitted_v4'
+DIRECTORY = ROOT / 'assets/items/female_rogue_top/tripo_v1/fitted_v5'
 BODY = ROOT / 'assets/modular_human_female_01/rig_v1/female-base.glb'
 TOP = DIRECTORY / 'top_female_rogue.glb'
 
@@ -31,6 +31,8 @@ def load_mesh(path):
 
 base, bp, bf, bj, bw = load_mesh(BODY)
 doc, tp, tf, tj, tw = load_mesh(TOP)
+_, top_raw = read_glb(TOP)
+seated = accessor(doc, top_raw, doc['meshes'][0]['primitives'][0]['targets'][0]['POSITION'])
 _, inverse = np.unique(np.round(bp, 6), axis=0, return_inverse=True)
 inverse = inverse.ravel()
 parent = np.arange(inverse.max() + 1)
@@ -83,7 +85,7 @@ report = {}
 for sample in [{'clip': 'rest', 'sample': 0, 'phase': 0, 'matrices': np.tile(np.eye(4).T.ravel(), (65, 1)).tolist()}, *samples]:
     matrices = np.array(sample['matrices']).reshape(-1, 4, 4).transpose(0, 2, 1)
     body_points = deform(bp, bj, bw, matrices)
-    top_points = deform(tp, tj, tw, matrices)
+    top_points = deform(tp+seated if sample['clip'] == 'sit_idle' else tp, tj, tw, matrices)
     surface = BVHTree.FromPolygons([Vector(p) for p in body_points], skin_faces.tolist())
     metrics = []
     skin_hidden = hidden[(labels[bf] == main).all(1)]
@@ -178,6 +180,9 @@ def render(name, offset, center, scale):
 for name, offset in [('front', (0, -3, 0)), ('side', (3, 0, 0)), ('back', (0, 3, 0)), ('angle', (2, -3, .2))]:
     render(name, offset, (0, 0, 1.31), 1.05)
 conversion = Matrix(((1, 0, 0, 0), (0, 0, -1, 0), (0, 1, 0, 0), (0, 0, 0, 1)))
+corrective = top.data.shape_keys.key_blocks['pose_sit_idle']
+corrective.value = 0
+corrective.keyframe_insert(data_path='value', frame=1)
 canonical = [base['nodes'][j]['name'] for j in base['skins'][0]['joints']]
 ordered = sorted(rig.pose.bones, key=lambda b: len(b.parent_recursive))
 for bone in ordered:
@@ -189,6 +194,8 @@ for index, name in enumerate(dict.fromkeys(s['clip'] for s in samples), 1):
     phase = report[name]['phase']
     snapshot = min((s for s in samples if s['clip'] == name), key=lambda s: abs(s['phase'] - phase))
     scene.frame_set(index * 10)
+    corrective.value = 1 if name == 'sit_idle' else 0
+    corrective.keyframe_insert(data_path='value', frame=index * 10)
     matrices = dict(zip(canonical, snapshot['matrices']))
     for bone in ordered:
         deformation = Matrix(np.array(matrices[bone.name]).reshape(4, 4).T.tolist())
@@ -203,14 +210,15 @@ for index, name in enumerate(dict.fromkeys(s['clip'] for s in samples), 1):
         render(name + '_back', (-1.5, 3, .5), center, 1.35)
 scene.frame_set(1)
 scene.frame_end = index * 10
-for layer in rig.animation_data.action.layers:
-    for strip in layer.strips:
-        for slot in rig.animation_data.action.slots:
-            channels = strip.channelbag(slot)
-            if channels:
-                for curve in channels.fcurves:
-                    for key in curve.keyframe_points:
-                        key.interpolation = 'CONSTANT'
+for action in [rig.animation_data.action, top.data.shape_keys.animation_data.action]:
+    for layer in action.layers:
+        for strip in layer.strips:
+            for slot in action.slots:
+                channels = strip.channelbag(slot)
+                if channels:
+                    for curve in channels.fcurves:
+                        for key in curve.keyframe_points:
+                            key.interpolation = 'CONSTANT'
 rig.animation_data.action.name = 'Rogue fitting - sampled game poses'
 references = bpy.data.collections.new('Original Tripo source - hidden')
 scene.collection.children.link(references)

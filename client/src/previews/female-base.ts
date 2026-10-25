@@ -8,6 +8,7 @@ import { femaleTorchMotions, mirroredSwordGrip } from './female-torch'
 import { FEMALE_HAND_FITS, poseOffHandProp } from '../lib/utils/handProps'
 import { MODULAR_FEMALE_MODEL_PATH } from '../lib/utils/modelPaths'
 import { bindModularPart } from '../lib/utils/modularCharacter'
+import { updateModularPoseCorrectives } from '../lib/utils/modularPoseCorrectives'
 import { femaleOutfitMask } from '../lib/utils/female-outfit-mask'
 import { femaleBootGround } from '../lib/utils/female-boot-ground'
 import {
@@ -289,6 +290,7 @@ export async function showFemaleBase(
   const updateAnimation = (delta: number) => {
     bootGround?.restore()
     mixer.update(delta)
+    updateModularPoseCorrectives(model, motion.value)
     if (shield.visible && motion.value !== 'rest') {
       for (const { bone, rotation } of shieldGrip)
         bone.quaternion.copy(rotation)
@@ -586,6 +588,7 @@ export async function showFemaleBase(
             outfitMask.setEquipped('glove-sleeves', knightGlovesEquipped)
         }
         show(requested)
+        updateModularPoseCorrectives(model, motion.value)
         updateGround()
         updateStats()
         updateStatus()

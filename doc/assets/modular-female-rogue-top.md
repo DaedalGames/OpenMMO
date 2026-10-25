@@ -130,13 +130,51 @@ blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_rogue_top
 - 치마 v4와 함께 현재 프리뷰에 연결했다. 상의 3,751 triangles, 숨김 포함 조합 28,636 triangles,
   가림 적용 후 24,198 triangles다. 기존 머리·얼굴 배분과 큰 동작의 추가 관통 보정 범위는 유지한다.
 
-[현재 GLB](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/top_female_rogue.glb),
-[현재 Blender](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/female-rogue-top.blend),
+[v4 GLB](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/top_female_rogue.glb),
+[v4 Blender](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/female-rogue-top.blend),
 [피팅·검사 통합 기록](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/fitting.json),
 [가림 정보](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/body-occlusion.json),
 [옆면 확대](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/review/detail-side.png).
 
 ![단추 앞섶 폭 복원](../../assets/items/female_rogue_top/tripo_v1/fitted_v4/review/detail-front.png)
+
+## 앉기 전용 하단 보정 v5 — 2026-10-26
+
+- 사용자가 앉을 때 배에 묻히는 상의 하단을 해당 동작에서만 고치도록 요청했다.
+  승인된 v4의 기본 정점·UV·텍스처·스킨 가중치·스켈레톤을 그대로 두고,
+  기본 가중치가 0인 `pose_sit_idle` 모프를 추가했다. 하단 코르셋 426개 정점의 최대 보정량은 약 29.6mm다.
+  가슴 끈과 소매는 보정 대상에서 제외하고, 앞섶의 가로 좌표는 고정했다.
+- 프리뷰의 `sit_idle`에서만 모프 가중치 1을 적용하고, 다른 동작으로 바꾸면 즉시 0으로 복원한다.
+  일시정지 상태에서 상의를 불러오거나 다시 입는 경우에도 적용한다.
+  하단 금속 고리는 원형을 유지한 채 보정된 천을 따라 움직이도록 맞췄다.
+- 실제 프리뷰 앉기 9개 시점으로 피팅하고 61개 시점에서 검사했다.
+  하단 정점·면 중심의 몸통 피부 간격은 최소 약 -14.9mm에서 +5.6mm로 개선됐으며,
+  1mm 초과 관통 샘플은 0개다. 검사는 하단 코르셋과 몸통 피부를 대상으로 하며,
+  팔의 자기 중첩과 상단 가슴 끈은 포함하지 않는다.
+- 실제 프리뷰의 14개 동작을 각각 33시점에서 런타임 연결·변형 검사했다.
+  앉기를 제외한 13개 동작은 v4와 정점 위치 차이가 정확히 0m다.
+  기본 GLB 버퍼·스켈레톤·재질과 기존 몸체 가림 인덱스도 보존했다.
+- 브라우저 앉기 5시점의 정면·사선을 확대 검수하고, 다른 동작 전환·일시정지 중 착탈을 확인했다.
+  페이지 오류·리소스 로드 실패는 0개이며, 조건부 모프 단위 검사 2개와 `npm run check`, `npm run lint`를 통과했다.
+  조합은 여전히 숨김 포함 28,636 triangles, 가림 적용 후 24,198 triangles다.
+  이 상의 보정 단계에서는 다른 동작과 치마 형상을 변경하지 않았다.
+
+이후 치마에도 [앉기 전용 v5 보정](modular-female-rogue-skirt.md)을 추가해 함께 프리뷰에 연결했다.
+
+[현재 GLB](../../assets/items/female_rogue_top/tripo_v1/fitted_v5/top_female_rogue.glb),
+[현재 Blender](../../assets/items/female_rogue_top/tripo_v1/fitted_v5/female-rogue-top.blend),
+[피팅·검사 통합 기록](../../assets/items/female_rogue_top/tripo_v1/fitted_v5/fitting.json),
+[가림 정보](../../assets/items/female_rogue_top/tripo_v1/fitted_v5/body-occlusion.json),
+[앉기 사선 확대](../../assets/items/female_rogue_top/tripo_v1/fitted_v5/review/detail-side.png).
+
+![앉기 전용 상의 하단 보정](../../assets/items/female_rogue_top/tripo_v1/fitted_v5/review/detail-front.png)
+
+```bash
+node tools/export-female-rogue-seated-poses.mjs
+blender -b --python-exit-code 1 -P tools/blender-scripts/fit_female_rogue_top_seated.py
+node tools/validate-female-rogue-top.mjs
+blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_rogue_top.py
+```
 
 ## 출처·라이선스
 

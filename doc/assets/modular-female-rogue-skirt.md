@@ -135,7 +135,7 @@ v1은 수정 전 보관본이며, v2는 첫 번째 골반 핏 보정본이다.
 
 ## 고리·버클 밀착과 뒤 허리 여유 보정 v4 — 2026-10-25
 
-현재 여성 프리뷰는 치마 v4와 [앞섶 폭을 복원한 상의 v4](modular-female-rogue-top.md)를 사용한다.
+기본 핏을 확정한 치마 v4다. 현재 프리뷰는 아래의 앉기 전용 v5를 사용한다.
 
 - v3의 장식 전체를 바깥으로 옮기는 방식은 고리와 버클의 윗부분을 띄웠다.
   이번에는 정점별로 천 바깥면에 투영한 뒤 장식의 두께와 삼각형 중심 간격을 보정했다.
@@ -156,8 +156,8 @@ v1은 수정 전 보관본이며, v2는 첫 번째 골반 핏 보정본이다.
 - 치마 2,710 triangles, 상의 3,751 triangles를 유지한다. 조합의 숨김 포함 합계는 28,636 triangles, 가림 적용 후는 24,198 triangles다.
   머리·얼굴 배분은 v1과 같다. 검수 중간 파일은 통합 기록과 대표 이미지로 정리했다.
 
-[현재 GLB](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/bottom_female_rogue.glb),
-[현재 Blender](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/female-rogue-skirt.blend),
+[v4 기준 GLB](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/bottom_female_rogue.glb),
+[v4 기준 Blender](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/female-rogue-skirt.blend),
 [피팅·동작·고리·속옷 간격 통합 기록](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/fitting.json),
 [가림 정보](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/body-occlusion.json).
 
@@ -166,6 +166,45 @@ v1은 수정 전 보관본이며, v2는 첫 번째 골반 핏 보정본이다.
 [뒷면 확대](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/review/detail-back.png).
 
 ![고리·버클과 뒤 허리 보정 앞뒤](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v4/review/fitting.png)
+
+## 앉기 전용 허리·앞판·밑단 보정 v5 — 2026-10-26
+
+현재 여성 프리뷰는 치마 v5와 [상의 v5](modular-female-rogue-top.md)를 사용한다.
+
+- 승인된 v4에 기본 가중치가 0인 `pose_sit_idle` 모프를 추가했다.
+  `sit_idle`에서만 적용하고 다른 동작에서는 해제한다. 기존 기본 정점·UV·PBR 텍스처·가중치·65본 연결은 보존했다.
+  몸체를 가리는 인덱스도 기존과 같으며, 앉기 보정은 치마 메시를 움직여 적용한다.
+- 뒤 허리밴드를 골반의 움직임에 맞춰 정리했다. 중앙이 양옆보다 약 43.5mm 솟던 모양을
+  중앙이 약 7.8mm 낮은 완만한 곡선으로 바꿨다. 벨트와 고리도 같은 천 표면을 따른다.
+- 앞판을 두 허벅지 위로 펼쳐 피부와 간격을 확보하고, 중앙의 V자 접힘을 펴서 밑단을 고르게 맞췄다.
+  앞 밑단의 높이 범위는 약 10.4mm이며 말린 가장자리의 두께는 유지한다.
+  앞 고리와 금속 장식은 원형을 유지해 이동하고, 뒤 고리는 대응 삼각형의 방향과 변형을 따른다.
+- 실제 앉기 동작 9시점으로 피팅하고 61시점의 앞판 정점·삼각형 중심을 검사했다.
+  허벅지 위 천의 최소 수직 간격은 약 7.6mm다. 다리 사이에서 광선이 몸체를 빗나가는 지점은 별도 제외한다.
+  앞판의 골반 피부 간격은 최소 약 7.3mm이며 1mm 초과 관통 샘플은 0개다.
+  팔 접촉은 골반 보정에서 제외한다. 검사의 영역과 전체 피부 최근접 거리 기록은 통합 파일에 남긴다.
+- 실제 프리뷰 14개 동작을 각각 33시점에서 검사했다. 앉기를 제외한 13개 동작은 v4와 정점 위치 차이가 정확히 0m다.
+  브라우저에서 앉기 5시점, 다른 동작 전환, 일시정지 중 치마 착탈과 가림 복원을 확인했다.
+  뒤 확대 이미지는 허리밴드를 보기 위해 검사 페이지에서만 의자를 숨겼다.
+  조합은 숨김 포함 28,636 triangles, 가림 적용 후 24,198 triangles다.
+  머리 가중치가 있는 삼각형 5,057개와 앞 얼굴 추정 3,489개를 유지하며 헤어·무기는 포함하지 않는다.
+
+[현재 GLB](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v5/bottom_female_rogue.glb),
+[현재 Blender](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v5/female-rogue-skirt.blend),
+[피팅·검사 통합 기록](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v5/fitting.json),
+[가림 정보](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v5/body-occlusion.json),
+[뒤 허리 확대](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v5/review/detail-back.png),
+[옆면 확대](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v5/review/detail-side.png).
+
+![앉기 앞판과 밑단 보정](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v5/review/detail-front.png)
+
+```bash
+node tools/export-female-rogue-seated-poses.mjs assets/items/female_rogue_skirt/tripo_v1/fitted_v5
+blender -b --python-exit-code 1 -P tools/blender-scripts/fit_female_rogue_skirt_seated.py
+node tools/validate-female-rogue-skirt.mjs
+blender -b --python-exit-code 1 -P tools/blender-scripts/validate_female_rogue_skirt_seated.py
+blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_rogue_skirt.py
+```
 
 ## 출처·라이선스
 
