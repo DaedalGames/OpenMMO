@@ -82,7 +82,8 @@ const io = new NodeIO().registerExtensions(ALL_EXTENSIONS)
   .registerDependencies({ 'meshopt.encoder': MeshoptEncoder, 'meshopt.decoder': MeshoptDecoder })
 // Replaces the file instead of rewriting it, since worktrees may hard-link these GLBs.
 async function write(path, doc) {
-  if (path === `${output}/base.glb`) {
+  const bottom = path === `${output}/bottom.glb`
+  if (path === `${output}/base.glb` || bottom) {
     await doc.transform(prune({ propertyTypes: [PropertyType.MATERIAL, PropertyType.TEXTURE] }))
     // Preserve vertex and triangle numbering for outfit masks; do not quantize.
     doc.createExtension(EXTMeshoptCompression).setRequired(true)
@@ -90,7 +91,7 @@ async function write(path, doc) {
   }
   // Pelt rigs rewrite positions in place, which interleaved attributes do not support.
   const pelt = doc.getRoot().listNodes().some(node => node.getExtras().pelt_physics)
-  io.setVertexLayout(pelt ? VertexLayout.SEPARATE : VertexLayout.INTERLEAVED)
+  io.setVertexLayout(pelt || bottom ? VertexLayout.SEPARATE : VertexLayout.INTERLEAVED)
   writeFileSync(`${path}.tmp`, await io.writeBinary(doc))
   renameSync(`${path}.tmp`, path)
 }
@@ -133,7 +134,8 @@ for (const [name, source] of Object.entries(sources)) {
   for (const texture of doc.getRoot().listTextures()) {
     if (/eyelash/i.test(texture.getName())) continue
     const color = colors.has(texture)
-    const image = await sharp(texture.getImage()).resize({ width: color ? 2048 : 1024, height: color ? 2048 : 1024, fit: 'inside', withoutEnlargement: true })
+    const size = color && name !== 'bottom' ? 2048 : 1024
+    const image = await sharp(texture.getImage()).resize({ width: size, height: size, fit: 'inside', withoutEnlargement: true })
       .webp(color ? { quality: 94, effort: 5 } : { quality: 90, smartSubsample: true, effort: 5 }).toBuffer()
     texture.setImage(image).setMimeType('image/webp')
   }

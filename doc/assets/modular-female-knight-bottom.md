@@ -22,6 +22,45 @@
 
 재생성 도구는 남아 있지 않다. 위 v42 `.blend`·GLB가 편집 원본이다.
 
+## 런타임 메시 압축 — 2026-10-25
+
+`client/public/models/characters/modular_female/bottom.glb`에 양자화 없이
+Meshopt 압축을 적용했다. 텍스처 3장의 원본 WebP 바이트, 정점 속성,
+65본 리깅·바인드 행렬·가림 명세를 보존한다. 삼각형 순서와 와인딩도
+유지하며 각 삼각형의 시작 정점만 순환할 수 있다.
+
+- GLB: 2,140,888 → 1,521,892 bytes (28.9% 감소).
+- gzip level 6: 1,536,286 → 1,410,525 bytes (8.2% 감소).
+- 압축 전 런타임 원본: `assets/items/female_knight_bottom/runtime-meshopt-v1/original.glb`.
+- 검증 기록: `assets/items/female_knight_bottom/runtime-meshopt-v1/validation.json`.
+- 재현: `node tools/compress-glb-meshes.mjs assets/items/female_knight_bottom/runtime-meshopt-v1/original.glb client/public/models/characters/modular_female/bottom.glb --lossless`.
+
+`tools/prepare-female-knight.mjs --part bottom`으로 다시 만들 때도 같은
+무손실 Meshopt 설정을 적용한다. 별도 출력 경로에서 재생성을 확인했다.
+대기·걷기·달리기·베기·앉기 5개 동작의 55개 시점에서 스킨 변형을
+비교했으며, 비교한 정점 132,495개의 위치 차이는 0이었다.
+Chrome/Three.js의 정면·뒷면·달리기·앉기 렌더 4쌍도 픽셀 차이 0이며,
+관련 회귀 테스트 12개를 통과했다.
+
+## 색상 텍스처 1024 — 2026-10-25
+
+메시 압축본의 색상 WebP만 2048×2048에서 1024×1024로 줄였다
+(Lanczos3, WebP q94·effort 5). 압축된 메시 bufferView 19개와
+노멀·ORM 이미지 바이트, 리깅·가림 명세는 그대로다.
+
+- GLB: 1,521,892 → 1,074,144 bytes.
+- gzip level 6: 1,410,525 → 962,577 bytes (추가 31.8% 감소).
+- 색상 WebP: 686,190 → 238,454 bytes.
+- 원본: `assets/items/female_knight_bottom/runtime-meshopt-v1/original.glb`에 위의 무손실 메시 압축을 적용한 결과를 입력으로 사용한다.
+- 검증 기록: `assets/items/female_knight_bottom/runtime-color-1024-v1/validation.json`.
+- 재현: 메시 압축 결과를 임시 GLB로 만든 뒤 `node tools/resize-glb-base-color.mjs INPUT.glb client/public/models/characters/modular_female/bottom.glb 1024`를 실행한다. 중간 GLB는 보관하지 않는다.
+
+게임의 골격 연결·의상 가림 함수를 사용해 동일한 자세·카메라·조명으로
+[착용 전체·하의 확대 비교](../images/female-knight-bottom-color-1024-before-after.png)를 렌더링했다.
+전체 모습의 평균 RGB 채널 차이는 약 0.0056/255, 확대는 약 0.1677/255이며,
+확대에서는 작은 문양이 조금 부드러워진다. 브라우저 예외는 없었다.
+생성 도구도 이 하의의 색상 맵을 최대 1024로 만들며, 별도 출력으로 확인했다.
+
 ## 출처·라이선스
 
 - 원화: OpenAI Codex ImageGen, **ChatGPT Pro 20x**, 2026-10-12. OpenAI 생성 출력물 이용 조건을 적용한다.
