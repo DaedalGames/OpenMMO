@@ -9,6 +9,23 @@
 - tree.glb & tree2.glb
   - https://sketchfab.com/3d-models/low-poly-tree-scene-free-89daa5e21f0d4f08a59dba0d566e88bd
 
+### tree2 normal-map optimization (2026-10-25)
+
+`tree2.glb`의 나무껍질 노멀맵 `bark_willow_nor_gl_2k`를 512×512
+16비트 RGB PNG에서 같은 해상도의 8비트 RGB PNG로 변환했다.
+메시·재질·다른 텍스처를 담은 나머지 bufferView 18개는 바이트까지 유지했다.
+
+- GLB: 2,495,728 → 1,736,352 bytes.
+- gzip level 6: 2,318,166 → 1,558,732 bytes (32.8% 감소).
+- 원본: `assets/vegetation/tree2-normal-8bit-v1/original.glb`.
+- 재생성: `node tools/optimize-tree-normal.mjs assets/vegetation/tree2-normal-8bit-v1/original.glb client/public/models/vegetation/tree2.glb`.
+- 검증: `assets/vegetation/tree2-normal-8bit-v1/validation.json`.
+
+Chrome/Three.js에서 동일한 카메라·조명으로 원본과 변환본을 렌더링했다.
+전체 모습의 RGB 채널 최대 차이는 1/255, 줄기 확대는 3/255였다.
+확대 이미지의 평균 채널 차이는 약 0.0103/255이며 브라우저 예외는 없었다.
+[전체·줄기 확대 비교](../images/tree2-normal-8bit-before-after.png).
+
 ## Terrain Textures
 
 `client/public/textures/**/*.glb`는 배포본이다: 원본(Poly Haven 1k GLB)은 `assets/textures-src/`(HF 동기화)에 두고
