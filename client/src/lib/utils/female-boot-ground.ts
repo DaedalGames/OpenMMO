@@ -30,7 +30,10 @@ export function femaleBootGround(
   model: THREE.Object3D,
   body: THREE.SkinnedMesh,
   boots: THREE.SkinnedMesh[],
-  config: { local_quaternion_offsets: Record<string, number[]> },
+  config: {
+    local_quaternion_offsets: Record<string, number[]>
+    seated_hand_lift_m?: number
+  },
   stride = 1
 ) {
   const offsets = Object.entries(config.local_quaternion_offsets).map(
@@ -51,7 +54,15 @@ export function femaleBootGround(
       return { bone, original: bone.quaternion.clone() }
     }
   )
-  const states = [...offsets, ...legStates]
+  const armStates = config.seated_hand_lift_m
+    ? ['Left', 'Right'].flatMap((side) =>
+        ['Arm', 'ForeArm', 'Hand'].map((suffix) => {
+          const bone = model.getObjectByName(`${side}${suffix}`) as THREE.Bone
+          return { bone, original: bone.quaternion.clone() }
+        })
+      )
+    : []
+  const states = [...offsets, ...legStates, ...armStates]
   const footAxes = offsets
     .filter(({ bone }) => bone.name.endsWith('Foot'))
     .map(({ bone, rotation }) => {
@@ -85,17 +96,19 @@ export function femaleBootGround(
       .multiply(bone.getWorldQuaternion(worldRotation))
     setWorldQuaternion(bone, rotation)
   }
-  const liftFoot = (side: string, amount: number) => {
-    const upper = model.getObjectByName(`${side}UpLeg`) as THREE.Bone
-    const lower = model.getObjectByName(`${side}Leg`) as THREE.Bone
-    const end = model.getObjectByName(`${side}Foot`) as THREE.Bone
+  const liftChain = (
+    upper: THREE.Bone,
+    lower: THREE.Bone,
+    end: THREE.Bone,
+    amount: number
+  ) => {
     const origin = upper.getWorldPosition(new THREE.Vector3())
-    const knee = lower.getWorldPosition(new THREE.Vector3())
-    const ankle = end.getWorldPosition(new THREE.Vector3())
+    const middlePosition = lower.getWorldPosition(new THREE.Vector3())
+    const endPosition = end.getWorldPosition(new THREE.Vector3())
     const rotation = end.getWorldQuaternion(new THREE.Quaternion())
-    const a = origin.distanceTo(knee),
-      b = knee.distanceTo(ankle)
-    const target = ankle.clone().add(new THREE.Vector3(0, amount, 0))
+    const a = origin.distanceTo(middlePosition),
+      b = middlePosition.distanceTo(endPosition)
+    const target = endPosition.clone().add(new THREE.Vector3(0, amount, 0))
     const direction = target.clone().sub(origin)
     const distance = THREE.MathUtils.clamp(
       direction.length(),
@@ -104,7 +117,7 @@ export function femaleBootGround(
     )
     direction.normalize()
     const along = (a * a - b * b + distance * distance) / (2 * distance)
-    const bend = knee.clone().sub(origin)
+    const bend = middlePosition.clone().sub(origin)
     bend.addScaledVector(direction, -bend.dot(direction)).normalize()
     const joint = origin
       .clone()
@@ -162,7 +175,20 @@ export function femaleBootGround(
           return side === 'Left' ? x > 0 : x < 0
         })
         const amount = Math.max(0, -minimum(entries) - seatOffset)
-        if (amount > 0) liftFoot(side, amount)
+        if (amount > 0)
+          liftChain(
+            model.getObjectByName(`${side}UpLeg`) as THREE.Bone,
+            model.getObjectByName(`${side}Leg`) as THREE.Bone,
+            model.getObjectByName(`${side}Foot`) as THREE.Bone,
+            amount
+          )
+        if (config.seated_hand_lift_m)
+          liftChain(
+            model.getObjectByName(`${side}Arm`) as THREE.Bone,
+            model.getObjectByName(`${side}ForeArm`) as THREE.Bone,
+            model.getObjectByName(`${side}Hand`) as THREE.Bone,
+            config.seated_hand_lift_m
+          )
       }
       model.updateMatrixWorld(true)
       return 0

@@ -68,6 +68,7 @@ export async function showFemaleBase(
       <select id="female-boots">
         <option value="none">없음</option>
         <option value="knight">은빛 기사 판금 부츠</option>
+        <option value="rogue">로그 빨간 밑창 가죽 부츠</option>
         <option value="barbarian">야만전사 가죽 하이힐 샌들</option>
       </select>
       <label for="female-gloves">장갑</label>
@@ -464,7 +465,11 @@ export async function showFemaleBase(
         : 'none'
     const loaded = new Map<
       string,
-      { meshes?: THREE.SkinnedMesh[]; pending?: Promise<void> }
+      {
+        meshes?: THREE.SkinnedMesh[]
+        pending?: Promise<void>
+        ground?: ReturnType<typeof femaleBootGround>
+      }
     >()
     const maskName = (outfit: string) => `${slot}-${outfit}`
     const load = (outfit: string) => {
@@ -516,7 +521,7 @@ export async function showFemaleBase(
                 body = node
             })
             if (!body) throw new Error('부츠의 기준 몸체를 찾지 못했습니다.')
-            bootGround = femaleBootGround(
+            entry.ground = femaleBootGround(
               model,
               body,
               meshes,
@@ -547,6 +552,10 @@ export async function showFemaleBase(
       return entry.pending
     }
     const show = (outfit: string) => {
+      if (slot === 'boots') {
+        bootGround?.restore()
+        bootGround = loaded.get(outfit)?.ground
+      }
       for (const [name, entry] of loaded) {
         if (!entry.meshes) continue
         outfitMask.setEquipped(maskName(name), name === outfit)

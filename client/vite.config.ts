@@ -169,6 +169,14 @@ function modularCharacterPreview(): Plugin {
       '../assets/items/female_rogue_top/tripo_v1/fitted_v5/top_female_rogue.glb',
       import.meta.url
     ),
+    female_rogue_boots: new URL(
+      '../assets/items/female_rogue_boots/tripo_v1/fitted_v1/boots_female_rogue.glb',
+      import.meta.url
+    ),
+    'female-rogue-boots-occlusion.json': new URL(
+      '../assets/items/female_rogue_boots/tripo_v1/fitted_v1/body-occlusion.json',
+      import.meta.url
+    ),
     'female-rogue-top-occlusion.json': new URL(
       '../assets/items/female_rogue_top/tripo_v1/fitted_v5/body-occlusion.json',
       import.meta.url
