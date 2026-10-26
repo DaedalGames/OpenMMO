@@ -111,10 +111,20 @@ async function main() {
     return
   }
   if (
-    new URLSearchParams(location.search).get('asset') === 'female-knight-bob'
+    ['female-knight-bob', 'female-rogue-glove'].includes(
+      new URLSearchParams(location.search).get('asset') ?? ''
+    )
   ) {
-    const { showFemaleBob } = await import('./female-bob')
-    await showFemaleBob(scene, resources, cleanup, () => disposed)
+    const { showSourceAsset } = await import('./female-bob')
+    await showSourceAsset(
+      scene,
+      resources,
+      cleanup,
+      () => disposed,
+      new URLSearchParams(location.search).get('asset') === 'female-rogue-glove'
+        ? 'rogue-glove'
+        : 'bob'
+    )
     return
   }
   if (new URLSearchParams(location.search).get('character') === 'female') {

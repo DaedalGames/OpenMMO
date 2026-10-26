@@ -4,16 +4,20 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 
-export async function showFemaleBob(
+export async function showSourceAsset(
   scene: THREE.Scene,
   resources: THREE.Object3D[],
   cleanup: (() => void)[],
-  disposed: () => boolean
+  disposed: () => boolean,
+  asset: 'bob' | 'rogue-glove' = 'bob'
 ) {
-  document.title = '단발 헤어 · 미리보기'
-  document.querySelector('h1')!.textContent = '단발 헤어 미리보기'
-  document.querySelector('header p:last-child')!.textContent =
-    '금발 단발의 정면·측면·후면을 회전하고 확대해 살펴보세요.'
+  const glove = asset === 'rogue-glove'
+  const name = glove ? '새 로그 장갑 원본' : '단발 헤어'
+  document.title = `${name} · 미리보기`
+  document.querySelector('h1')!.textContent = `${name} 미리보기`
+  document.querySelector('header p:last-child')!.textContent = glove
+    ? '새로 생성한 검은 가죽 반장갑을 회전하고 확대해 살펴보세요.'
+    : '금발 단발의 정면·측면·후면을 회전하고 확대해 살펴보세요.'
   const status = document.getElementById('status')!
   const aside = document.querySelector('aside')!
   aside.replaceChildren(status)
@@ -21,25 +25,29 @@ export async function showFemaleBob(
     'beforeend',
     `
     <fieldset id="bob-controls" disabled>
-      <legend>헤어 살펴보기</legend>
+      <legend>${glove ? '장갑' : '헤어'} 살펴보기</legend>
       <label for="bob-view">시점</label>
       <select id="bob-view">
         <option value="front">정면</option>
         <option value="side">측면</option>
         <option value="back">후면</option>
-        <option value="top">정수리</option>
+        <option value="top">${glove ? '손가락 입구' : '정수리'}</option>
       </select>
       <label class="toggle"><input id="bob-rotate" type="checkbox" /> 자동 회전</label>
       <label class="toggle"><input id="bob-wireframe" type="checkbox" /> 와이어프레임</label>
       <button id="bob-reset" type="button">시점 초기화</button>
     </fieldset>
     <p id="bob-stats" class="details"></p>
-    <p class="details">피팅 전 원본입니다. 캐릭터에 맞춘 단발은 여성 캐릭터 화면에서 확인할 수 있습니다.</p>
-    <a href="?character=female&hair=bob&camera=face">피팅한 단발 착용 보기</a>`
+    <p class="details">${glove ? '여성 손에 맞추기 전의 새 원본입니다. 검은 가죽과 봉제선, 손목 스냅을 확인할 수 있습니다.' : '피팅 전 원본입니다. 캐릭터에 맞춘 단발은 여성 캐릭터 화면에서 확인할 수 있습니다.'}</p>
+    ${glove ? '<a href="?character=female&gloves=rogue&top=rogue&bottom=rogue&boots=rogue&camera=right-hand">여성 장갑 착용 보기</a>' : '<a href="?character=female&hair=bob&camera=face">피팅한 단발 착용 보기</a>'}`
   )
-  status.textContent = '단발 헤어를 불러오는 중…'
+  status.textContent = glove
+    ? '새 장갑 원본을 불러오는 중…'
+    : '단발 헤어를 불러오는 중…'
   const { scene: model } = await new GLTFLoader().loadAsync(
-    '/__modular-character/parts/female_knight_bob_source.glb'
+    glove
+      ? '/__modular-character/parts/female_rogue_glove_source.glb'
+      : '/__modular-character/parts/female_knight_bob_source.glb'
   )
   resources.push(model)
   if (disposed()) {
@@ -147,7 +155,9 @@ export async function showFemaleBob(
     controls.update()
     renderer.render(scene, camera)
   })
-  status.textContent = '단발 헤어를 불러왔습니다.'
+  status.textContent = glove
+    ? '새 장갑 원본을 불러왔습니다.'
+    : '단발 헤어를 불러왔습니다.'
   const fieldset = document.getElementById(
     'bob-controls'
   ) as HTMLFieldSetElement

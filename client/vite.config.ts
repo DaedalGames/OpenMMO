@@ -177,6 +177,18 @@ function modularCharacterPreview(): Plugin {
       '../assets/items/female_rogue_garters/fitted_v1/garters_female_rogue.glb',
       import.meta.url
     ),
+    female_rogue_gloves: new URL(
+      '../assets/items/female_rogue_gloves/tripo_v1/fitted_v1/gloves_female_rogue.glb',
+      import.meta.url
+    ),
+    female_rogue_glove_source: new URL(
+      '../assets/items/female_rogue_gloves/tripo_v1/source/model_url.glb',
+      import.meta.url
+    ),
+    'female-rogue-gloves-occlusion.json': new URL(
+      '../assets/items/female_rogue_gloves/tripo_v1/fitted_v1/body-occlusion.json',
+      import.meta.url
+    ),
     'female-rogue-boots-occlusion.json': new URL(
       '../assets/items/female_rogue_boots/tripo_v1/fitted_v3/body-occlusion.json',
       import.meta.url
