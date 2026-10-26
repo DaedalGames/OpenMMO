@@ -166,27 +166,31 @@ function modularCharacterPreview(): Plugin {
       import.meta.url
     ),
     female_rogue_top: new URL(
-      '../assets/items/female_rogue_top/tripo_v1/fitted_v5/top_female_rogue.glb',
+      '../assets/items/female_rogue_top/tripo_v1/fitted_v6/top_female_rogue.glb',
       import.meta.url
     ),
     female_rogue_boots: new URL(
-      '../assets/items/female_rogue_boots/tripo_v1/fitted_v1/boots_female_rogue.glb',
+      '../assets/items/female_rogue_boots/tripo_v1/fitted_v3/boots_female_rogue.glb',
+      import.meta.url
+    ),
+    female_rogue_garters: new URL(
+      '../assets/items/female_rogue_garters/fitted_v1/garters_female_rogue.glb',
       import.meta.url
     ),
     'female-rogue-boots-occlusion.json': new URL(
-      '../assets/items/female_rogue_boots/tripo_v1/fitted_v1/body-occlusion.json',
+      '../assets/items/female_rogue_boots/tripo_v1/fitted_v3/body-occlusion.json',
       import.meta.url
     ),
     'female-rogue-top-occlusion.json': new URL(
-      '../assets/items/female_rogue_top/tripo_v1/fitted_v5/body-occlusion.json',
+      '../assets/items/female_rogue_top/tripo_v1/fitted_v6/body-occlusion.json',
       import.meta.url
     ),
     female_rogue_bottom: new URL(
-      '../assets/items/female_rogue_skirt/tripo_v1/fitted_v5/bottom_female_rogue.glb',
+      '../assets/items/female_rogue_skirt/tripo_v1/fitted_v6/bottom_female_rogue.glb',
       import.meta.url
     ),
     'female-rogue-bottom-occlusion.json': new URL(
-      '../assets/items/female_rogue_skirt/tripo_v1/fitted_v5/body-occlusion.json',
+      '../assets/items/female_rogue_skirt/tripo_v1/fitted_v6/body-occlusion.json',
       import.meta.url
     ),
     'female-barbarian-top-occlusion.json': new URL(

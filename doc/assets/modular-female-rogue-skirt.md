@@ -135,7 +135,7 @@ v1은 수정 전 보관본이며, v2는 첫 번째 골반 핏 보정본이다.
 
 ## 고리·버클 밀착과 뒤 허리 여유 보정 v4 — 2026-10-25
 
-기본 핏을 확정한 치마 v4다. 현재 프리뷰는 아래의 앉기 전용 v5를 사용한다.
+기본 핏을 확정한 치마 v4다. 이후 v5에서 앉기 보정을 추가했다.
 
 - v3의 장식 전체를 바깥으로 옮기는 방식은 고리와 버클의 윗부분을 띄웠다.
   이번에는 정점별로 천 바깥면에 투영한 뒤 장식의 두께와 삼각형 중심 간격을 보정했다.
@@ -169,7 +169,7 @@ v1은 수정 전 보관본이며, v2는 첫 번째 골반 핏 보정본이다.
 
 ## 앉기 전용 허리·앞판·밑단 보정 v5 — 2026-10-26
 
-현재 여성 프리뷰는 치마 v5와 [상의 v5](modular-female-rogue-top.md)를 사용한다.
+치마 v5는 v4에 앉기 보정을 추가한 기준본이다. 현재 프리뷰는 아래의 v6를 사용한다.
 
 - 승인된 v4에 기본 가중치가 0인 `pose_sit_idle` 모프를 추가했다.
   `sit_idle`에서만 적용하고 다른 동작에서는 해제한다. 기존 기본 정점·UV·PBR 텍스처·가중치·65본 연결은 보존했다.
@@ -204,6 +204,39 @@ blender -b --python-exit-code 1 -P tools/blender-scripts/fit_female_rogue_skirt_
 node tools/validate-female-rogue-skirt.mjs
 blender -b --python-exit-code 1 -P tools/blender-scripts/validate_female_rogue_skirt_seated.py
 blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_rogue_skirt.py
+```
+
+## 버클·고정 장식 겹침 보정 v6 — 2026-10-26
+
+- 카메라가 멀어질 때 버클 안쪽과 양쪽 금속 고정 장식이 깜박이는 문제를 수정했다.
+  버클의 받침·안쪽 판·테두리·핀, 벨트 끝·고리·금속 장식이 서로 교차하거나 거의 같은 깊이에 있었다.
+  앞 장식 10개 조각을 층별로 분리하고, 대기·걷기와 앉기에서 각각 간격을 맞췄다.
+- 조각별로 앞뒤 이동만 적용해 각 조각의 형상과 UV·노멀·탄젠트·텍스처·스킨 가중치를 유지했다.
+  567개 정점을 수정했으며 기본 자세의 최대 이동량은 약 14.0mm, 앉기는 약 15.3mm다.
+  치마 천과 뒤 장식의 기본 정점·앉기 모프, 65본 스켈레톤과 가림 인덱스는 그대로다.
+  2,710 triangles와 기존 조합의 숨김 포함·가림 적용 수, 얼굴 배분도 유지한다. 새 유료 생성 요청은 없다.
+- 기본 자세와 `idle1`, `idle_armed`, `walk`의 총 100시점, 앉기 33시점에서
+  바깥쪽 장식 면의 정점·면 중심·변 중점을 아래 층에 광선으로 검사했다.
+  겹치는 영역의 최소 간격은 일반 자세 약 1.41mm, 앉기 약 1.46mm이며 1mm 미만 샘플은 0개다.
+  앉기의 고정 장식 2개는 v5부터 아래 고리와 투영 영역이 겹치지 않아 해당 간격 검사에 포함하지 않는다.
+- 실제 런타임 연결로 14개 동작 각각 33시점의 리깅·유한 변형을 검사했다.
+  수정 밖 정점은 앉기를 포함해 v5와 위치 차이가 0m다. 다른 큰 동작의 전체 피부 충돌 판정은 별도다.
+- 프리뷰에 연결해 근거리부터 전신 거리까지 5개 거리·3개 각도와 대기·걷기·앉기 각 5시점을 확인했다.
+  상의 v6의 소매 보정을 함께 유지하며, 치마 착탈과 앉기 모프 복원도 통과했다.
+  페이지 오류·리소스 실패는 0개이며 `npm run check`, `npm run lint`를 통과했다.
+
+[v6 GLB](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v6/bottom_female_rogue.glb),
+[편집용 Blender](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v6/female-rogue-skirt.blend),
+[피팅·검사 기록](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v6/fitting.json),
+[가림 정보](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v6/body-occlusion.json),
+[거리 검수](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v6/review/distance.png).
+
+![벨트 장식 겹침 보정](../../assets/items/female_rogue_skirt/tripo_v1/fitted_v6/review/detail.png)
+
+```bash
+node tools/export-female-rogue-seated-poses.mjs assets/items/female_rogue_skirt/tripo_v1/fitted_v6 all
+blender -b --python-exit-code 1 -P tools/blender-scripts/separate_female_rogue_belt.py
+node tools/validate-female-rogue-skirt.mjs
 ```
 
 ## 출처·라이선스

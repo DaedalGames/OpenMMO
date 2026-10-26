@@ -434,6 +434,35 @@ export async function showFemaleBase(
     })
   }
   collectMaterials(model)
+  let garters: THREE.SkinnedMesh[] = []
+  let gartersPending: Promise<void> | undefined
+  const gartersEquipped = () =>
+    !!model.getObjectByName('bottom_female_rogue')?.visible &&
+    !!model.getObjectByName('boots_female_rogue_right')?.visible
+  const updateGarters = async () => {
+    for (const mesh of garters) mesh.visible = gartersEquipped()
+    if (!gartersEquipped()) return
+    gartersPending ??= loader
+      .loadAsync('/__modular-character/parts/female_rogue_garters.glb')
+      .then((asset) => {
+        if (disposed()) {
+          disposeObjects([asset.scene])
+          return
+        }
+        resources.push(asset.scene)
+        garters = bindModularPart(model, asset.scene)
+        for (const mesh of garters) collectMaterials(mesh)
+        for (const material of materials) material.wireframe = wireframe.checked
+      })
+      .catch((error: unknown) => {
+        gartersPending = undefined
+        throw error
+      })
+    await gartersPending
+    if (disposed()) return
+    for (const mesh of garters) mesh.visible = gartersEquipped()
+    updateModularPoseCorrectives(model, motion.value)
+  }
   const outfitMask = femaleOutfitMask(base)
   let knightGlovesEquipped = false
   let sleeveMaskRegistered = false
@@ -597,6 +626,8 @@ export async function showFemaleBase(
             outfitMask.setEquipped('glove-sleeves', knightGlovesEquipped)
         }
         show(requested)
+        await updateGarters()
+        if (disposed() || select.value !== requested) return
         updateModularPoseCorrectives(model, motion.value)
         updateGround()
         updateStats()
@@ -621,6 +652,7 @@ export async function showFemaleBase(
             outfitMask.setEquipped('glove-sleeves', false)
         }
         show('none')
+        await updateGarters()
         updateGround()
         updateStats()
         status.textContent = '갑옷을 불러오지 못했습니다. 다시 선택해 주세요.'

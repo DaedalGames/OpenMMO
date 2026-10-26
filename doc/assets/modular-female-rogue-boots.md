@@ -87,11 +87,68 @@ Tripo 입력용 정면·후면 원화로 옮겼다. 빨간 밑창의 v2를 2026-
 
 ```bash
 .venv/bin/python tools/fit-female-rogue-boots.py
-node tools/validate-female-rogue-boots.mjs
+node tools/validate-female-rogue-boots.mjs assets/items/female_rogue_boots/tripo_v1/fitted_v1
 blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_rogue_boots.py
 ```
 
+## [미사용] 밑창 옆 테두리 검은색 보정 v2 — 2026-10-26
+
+- 사용자의 요청에 따라 옆에서 보이는 얇은 빨간 밑창 테두리를 위쪽 가죽과 같은 검은색으로 바꿨다.
+  밑에서 보이는 바닥·아치·굽 끝은 기존 빨간색을 유지한다. v3는 여기에 굽 안쪽 면의 빨간색을 추가했다.
+- 기준 발 자세에서 아래를 향한 면과 옆면을 구분했다. 한쪽 335개 테두리 면의 색상·ORM만
+  기존 검은 가죽 영역에서 가져온다. 밑면 90개 면의 색상 좌표와 원본 PBR 이미지 바이트는 보존했다.
+  새 텍스처 생성이나 유료 요청은 없다.
+- 색상 경계에서 정점 296개씩을 복제하고 두 번째 UV 채널을 추가했다.
+  모든 삼각형의 위치·방향, 노멀·기존 UV·가중치·앉기 모프는 원본 정점과 정확히 같다.
+  양쪽 합계 4,210 triangles, 65본 리그, 접지·하이힐·앉기 손 보정 설정, 몸체 가림 인덱스도 유지했다.
+- 실제 런타임의 14개 동작을 각각 61시점에서 재검사했다.
+  브라우저에서 옆면과 바닥 색상을 확인하고 대기·걷기·달리기·앉기 각 5시점,
+  신발 교체와 반복 착탈 시 가림·동작 상태 복원을 확인했다. 페이지 오류·리소스 실패는 0개다.
+  조합은 숨김 포함 32,846 triangles, 가림 적용 후 25,238 triangles이며 머리·얼굴 배분은 v1과 같다.
+
+v2 중간 GLB·Blender·가림·접지 파일은 v3 확정 후 삭제했다. 검사 기록과 문서 이미지는 보존한다.
+
+[색상·동작 검사 기록](../../assets/items/female_rogue_boots/tripo_v1/fitted_v2/fitting.json),
+[빨간 밑면 검수](../../assets/items/female_rogue_boots/tripo_v1/fitted_v2/review/underside.png).
+
+![검은 밑창 옆 테두리](../../assets/items/female_rogue_boots/tripo_v1/fitted_v2/review/side.png)
+
+```bash
+.venv/bin/python tools/recolor-female-rogue-boot-rim.py
+node tools/validate-female-rogue-boots.mjs assets/items/female_rogue_boots/tripo_v1/fitted_v2
+blender -b --python-exit-code 1 -P tools/blender-scripts/sync_female_rogue_boot_rim.py
+```
+
+## 굽 안쪽 면 빨간색 보정 v3 — 2026-10-26
+
+- 굽 기둥에서 앞코와 아치를 향하는 안쪽 면을 빨간색으로 맞췄다.
+  각 부츠의 안쪽 면 24개만 기존 빨간 밑창 영역을 사용하며, 굽 옆면·뒷면은 검은색이다.
+  현재 여성 프리뷰는 v3를 사용한다.
+- v2와 삼각형 모서리별로 비교해 안쪽 면 밖의 색상·ORM 좌표가 정확히 같음을 확인했다.
+  빨간 바닥·아치·굽 끝과 검은 밑창 테두리를 유지한다. 형상·노멀·스킨 가중치·앉기 모프,
+  원본 PBR 이미지와 기존 4,210 triangles, 몸체 가림·접지 설정도 유지했다. 새 생성 요청은 없다.
+- 14개 동작 각각 61시점의 기존 런타임 검사를 통과했다.
+  실제 프리뷰에서 아래·옆·뒤 시점을 확인했고 페이지 오류·리소스 실패는 0개다.
+  조합 삼각형 수와 머리·얼굴 배분은 v2와 같다.
+
+[v3 GLB](../../assets/items/female_rogue_boots/tripo_v1/fitted_v3/boots_female_rogue.glb),
+[편집용 Blender](../../assets/items/female_rogue_boots/tripo_v1/fitted_v3/female-rogue-boots-fitted.blend),
+[색상·검사 기록](../../assets/items/female_rogue_boots/tripo_v1/fitted_v3/fitting.json),
+[검은 밑창 옆면](../../assets/items/female_rogue_boots/tripo_v1/fitted_v3/review/side.png),
+[검은 굽 뒷면](../../assets/items/female_rogue_boots/tripo_v1/fitted_v3/review/back.png).
+
+![빨간 굽 안쪽 면과 밑창](../../assets/items/female_rogue_boots/tripo_v1/fitted_v3/review/underside.png)
+
+```bash
+.venv/bin/python tools/recolor-female-rogue-boot-rim.py --red-inner-heel
+node tools/validate-female-rogue-boots.mjs
+blender -b --python-exit-code 1 -P tools/blender-scripts/sync_female_rogue_boot_rim.py -- assets/items/female_rogue_boots/tripo_v1/fitted_v3
+```
+
 ## 출처·라이선스
+
+치마와 부츠 사이의 앞뒤 가터는 [별도 가터 스트랩](modular-female-rogue-garters.md)으로 연결한다.
+부츠의 형상·색상·가림 정보를 바꾸지 않고, 로그 치마와 함께 착용했을 때 표시한다.
 
 - 원화 생성: OpenAI Codex built-in `image_gen`, **ChatGPT Pro 20x**, 2026-10-26.
   OpenAI 출력물 이용 조건을 따른다. 참조 원화의 출처는 [캐릭터 제작 기록](characters.md)을 따른다.

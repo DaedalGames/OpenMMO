@@ -176,6 +176,38 @@ node tools/validate-female-rogue-top.mjs
 blender -b --python-exit-code 1 -P tools/blender-scripts/review_female_rogue_top.py
 ```
 
+## 오른팔 소매 밀착 보정 v6 — 2026-10-26
+
+- 대기 자세에서 팔 뒤로 뜨던 오른쪽 소매를 팔 표면에 맞추고 각진 윤곽을 완만하게 정리했다.
+  v5의 오른팔 가중치 구간에서 842개 정점을 보정했으며 최대 이동량은 약 44.1mm다.
+  겨드랑이 연결부까지 포함해 피부 여유를 다시 확인했다.
+- 왼팔·코르셋의 정점, 스킨 가중치·65본 스켈레톤, UV·텍스처·3,751 triangles와
+  기존 `pose_sit_idle` 모프를 보존했다. 몸체 가림 인덱스는 유지하고 상의 해시만 갱신했다.
+  소매 형상은 기본 메시에서 수정하므로 다른 동작에서도 적용된다. 새 유료 생성 요청은 없다.
+- 기본 자세와 실제 대기 동작 61시점에서 움직이는 정점·면 중심·변 중점을 검사했다.
+  보정 경계 삼각형을 포함한 피부 간격은 최소 약 +0.47mm이며, 1mm 초과 관통 샘플은 0개다.
+  14개 동작 각각 33시점의 런타임 연결·유한 변형 검사를 통과했고, 수정 영역 밖 정점의
+  v5 대비 동작 중 위치 차이는 0m다. 다른 큰 동작의 피부 관통 합격을 뜻하지 않는다.
+- 프리뷰 연결을 v6로 갱신했다. 대기 5시점의 뒤·옆·앞을 검수하고 착탈 및 앉기 모프의
+  적용·복원을 확인했다. 페이지 오류·리소스 실패는 0개이며 `npm run check`, `npm run lint`를 통과했다.
+  상의 삼각형 수와 얼굴 배분, 기존 조합의 숨김 포함·가림 적용 후 삼각형 수는 동일하다.
+
+[v6 GLB](../../assets/items/female_rogue_top/tripo_v1/fitted_v6/top_female_rogue.glb),
+[편집용 Blender](../../assets/items/female_rogue_top/tripo_v1/fitted_v6/female-rogue-top.blend),
+[피팅·검사 기록](../../assets/items/female_rogue_top/tripo_v1/fitted_v6/fitting.json),
+[가림 정보](../../assets/items/female_rogue_top/tripo_v1/fitted_v6/body-occlusion.json).
+
+[정면 검수](../../assets/items/female_rogue_top/tripo_v1/fitted_v6/review/idle-front.png),
+[오른쪽 검수](../../assets/items/female_rogue_top/tripo_v1/fitted_v6/review/idle-right.png).
+
+![오른팔 소매 보정 후 대기 자세 후면](../../assets/items/female_rogue_top/tripo_v1/fitted_v6/review/idle-back.png)
+
+```bash
+node tools/export-female-rogue-seated-poses.mjs assets/items/female_rogue_top/tripo_v1/fitted_v6 idle1
+blender -b --python-exit-code 1 -P tools/blender-scripts/fit_female_rogue_sleeve.py
+node tools/validate-female-rogue-top.mjs
+```
+
 ## 출처·라이선스
 
 - 원화: OpenAI Codex built-in ImageGen(`codex exec`, codex-cli 0.162.1), **ChatGPT Pro 20x**, 2026-10-25.
