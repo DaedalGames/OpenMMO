@@ -15,6 +15,7 @@ bpy.ops.import_scene.gltf(filepath=str(OUTPUT / 'boots_female_rogue.glb'), bone_
 imported = set(bpy.data.objects)-before
 for old in boots:
     new = next(o for o in imported if o.type == 'MESH' and o.name.startswith(old.name))
+    assert [g.name for g in old.vertex_groups] == [g.name for g in new.vertex_groups]
     action = old.data.shape_keys.animation_data.action
     old.data = new.data
     old.data.shape_keys.animation_data_create()

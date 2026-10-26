@@ -170,7 +170,7 @@ function modularCharacterPreview(): Plugin {
       import.meta.url
     ),
     female_rogue_boots: new URL(
-      '../assets/items/female_rogue_boots/tripo_v1/fitted_v3/boots_female_rogue.glb',
+      '../assets/items/female_rogue_boots/tripo_v1/fitted_v5/boots_female_rogue.glb',
       import.meta.url
     ),
     female_rogue_garters: new URL(
@@ -190,7 +190,7 @@ function modularCharacterPreview(): Plugin {
       import.meta.url
     ),
     'female-rogue-boots-occlusion.json': new URL(
-      '../assets/items/female_rogue_boots/tripo_v1/fitted_v3/body-occlusion.json',
+      '../assets/items/female_rogue_boots/tripo_v1/fitted_v5/body-occlusion.json',
       import.meta.url
     ),
     'female-rogue-top-occlusion.json': new URL(

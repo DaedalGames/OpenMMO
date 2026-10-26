@@ -1,5 +1,7 @@
 # 여성 로그 부츠
 
+현재 프리뷰는 아래 **발목 재리깅 v5**를 사용한다.
+
 [여성 로그 원화](../../client/public/character_concepts/female_rogue.webp)의 검은 허벅지 높이 가죽 부츠를
 Tripo 입력용 정면·후면 원화로 옮겼다. 빨간 밑창의 v2를 2026-10-26 Tripo 생성 입력으로 사용했다.
 
@@ -123,7 +125,7 @@ blender -b --python-exit-code 1 -P tools/blender-scripts/sync_female_rogue_boot_
 
 - 굽 기둥에서 앞코와 아치를 향하는 안쪽 면을 빨간색으로 맞췄다.
   각 부츠의 안쪽 면 24개만 기존 빨간 밑창 영역을 사용하며, 굽 옆면·뒷면은 검은색이다.
-  현재 여성 프리뷰는 v3를 사용한다.
+  이 색상 보정 결과는 현재 발목 재리깅 v5에도 유지한다.
 - v2와 삼각형 모서리별로 비교해 안쪽 면 밖의 색상·ORM 좌표가 정확히 같음을 확인했다.
   빨간 바닥·아치·굽 끝과 검은 밑창 테두리를 유지한다. 형상·노멀·스킨 가중치·앉기 모프,
   원본 PBR 이미지와 기존 4,210 triangles, 몸체 가림·접지 설정도 유지했다. 새 생성 요청은 없다.
@@ -145,15 +147,56 @@ node tools/validate-female-rogue-boots.mjs
 blender -b --python-exit-code 1 -P tools/blender-scripts/sync_female_rogue_boot_rim.py -- assets/items/female_rogue_boots/tripo_v1/fitted_v3
 ```
 
-## 출처·라이선스
+## 이전 발목 보정 v4 — [미사용]
 
-치마와 부츠 사이의 앞뒤 가터는 [별도 가터 스트랩](modular-female-rogue-garters.md)으로 연결한다.
-부츠의 형상·색상·가림 정보를 바꾸지 않고, 로그 치마와 함께 착용했을 때 표시한다.
+2026-10-26. 발목 둘레를 늘리고 Foot/Leg 전환을 넓혀 단면적을 보완했으나,
+사용자 검수에서 발목 위가 계속 접히는 문제가 확인됐다. 단면적 증가와 기존 유한 변형 검사는
+관절이 잘못된 구간에서 휘는 문제를 검출하지 못했다. 이 버전은 프리뷰에서 제외했다.
 
-- 원화 생성: OpenAI Codex built-in `image_gen`, **ChatGPT Pro 20x**, 2026-10-26.
-  OpenAI 출력물 이용 조건을 따른다. 참조 원화의 출처는 [캐릭터 제작 기록](characters.md)을 따른다.
-- 참조 이미지는 원본을 흰 바탕에 합성하고 `[220,640,360,590]` 영역을 FFmpeg로 추출했다.
-  생성 시트는 1536×1024이며 정면 `[192,0,512,1024]`, 후면 `[832,0,512,1024]`를 잘랐다.
-  각 입력은 460×920으로 비율을 유지해 축소한 뒤 1024×1024 흰 바탕 중앙에 배치했다.
-- 3D 생성: Tripo API 유료 크레딧, 2026-10-26. [다중 이미지 API](https://developers.tripo3d.ai/en/docs/generation-multiview-to-model/p),
-  [이용 조건](https://developers.tripo3d.ai/en/terms)을 따른다.
+## 발목 재리깅 v5 — 2026-10-26
+
+발목 위 종아리까지 Foot 가중치를 강제로 넣은 것이 원인이었다.
+발목 관절을 회전시킬 때 원래 종아리 방향을 유지해야 할 구간까지 함께 당겨져
+발목 위가 꺾였다. v4의 두께 보정은 이를 해결하지 못했다.
+
+- v3의 하이힐 착용 형태를 기준으로 여성 몸체의 실제 발목 피부에서 가중치를 다시 옮겼다.
+  발등의 단단한 부분과 밑창·굽은 Foot을 따르고, 발목 위 종아리는 Leg를 따른다.
+  높이 170–270mm의 종아리에 남은 Foot 가중치는 0이다.
+- 본 위치·계층·65본 inverse bind와 30도 하이힐 보정은 일치했다. 이 값을 바꾸지 않고
+  새 가중치에 맞춰 메시와 노멀을 공통 bind로 역변환했다.
+  기준 하이힐 착용 자세의 형태는 기존 v3와 0.002mm 이내로 일치하며, 셰이더 노멀 방향도 유지한다.
+- 밑창·굽과 위쪽 부츠 몸통, 기존 UV·PBR 이미지·앉기 윗단 모프를 보존했다.
+  삼각형은 양쪽 합계 4,210개이며 조립 캐릭터의 이전 삼각형 예산은 변하지 않는다.
+- 발 본만 ±30도·±60도 돌리는 검사를 추가했다. 기존 v3는 종아리 정점이 최대 약 9.7mm 움직였으나,
+  v5의 같은 구간은 움직이지 않는다. 실제 런타임 14개 동작 × 61시점도 검사한다.
+  걷기·달리기의 발목 단면은 자기 기준 착용 자세의 97% 이상을 유지해야 한다.
+- 가죽 변 길이는 실제 하이힐 착용 자세를 기준으로 비교한다. 역바인딩한 맨발 bind에서
+  압축된 변 길이를 분모로 쓰면 착용 자세의 정상적인 복원이 과도한 늘어남으로 집계될 수 있었다.
+  65본 bind 일치, 가중치 정규화, 굽·밑창 강체 길이, 반복 자세 복원 검사는 별도로 유지한다.
+- 출처는 위 Tripo v1과 여성 공통 몸체를 그대로 따른다. 신규 AI 생성·유료 요청은 없다.
+
+[현재 GLB](../../assets/items/female_rogue_boots/tripo_v1/fitted_v5/boots_female_rogue.glb),
+[Blender 편집본](../../assets/items/female_rogue_boots/tripo_v1/fitted_v5/female-rogue-boots-fitted.blend),
+[재리깅 기록](../../assets/items/female_rogue_boots/tripo_v1/fitted_v5/fitting.json),
+[발목 검사](../../assets/items/female_rogue_boots/tripo_v1/fitted_v5/ankle-validation.json),
+[동작 검사](../../assets/items/female_rogue_boots/tripo_v1/fitted_v5/runtime-validation.json),
+[브라우저 검사](../../assets/items/female_rogue_boots/tripo_v1/fitted_v5/browser-validation.json).
+
+![발목 재리깅 후 걷기](../../assets/items/female_rogue_boots/tripo_v1/fitted_v5/review/walk-after.png)
+
+```bash
+.venv/bin/python tools/rerig-female-rogue-boot-ankles.py
+node tools/validate-female-rogue-boots.mjs
+.venv/bin/python tools/validate-female-rogue-boot-ankles.py
+blender -b --python-exit-code 1 -P tools/blender-scripts/sync_female_rogue_boot_rim.py -- assets/items/female_rogue_boots/tripo_v1/fitted_v5
+```
+
+## 걷기 각도 보정 철회 — 2026-10-27
+
+앞꿈치의 기준 각도를 보정하고 회전 범위를 제한한 시도는 사용자 검수에서 더 부자연스럽다고 판단됐다.
+추가한 걷기·횃불 걷기 각도 보정과 클립 제작·Blender 자세 변경을 되돌렸다.
+현재 프리뷰는 발목 재리깅 v5와 그 직후의 원래 걷기 회전을 사용한다.
+
+커밋 전 실패한 v4의 GLB·Blender·중복 검사 출력과 폐기한 걷기 각도의 비교 이미지를 삭제했다.
+최종 v5와 문서용 착용 이미지, 원본·출처 기록을 보존한다.
+v3 GLB는 재리깅 입력이며, v1 Blender는 최종 편집 장면을 재현하는 입력이므로 유지한다.

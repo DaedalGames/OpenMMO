@@ -5,7 +5,7 @@ import { headlessThree, clipSampler, hash } from './lib/headless-three.mjs'
 import { ensureFemalePreview } from './lib/ensure-female-preview.mjs'
 
 await ensureFemalePreview('animations')
-const directory = process.argv[2] ?? 'assets/items/female_rogue_boots/tripo_v1/fitted_v3'
+const directory = process.argv[2] ?? 'assets/items/female_rogue_boots/tripo_v1/fitted_v5'
 const basePath = 'assets/modular_human_female_01/rig_v1/female-base.glb'
 const partPath = `${directory}/boots_female_rogue.glb`
 const { server, load } = await headlessThree()
@@ -60,7 +60,7 @@ try {
     const index = mesh.geometry.index
     for (let i = 0; i < index.count; i += 3) for (let k = 0; k < 3; k++) {
       const a = index.getX(i+k), b = index.getX(i+(k+1)%3), length = rest[a].distanceTo(rest[b])
-      if (length < .004) continue
+      if (length < 1e-6) continue
       const rigid = rest[a].y < .324 && rest[b].y < .324 && skinWeight.getX(a) > .99999 && skinWeight.getX(b) > .99999 && skinIndex.getX(a) === skinIndex.getX(b)
       ;(rigid ? rigidEdges : edges).push([a,b,length])
     }
@@ -75,6 +75,14 @@ try {
   mask.setEquipped('rogue-boots', false)
   assert.equal(body.geometry, geometry)
   const ground = femaleBootGround(base.scene, body, boots, asset.scene.userData.heel_pose)
+  ground.pose('walk')
+  for (const part of parts) {
+    const equipped = part.rest.map((_,i) => part.mesh.getVertexPosition(i,new THREE.Vector3()))
+    part.edges = part.edges.map(([a,b]) => [a,b,equipped[a].distanceTo(equipped[b])]).filter(([, , length]) => length >= .004)
+    part.rigidEdges = part.rigidEdges.filter(([, , length]) => length >= .004)
+  }
+  ground.restore()
+  base.scene.updateMatrixWorld(true)
   const handBones = ['LeftHand','RightHand'].map(name=>base.scene.getObjectByName(name))
   const armBones = ['Left','Right'].flatMap(side=>['Arm','ForeArm','Hand'].map(name=>base.scene.getObjectByName(side+name)))
   const clips = [], snapshots = []
@@ -83,7 +91,7 @@ try {
     .filter(i=>body.geometry.attributes.position.getY(i)<.144)
   for (const clip of base.animations) {
     updateModularPoseCorrectives(base.scene,clip.name)
-    let rigidStretch = 0, flexibleRatio = 0, minimumHeight = Infinity, maximumLift = 0, minimumGroundAlignment = Infinity, maximumHandLiftError = 0
+    let rigidStretch = 0, flexibleRatio = 0, minimumHeight = Infinity, maximumLift = 0, minimumGroundAlignment = Infinity, maximumHandLiftError = 0, worstFlexibleEdge
     for (const { time, sample } of sampler(clip)) {
       const originalRotations = skeleton.bones.map(bone=>bone.quaternion.toArray())
       const originalHands = handBones.map(bone=>bone.getWorldPosition(new THREE.Vector3()))
@@ -108,7 +116,13 @@ try {
           minimumHeight = Math.min(minimumHeight, p.y+elevation)
           frameFloor = Math.min(frameFloor, p.y+elevation)
         }
-        for (const [a,b,length] of edges) flexibleRatio = Math.max(flexibleRatio, posed[a].distanceTo(posed[b])/length)
+        for (const [a,b,length] of edges) {
+          const ratio = posed[a].distanceTo(posed[b])/length
+          if (ratio > flexibleRatio) {
+            flexibleRatio = ratio
+            worstFlexibleEdge = {mesh:mesh.name,a,b,time,length,rest_a:rest[a].toArray(),rest_b:rest[b].toArray()}
+          }
+        }
         for (const [a,b,length] of rigidEdges) rigidStretch = Math.max(rigidStretch, Math.abs(posed[a].distanceTo(posed[b])/length-1))
       }
       minimumGroundAlignment = Math.min(minimumGroundAlignment,frameFloor-(clip.name === 'sit_idle' ? 0 : Math.min(0,barefootFloor)))
@@ -127,11 +141,12 @@ try {
       maximum_flexible_edge_ratio:flexibleRatio,minimum_height_m:minimumHeight,maximum_root_lift_m:maximumLift,
       minimum_ground_difference_from_original_motion_m:minimumGroundAlignment,
       maximum_seated_hand_lift_error_m:maximumHandLiftError,
-      sole_leveling_expected:standingMotions.has(clip.name)})
+      sole_leveling_expected:standingMotions.has(clip.name),worst_flexible_edge:worstFlexibleEdge})
   }
   const report = {date:'2026-10-26',source:{path:partPath,sha256:hash(partPath)},body:{path:basePath,sha256:hash(basePath)},
     triangles:boots.reduce((sum,mesh)=>sum+mesh.geometry.index.count/3,0),exact_65_bone_bind:true,
-    normalized_four_weights:true,no_opposite_leg_influences:true,body_mask_restores:true,heel_pose_does_not_accumulate:true,clips}
+    normalized_four_weights:true,no_opposite_leg_influences:true,body_mask_restores:true,heel_pose_does_not_accumulate:true,
+    flexible_edge_reference:'Heel-equipped authoring pose before animation; inverse binding can compress the unequipped bind geometry.',clips}
   writeFileSync(`${directory}/runtime-validation.json`,JSON.stringify(report,null,2)+'\n')
   writeFileSync(`${directory}/animation-samples.json`,JSON.stringify(snapshots))
   console.log(JSON.stringify(report,null,2))
