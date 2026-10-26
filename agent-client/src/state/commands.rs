@@ -14,7 +14,7 @@ impl SharedState {
     pub fn player_attack_wait(&self) -> std::time::Duration {
         self.last_player_attack_at
             .map_or(std::time::Duration::ZERO, |last| {
-                self.attack_cooldown.saturating_sub(last.elapsed())
+                self.attack_interval().saturating_sub(last.elapsed())
             })
     }
 

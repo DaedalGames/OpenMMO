@@ -16,8 +16,6 @@ use crate::dungeon::{DoorApproach, Dungeon};
 use crate::geom::PlanarDelta;
 use crate::state::SharedState;
 
-const ATTACK_RANGE: f32 = 2.0;
-
 const APPROACH_RANGE: f32 = 1.0;
 
 const PICKUP_ARRIVE_RANGE: f32 = 2.0;
@@ -106,7 +104,7 @@ impl WalkTo<'_> {
         onlinerpg_shared::dungeon::passability_floor_for_level(level.unwrap_or(0))
     }
 
-    fn tuning(&self) -> Tuning {
+    fn tuning(&self, s: &SharedState) -> Tuning {
         match self {
             // Characters carry a little arrive slack over APPROACH_RANGE so
             // reaching the pulled-back path goal always counts as in range.
@@ -118,7 +116,7 @@ impl WalkTo<'_> {
                 max_doors: MAX_CHASE_DOORS,
             },
             Self::Monster(_) => Tuning {
-                arrive_range: ATTACK_RANGE,
+                arrive_range: s.attack_approach_range(),
                 max_distance: MAX_CHASE_DISTANCE,
                 max_secs: MAX_CHASE_SECS,
                 needs_clear_line: true,
@@ -233,7 +231,7 @@ async fn walk_inner(
     sprint: Option<bool>,
     owned_request: &mut Option<u32>,
 ) -> Walked {
-    let tuning = to.tuning();
+    let tuning = to.tuning(&*state.lock().await);
     let schedule = matches!(to, WalkTo::Schedule { .. });
     let fixed = matches!(to, WalkTo::Place { .. } | WalkTo::Schedule { .. });
     let started = Instant::now();

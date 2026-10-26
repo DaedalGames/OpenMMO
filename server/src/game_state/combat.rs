@@ -31,6 +31,7 @@ use onlinerpg_shared::inventory::{EquipSlot, GroundItem, ItemInstance, PlayerInv
 use onlinerpg_shared::messages::SkillVictim;
 use onlinerpg_shared::monster_ai::{SkillArea, SkillDamage, GROUND_STRIKE_RADIUS, REACH_SLACK};
 use onlinerpg_shared::monster_body::reach_point;
+use onlinerpg_shared::reach::{PLAYER_MELEE_REACH_METERS, REACH_SLACK_METERS};
 use onlinerpg_shared::xp;
 use rand::Rng;
 use std::f32::consts::TAU;
@@ -39,10 +40,6 @@ use std::time::Duration;
 use tracing::{debug, info, warn};
 
 const WEAPON_DROP_OFFSET_METERS: f32 = 2.0;
-// Matches the web and agent clients' melee reach.
-pub(super) const PLAYER_MELEE_ATTACK_RANGE_METERS: f32 = 2.0;
-// Allow for network lag on both melee and ranged attacks.
-pub(super) const PLAYER_RANGE_TOLERANCE_METERS: f32 = 1.0;
 // Out-of-range swings may still pull aggro when the monster is plausibly
 // nearby, but farther requests are ignored to prevent remote provocation.
 pub(super) const PLAYER_ATTACK_PROVOKE_RANGE_METERS: f32 = 10.0;
@@ -230,6 +227,7 @@ struct EquippedWeapon {
     enchant: i32,
     /// Reach in meters, or `None` for melee.
     range: Option<f32>,
+    attack_interval_ms: Option<u64>,
     /// Ability the hit and damage bonus read, or `None` to keep STR.
     ability: Option<crate::item_defs::Ability>,
     /// What this weapon spends per shot, or `None` when firing is free.
@@ -252,6 +250,7 @@ impl Default for EquippedWeapon {
             dice: "1d2".to_string(),
             enchant: 0,
             range: None,
+            attack_interval_ms: None,
             ability: None,
             ammo_kind: None,
         }
@@ -304,8 +303,25 @@ impl super::GameState {
     }
 
     async fn player_attack_interval_ms(&self, player_id: &PlayerId) -> u64 {
+        let weapon_interval = self
+            .inventories
+            .read()
+            .await
+            .get(player_id)
+            .and_then(|inv| self.main_hand_def(inv))
+            .and_then(|(_, def)| def.weapon_attack_interval_ms());
+        self.scaled_attack_interval_ms(player_id, weapon_interval)
+            .await
+    }
+
+    async fn scaled_attack_interval_ms(
+        &self,
+        player_id: &PlayerId,
+        weapon_interval: Option<u64>,
+    ) -> u64 {
+        let base = weapon_interval.unwrap_or(*PLAYER_ATTACK_INTERVAL_MS);
         let attack_mult = self.hunger_attack_mult(player_id).await.max(f32::EPSILON);
-        (*PLAYER_ATTACK_INTERVAL_MS as f32 / attack_mult).ceil() as u64
+        (base as f32 / attack_mult).ceil() as u64
     }
 
     async fn last_player_attack(&self, player_id: &PlayerId) -> u64 {
@@ -338,9 +354,15 @@ impl super::GameState {
         remaining.min(next_change.unwrap_or(remaining))
     }
 
-    async fn claim_player_attack_window(&self, player_id: &PlayerId) -> PlayerAttackWindow {
+    async fn claim_player_attack_window(
+        &self,
+        player_id: &PlayerId,
+        weapon: &EquippedWeapon,
+    ) -> PlayerAttackWindow {
         let now = Self::now_ms();
-        let checked_interval_ms = self.player_attack_interval_ms(player_id).await;
+        let checked_interval_ms = self
+            .scaled_attack_interval_ms(player_id, weapon.attack_interval_ms)
+            .await;
         let mut last_attacks = self.last_player_attacks.write().await;
         let last = last_attacks.entry(*player_id).or_insert(0);
         let result = PlayerAttackWindow {
@@ -353,6 +375,14 @@ impl super::GameState {
             *last = now;
         }
         result
+    }
+
+    fn main_hand_def<'a>(
+        &'a self,
+        inv: &'a PlayerInventory,
+    ) -> Option<(&'a ItemInstance, &'a crate::item_defs::ItemDefinition)> {
+        let item = inv.equipped.get(&EquipSlot::MainHand)?;
+        Some((item, self.item_defs.get(&item.item_def_id)?))
     }
 
     /// A player's worn gear paired with its defs — the single place that
@@ -473,19 +503,18 @@ impl super::GameState {
             let inventories = self.inventories.read().await;
             inventories
                 .get(player_id)
-                .and_then(|inv| inv.equipped.get(&EquipSlot::MainHand))
-                .and_then(|item| {
-                    self.item_defs.get(&item.item_def_id).and_then(|def| {
-                        def.damage_dice().map(|dice| EquippedWeapon {
-                            dagger_instance: (def.weapon_type
-                                == Some(crate::item_defs::WeaponType::Dagger))
-                            .then_some(item.instance_id),
-                            dice: dice.to_string(),
-                            enchant: item.enchant,
-                            range: def.weapon_range(),
-                            ability: def.ranged_ability(),
-                            ammo_kind: def.ammo_kind.clone(),
-                        })
+                .and_then(|inv| self.main_hand_def(inv))
+                .and_then(|(item, def)| {
+                    def.damage_dice().map(|dice| EquippedWeapon {
+                        dagger_instance: (def.weapon_type
+                            == Some(crate::item_defs::WeaponType::Dagger))
+                        .then_some(item.instance_id),
+                        dice: dice.to_string(),
+                        enchant: item.enchant,
+                        range: def.weapon_range(),
+                        attack_interval_ms: def.weapon_attack_interval_ms(),
+                        ability: def.ranged_ability(),
+                        ammo_kind: def.ammo_kind.clone(),
                     })
                 })
         };
@@ -593,13 +622,10 @@ impl super::GameState {
         // monsters on another floor, but gate here too so a stale monster
         // id can't drive a cross-floor hit (the original bug: a surface
         // guard striking a monster on the dungeon floor beneath it).
-        // A weapon that declares a `range` (items.csv) shoots that far; the
-        // clients gate on the same column, so the two never drift. The lag
-        // allowance rides on top of whichever reach is in play rather than
-        // being folded into the melee one, which `max` would swallow whole.
+        // A weapon's `range` (items.csv) is its reach, shorter or longer than
+        // melee; clients swing from inside it, so the slack only covers lag.
         let weapon = self.equipped_weapon(player_id).await;
-        let attack_range = PLAYER_MELEE_ATTACK_RANGE_METERS.max(weapon.range.unwrap_or(0.0))
-            + PLAYER_RANGE_TOLERANCE_METERS;
+        let attack_range = weapon.range.unwrap_or(PLAYER_MELEE_REACH_METERS) + REACH_SLACK_METERS;
         let body = self
             .monster_defs
             .get(&monster.monster_type)
@@ -727,7 +753,9 @@ impl super::GameState {
                 return false;
             }
         };
-        let timing = self.claim_player_attack_window(player_id).await;
+        let timing = self
+            .claim_player_attack_window(player_id, &context.weapon)
+            .await;
         let accepted = timing.accepted;
         if let Some(audit) = audit {
             audit.finish(
@@ -846,7 +874,11 @@ impl super::GameState {
                 .await;
             return None;
         }
-        if !self.claim_player_attack_window(player_id).await.accepted {
+        if !self
+            .claim_player_attack_window(player_id, &context.weapon)
+            .await
+            .accepted
+        {
             drop(cooldowns);
             self.reject_dagger_skill(player_id, monster_id, "attack_cooldown", 0)
                 .await;

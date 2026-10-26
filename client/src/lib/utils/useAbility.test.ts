@@ -146,22 +146,25 @@ it('queues and cancels inspection, and cancels it when using another skill', () 
   expect(networkManager.sendUseAbility).toHaveBeenCalledOnce()
 })
 
-it('queues Double Slash for the next attack, toggles it off, and honors its cooldown', () => {
-  updatePlayer({ characterClass: 'rogue' })
-  inventoryStore.set({ bag: [], equipped: { main_hand: testItem('dagger') } })
-  manaState.set({ mana: 0, max_mana: 10 })
-  useAbility('dagger_double_slash')
-  expect(get(daggerSkillState).queued).toBe(true)
-  useAbility('dagger_double_slash')
-  expect(get(daggerSkillState).queued).toBe(false)
-  acknowledgeDaggerSkill(10000)
-  useAbility('dagger_double_slash')
-  expect(get(daggerSkillState).queued).toBe(false)
-  expect(reportSkillFailure).toHaveBeenCalledWith(
-    'Double Slash is not ready yet.'
-  )
-  expect(networkManager.sendUseAbility).not.toHaveBeenCalled()
-})
+it.each(['dagger', 'worn_dagger'])(
+  'queues Double Slash with %s, toggles it off, and honors its cooldown',
+  (itemId) => {
+    updatePlayer({ characterClass: 'rogue' })
+    inventoryStore.set({ bag: [], equipped: { main_hand: testItem(itemId) } })
+    manaState.set({ mana: 0, max_mana: 10 })
+    useAbility('dagger_double_slash')
+    expect(get(daggerSkillState).queued).toBe(true)
+    useAbility('dagger_double_slash')
+    expect(get(daggerSkillState).queued).toBe(false)
+    acknowledgeDaggerSkill(10000)
+    useAbility('dagger_double_slash')
+    expect(get(daggerSkillState).queued).toBe(false)
+    expect(reportSkillFailure).toHaveBeenCalledWith(
+      'Double Slash is not ready yet.'
+    )
+    expect(networkManager.sendUseAbility).not.toHaveBeenCalled()
+  }
+)
 
 it('ignores unknown, hidden, and other-class skills', () => {
   for (const id of ['unknown', 'radiance', 'bow_mark', 'dagger_double_slash'])

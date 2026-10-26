@@ -31,6 +31,19 @@ vi.mock('./characterAnimationUtils', () => ({
 
 describe('weapon type animations', () => {
   const profile = weaponAnimationFor({ weaponType: 'great_sword' })!
+  it.each(['dagger', 'worn_dagger'])(
+    'keeps ordinary idle and movement when holding %s',
+    (itemId) => {
+      const dagger = getWeaponAnimation(itemId)
+      expect(weaponAnimationClipName(dagger, 'idle', 'walk')).toBeUndefined()
+      expect(weaponAnimationClipName(dagger, 'moving', 'walk')).toBeUndefined()
+      expect(weaponAnimationClipName(dagger, 'moving', 'run')).toBeUndefined()
+      expect(weaponAnimationClipName(dagger, 'attack', 'walk')).toBe(
+        'dagger_stab'
+      )
+    }
+  )
+
   it('selects movement and attack from the type dataset', () => {
     expect(weaponAnimationClipName(profile, 'moving', 'walk')).toBe(
       'great_sword_walk'

@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onDestroy } from 'svelte'
-  import { t } from '../i18n'
+  import type { ABILITIES } from '../data/abilities'
+  import { abilityTooltip } from '../i18n/abilityTooltip'
+  import { locale, t } from '../i18n'
   import {
     skillTooltip,
     type SkillTooltipParams,
@@ -8,7 +10,7 @@
   import { dragMeta, startDrag } from '../stores/dragStore'
 
   interface Props extends SkillTooltipParams {
-    id: string
+    id: (typeof ABILITIES)[number]['id']
     icon: string
     manaCost: number
     onUse: () => void
@@ -27,7 +29,10 @@
   class:dragging={$dragMeta && 'skill' in $dragMeta && $dragMeta.skill === id}
   aria-label={name}
   draggable="false"
-  use:skillTooltip={{ name, description, stats, details }}
+  use:skillTooltip={abilityTooltip(
+    { id, name, description, stats, details },
+    $locale
+  )}
   ondblclick={(event) => {
     if (event.button !== 0 || consecutiveClicks < 2) return
     consecutiveClicks = 0

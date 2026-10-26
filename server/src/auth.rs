@@ -40,6 +40,17 @@ const STARTER_ITEMS: &[(&str, u32, Option<&str>)] = &[
     ("worn_torch", 1, None),
 ];
 
+fn starter_items(class: &CharacterClass) -> &'static [(&'static str, u32, Option<&'static str>)] {
+    if *class == CharacterClass::Rogue {
+        &[
+            ("worn_dagger", 1, Some("main_hand")),
+            ("worn_torch", 1, None),
+        ]
+    } else {
+        STARTER_ITEMS
+    }
+}
+
 fn class_starter_items(
     class: &CharacterClass,
     gender: Gender,
@@ -65,7 +76,7 @@ fn class_starter_items(
             ("worn_caveman_boots", 1, Some("boots")),
             ("worn_caveman_bracers", 1, Some("hands")),
         ],
-        CharacterClass::Rogue if gender == Gender::Male => &[
+        CharacterClass::Rogue => &[
             ("worn_rogue_top", 1, Some("chest")),
             ("worn_rogue_pants", 1, Some("pants")),
             ("worn_rogue_gloves", 1, Some("hands")),
@@ -773,6 +784,8 @@ impl AuthService {
         Self::ensure_pricing_schema(&conn)?;
         Self::ensure_migrations_schema(&conn)?;
         Self::migrate_level_curve(&conn)?;
+        Self::migrate_female_rogue_starter_outfit(&conn)?;
+        Self::migrate_rogue_starter_daggers(&conn)?;
         Self::ensure_level_history_schema(&conn)?;
         Self::ensure_gold_history_schema(&conn)?;
         Self::ensure_weapon_enchant_history_schema(&conn)?;
@@ -1060,6 +1073,101 @@ impl AuthService {
         tx.commit()?;
         tracing::info!(migrated, "Migrated character XP to the new level curve");
         Ok(())
+    }
+
+    fn migrate_female_rogue_starter_outfit(conn: &Connection) -> Result<(), rusqlite::Error> {
+        const NAME: &str = "female_rogue_starter_outfit_20261027";
+        let tx = conn.unchecked_transaction()?;
+        let done: bool = tx.query_row(
+            "SELECT EXISTS(SELECT 1 FROM migrations WHERE name = ?1)",
+            [NAME],
+            |row| row.get(0),
+        )?;
+        if done {
+            return Ok(());
+        }
+        let mut characters = tx.prepare(
+            "SELECT id, account_name, character_name FROM characters \
+             WHERE gender = 'female' AND class = 'rogue'",
+        )?;
+        for character in characters.query_map([], |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+            ))
+        })? {
+            let (id, account, name) = character?;
+            if account.starts_with(NPC_ACCOUNT_PREFIX)
+                && crate::npc_defs::npc_defs().get_by_npc_name(&name).is_some()
+            {
+                continue;
+            }
+            for (item, quantity, slot) in
+                class_starter_items(&CharacterClass::Rogue, Gender::Female)
+            {
+                tx.execute(
+                    "INSERT INTO character_items (character_id, item_def_id, quantity) \
+                     SELECT ?1, ?2, ?3 WHERE NOT EXISTS \
+                     (SELECT 1 FROM character_items WHERE character_id = ?1 AND item_def_id = ?2)",
+                    params![id, item, quantity],
+                )?;
+                tx.execute(
+                    "UPDATE character_items SET equip_slot = ?3 WHERE id = \
+                     (SELECT id FROM character_items WHERE character_id = ?1 AND item_def_id = ?2 \
+                      AND equip_slot IS NULL ORDER BY id LIMIT 1) \
+                     AND NOT EXISTS (SELECT 1 FROM character_items WHERE character_id = ?1 AND equip_slot = ?3)",
+                    params![id, item, slot],
+                )?;
+            }
+        }
+        drop(characters);
+        tx.execute("INSERT INTO migrations (name) VALUES (?1)", [NAME])?;
+        tx.commit()
+    }
+
+    fn migrate_rogue_starter_daggers(conn: &Connection) -> Result<(), rusqlite::Error> {
+        const NAME: &str = "rogue_starter_dagger_20261027";
+        let tx = conn.unchecked_transaction()?;
+        let done: bool = tx.query_row(
+            "SELECT EXISTS(SELECT 1 FROM migrations WHERE name = ?1)",
+            [NAME],
+            |row| row.get(0),
+        )?;
+        if done {
+            return Ok(());
+        }
+        let mut characters = tx.prepare(
+            "SELECT id, account_name, character_name FROM characters WHERE class = 'rogue'",
+        )?;
+        for row in characters.query_map([], |row| {
+            Ok((
+                row.get::<_, i64>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+            ))
+        })? {
+            let (id, account, name) = row?;
+            if account.starts_with(NPC_ACCOUNT_PREFIX)
+                && crate::npc_defs::npc_defs().get_by_npc_name(&name).is_some()
+            {
+                continue;
+            }
+            tx.execute(
+                "INSERT INTO character_items (character_id, item_def_id, quantity) \
+                 SELECT ?1, 'worn_dagger', 1 WHERE NOT EXISTS \
+                 (SELECT 1 FROM character_items WHERE character_id = ?1 AND item_def_id = 'worn_dagger')", [id],
+            )?;
+            tx.execute("UPDATE character_items SET equip_slot = NULL WHERE character_id = ?1 AND item_def_id = 'worn_iron_sword' AND equip_slot = 'main_hand'", [id])?;
+            tx.execute(
+                "UPDATE character_items SET equip_slot = 'main_hand' WHERE id = \
+                 (SELECT id FROM character_items WHERE character_id = ?1 AND item_def_id = 'worn_dagger' ORDER BY id LIMIT 1) \
+                 AND NOT EXISTS (SELECT 1 FROM character_items WHERE character_id = ?1 AND equip_slot = 'main_hand')", [id],
+            )?;
+        }
+        drop(characters);
+        tx.execute("INSERT INTO migrations (name) VALUES (?1)", [NAME])?;
+        tx.commit()
     }
 
     fn migrate_item_definition_ids(conn: &Connection) -> Result<(), rusqlite::Error> {
@@ -2072,7 +2180,7 @@ impl AuthService {
                 "INSERT INTO character_items (character_id, item_def_id, quantity, equip_slot) \
                  VALUES (?1, ?2, ?3, ?4)",
             )?;
-            for (item_def_id, quantity, equip_slot) in STARTER_ITEMS
+            for (item_def_id, quantity, equip_slot) in starter_items(&class)
                 .iter()
                 .chain(class_starter_items(&class, gender))
             {
@@ -2682,6 +2790,158 @@ mod tests {
     }
 
     #[test]
+    fn female_rogue_outfit_migration_preserves_equipment_and_runs_once() {
+        let (auth, path) = temp_auth("female_rogue_outfit_migration");
+        let account = auth.login_google("sub-legacy-rogue").unwrap();
+        let female = auth
+            .create_character(
+                &account,
+                "LegacyRogue",
+                &plain_attributes(),
+                10,
+                CharacterClass::Rogue,
+                Gender::Female,
+            )
+            .unwrap();
+        let male = auth
+            .create_character(
+                &account,
+                "MaleRogue",
+                &plain_attributes(),
+                10,
+                CharacterClass::Rogue,
+                Gender::Male,
+            )
+            .unwrap();
+        let conn = auth.open_connection().unwrap();
+        conn.execute(
+            "DELETE FROM migrations WHERE name = 'female_rogue_starter_outfit_20261027'",
+            [],
+        )
+        .unwrap();
+        conn.execute("DELETE FROM character_items WHERE character_id = ?1 AND item_def_id IN ('worn_rogue_pants', 'worn_rogue_boots')", [female.id]).unwrap();
+        conn.execute("UPDATE character_items SET equip_slot = NULL WHERE character_id = ?1 AND item_def_id = 'worn_rogue_gloves'", [female.id]).unwrap();
+        conn.execute("UPDATE character_items SET equip_slot = 'chest', enchant = 3 WHERE character_id = ?1 AND item_def_id = 'worn_rogue_top'", [female.id]).unwrap();
+        conn.execute("INSERT INTO character_items (character_id, item_def_id, quantity, equip_slot) VALUES (?1, 'leather_pants', 1, 'pants')", [female.id]).unwrap();
+        let male_before = auth.load_inventory(male.id).unwrap().len();
+        drop(conn);
+        drop(auth);
+        let auth = AuthService::new(path.clone()).unwrap();
+        let items = auth.load_inventory(female.id).unwrap();
+        assert_eq!(
+            items
+                .iter()
+                .filter(|item| item.item_def_id == "worn_rogue_top")
+                .count(),
+            1
+        );
+        assert_eq!(
+            items
+                .iter()
+                .find(|item| item.item_def_id == "worn_rogue_top")
+                .unwrap()
+                .enchant,
+            3
+        );
+        let armor = auth.load_character_equipment(female.id).unwrap().armor;
+        assert_eq!(armor.chest.as_deref(), Some("worn_rogue_top"));
+        assert_eq!(armor.pants.as_deref(), Some("leather_pants"));
+        assert_eq!(armor.hands.as_deref(), Some("worn_rogue_gloves"));
+        assert_eq!(armor.boots.as_deref(), Some("worn_rogue_boots"));
+        assert_eq!(auth.load_inventory(male.id).unwrap().len(), male_before);
+        let conn = auth.open_connection().unwrap();
+        conn.execute("DELETE FROM character_items WHERE character_id = ?1 AND item_def_id = 'worn_rogue_boots'", [female.id]).unwrap();
+        drop(conn);
+        drop(auth);
+        let auth = AuthService::new(path).unwrap();
+        assert!(!auth
+            .load_inventory(female.id)
+            .unwrap()
+            .iter()
+            .any(|item| item.item_def_id == "worn_rogue_boots"));
+    }
+
+    #[test]
+    fn rogue_dagger_migration_keeps_weapons_and_runs_once() {
+        let (auth, path) = temp_auth("rogue_dagger_migration");
+        let account = auth.login_google("sub-legacy-daggers").unwrap();
+        let mut ids = Vec::new();
+        for (name, gender) in [("OldRogue", Gender::Male), ("OldShadow", Gender::Female)] {
+            let character = auth
+                .create_character(
+                    &account,
+                    name,
+                    &plain_attributes(),
+                    10,
+                    CharacterClass::Rogue,
+                    gender,
+                )
+                .unwrap();
+            ids.push(character.id);
+        }
+        let conn = auth.open_connection().unwrap();
+        conn.execute(
+            "DELETE FROM migrations WHERE name = 'rogue_starter_dagger_20261027'",
+            [],
+        )
+        .unwrap();
+        for id in &ids {
+            conn.execute("DELETE FROM character_items WHERE character_id = ?1 AND item_def_id = 'worn_dagger'", [id]).unwrap();
+        }
+        conn.execute("INSERT INTO character_items (character_id, item_def_id, quantity, equip_slot, enchant) VALUES (?1, 'worn_iron_sword', 1, 'main_hand', 2)", [ids[0]]).unwrap();
+        conn.execute("INSERT INTO character_items (character_id, item_def_id, quantity, equip_slot) VALUES (?1, 'steel_longsword', 1, 'main_hand')", [ids[1]]).unwrap();
+        drop(conn);
+        drop(auth);
+        let auth = AuthService::new(path.clone()).unwrap();
+        assert_eq!(
+            auth.load_character_equipment(ids[0])
+                .unwrap()
+                .main_hand
+                .as_deref(),
+            Some("worn_dagger")
+        );
+        assert_eq!(
+            auth.load_character_equipment(ids[1])
+                .unwrap()
+                .main_hand
+                .as_deref(),
+            Some("steel_longsword")
+        );
+        for id in &ids {
+            assert_eq!(
+                auth.load_inventory(*id)
+                    .unwrap()
+                    .iter()
+                    .filter(|item| item.item_def_id == "worn_dagger")
+                    .count(),
+                1
+            );
+        }
+        let sword = auth
+            .load_inventory(ids[0])
+            .unwrap()
+            .into_iter()
+            .find(|item| item.item_def_id == "worn_iron_sword")
+            .unwrap();
+        assert_eq!(sword.enchant, 2);
+        assert_eq!(sword.equip_slot, None);
+        let conn = auth.open_connection().unwrap();
+        conn.execute(
+            "DELETE FROM character_items WHERE character_id = ?1 AND item_def_id = 'worn_dagger'",
+            [ids[0]],
+        )
+        .unwrap();
+        drop(conn);
+        drop(auth);
+        let auth = AuthService::new(path).unwrap();
+        assert!(!auth
+            .load_inventory(ids[0])
+            .unwrap()
+            .iter()
+            .any(|item| item.item_def_id == "worn_dagger"));
+    }
+
+    #[test]
     fn rogues_start_with_four_equipped_unpriced_pieces_and_no_helmet() {
         let (auth, _) = temp_auth("auth_rogue_armor");
         for (name, gender) in [("Rogue", Gender::Male), ("Shadow", Gender::Female)] {
@@ -2697,14 +2957,6 @@ mod tests {
                 )
                 .unwrap();
             let items = auth.load_inventory(character.id).unwrap();
-            if gender == Gender::Female {
-                assert_eq!(items.len(), STARTER_ITEMS.len());
-                assert_eq!(
-                    auth.load_character_equipment(character.id).unwrap().armor,
-                    Default::default()
-                );
-                continue;
-            }
             for (id, slot) in [
                 ("worn_rogue_top", "chest"),
                 ("worn_rogue_pants", "pants"),
@@ -2723,7 +2975,17 @@ mod tests {
             }
             assert_eq!(items.len(), STARTER_ITEMS.len() + 4);
             let worn = auth.load_character_equipment(character.id).unwrap();
-            assert_eq!(worn.main_hand.as_deref(), Some("worn_iron_sword"));
+            assert_eq!(worn.main_hand.as_deref(), Some("worn_dagger"));
+            let dagger = crate::item_defs::item_defs().get("worn_dagger").unwrap();
+            assert_eq!(
+                dagger.weapon_type,
+                Some(crate::item_defs::WeaponType::Dagger)
+            );
+            assert!(dagger.untradeable);
+            assert_eq!(dagger.base_price, None);
+            assert!(!items
+                .iter()
+                .any(|item| item.item_def_id == "worn_iron_sword"));
             assert!(items.iter().any(|item| item.item_def_id == "worn_torch"));
             assert_eq!(worn.armor.head, None);
             assert_eq!(worn.armor.chest.as_deref(), Some("worn_rogue_top"));

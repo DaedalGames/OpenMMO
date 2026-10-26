@@ -223,8 +223,10 @@ export async function showFemaleBase(
   const hand = model.getObjectByName('RightHand')
   if (!hand) throw new Error('검을 장착할 오른손 본을 찾지 못했습니다.')
   weapon.name = 'femaleSteelLongsword'
-  weapon.position.copy(FEMALE_HAND_FITS['weapons/sword.glb'].position)
-  weapon.rotation.copy(FEMALE_HAND_FITS['weapons/sword.glb'].rotation!)
+  weapon.position.copy(FEMALE_HAND_FITS['weapons/steel_longsword.glb'].position)
+  weapon.rotation.copy(
+    FEMALE_HAND_FITS['weapons/steel_longsword.glb'].rotation!
+  )
   hand.add(weapon)
   const leftHand = model.getObjectByName('LeftHand')
   if (!leftHand) throw new Error('횃불을 장착할 왼손 본을 찾지 못했습니다.')

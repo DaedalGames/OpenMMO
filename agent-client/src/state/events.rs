@@ -297,9 +297,7 @@ impl SharedState {
                 .as_ref()
                 .is_some_and(|p| p.health > 0 && p.object_type.is_none())
             && self
-                .self_equipped
-                .get(&onlinerpg_shared::inventory::EquipSlot::MainHand)
-                .and_then(|item| crate::item_defs::get(&item.item_def_id))
+                .main_hand_def()
                 .is_some_and(|item| item.category.as_deref() == Some("fishing_rod"))
     }
 

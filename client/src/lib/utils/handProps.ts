@@ -15,7 +15,15 @@ export const FEMALE_HAND_FITS: Record<
   { position: THREE.Vector3; rotation?: THREE.Euler }
 > = {
   'weapons/sword.glb': {
+    position: new THREE.Vector3(0.0652, 0.0422, -0.0282),
+    rotation: new THREE.Euler(0, 0, 0.2),
+  },
+  'weapons/steel_longsword.glb': {
     position: new THREE.Vector3(0.0504, 0.1152, 0.0198),
+    rotation: new THREE.Euler(0, 0, 0.2),
+  },
+  'weapons/dagger.glb': {
+    position: new THREE.Vector3(-0.012, 0.112, 0.02),
     rotation: new THREE.Euler(0, 0, 0.2),
   },
   'weapons/torch.glb': {
@@ -39,7 +47,6 @@ function fitFemaleHandProp(
   if (!fit) return
   prop.position.copy(fit.position)
   if (fit.rotation) prop.rotation.copy(fit.rotation)
-  if (worldModel === 'weapons/sword.glb') prop.userData.female_sword = true
 }
 
 // Seat the model's off-origin handle between the thumb and index finger.
@@ -60,17 +67,14 @@ export const MANDOLIN_ITEM_DEF_ID = 'mandolin'
 const MANDOLIN_ROTATION = new THREE.Euler(-2.413, -0.409, -0.353)
 const MANDOLIN_POSITION = new THREE.Vector3(-0.03, 0.103, 0.126)
 
-/** Which hand holds a main-hand item. A bow is drawn with the right hand, so
- *  the stave itself sits in the left — every other weapon leads with the right. */
+// Bows sit in the left hand; other weapons lead with the right.
 export function mainHandBoneFor(
   itemDefId: string | null | undefined
 ): 'RightHand' | 'LeftHand' {
   return isRangedWeapon(itemDefId) ? 'LeftHand' : 'RightHand'
 }
 
-/** Pose a main-hand prop for the item it represents. `forearm` is this rig's
- *  forearm length (`forearmLength`); without it the bow falls back to the
- *  offset it was fitted at. */
+// Scale the bow's offset to this rig's forearm when available.
 export function poseMainHandProp(
   prop: THREE.Object3D,
   itemDefId: string,
@@ -98,8 +102,7 @@ export function poseMainHandProp(
 
 const forearmCache = new Map<string, number>()
 
-/** Elbow-to-wrist in metres, from the bind pose, for the arm `handBone` is on.
- *  0 when either bone is missing. Cached per `key` (the model's URL). */
+// Cache the bind-pose forearm length in metres; missing bones return zero.
 export function forearmLength(
   root: THREE.Object3D,
   handBone: 'RightHand' | 'LeftHand',
@@ -151,8 +154,7 @@ export function poseOffHandProp(
 /** Where the flame sits on a torch GLB that names no `torch_tip` empty. */
 export const FALLBACK_TORCH_TIP_LOCAL_OFFSET = new THREE.Vector3(0.6, 0, 0)
 
-/** Named tip empty baked into a prop GLB, or a fallback child at the given
- *  local offset — either way it rides the bone chain. */
+// Use the named tip, or attach a fallback at its local offset.
 export function resolveTipNode(
   prop: THREE.Object3D,
   name: string,

@@ -12,8 +12,7 @@ import { dependencies, output as previewOutput } from './lib/female-preview.mjs'
 import { ensureFemalePreview } from './lib/ensure-female-preview.mjs'
 
 const output = 'client/public/models/characters/modular_female'
-// The four fur panels hang from one shared hem rig, so they get one waist, ellipse and collider set.
-// Tuned in the browser preview against the pelt rig: standing poses hang on clearance, running follows the thighs.
+// Fur panels share the waist rig and colliders.
 function bakeSkirtRobe(doc) {
   const panels = doc.getRoot().listNodes().filter(node => node.getExtras().pelt_physics)
   const configs = panels.map(node => node.getExtras().pelt_physics)
@@ -55,6 +54,11 @@ const sources = {
   barbarian_boots: 'assets/items/female_barbarian_boots/tripo_v1/fitted_v3/boots_female_barbarian.glb',
   barbarian_gloves: 'assets/items/female_barbarian_bracers/tripo_v1/fitted_v1/gloves_female_barbarian.glb',
   barbarian_helmet: 'assets/items/female_barbarian_helmet/tripo_v2/fitted_v1/helmet_female_barbarian.glb',
+  rogue_top: 'assets/items/female_rogue_top/tripo_v1/fitted_v6/top_female_rogue.glb',
+  rogue_bottom: 'assets/items/female_rogue_skirt/tripo_v1/fitted_v6/bottom_female_rogue.glb',
+  rogue_boots: 'assets/items/female_rogue_boots/tripo_v1/fitted_v5/boots_female_rogue.glb',
+  rogue_gloves: 'assets/items/female_rogue_gloves/tripo_v1/fitted_v1/gloves_female_rogue.glb',
+  rogue_garters: 'assets/items/female_rogue_garters/fitted_v1/garters_female_rogue.glb',
   brilliance_helmet: 'assets/items/helm_of_brilliance/tripo_v2/fitted_v3/female/helmet_brilliance.glb',
 }
 const packs = ['locomotion', 'combat_melee', 'social', 'fishing', 'combat_ranged', 'offhand', 'enchant_armor', 'great_sword', 'riding', 'dagger_preview']
@@ -68,7 +72,7 @@ const selectedPart = partFlag === -1 ? undefined : process.argv[partFlag + 1]
 if (selectedPart !== undefined && !(selectedPart in sources)) throw new Error(`--part requires one of: ${Object.keys(sources).join(', ')}`)
 mkdirSync(`${output}/animations`, { recursive: true })
 const reportPath = 'doc/assets/female-knight-runtime-sources.json'
-const report = { date: '2026-10-17', inputs: {}, outputs: {} }
+const report = { date: '2026-10-27', inputs: {}, outputs: {} }
 const record = (path) => { report.inputs[path] = hash(path) }
 function writeReport() {
   const previous = existsSync(reportPath) ? JSON.parse(readFileSync(reportPath)) : {}
@@ -103,7 +107,7 @@ for (const [name, source] of Object.entries(sources)) {
   const doc = await io.read(source)
   const scene = doc.getRoot().listScenes()[0]
   const metadata = { ...scene.getExtras(), female_part: name }
-  if (!/^(base|(barbarian_)?hair)$/.test(name)) {
+  if (!/^(base|(barbarian_)?hair|rogue_garters)$/.test(name)) {
     const path = source.replace(/[^/]+$/, 'body-occlusion.json')
     record(path)
     metadata.body_mask = JSON.parse(readFileSync(path))

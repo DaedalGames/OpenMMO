@@ -6,22 +6,33 @@ import { getItemDef } from '../data/itemDefs'
 import { loadGLB } from './gltfCache'
 import { MODULAR_FEMALE_DIRECTORY } from './modelPaths'
 import { bindModularPart, skinnedParts } from './modularCharacter'
+import { femaleUnderwearColor } from './femaleUnderwearColor'
 import { femaleOutfitMask } from './female-outfit-mask'
 import { modularOutfitForArmor } from './modularEquipment'
 
 const slots = ['top', 'bottom', 'boots', 'gloves', 'helmet'] as const
 type Slot = (typeof slots)[number]
-type Style = 'plate' | 'barbarian'
-const prefixes: Record<Style, string> = { plate: '', barbarian: 'barbarian_' }
+type Style = 'plate' | 'barbarian' | 'rogue'
+const prefixes: Record<Style, string> = {
+  plate: '',
+  barbarian: 'barbarian_',
+  rogue: 'rogue_',
+}
 const styles = Object.keys(prefixes) as Style[]
-type Helmet = Style | 'brilliance'
+type Helmet = Exclude<Style, 'rogue'> | 'brilliance'
 // Worn by few, so it loads on first equip instead of with the body.
 const LAZY_HELMET = 'brilliance_helmet'
 const partName = (style: Style, slot: Slot | 'hair') =>
   `${prefixes[style]}${slot}`
-export const FEMALE_PARTS = styles.flatMap((style) =>
-  (['hair', ...slots] as const).map((slot) => partName(style, slot))
-)
+export const FEMALE_PARTS = styles
+  .flatMap((style) =>
+    (['hair', ...slots] as const)
+      .filter(
+        (slot) => style !== 'rogue' || (slot !== 'hair' && slot !== 'helmet')
+      )
+      .map((slot) => partName(style, slot))
+  )
+  .concat('rogue_garters')
 /** Boots parts in the order their baked variants follow the bare value. */
 export const FEMALE_BOOTS_PARTS = styles.map((style) =>
   partName(style, 'boots')
@@ -181,6 +192,7 @@ type Outfit = Record<Exclude<Slot, 'helmet'>, Style | null> & {
 interface FemaleState {
   mask: ReturnType<typeof femaleOutfitMask>
   refreshBoots: () => void
+  underwearColor: ReturnType<typeof femaleUnderwearColor>
   equipped?: Outfit
 }
 
@@ -238,16 +250,19 @@ function installBootsSwitch(scene: THREE.Object3D, state: FemaleState) {
 const femaleStyle = (itemId: string | null | undefined): Style | null => {
   if (!itemId) return null
   const item = getItemDef(itemId)
+  if (item?.worldModel?.startsWith('armor/rogue_')) return 'rogue'
   return item?.material === 'leather' ||
     item?.worldModel?.startsWith('armor/barbarian_')
     ? 'barbarian'
     : 'plate'
 }
 
-const femaleHelmet = (itemId: string | null | undefined): Helmet | null =>
-  modularOutfitForArmor({ head: itemId }).helmet === 'brilliance'
-    ? 'brilliance'
-    : femaleStyle(itemId)
+const femaleHelmet = (itemId: string | null | undefined): Helmet | null => {
+  if (modularOutfitForArmor({ head: itemId }).helmet === 'brilliance')
+    return 'brilliance'
+  const style = femaleStyle(itemId)
+  return style === 'rogue' ? 'barbarian' : style
+}
 
 function bindLazyHelmet(scene: THREE.Object3D): Promise<void> {
   let load = helmetLoads.get(scene)
@@ -335,14 +350,16 @@ export function applyFemaleArmor(
   if (!state) {
     const { female_parts } = scene.userData
     const body = meshes.find((mesh) => mesh.userData.female_body)!
+    const underwearColor = femaleUnderwearColor(body)
     const mask = femaleOutfitMask()
     for (const style of styles)
       for (const slot of slots) {
         const name = partName(style, slot)
-        mask.register(name, female_parts[name].body_mask, body)
+        if (female_parts[name])
+          mask.register(name, female_parts[name].body_mask, body)
       }
     mask.register('sleeves', female_parts.gloves.sleeve_mask, part('top')[0])
-    state = { mask, refreshBoots: () => {} }
+    state = { mask, underwearColor, refreshBoots: () => {} }
     if (female_parts[LAZY_HELMET]) registerLazyHelmet(scene, state)
     state.refreshBoots = installBootsSwitch(scene, state)
     states.set(scene, state)
@@ -362,6 +379,7 @@ export function applyFemaleArmor(
   for (const style of styles)
     for (const slot of slots) {
       const name = partName(style, slot)
+      if (!scene.userData.female_parts[name]) continue
       shown[name] = equipped[slot] === style
       for (const mesh of part(name)) mesh.visible = shown[name]
     }
@@ -369,7 +387,10 @@ export function applyFemaleArmor(
     shown[LAZY_HELMET] = helmet === 'brilliance'
     for (const mesh of part(LAZY_HELMET)) mesh.visible = shown[LAZY_HELMET]
   }
+  for (const mesh of part('rogue_garters'))
+    mesh.visible = equipped.bottom === 'rogue' && equipped.boots === 'rogue'
   state.mask.setEquippedAll(shown)
+  state.underwearColor(equipped.bottom === 'rogue')
   const bootsChanged = state.equipped?.boots !== equipped.boots
   state.equipped = equipped
   if (bootsChanged) state.refreshBoots()
@@ -379,7 +400,9 @@ export function applyFemaleArmor(
 export function disposeFemaleCharacter(root: THREE.Object3D) {
   const scene = femaleScene(root)
   if (!scene) return
-  states.get(scene)?.mask.dispose()
+  const state = states.get(scene)
+  state?.mask.dispose()
+  state?.underwearColor.dispose()
   states.delete(scene)
   helmetLoads.delete(scene)
   latestArmor.delete(scene)

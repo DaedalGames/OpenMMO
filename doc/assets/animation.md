@@ -436,3 +436,26 @@ tip followed the handle. Other rigs and offhand props kept their previous placem
 - 109시점 검사에서 발밑 최소 높이는 약 **1cm**, 지지 손의 최소 표면 높이는 **3mm**이며 왼손 위치 변화는 `1e-6m` 미만이다. 오른쪽 손목의 손바닥 방향과 하완 사이 각도는 1° 이내다. 삽끝 높이는 약 **27–38cm**, 순환 끝 위치 차이는 약 `8.1e-9m`다. 강철 장검 그립과 손바닥 기준 마디 방향의 최대 차이는 0.001° 미만이다. glTF Validator 오류·경고 0개(메시 없는 리그의 빈 노드는 정보 항목으로만 기록).
 - `/modular-character-preview.html?character=ysolde&motion=excavate&camera=side`에서 발굴 동작을 바로 연다. 게임과 미리보기는 `ysoldeExcavation.ts`의 삽 부착·검 그립 처리를 공유한다. 측면·오른손 확대, 일시정지·구간 탐색·재생 속도, 삽 표시 전환을 지원한다. 페이지 검사 결과는 `validation.json`의 `browser`에 기록한다. 임시 검수 페이지·로그·비교 화면은 2026-10-25 정리했으며, 현재 개발 미리보기와 반복 검사 스크립트 두 개를 유지한다.
 - 낮 순찰의 두 야외 구역에서 각각 65% 확률로 반경 1.25m 안의 새 위치를 뽑고, 도착하면 15–18초 발굴한다. 길이 막히면 발굴하지 않는다. 서버가 작업 자세를 주변 플레이어에게 전파하며, 일반 플레이어의 감정 표현 메뉴에는 추가하지 않는다. 발굴로 지형을 변경하거나 보상을 생성하지 않는다.
+
+## Dagger Basic Thrust (2026-10-27)
+
+- 출처: Adobe [Mixamo](https://www.mixamo.com/) `Stabbing.fbx`. 사용자가 2026-10-27
+  제공했으며 원본은 `assets/animations/dagger/Stabbing.fbx`에 보관한다(65본, 65프레임, 30fps).
+  라이선스는 위 두 베기 FBX와 같은 Adobe/Mixamo 약관이다. 무료, AI 생성 아님.
+- 파생: `build_dagger_preview.py`가 `dagger_preview.glb`에 `dagger_stab`(54/24초)을 추가한다.
+  팩은 기존 베기 클립의 출시 타이밍(53/24, 49/24초)에 맞춰 24fps로 내보낸다.
+  수평 루트 이동은 제거한다. 원본은 손이 어깨보다 높게 올라가므로, 팔을 뻗는 정도에 비례해
+  위팔을 어깨-손 각도 −8°(가슴 높이)로 내리고 손목을 15° 숙여 칼날을 지면과 평행하게 맞춘다.
+  팔을 뻗은 채 멈추는 구간은 원본 17–26프레임을 잘라 약 0.2초로 줄였다. 회수가 약 1.1초에
+  끝나 단검 공격 간격 1.2초(`items.csv` `attackIntervalMs`) 안에 들어온다.
+  남녀 모듈형 팩은 `--pack dagger_preview`로 다시 만들었고,
+  기존 `dagger_inward`·`dagger_outward` 값은 1e-6 이내로 유지된다.
+- 단검 무기의 일반 공격은 `dagger_stab`이다. `weapon_animations.csv`의 단검 프로필이
+  `dagger_preview.glb`를 쓰며 낡은 단검과 일반 단검에 동일하게 적용한다.
+  손이 최대로 뻗기 직전인 13프레임(540ms)을 타격 시점으로 잡아 서버 평타 타이밍에 맞춘다.
+- 단검은 `items.csv`의 `range`(리치)를 1.5m로 두어 일반 근접(2m)보다 가까이 다가가 공격한다.
+  서버도 같은 리치로 판정한다(규칙은 `doc/COMBAT.md` 사거리 게이트).
+- 평상시 대기·이동은 공통 동작을 유지한다. 찌르기 후 공격 간격에만 전투 대기로 복귀한다.
+- 기존 `dagger_double_slash`는 별도 스킬 동작으로 유지한다. 남녀 모듈형 리그에서
+  타격 시 손의 전방 진행, 어깨보다 낮은 손 높이, 수평 칼날을 `modularDaggerPack.test.ts`로 검사한다.
+- 처음 만든 코드 기반 찌르기(`daggerStabAnimation.ts`, 커밋 전)는 이 FBX로 대체했다.

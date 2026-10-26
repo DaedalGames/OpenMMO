@@ -551,6 +551,10 @@
   // Avoid using the fallback slash animation as a hit reaction.
   let hitClipLoaded = false
   let combatIdleClipLoaded = false
+  const combatIdleClip = () =>
+    combatIdleClipLoaded
+      ? validAnimations[AnimationIndex.COMBAT_IDLE]
+      : undefined
   let lastHitCounter = untrack(() => hitCounter)
   // After all packs load, an unknown `/anim` name is a typo.
   let debugPacksSearched = false
@@ -1897,8 +1901,8 @@
           if (playerState === 'idle') {
             playAnimationForState()
             return
-          } else if (playerState === 'attack' && combatIdleClipLoaded) {
-            startAction(validAnimations[AnimationIndex.COMBAT_IDLE], false)
+          } else if (playerState === 'attack' && combatIdleClip()) {
+            startAction(combatIdleClip()!, false)
             return
           }
         }
@@ -1914,17 +1918,16 @@
           return // Early return to prevent duplicate calls below
         }
 
-        // A finished swing used to park on its last frame for the rest of
-        // the cooldown; breathe with combat_idle instead. The next attack
-        // cycle's animKey change crossfades back into the slash.
+        // A finished swing would otherwise freeze on its last frame until the next one.
         if (
           playerState === 'attack' &&
           remainingTime <= 0.05 &&
           clip.name === weaponAnimationProfile?.attack
         ) {
-          const idle = weaponAnimationProfile?.idle
-            ? weaponClips.get(weaponAnimationProfile.idle)
-            : undefined
+          const idle =
+            (weaponAnimationProfile?.idle
+              ? weaponClips.get(weaponAnimationProfile.idle)
+              : undefined) ?? combatIdleClip()
           if (idle) startAction(idle, false)
         }
         if (
@@ -1933,9 +1936,9 @@
           clip.name === AnimationName.SLASH1 &&
           // When the pack lacked the clip the ordered array substituted a
           // fallback there — clamping is better than looping a swing.
-          combatIdleClipLoaded
+          combatIdleClip()
         ) {
-          startAction(validAnimations[AnimationIndex.COMBAT_IDLE], false)
+          startAction(combatIdleClip()!, false)
         }
       }
     }

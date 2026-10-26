@@ -99,9 +99,77 @@ describe('female modular starter outfits', () => {
       '/models/characters/female_knight.glb'
     )
     expect(getCharacterModelPath('rogue', 'female')).toBe(
+      MODULAR_FEMALE_MODEL_PATH
+    )
+    expect(getCharacterModelPath('rogue', 'female', true)).toBe(
       '/models/characters/female_rogue.glb'
     )
+    expect(getCharacterModelPath('priest', 'female')).toBe(
+      '/models/characters/female_priest.glb'
+    )
   })
+  it.skipIf(!hasAssets)(
+    'keeps iron and steel sword handles inside the curled female hand',
+    async () => {
+      const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
+      const { modelRoot } = createCharacterModelRoot(source.scene)
+      await applyCharacterArmor(modelRoot, { hands: 'worn_rogue_gloves' })
+      const pack = await loadCharacterAnimationPack(
+        MODULAR_FEMALE_MODEL_PATH,
+        CHARACTER_ANIMATION_PACK_PATHS.locomotion
+      )
+      const { loadHeadlessGlb } = await import('./headless-glb.fixture')
+      const hand = modelRoot.getObjectByName('RightHand')!
+      const mixer = new THREE.AnimationMixer(modelRoot)
+      for (const [item, file] of [
+        ['worn_iron_sword', 'sword'],
+        ['steel_longsword', 'steel_longsword'],
+      ]) {
+        const { scene: sword } = await loadHeadlessGlb(
+          `models/weapons/${file}.glb`
+        )
+        sword.updateMatrixWorld(true)
+        const handle = new THREE.Box3()
+        const point = new THREE.Vector3()
+        sword.traverse((node) => {
+          if (!(node instanceof THREE.Mesh)) return
+          const positions = node.geometry.attributes.position
+          for (let i = 0; i < positions.count; i++) {
+            point
+              .fromBufferAttribute(positions, i)
+              .applyMatrix4(node.matrixWorld)
+            if (point.x >= -0.1 && point.x <= -0.06) handle.expandByPoint(point)
+          }
+        })
+        expect(handle.isEmpty()).toBe(false)
+        const center = handle.getCenter(new THREE.Vector3())
+        poseMainHandProp(sword, item, undefined, MODULAR_FEMALE_MODEL_PATH)
+        hand.add(sword)
+        for (const name of ['idle1', 'walk', 'run']) {
+          const clip = pack.animations.find((clip) => clip.name === name)!
+          mixer.clipAction(clip).reset().play()
+          mixer.setTime(clip.duration / 3)
+          modelRoot.updateMatrixWorld(true)
+          const grip = new THREE.Line3(
+            sword.localToWorld(center.clone().setX(-0.11)),
+            sword.localToWorld(center.clone().setX(0.01))
+          )
+          for (const finger of ['Index', 'Middle', 'Ring', 'Pinky']) {
+            const tip = modelRoot
+              .getObjectByName(`RightHand${finger}3`)!
+              .getWorldPosition(new THREE.Vector3())
+            const distance = grip
+              .closestPointToPoint(tip, true, point)
+              .distanceTo(tip)
+            expect(distance, `${item}:${name}:${finger}`).toBeLessThan(0.035)
+          }
+          mixer.stopAllAction()
+        }
+        sword.removeFromParent()
+      }
+      disposeCharacterSkeletons(modelRoot)
+    }
+  )
   it.skipIf(!hasAssets)(
     'equips all five parts, restores hair and sleeves, and isolates character masks',
     async () => {
@@ -127,7 +195,7 @@ describe('female modular starter outfits', () => {
     }
   )
   it.skipIf(!hasAssets)(
-    'uses barbarian parts for leather and plate for other substitute armor',
+    'uses rogue parts for rogue gear and preserves substitute armor styles',
     async () => {
       const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
       const { modelRoot } = createCharacterModelRoot(source.scene)
@@ -145,11 +213,14 @@ describe('female modular starter outfits', () => {
         const barbarianStyle =
           item.material === 'leather' || id.startsWith('worn_barbarian_')
         const brilliance = id === 'helm_of_brilliance'
-        const [shown, hidden] = brilliance
-          ? ['brilliance_helmet', part]
-          : barbarianStyle
-            ? [`barbarian_${part}`, part]
-            : [part, `barbarian_${part}`]
+        const rogueStyle = item.worldModel?.startsWith('armor/rogue_')
+        const [shown, hidden] = rogueStyle
+          ? [`rogue_${part}`, part]
+          : brilliance
+            ? ['brilliance_helmet', part]
+            : barbarianStyle
+              ? [`barbarian_${part}`, part]
+              : [part, `barbarian_${part}`]
         await applyCharacterArmor(modelRoot, { [slot]: id } as ArmorEquipment)
         expect(count(modelRoot, shown), id).toBeGreaterThan(0)
         expect(count(modelRoot, hidden), id).toBe(0)
@@ -165,9 +236,55 @@ describe('female modular starter outfits', () => {
       for (const part of Object.values(parts)) {
         expect(count(modelRoot, part)).toBe(0)
         expect(count(modelRoot, `barbarian_${part}`)).toBe(0)
+        expect(count(modelRoot, `rogue_${part}`)).toBe(0)
       }
       expect(count(modelRoot, 'hair')).toBeGreaterThan(0)
       disposeCharacterSkeletons(modelRoot)
+    }
+  )
+  it.skipIf(!hasAssets)(
+    'equips the rogue creation outfit, gates garters and restores isolated body masks',
+    async () => {
+      const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
+      const { modelRoot: first } = createCharacterModelRoot(source.scene)
+      const { modelRoot: second } = createCharacterModelRoot(source.scene)
+      const body = (root: THREE.Object3D) =>
+        skinnedParts(root).find((mesh) => mesh.userData.female_body)!
+      const originalGeometry = body(first).geometry
+      const rogue = {
+        chest: 'worn_rogue_top',
+        pants: 'worn_rogue_pants',
+        hands: 'worn_rogue_gloves',
+        boots: 'worn_rogue_boots',
+      }
+      await applyCharacterArmor(first, rogue)
+      for (const part of ['top', 'bottom', 'gloves', 'boots', 'garters'])
+        expect(count(first, `rogue_${part}`)).toBeGreaterThan(0)
+      expect(count(first, 'rogue_garters')).toBe(768)
+      expect(count(first, 'hair')).toBeGreaterThan(0)
+      expect(body(first).geometry.index!.count).toBeLessThan(
+        originalGeometry.index!.count
+      )
+      expect(body(second).geometry).toBe(originalGeometry)
+      expect(
+        body(second).geometry.getAttribute('rogueUnderwear')
+      ).toBeUndefined()
+      await applyCharacterArmor(first, { ...rogue, boots: 'worn_plate_boots' })
+      expect(count(first, 'rogue_garters')).toBe(0)
+      expect(count(first, 'boots')).toBeGreaterThan(0)
+      await applyCharacterArmor(first, { ...rogue, pants: null })
+      expect(count(first, 'rogue_garters')).toBe(0)
+      await applyCharacterArmor(first, rogue)
+      expect(count(first, 'rogue_garters')).toBe(768)
+      await applyCharacterArmor(first, {})
+      expect(body(first).geometry.index!.count).toBe(
+        originalGeometry.index!.count
+      )
+      for (const part of ['top', 'bottom', 'gloves', 'boots', 'garters'])
+        expect(count(first, `rogue_${part}`)).toBe(0)
+      disposeCharacterSkeletons(first)
+      expect(body(first).geometry).toBe(originalGeometry)
+      disposeCharacterSkeletons(second)
     }
   )
   it.skipIf(!hasAssets)(

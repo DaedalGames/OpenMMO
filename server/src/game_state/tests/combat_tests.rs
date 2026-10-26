@@ -1112,10 +1112,8 @@ async fn a_bow_reaches_its_declared_range() {
     assert!(hit, "a +10 attack bonus always clears guard 10");
 }
 
-/// The server trails the walking player by the network lag, so a shot loosed
-/// the moment the chase stops at 10m reads as slightly farther here. Melee has
-/// always had that allowance; folding it into a `max` against the weapon range
-/// swallowed it, and every shot taken at the edge was refused.
+/// A client sees the target a little behind the server, so a shot at the
+/// bow's 10m reach must survive the slack on top of it.
 #[tokio::test]
 async fn a_bow_shot_at_its_range_survives_the_lag_the_server_trails_by() {
     let game_state = make_test_game_state("bow_range_lag_allowance");
@@ -1124,7 +1122,7 @@ async fn a_bow_shot_at_its_range_survives_the_lag_the_server_trails_by() {
         .monsters
         .write()
         .await
-        .insert("edge".to_string(), make_monster("edge", at(10.6), 0));
+        .insert("edge".to_string(), make_monster("edge", at(10.25), 0));
 
     game_state
         .broadcast_player_attack(&pid("archer"), "edge".to_string())
@@ -1134,17 +1132,16 @@ async fn a_bow_shot_at_its_range_survives_the_lag_the_server_trails_by() {
     assert!(hit);
 }
 
-/// A melee weapon keeps the 2m reach (plus lag tolerance) it always had, so
-/// an empty `range` column changes nothing.
+/// A dagger's 1.5m reach plus slack refuses a swing from past 2m.
 #[tokio::test]
-async fn a_melee_weapon_keeps_its_hardcoded_reach() {
-    let game_state = make_test_game_state("melee_reach_unchanged");
+async fn a_dagger_refuses_a_swing_past_its_reach() {
+    let game_state = make_test_game_state("dagger_reach_gate");
     let mut rx = setup_archer(&game_state, "dagger", attrs_with(30, 10)).await;
     game_state
         .monsters
         .write()
         .await
-        .insert("far".to_string(), make_monster("far", at(5.0), 0));
+        .insert("far".to_string(), make_monster("far", at(2.2), 0));
 
     game_state
         .broadcast_player_attack(&pid("archer"), "far".to_string())
@@ -1154,11 +1151,11 @@ async fn a_melee_weapon_keeps_its_hardcoded_reach() {
 }
 
 /// A body is struck at its surface: the dagger reaches a 9m boss whose
-/// centre sits far beyond 2m, and never through it from the far side.
+/// centre sits far beyond its reach, and never through it from the far side.
 #[tokio::test]
 async fn melee_reach_is_measured_at_a_body_surface() {
     for (center_x, rotation, reached) in [
-        (6.5, -std::f32::consts::FRAC_PI_2, true),
+        (5.3, -std::f32::consts::FRAC_PI_2, true),
         (8.0, -std::f32::consts::FRAC_PI_2, false),
     ] {
         let game_state = make_test_game_state(&format!("body_reach_{center_x}"));
@@ -1800,4 +1797,23 @@ async fn auto_attack_stops_when_the_last_arrow_is_spent() {
         .any(|m| matches!(m, ServerMessage::PlayerAttackStopped { .. })));
     game.process_due_player_attacks(None).await;
     assert!(drain(&mut rx).is_empty());
+}
+
+/// A dagger swings on its own 1.2 s cadence; other weapons keep the default.
+#[tokio::test]
+async fn a_dagger_swings_sooner_than_a_sword() {
+    for (weapon, ready) in [("worn_dagger", true), ("worn_iron_sword", false)] {
+        let game_state = make_test_game_state(&format!("attack_interval_{weapon}"));
+        setup_archer(&game_state, weapon, attrs_with(10, 10)).await;
+        game_state
+            .last_player_attacks
+            .write()
+            .await
+            .insert(pid("archer"), GameState::now_ms() - 1_300);
+        assert_eq!(
+            game_state.player_attack_ready(&pid("archer")).await,
+            ready,
+            "{weapon}"
+        );
+    }
 }

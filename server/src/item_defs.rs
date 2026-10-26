@@ -188,10 +188,12 @@ pub struct ItemDefinition {
     /// Phoenix talisman only — max-HP percentage restored by a revive.
     #[serde(rename = "reviveHpPercent", default)]
     pub revive_hp_percent: Option<u32>,
-    /// Weapon reach in meters. Absent means melee: the hardcoded reach in
-    /// `validate_player_attack` (doc/COMBAT.md 원거리 전투).
+    /// Weapon reach in meters. Absent means melee reach (shared `reach`).
     #[serde(default)]
     pub range: Option<f32>,
+    /// Swing interval; absent keeps `player_attack_interval`.
+    #[serde(rename = "attackIntervalMs", default)]
+    attack_interval_ms: Option<u64>,
     /// Ability whose modifier drives a ranged weapon's hit and damage rolls
     /// instead of STR.
     #[serde(rename = "rangedAbility", default)]
@@ -374,6 +376,11 @@ impl ItemDefinition {
         } else {
             None
         }
+    }
+
+    pub fn weapon_attack_interval_ms(&self) -> Option<u64> {
+        self.attack_interval_ms
+            .filter(|ms| self.is_weapon() && *ms > 0)
     }
 
     /// Reach in meters if this weapon declares one, else `None` (melee).

@@ -71,6 +71,8 @@ export interface ItemDefinition {
   capeColor?: string
   /** Weapon reach in meters. Absent means melee — see `weaponRangeMeters`. */
   range?: number
+  /** Swing interval; absent keeps the default attack cadence. */
+  attackIntervalMs?: number
   /** Ability whose modifier the server rolls a ranged weapon's hit and damage
    *  with (`dex` for the bow). Its presence is what makes a weapon ranged. */
   rangedAbility?: string
@@ -172,6 +174,14 @@ export function weaponRangeMeters(
   const def = itemDefId ? getItemDef(itemDefId) : undefined
   const range = def?.category === 'weapon' ? def.range : undefined
   return range && range > 0 ? range : PLAYER_ATTACK_RANGE_METERS
+}
+
+export function weaponAttackIntervalMs(
+  itemDefId: string | null | undefined
+): number | undefined {
+  const def = itemDefId ? getItemDef(itemDefId) : undefined
+  const ms = def?.category === 'weapon' ? def.attackIntervalMs : undefined
+  return ms && ms > 0 ? ms : undefined
 }
 
 /** A weapon that resolves on an ability instead of STR — the `rangedAbility`

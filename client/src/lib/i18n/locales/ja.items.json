@@ -331,6 +331,8 @@
   "worn_caveman_pants.name": "古びた原始戦士の毛皮の腰巻き",
   "worn_caveman_top.description": "新米原始戦士に支給される古びた衣服。商人は買い取りません。",
   "worn_caveman_top.name": "古びた原始戦士の肩掛け",
+  "worn_dagger.description": "使い込まれた短剣。商人は買い取ってくれません。",
+  "worn_dagger.name": "使い古した短剣",
   "worn_iron_sword.description": "使い込まれた鉄の長剣。商人は買い取ってくれません。",
   "worn_iron_sword.name": "使い古した鉄の剣",
   "worn_mandolin.description": "旅で古びても音色は健在のマンドリン。/play_musicで演奏できます。商人は買い取りません。",

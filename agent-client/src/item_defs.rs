@@ -37,6 +37,10 @@ pub struct ItemDef {
     pub grills_into: Option<String>,
     #[serde(default)]
     pub weight: f32,
+    #[serde(default)]
+    pub range: Option<f32>,
+    #[serde(rename = "attackIntervalMs", default)]
+    pub attack_interval_ms: Option<u64>,
 }
 
 impl ItemDef {

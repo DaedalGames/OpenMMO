@@ -4,6 +4,29 @@ use onlinerpg_shared::ability::{
 };
 
 impl SharedState {
+    pub fn main_hand_def(&self) -> Option<&'static crate::item_defs::ItemDef> {
+        self.self_equipped
+            .get(&onlinerpg_shared::inventory::EquipSlot::MainHand)
+            .and_then(|item| crate::item_defs::get(&item.item_def_id))
+    }
+
+    fn main_hand_weapon(&self) -> Option<&'static crate::item_defs::ItemDef> {
+        self.main_hand_def()
+            .filter(|def| def.category.as_deref() == Some("weapon"))
+    }
+
+    pub fn attack_interval(&self) -> std::time::Duration {
+        self.main_hand_weapon()
+            .and_then(|def| def.attack_interval_ms)
+            .map_or(self.attack_cooldown, std::time::Duration::from_millis)
+    }
+
+    pub fn attack_approach_range(&self) -> f32 {
+        self.main_hand_weapon()
+            .and_then(|def| def.range)
+            .unwrap_or(onlinerpg_shared::reach::PLAYER_MELEE_REACH_METERS)
+    }
+
     /// Current game time snapshot for schedule resolution.
     pub fn time_context(
         &self,
@@ -83,9 +106,7 @@ impl SharedState {
             .filter(|player| player.class == onlinerpg_shared::CharacterClass::Rogue)
         {
             let dagger_equipped = self
-                .self_equipped
-                .get(&onlinerpg_shared::inventory::EquipSlot::MainHand)
-                .and_then(|item| crate::item_defs::get(&item.item_def_id))
+                .main_hand_def()
                 .is_some_and(|def| def.weapon_type.as_deref() == Some("dagger"));
             let wait = self.double_slash_wait().max(self.player_attack_wait());
             let readiness = if player.health == 0 {
@@ -115,10 +136,7 @@ not mean both strikes hit."#
             .as_ref()
             .filter(|player| player.class == onlinerpg_shared::CharacterClass::Knight)
         {
-            let main = self
-                .self_equipped
-                .get(&onlinerpg_shared::inventory::EquipSlot::MainHand)
-                .and_then(|item| crate::item_defs::get(&item.item_def_id));
+            let main = self.main_hand_def();
             let off = self
                 .self_equipped
                 .get(&onlinerpg_shared::inventory::EquipSlot::OffHand)

@@ -23,7 +23,7 @@ export const SWORD_MISS_DELAY_MS = animTiming.sword_miss.delayMs
 // The whoosh (and the splash CAST_MS after it) waits out the cast clip's wind-up.
 export const FISHING_CAST_SWING_DELAY_MS = animTiming.fishing_cast_swing.delayMs
 
-// Player melee reach. Shared by the combat controller (chase/attack break-off)
+// Melee reach, matching shared/src/reach.rs. Shared by the combat controller
 // and the click-to-attack arrival check so the two never drift apart.
 export const PLAYER_ATTACK_RANGE_METERS = 2.0
 

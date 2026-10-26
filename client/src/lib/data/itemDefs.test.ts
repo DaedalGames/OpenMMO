@@ -7,6 +7,7 @@ import itemDefs, {
   statLabels,
   isTwoHanded,
   weaponRangeMeters,
+  weaponAttackIntervalMs,
   WEAPON_TYPE_LABELS,
   weaponTypeLabel,
   type WeaponType,
@@ -93,6 +94,11 @@ describe('weapon reach from items.json', () => {
     expect(weaponRangeMeters('iron_sword')).toBe(PLAYER_ATTACK_RANGE_METERS)
     expect(isRangedWeapon('iron_sword')).toBe(false)
     expect(isTwoHanded('iron_sword')).toBe(false)
+  })
+
+  it('reads a dagger its own attack interval', () => {
+    expect(weaponAttackIntervalMs('worn_dagger')).toBe(1200)
+    expect(weaponAttackIntervalMs('worn_iron_sword')).toBeUndefined()
   })
 
   it('falls back to melee for an empty hand or an unknown item', () => {

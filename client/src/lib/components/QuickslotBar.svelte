@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { locale, t } from '../i18n'
+  import { abilityTooltip } from '../i18n/abilityTooltip'
   import { manaState } from '../stores/manaStore'
   import {
     DOUBLE_SLASH,
@@ -150,7 +152,9 @@
         entry.skill.id !== FISHING.id &&
         ($activeBuffs[entry.skill.id] ?? 0) > $abilityClock}
       data-quickslot={i}
-      use:skillTooltip={entry && entry.kind === 'ability' ? entry.skill : null}
+      use:skillTooltip={entry && entry.kind === 'ability'
+        ? abilityTooltip(entry.skill, $locale)
+        : null}
       use:itemTooltip={entry && !(entry.kind === 'ability')
         ? { def: entry.def, enchant: entry.enchant ?? undefined, side: 'right' }
         : null}
@@ -182,7 +186,7 @@
             remaining > 0 ||
             entry.skill.manaCost > ($manaState?.mana ?? 0)}
           src={entry.skill.icon}
-          alt={entry.skill.name}
+          alt={$t(`ability.${entry.skill.id}.name`)}
           draggable="false"
         />
         {#if remaining > 0}<span class="skill-cooldown"

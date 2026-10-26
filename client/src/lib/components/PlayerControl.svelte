@@ -94,7 +94,11 @@
     inventoryStore,
   } from '../stores/inventoryStore'
   import { hungerState, SPRINT_MIN_SATIATION } from '../stores/hungerStore'
-  import { isRangedWeapon, weaponRangeMeters } from '../data/itemDefs'
+  import {
+    isRangedWeapon,
+    weaponAttackIntervalMs,
+    weaponRangeMeters,
+  } from '../data/itemDefs'
   import { type Position, type PlayerState } from '../utils/movementUtils'
   import { isMounted } from '../utils/mounts'
   import type { TerrainHeightManager } from '../managers/terrainHeightManager'
@@ -674,7 +678,9 @@
 
   function attackCooldownMs(): number {
     return (
-      (attackCooldown ? attackCooldown * 1000 : 1500) /
+      (weaponAttackIntervalMs(
+        $inventoryStore.equipped.main_hand?.item_def_id
+      ) ?? (attackCooldown ? attackCooldown * 1000 : 1500)) /
       ($hungerState?.attackMult ?? 1)
     )
   }

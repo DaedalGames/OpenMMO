@@ -1,5 +1,7 @@
 # Agent Guidelines
 
+- Please remove all mannered prose.
+- Ensure the system is optimized to handle 5,000 simultaneous users without performance problems.
 - Avoid comments in code where possible; only write them when truly necessary, keeping them short and concise.
 - If you find long or verbose comments in existing code, rewrite them to be short and concise, or remove them where possible.
 - For production log audits, read [prod-log-audit](.claude/skills/prod-log-audit/SKILL.md), including its recorded operator decisions.

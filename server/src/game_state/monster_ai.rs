@@ -240,8 +240,8 @@ struct Active {
 
 impl super::GameState {
     pub(crate) async fn tick_npc_self_defense(&self, auth: Option<&crate::auth::AuthService>) {
-        let reach = super::combat::PLAYER_MELEE_ATTACK_RANGE_METERS
-            + super::combat::PLAYER_RANGE_TOLERANCE_METERS;
+        let reach = onlinerpg_shared::reach::PLAYER_MELEE_REACH_METERS
+            + onlinerpg_shared::reach::REACH_SLACK_METERS;
         let defenders: HashMap<_, _> = self
             .players
             .read()

@@ -58,6 +58,7 @@
       },
     },
     rogue: {
+      main_hand: 'worn_dagger',
       armor: {
         chest: 'worn_rogue_top',
         pants: 'worn_rogue_pants',
@@ -83,6 +84,7 @@
     },
   }
   const FEMALE_STARTER_EQUIPMENT: typeof STARTER_EQUIPMENT = {
+    rogue: STARTER_EQUIPMENT.rogue,
     knight: {
       armor: { ...STARTER_EQUIPMENT.knight?.armor, head: 'worn_plate_helmet' },
     },

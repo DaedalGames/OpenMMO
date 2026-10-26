@@ -331,6 +331,8 @@
   "worn_caveman_pants.name": "낡은 원시전사 모피 하의",
   "worn_caveman_top.description": "새내기 원시전사에게 지급되는 낡은 복장. 상인은 사들이지 않습니다.",
   "worn_caveman_top.name": "낡은 원시전사 어깨 덮개",
+  "worn_dagger.description": "오래 사용한 단검. 상인은 사들이지 않습니다.",
+  "worn_dagger.name": "낡은 단검",
   "worn_iron_sword.description": "오래 사용한 철제 장검. 상인은 사들이지 않습니다.",
   "worn_iron_sword.name": "낡은 철검",
   "worn_mandolin.description": "여행으로 낡았지만 음색은 여전한 만돌린. /play_music으로 연주합니다. 상인은 사들이지 않습니다.",

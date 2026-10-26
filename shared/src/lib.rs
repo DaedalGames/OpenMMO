@@ -35,6 +35,7 @@ pub mod mount;
 pub mod mount_movement;
 pub mod pathfinding;
 pub mod pricing;
+pub mod reach;
 pub mod schedule;
 pub mod shelter;
 pub mod skills;
