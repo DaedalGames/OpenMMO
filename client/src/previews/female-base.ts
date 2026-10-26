@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { femaleSeat, femaleSeatOffset } from './female-seat'
+import { femaleUnderwearColor } from './female-underwear-color'
 import { femaleTorchMotions, mirroredSwordGrip } from './female-torch'
 import { FEMALE_HAND_FITS, poseOffHandProp } from '../lib/utils/handProps'
 import { MODULAR_FEMALE_MODEL_PATH } from '../lib/utils/modelPaths'
@@ -463,6 +464,7 @@ export async function showFemaleBase(
     for (const mesh of garters) mesh.visible = gartersEquipped()
     updateModularPoseCorrectives(model, motion.value)
   }
+  const underwearColor = femaleUnderwearColor(base)
   const outfitMask = femaleOutfitMask(base)
   let knightGlovesEquipped = false
   let sleeveMaskRegistered = false
@@ -590,6 +592,7 @@ export async function showFemaleBase(
         outfitMask.setEquipped(maskName(name), name === outfit)
         for (const mesh of entry.meshes) mesh.visible = name === outfit
       }
+      underwearColor(!!model.getObjectByName('bottom_female_rogue')?.visible)
     }
     const update = async () => {
       const requested = select.value
