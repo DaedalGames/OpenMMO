@@ -134,7 +134,7 @@ mod tests {
     use super::*;
 
     /// Edge-bitmask cells for a `width`×`depth` grid walled on its outer rim.
-    fn perimeter_walls(width: u8, depth: u8) -> Vec<u8> {
+    pub(super) fn perimeter_walls(width: u8, depth: u8) -> Vec<u8> {
         let w = width as usize;
         let d = depth as usize;
         let mut cells = vec![0u8; w * d];

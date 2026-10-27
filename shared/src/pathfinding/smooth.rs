@@ -323,6 +323,7 @@ pub fn find_and_smooth_path_avoiding_with_budget(
         max_nodes.min(remaining.get()),
         blocked,
         extent,
+        true,
     );
     remaining.set(remaining.get().saturating_sub(extent.expanded));
     if result.waypoints.is_empty() {

@@ -15,6 +15,13 @@ use crate::world::wrap_world_x;
 
 /// Default max nodes for A* expansion. Sized for multi-floor house traversal.
 pub const DEFAULT_MAX_NODES: usize = 2000;
+/// A search that comes within `SEALED_NEAR_H` of a goal under an overlay and
+/// then spends `SEALED_STALL_NODES` more without reaching it checks whether the
+/// goal sits in a small sealed pocket (a closed house) before spending the rest.
+/// A pocket of `SEALED_MAX_CELLS` keeps its walls within `SEALED_NEAR_H`.
+const SEALED_NEAR_H: u32 = 4;
+const SEALED_STALL_NODES: usize = 32;
+const SEALED_MAX_CELLS: usize = 64;
 
 #[derive(Clone)]
 struct AStarNode {
@@ -78,6 +85,15 @@ impl SearchExtent {
 
     pub fn has_floor(&self, floor: u8) -> bool {
         self.floors[usize::from(floor / 64)] & (1 << (floor % 64)) != 0
+    }
+
+    fn absorb(&mut self, other: &Self) {
+        self.expanded += other.expanded;
+        self.min = (self.min.0.min(other.min.0), self.min.1.min(other.min.1));
+        self.max = (self.max.0.max(other.max.0), self.max.1.max(other.max.1));
+        for (a, b) in self.floors.iter_mut().zip(other.floors) {
+            *a |= b;
+        }
     }
 }
 
@@ -162,9 +178,12 @@ pub fn find_path_avoiding(
         max_nodes,
         blocked,
         &mut SearchExtent::default(),
+        true,
     )
 }
 
+/// `check_sealed` enables the sealed-goal shortcut; its own frontier leg
+/// passes false so it cannot recurse.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn find_path_avoiding_counted(
     start_x: f32,
@@ -177,6 +196,7 @@ pub(super) fn find_path_avoiding_counted(
     max_nodes: usize,
     blocked: &[(i32, i32)],
     extent: &mut SearchExtent,
+    check_sealed: bool,
 ) -> PathResult {
     let (goal_x, goal_z) = snap_goal_into_floor(cache, goal_x, goal_z, goal_floor);
     let sx = start_x.floor() as i32;
@@ -297,6 +317,13 @@ pub(super) fn find_path_avoiding_counted(
     let mut best_h = start_h;
     let mut best_key = start_key;
     let mut termination = crate::pathfinding::PathTermination::Unreachable;
+    let check_sealed = check_sealed
+        && confine_to_floor
+        && cache.values().any(|rp| {
+            (rp.min_x..rp.max_x).contains(&(gx as f32))
+                && (rp.min_z..rp.max_z).contains(&(gz as f32))
+        });
+    let mut stall_deadline = (start_h <= SEALED_NEAR_H).then_some(SEALED_STALL_NODES);
 
     while let Some(Reverse(cur)) = open.pop() {
         if extent.expanded >= max_nodes {
@@ -317,6 +344,57 @@ pub(super) fn find_path_avoiding_counted(
                 found: true,
                 termination: crate::pathfinding::PathTermination::Reached,
             };
+        }
+
+        if check_sealed && stall_deadline == Some(extent.expanded) {
+            if let Some(cell) = sealed_goal_frontier(
+                cache,
+                &stair_positions,
+                blocked,
+                (sx, sz),
+                (gx, gz),
+                goal_floor,
+                &start_escapes,
+                extent,
+            ) {
+                let key = (cell.0, cell.1, start_fk);
+                let waypoints = if cell == (sx, sz) {
+                    Vec::new()
+                } else if closed.contains_key(&key) {
+                    reconstruct_path_vf(
+                        &closed,
+                        start_key,
+                        key,
+                        cell.0 as f32 + 0.5,
+                        cell.1 as f32 + 0.5,
+                    )
+                } else {
+                    let mut leg = SearchExtent::default();
+                    let result = find_path_avoiding_counted(
+                        start_x,
+                        start_z,
+                        start_floor,
+                        cell.0 as f32 + 0.5,
+                        cell.1 as f32 + 0.5,
+                        goal_floor,
+                        cache,
+                        max_nodes.saturating_sub(extent.expanded),
+                        blocked,
+                        &mut leg,
+                        false,
+                    );
+                    extent.absorb(&leg);
+                    if !result.found {
+                        return result;
+                    }
+                    result.waypoints
+                };
+                return PathResult {
+                    waypoints,
+                    found: false,
+                    termination: crate::pathfinding::PathTermination::Unreachable,
+                };
+            }
         }
 
         if let Some(entry) = closed.get(&cur_key) {
@@ -380,6 +458,9 @@ pub(super) fn find_path_avoiding_counted(
                 if nh < best_h {
                     best_h = nh;
                     best_key = nkey;
+                    if nh <= SEALED_NEAR_H {
+                        stall_deadline.get_or_insert(extent.expanded + SEALED_STALL_NODES);
+                    }
                 }
             }
         }
@@ -448,6 +529,65 @@ pub(super) fn find_path_avoiding_counted(
     }
 }
 
+/// The cell to approach when the goal's pocket is sealed off from `start`:
+/// outside the pocket, across one of its walls, nearest the goal, and not a
+/// `blocked` cell the route could never end on. `None` when the pocket leaks
+/// (outgrows `SEALED_MAX_CELLS`, touches stairs, or `start` enters it through
+/// an open edge or the furniture waiver). Walks the reverse moves, so a one-way
+/// edge counts the way A* would cross it. Every cell read is charged to `extent`.
+#[allow(clippy::too_many_arguments)]
+fn sealed_goal_frontier(
+    cache: &PassabilityCache,
+    stair_positions: &HashSet<(i32, i32, u8)>,
+    blocked: &[(i32, i32)],
+    start: (i32, i32),
+    goal: (i32, i32),
+    floor: u8,
+    start_escapes: &impl Fn(i32, i32) -> bool,
+    extent: &mut SearchExtent,
+) -> Option<(i32, i32)> {
+    let mut pocket = vec![goal];
+    let mut walled = Vec::new();
+    let sealed = 'fill: {
+        let mut next = 0;
+        while let Some(&(x, z)) = pocket.get(next) {
+            next += 1;
+            for &(dx, dz) in &DIRS {
+                let n = (x + dx, z + dz);
+                if pocket.contains(&n) {
+                    continue;
+                }
+                let walls = is_cardinal_move_blocked(cache, n.0, n.1, -dx, -dz, floor);
+                if n == start && (!walls || start_escapes(-dx, -dz)) {
+                    break 'fill false;
+                }
+                if walls {
+                    walled.push(n);
+                    continue;
+                }
+                if stair_positions.contains(&(n.0, n.1, floor)) || pocket.len() >= SEALED_MAX_CELLS
+                {
+                    break 'fill false;
+                }
+                pocket.push(n);
+            }
+        }
+        true
+    };
+    for &(x, z) in &pocket {
+        extent.include(x, z, floor);
+    }
+    extent.expanded += pocket.len();
+    if !sealed {
+        return None;
+    }
+    let dist = |a: (i32, i32), b: (i32, i32)| (a.0 - b.0).abs() + (a.1 - b.1).abs();
+    walled
+        .into_iter()
+        .filter(|&cell| !pocket.contains(&cell) && !cell_blocked(blocked, cell.0, cell.1))
+        .min_by_key(|&cell| (dist(cell, goal), dist(cell, start)))
+}
+
 fn reconstruct_path_vf(
     closed: &HashMap<AStarKey, ClosedEntry>,
     start: AStarKey,
@@ -483,4 +623,123 @@ fn reconstruct_path_vf(
 
     path.reverse();
     path
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::pathfinding::tests::perimeter_walls;
+    use crate::pathfinding::{PathTermination, RuntimeFloorGrid, RuntimePassability, EDGE_S};
+
+    /// Prod house r-30_+81_7, a 6×4 room whose door is the +Z wall's fourth
+    /// segment; a monster waited outside it on 10/26 for a player shut inside.
+    fn house(door_open: bool) -> PassabilityCache {
+        let mut cells = perimeter_walls(6, 4);
+        if door_open {
+            cells[3 * 6 + 3] &= !EDGE_S;
+        }
+        let mut cache = PassabilityCache::new();
+        cache.insert(
+            "r-30_+81_7".into(),
+            RuntimePassability {
+                house_origin_x: -1882.0,
+                house_origin_z: 5212.0,
+                min_x: -1882.0,
+                max_x: -1876.0,
+                min_z: 5212.0,
+                max_z: 5216.0,
+                floors: vec![RuntimeFloorGrid {
+                    floor_level: 0,
+                    origin_x: 0,
+                    origin_z: 0,
+                    width: 6,
+                    depth: 4,
+                    y_base: 1.15,
+                    wall_height: 3.0,
+                    cells,
+                }],
+                stairwells: vec![],
+                yields_to_trapped_mover: false,
+                allows_projectiles: false,
+                is_ground: true,
+            },
+        );
+        cache
+    }
+
+    fn path_into_house(
+        cache: &PassabilityCache,
+        start: (f32, f32),
+        blocked: &[(i32, i32)],
+    ) -> (PathResult, SearchExtent) {
+        let mut extent = SearchExtent::default();
+        let result = find_path_avoiding_counted(
+            start.0,
+            start.1,
+            0,
+            -1876.5,
+            5215.5,
+            0,
+            cache,
+            DEFAULT_MAX_NODES,
+            blocked,
+            &mut extent,
+            true,
+        );
+        (result, extent)
+    }
+
+    #[test]
+    fn a_closed_house_goal_stops_early_at_the_wall() {
+        let cache = house(false);
+        for start in [(-1878.5, 5216.5), (-1878.5, 5240.5)] {
+            let (result, extent) = path_into_house(&cache, start, &[]);
+            assert!(!result.found);
+            assert_eq!(result.termination, PathTermination::Unreachable);
+            assert!(extent.expanded < 300, "expanded {}", extent.expanded);
+            let last = result.waypoints.last().expect("a leg to the wall");
+            assert_eq!((last.x, last.z), (-1876.5, 5216.5));
+            assert!(extent.min.1 <= 5212 && extent.max.0 >= -1877);
+        }
+    }
+
+    #[test]
+    fn a_monster_in_the_doorway_is_not_the_cell_to_approach() {
+        let (result, extent) = path_into_house(&house(false), (-1878.5, 5240.5), &[(-1877, 5216)]);
+        assert_eq!(result.termination, PathTermination::Unreachable);
+        assert!(extent.expanded < 300, "expanded {}", extent.expanded);
+        let last = result.waypoints.last().unwrap();
+        assert_ne!((last.x, last.z), (-1876.5, 5216.5));
+    }
+
+    #[test]
+    fn open_ground_searches_skip_the_check() {
+        let cache = PassabilityCache::new();
+        let run = |check_sealed| {
+            let mut extent = SearchExtent::default();
+            let result = find_path_avoiding_counted(
+                0.5,
+                0.5,
+                0,
+                60.5,
+                40.5,
+                0,
+                &cache,
+                DEFAULT_MAX_NODES,
+                &[],
+                &mut extent,
+                check_sealed,
+            );
+            (result.found, extent.expanded)
+        };
+        assert_eq!(run(true), run(false));
+    }
+
+    #[test]
+    fn an_open_door_still_leads_inside() {
+        let (result, _) = path_into_house(&house(true), (-1878.5, 5240.5), &[]);
+        assert!(result.found);
+        let last = result.waypoints.last().unwrap();
+        assert_eq!((last.x, last.z), (-1876.5, 5215.5));
+    }
 }
