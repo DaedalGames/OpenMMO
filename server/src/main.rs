@@ -996,7 +996,7 @@ async fn main() -> ExitCode {
         move || {
             let game = Arc::clone(&concurrent_game);
             let auth = Arc::clone(&concurrent_auth);
-            async move { metrics::record_concurrent_sample(&game, auth).await }
+            async move { metrics::record_minute_samples(&game, auth).await }
         },
     ));
 

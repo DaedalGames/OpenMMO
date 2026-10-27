@@ -4,7 +4,12 @@ use onlinerpg_shared::dungeon::floor_world_y;
 
 const DUNGEON: &str = "ogre_stronghold";
 
-async fn enter_floor(game_state: &GameState, name: &str, entrance_id: &str, depth: u8) -> PlayerId {
+pub(super) async fn enter_floor(
+    game_state: &GameState,
+    name: &str,
+    entrance_id: &str,
+    depth: u8,
+) -> PlayerId {
     let entrance = game_state.dungeon_defs.get(entrance_id).expect("dungeon");
     let mut player = make_player(name, entrance.x, entrance.z);
     player.position.y = floor_world_y(entrance.y, depth);

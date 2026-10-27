@@ -402,6 +402,10 @@ export function axisRange(minimum: number, maximum: number, padding: number, spa
   return { step, floor, ceiling, ticks }
 }
 
+export function linePath<T extends TimestampSample>(segment: T[], value: (sample: T) => number, x: (timestamp: number) => number, y: (value: number) => number) {
+  return segment.map((sample, index) => `${index === 0 ? 'M' : 'L'}${x(sample.timestamp)},${y(value(sample))}`).join(' ')
+}
+
 export function splitSegments<T extends TimestampSample>(samples: T[], interval: number): T[][] {
   const segments: T[][] = []
   for (const sample of samples) {

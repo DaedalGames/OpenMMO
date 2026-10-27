@@ -1,6 +1,7 @@
 use crate::auth::{unix_now, AuthService};
 use crate::metrics::{
-    AccountActivity, ConcurrentCounts, GoldSink, GoldSinkRecord, GoldSource, GoldSourceRecord,
+    AccountActivity, ConcurrentCounts, DungeonFloorCount, GoldSink, GoldSinkRecord, GoldSource,
+    GoldSourceRecord,
 };
 use crate::types::{ClientKind, PlayerId};
 use std::collections::HashMap;
@@ -338,5 +339,48 @@ impl super::GameState {
             }
         }
         counts
+    }
+
+    /// Players on each occupied dungeon floor, official NPCs excluded.
+    pub(crate) async fn dungeon_floor_population(&self) -> Vec<DungeonFloorCount> {
+        let occupants: Vec<(String, u8, Vec<PlayerId>)> = {
+            let dungeons = self.dungeons.read().await;
+            dungeons
+                .iter()
+                .flat_map(|(dungeon, runtime)| {
+                    runtime
+                        .floors
+                        .iter()
+                        .filter(|(_, floor)| !floor.players.is_empty())
+                        .map(|(&depth, floor)| {
+                            (
+                                dungeon.clone(),
+                                depth,
+                                floor.players.keys().copied().collect(),
+                            )
+                        })
+                })
+                .collect()
+        };
+        let players = self.players.read().await;
+        occupants
+            .into_iter()
+            .filter_map(|(dungeon, depth, ids)| {
+                let count = ids
+                    .iter()
+                    .filter(|id| {
+                        players.get(id).is_some_and(|player| {
+                            !player.is_official_npc
+                                && i16::from(player.floor_level) == -i16::from(depth)
+                        })
+                    })
+                    .count() as u32;
+                (count > 0).then_some(DungeonFloorCount {
+                    dungeon,
+                    depth,
+                    players: count,
+                })
+            })
+            .collect()
     }
 }

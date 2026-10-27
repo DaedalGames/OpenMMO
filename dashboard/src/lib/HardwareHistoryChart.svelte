@@ -2,7 +2,7 @@
   import HistoryChart from './HistoryChart.svelte'
   import type { HardwareSnapshot, HardwareStatus } from './hardware'
   import { formatBytes } from './traffic'
-  import { formatCount, formatPercent, type ChartMarker } from './metrics'
+  import { formatCount, formatPercent, linePath, type ChartMarker } from './metrics'
 
   let { history, markers = [] }: { history: HardwareStatus; markers?: ChartMarker[] } = $props()
   let metric = $state('process-memory')
@@ -45,10 +45,6 @@
   let peak = $derived(chart.samples.length ? Math.max(...chart.samples.map((sample) => Math.max(...series.map((line) => line.value(sample)!)))) : null)
   let formatValue = $derived(metric.endsWith('memory') || metric === 'disk' ? formatBytes : metric.endsWith('cpu') ? formatPercent : formatCount)
   const value = (sample: HardwareSnapshot) => series[0].value(sample)!
-
-  function path(segment: HardwareSnapshot[], getValue: (sample: HardwareSnapshot) => number | null, x: (timestamp: number) => number, y: (value: number) => number) {
-    return segment.map((sample, index) => `${index === 0 ? 'M' : 'L'}${x(sample.timestamp)},${y(getValue(sample)!)}`).join(' ')
-  }
 </script>
 
 <div class="chart-meta">
@@ -69,7 +65,7 @@
       {#snippet layers(segment, x, y)}
         {#each series.slice(1) as line (line.label)}
           {#if segment.length > 1}
-            <path d={path(segment, line.value, x, y)} fill="none" stroke={line.color} stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+            <path d={linePath(segment, (sample) => line.value(sample)!, x, y)} fill="none" stroke={line.color} stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
           {:else}
             <circle cx={x(segment[0].timestamp)} cy={y(line.value(segment[0])!)} r="3.5" fill={line.color} />
           {/if}

@@ -13,6 +13,8 @@ use tracing::warn;
 
 #[path = "metrics_combat_audit.rs"]
 mod combat_audit;
+#[path = "metrics_dungeon_population.rs"]
+mod dungeon_population;
 #[path = "metrics_field_raids.rs"]
 mod field_raids;
 #[path = "metrics_heroic_tales.rs"]
@@ -20,6 +22,7 @@ mod heroic_tales;
 #[path = "metrics_rare_drops.rs"]
 mod rare_drops;
 
+pub use dungeon_population::{DungeonBandCount, DungeonFloorCount, DungeonPopulationSample};
 pub use field_raids::{FieldRaidEvent, FieldRaidTally};
 pub use rare_drops::LootTally;
 
@@ -525,14 +528,25 @@ fn metrics_routes(game: Arc<GameState>, auth: Arc<AuthService>) -> Router {
         )
         .route("/api/metrics/rare-drops", get(rare_drops::rare_drops))
         .route("/api/metrics/field-raids", get(field_raids::field_raids))
+        .route(
+            "/api/metrics/dungeon-population",
+            get(dungeon_population::dungeon_population),
+        )
         .with_state(MetricsState { game, auth })
 }
 
-pub async fn record_concurrent_sample(game: &GameState, auth: Arc<AuthService>) {
+pub async fn record_minute_samples(game: &GameState, auth: Arc<AuthService>) {
     let counts = game.concurrent_account_counts().await;
+    let floors = game.dungeon_floor_population().await;
     let now = unix_now();
-    if let Err(error) = auth_db(move || auth.record_concurrent_accounts(now, counts)).await {
+    let concurrent_auth = Arc::clone(&auth);
+    if let Err(error) =
+        auth_db(move || concurrent_auth.record_concurrent_accounts(now, counts)).await
+    {
         warn!("Concurrent account snapshot failed: {error}");
+    }
+    if let Err(error) = auth_db(move || auth.record_dungeon_population(now, &floors)).await {
+        warn!("Dungeon population snapshot failed: {error}");
     }
 }
 
@@ -570,7 +584,7 @@ pub async fn record_hourly_metrics(game: &GameState, auth: Arc<AuthService>) {
     record_account_activity_sample(game, auth).await;
 }
 
-fn history_interval(hours: u32) -> Option<i64> {
+pub(super) fn history_interval(hours: u32) -> Option<i64> {
     match hours {
         1 | 6 | 24 => Some(CONCURRENT_SAMPLE_INTERVAL_SECONDS),
         168 | 720 => Some(SAMPLE_INTERVAL_SECONDS),
@@ -1992,7 +2006,7 @@ mod tests {
 
         game.end_account_session("browser", session, &auth).await;
         record_concurrent_shutdown(Arc::clone(&auth)).await;
-        record_concurrent_sample(&game, Arc::clone(&auth)).await;
+        record_minute_samples(&game, Arc::clone(&auth)).await;
         let response = concurrent_history(
             State(state.clone()),
             Query(HistoryQuery { hours: Some(24) }),

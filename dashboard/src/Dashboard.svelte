@@ -20,6 +20,8 @@
   import { parseHeroicTales } from './lib/heroicTales'
   import CombatAuditTargetsPanel from './lib/CombatAuditTargetsPanel.svelte'
   import CountryPanel from './lib/CountryPanel.svelte'
+  import DungeonPopulationPanel from './lib/DungeonPopulationPanel.svelte'
+  import { parseDungeonPopulation, type DungeonPopulationHours } from './lib/dungeonPopulation'
   import { parseCountryStats } from './lib/countries'
   import { parseCombatAuditTargets } from './lib/combatAuditTargets'
   import MetricsError from './lib/MetricsError.svelte'
@@ -78,9 +80,11 @@
   const heroicTales = createMetricsResource(() => undefined, 'heroic-tales', parseHeroicTales, '영웅담 원장')
   let countryHours = $state<UniqueHours>(24)
   const countries = createMetricsResource(() => countryHours, 'countries', parseCountryStats, '국가별 접속 계정', () => ({}), 300000)
+  let dungeonHours = $state<DungeonPopulationHours>(24)
+  const dungeonPopulation = createMetricsResource(() => dungeonHours, 'dungeon-population', parseDungeonPopulation, '던전 층별 인원', () => ({}), 60000)
   const combatAuditTargets = createMetricsResource(() => undefined, 'combat-audit-targets', parseCombatAuditTargets, '전투 기록 추적 대상', () => ({}), 60000)
   let markers = $derived(deployMarkers(serverStarts.history?.starts ?? []))
-  const resources = [concurrent, hardware, network, assetTraffic, unique, gold, perAccountGold, priceIndex, serverStarts, itemGoldSources, goldSinks, leaderboard, goldLeaderboard, weaponEnchantLeaderboard, weaponEnchantFailures, armorEnchantLeaderboard, rareDrops, fieldRaids, landLeaderboard, heroicTales, combatAuditTargets, countries]
+  const resources = [concurrent, hardware, network, assetTraffic, unique, gold, perAccountGold, priceIndex, serverStarts, itemGoldSources, goldSinks, leaderboard, goldLeaderboard, weaponEnchantLeaderboard, weaponEnchantFailures, armorEnchantLeaderboard, rareDrops, fieldRaids, landLeaderboard, heroicTales, combatAuditTargets, countries, dungeonPopulation]
   let history = $derived(concurrent.history)
   let refreshing = $derived(resources.some((resource) => resource.refreshing))
   let anyError = $derived(resources.some((resource) => resource.error))
@@ -118,7 +122,7 @@
     <div class="update-controls">
       <div class:unavailable={anyError} class="update-status" role="status">
         <span class="status-dot"></span>
-        {#if anyError}연결 확인 필요{:else if anyLoading}연결 중{:else}접속·하드웨어·네트워크·추적 대상 1분 · 파일 전송 10분 · 그 외 1시간{/if}
+        {#if anyError}연결 확인 필요{:else if anyLoading}연결 중{:else}접속·던전·하드웨어·네트워크·추적 대상 1분 · 파일 전송 10분 · 그 외 1시간{/if}
       </div>
       <button class="refresh-button" onclick={() => refresh()} disabled={refreshing} aria-label="월드 현황 새로고침" title="새로고침">
         <svg viewBox="0 0 24 24" fill="none" class:spinning={refreshing} aria-hidden="true"><path d="M20 11a8 8 0 1 0-2 6M20 4v7h-7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" /></svg>
@@ -169,6 +173,8 @@
       <span>{history ? `${summary.sampleCount.toLocaleString('ko-KR')}개 기록` : '기록 확인 중'}</span>
     </div>
   </section>
+
+  <DungeonPopulationPanel bind:hours={dungeonHours} resource={dungeonPopulation} {markers} />
 
   <HardwarePanel resource={hardware} bind:hours={hardwareHours} {markers} />
   <NetworkPanel bind:hours={networkHours} resource={network} />

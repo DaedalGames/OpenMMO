@@ -1,6 +1,8 @@
 use crate::types::{CharacterAttributes, GameDateTime};
 #[path = "auth_character_deletion.rs"]
 mod character_deletion;
+#[path = "auth_dungeon_population.rs"]
+mod dungeon_population;
 #[path = "auth_enchant_failures.rs"]
 mod enchant_failures;
 #[path = "auth_estate_storage.rs"]
@@ -780,6 +782,7 @@ impl AuthService {
         Self::ensure_item_sales_schema(&conn)?;
         Self::ensure_gold_sinks_schema(&conn)?;
         Self::ensure_concurrent_samples_schema(&conn)?;
+        Self::ensure_dungeon_population_schema(&conn)?;
         Self::ensure_account_activity_schema(&conn)?;
         Self::ensure_pricing_schema(&conn)?;
         Self::ensure_migrations_schema(&conn)?;
