@@ -98,7 +98,8 @@ impl super::GameState {
                 return;
             }
         }
-        let Some(monster_type) = self.pick_ambient_type(&point) else {
+        let town_distance = self.town_distance(&point);
+        let Some(monster_type) = self.pick_ambient_type(town_distance) else {
             return;
         };
         let max_nearby = crate::world_config::world_config().max_nearby_monsters as usize;
@@ -138,7 +139,10 @@ impl super::GameState {
                 rotation,
                 0,
                 MonsterLifecycle::Ambient,
-                None,
+                Some(self.level_at_depth(
+                    monster_type,
+                    crate::game::combat::surface_equivalent_depth(town_distance),
+                )),
                 false,
             )
             .await
@@ -181,8 +185,7 @@ impl super::GameState {
 
     /// Uniform over the ambient types allowed this far from town. What you
     /// meet still follows where you stand, as it did before.
-    pub(super) fn pick_ambient_type(&self, point: &Position) -> Option<&'static str> {
-        let town_distance = self.town_distance(point);
+    pub(super) fn pick_ambient_type(&self, town_distance: f32) -> Option<&'static str> {
         rand::seq::IteratorRandom::choose(
             crate::world_config::world_config()
                 .ambient_spawns

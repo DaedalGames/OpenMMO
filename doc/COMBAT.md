@@ -296,13 +296,14 @@ guard 40짜리 플레이어를 코볼트가 한 번 맞히려면 평균 400회, 
 
 ```
 던전:  보너스 = max(0, 깊이 − DUNGEON_SAFE_DEPTH(5)) × DUNGEON_DEPTH_ATTACK_BONUS(3)
-표면:  보너스 = max(0, 마을 거리 − SURFACE_SAFE_METERS(300m)) / SURFACE_METERS_PER_ATTACK_BONUS(20m)
+표면:  보너스 = min(60, max(0, 마을 거리 − SURFACE_SAFE_METERS(300m)) / SURFACE_METERS_PER_ATTACK_BONUS(20m))
 ```
+
+표면 상한 60은 가장 깊은 층(`MAX_FLOORS` 25)의 보너스다.
 
 - 구현: [`place_attack_bonus`](../server/src/game/combat.rs), 적용은
   [game_state/combat.rs](../server/src/game_state/combat.rs)의 몬스터 공격
-- 몬스터 레벨·HP·피해·XP는 건드리지 않는다. 명중만 장소를 탄다 — 깊이가
-  레벨을 올리면(`monster_level_for_depth`) XP가 `1 + level²`로 함께 뛴다.
+- 이 보너스는 명중만 올린다. 레벨·HP·피해·XP는 아래 장소 레벨 보정이 올린다.
 - **안전 구간이 초보 보호다.** 티어1 던전(Old Crypt, 5층)과 마을 반경
   300m는 보너스 0이라 기존 밸런스 그대로다. 설계 앵커: 상점 장비를 갖춘
   guard 15가 Old Crypt 5층에서 orc(lvl 4)에게 45% — 대상 guard를 보는
@@ -324,7 +325,7 @@ guard 40짜리 플레이어를 코볼트가 한 번 맞히려면 평균 400회, 
 인챈트가 입장료가 되도록 — 연마유 골드 싱크가 진행 화폐다.
 
 표면은 같은 곡선을 거리로 읽는다 — 300m까지 0, 560m에서 +13, 800m에서
-+25. 인챈트를 두른 guard 61은 근거리 표면에서 여전히 잘 안 맞는데, 그쪽은
++25, 1500m부터 +60. 인챈트를 두른 guard 61은 근거리 표면에서 여전히 잘 안 맞는데, 그쪽은
 명중이 아니라 보상으로 다룬다(아래 거리 게이트).
 
 ### 앰비언트 스폰 거리 게이트
@@ -342,6 +343,9 @@ guard 40짜리 플레이어를 코볼트가 한 번 맞히려면 평균 400회, 
 | Bugbear | 7 | 420m |
 | Ogre | 8 | 490m |
 | Troll | 9 | 560m |
+| Stone Golem | 10 | 630m |
+| Lizardfolk | 13 | 840m |
+| Cyclops | 15 | 980m |
 
 - 구현: [`min_ambient_town_distance`](../server/src/game_state/monster.rs). 거리는
   플레이어가 아니라 **몬스터가 놓이는 지점**에서 잰다
@@ -349,8 +353,26 @@ guard 40짜리 플레이어를 코볼트가 한 번 맞히려면 평균 400회, 
 - 마을 근처는 저레벨 몬스터만 나오므로 XP도 드랍 등급도 낮다. 고레벨
   플레이어를 명중률로 쫓아내는 게 아니라 **보상 구배로 밀어낸다** — 실측상
   표면 킬의 94%가 마을 반경 100~400m 안에서 일어나고 있었다.
-- 앰비언트 최고가 Troll(레벨 9)이라 560m 밖은 보상이 늘지 않는다. 새 상위
-  몬스터가 들어오면 그만큼 프론티어가 밀린다.
+- 980m 밖에서는 종류가 더 늘지 않는다. 그 너머의 보상은 아래 레벨 보정이 올린다.
+
+### 장소 레벨 보정
+
+던전은 5층부터 2층마다 몬스터 레벨이 +1 오르고 25에서 멈춘다
+(`monster_level_for_depth`). 표면은 마을 거리를 **장소 명중 보너스가 같은
+던전 깊이**로 바꿔 같은 함수에 넣는다. 명중 보너스가 60에서 멈추므로
+1500m 밖은 명중과 레벨 모두 25층과 같다.
+
+```
+환산 깊이 = DUNGEON_SAFE_DEPTH(5) + 표면 보너스 / DUNGEON_DEPTH_ATTACK_BONUS(3)
+레벨     = monster_level_for_depth(정의 레벨, 환산 깊이)
+```
+
+- 구현: [`surface_equivalent_depth`](../server/src/game/combat.rs),
+  [`level_at_depth`](../server/src/game_state/monster.rs)(던전 슬롯과 공용). 레벨은 스폰 지점에서
+  정해져 `level_override`로 실린다.
+- 360m까지는 그대로, 그 뒤 120m마다 +1. 980m의 Cyclops는 21(XP 462),
+  1440m부터 25(XP 646). 코볼트는 25층과 같이 11에서 멈춘다.
+- 오른 레벨은 던전처럼 HP·명중·기본 피해 주사위·XP·드랍 레벨 판정에 모두 반영된다.
 
 ### 대미지 롤 (Damage Roll)
 

@@ -6,8 +6,8 @@ use std::time::Duration;
 
 use onlinerpg_shared::dungeon::{
     cell_center, dungeon_origin, floor_world_y, generate_dungeon_for, interior_doors,
-    key_depth_for, last_locked_depth, locked_depths, locked_door_ids, monster_level_for_depth,
-    world_to_cell, FloorLayout, PropKind, ENTRANCE_DOOR_ID, GRID,
+    key_depth_for, last_locked_depth, locked_depths, locked_door_ids, world_to_cell, FloorLayout,
+    PropKind, ENTRANCE_DOOR_ID, GRID,
 };
 use onlinerpg_shared::inventory::GroundItem;
 use onlinerpg_shared::{wrap_world_x, Position, ServerMessage};
@@ -1379,12 +1379,7 @@ impl GameState {
         };
 
         for (slot_idx, cx, cz, monster_type, aggressive) in to_spawn {
-            let def_level = self
-                .monster_defs
-                .get(&monster_type)
-                .map(|d| d.level)
-                .unwrap_or(1);
-            let level = monster_level_for_depth(def_level, depth);
+            let level = self.level_at_depth(&monster_type, depth);
             let pos = cell_center(&entrance.position(), depth, (cx, cz));
             let spawned = self
                 .spawn_monster(

@@ -174,8 +174,8 @@ async fn eligible_types_follow_the_distance_from_town() {
     let mut near_town = std::collections::HashSet::new();
     let mut deep = std::collections::HashSet::new();
     for _ in 0..500 {
-        near_town.extend(game_state.pick_ambient_type(&town));
-        deep.extend(game_state.pick_ambient_type(&far));
+        near_town.extend(game_state.pick_ambient_type(game_state.town_distance(&town)));
+        deep.extend(game_state.pick_ambient_type(game_state.town_distance(&far)));
     }
     for monster_type in &near_town {
         assert_eq!(
@@ -189,6 +189,50 @@ async fn eligible_types_follow_the_distance_from_town() {
         world_config().ambient_spawns.len(),
         "past the deepest gate every ambient type is on offer"
     );
+}
+
+/// Field monsters level with the distance from town on the dungeon's curve,
+/// stopping where the deepest floor would put them.
+#[tokio::test]
+async fn ambient_level_follows_the_distance_from_town() {
+    let game_state = make_flat_world_game_state("ambient_level");
+    let level = |monster_type, meters| {
+        game_state.level_at_depth(
+            monster_type,
+            crate::game::combat::surface_equivalent_depth(meters),
+        )
+    };
+    assert_eq!(level("kobold", 0.0), 1);
+    assert_eq!(level("cyclop", 980.0), 21);
+    assert_eq!(level("kobold", 1_000_000.0), 11);
+    assert_eq!(level("cyclop", 1_000_000.0), 25);
+}
+
+#[tokio::test]
+async fn far_spawns_carry_their_distance_level() {
+    let game_state = make_flat_world_game_state("ambient_far_level");
+    let player_id = pid("frontier");
+    let town = world_config().spawn_position.position();
+    let z = town.z + 1500.0;
+    game_state
+        .add_player(make_player("frontier", town.x, z))
+        .await;
+    game_state.enable_ambient_spawns();
+    pace_player(&game_state, &player_id, town.x, z, 60).await;
+
+    let monsters = game_state.monsters.read().await;
+    assert!(monsters.values().next().is_some(), "walking far out spawns");
+    for monster in monsters.values() {
+        let def = game_state.monster_defs.get(&monster.monster_type).unwrap();
+        let level = monster
+            .level_override
+            .expect("ambient spawns carry a level");
+        assert!(
+            level >= def.level + 5 && level <= 25,
+            "{} lvl {level} at 1.5km",
+            monster.monster_type
+        );
+    }
 }
 
 /// A teleport is not a walk: the jump must not cash in as a near-certain spawn.

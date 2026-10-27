@@ -65,6 +65,17 @@ pub const DUNGEON_DEPTH_ATTACK_BONUS: i32 = 3;
 pub const SURFACE_SAFE_METERS: f32 = 300.0;
 /// Metres beyond the safe ring per point of to-hit.
 pub const SURFACE_METERS_PER_ATTACK_BONUS: f32 = 20.0;
+/// The deepest floor's to-hit; the surface stops climbing there too.
+const MAX_PLACE_ATTACK_BONUS: i32 =
+    depth_attack_bonus(onlinerpg_shared::dungeon::MAX_FLOORS as i32);
+
+const fn depth_attack_bonus(depth: i32) -> i32 {
+    if depth > DUNGEON_SAFE_DEPTH {
+        (depth - DUNGEON_SAFE_DEPTH) * DUNGEON_DEPTH_ATTACK_BONUS
+    } else {
+        0
+    }
+}
 
 /// The to-hit a *place* lends its monsters. Player guard climbs with gear and
 /// armour enchants far past any monster level, so danger has to ride where you
@@ -73,10 +84,17 @@ pub const SURFACE_METERS_PER_ATTACK_BONUS: f32 = 20.0;
 /// surroundings — so the bonus only ever erodes guard someone chose to test.
 pub fn place_attack_bonus(floor_level: i8, town_distance: f32) -> i32 {
     if floor_level < 0 {
-        return (i32::from(floor_level.unsigned_abs()) - DUNGEON_SAFE_DEPTH).max(0)
-            * DUNGEON_DEPTH_ATTACK_BONUS;
+        return depth_attack_bonus(i32::from(floor_level.unsigned_abs()));
     }
-    ((town_distance - SURFACE_SAFE_METERS).max(0.0) / SURFACE_METERS_PER_ATTACK_BONUS) as i32
+    (((town_distance - SURFACE_SAFE_METERS).max(0.0) / SURFACE_METERS_PER_ATTACK_BONUS) as i32)
+        .min(MAX_PLACE_ATTACK_BONUS)
+}
+
+/// The dungeon depth lending the same to-hit as this distance from town, so
+/// surface monsters level on the dungeon's depth curve, never past its
+/// deepest floor.
+pub fn surface_equivalent_depth(town_distance: f32) -> u8 {
+    (DUNGEON_SAFE_DEPTH + place_attack_bonus(0, town_distance) / DUNGEON_DEPTH_ATTACK_BONUS) as u8
 }
 
 pub fn monster_max_health_for_level(level: u8) -> u32 {
@@ -297,6 +315,18 @@ mod tests {
         assert_eq!(landed, 9);
     }
 
+    /// Surface distance reads as the dungeon depth lending the same to-hit.
+    #[test]
+    fn surface_distance_reads_as_the_matching_dungeon_depth() {
+        assert_eq!(surface_equivalent_depth(0.0), 5);
+        assert_eq!(surface_equivalent_depth(359.0), 5);
+        assert_eq!(surface_equivalent_depth(360.0), 6);
+        assert_eq!(surface_equivalent_depth(980.0), 16);
+        assert_eq!(surface_equivalent_depth(1_499.0), 24);
+        assert_eq!(surface_equivalent_depth(1_500.0), 25);
+        assert_eq!(surface_equivalent_depth(1_000_000.0), 25);
+    }
+
     /// Where you hunt is the difficulty dial: free in the tier-1 basement and
     /// around town, climbing past any guard on the deepest floors.
     #[test]
@@ -310,6 +340,10 @@ mod tests {
         assert_eq!(place_attack_bonus(-10, 0.0), 15);
         assert_eq!(place_attack_bonus(-15, 0.0), 30);
         assert_eq!(place_attack_bonus(0, 560.0), 13);
+        // Far field stops at the deepest floor's to-hit.
+        assert_eq!(place_attack_bonus(-25, 0.0), 60);
+        assert_eq!(place_attack_bonus(0, 1_500.0), 60);
+        assert_eq!(place_attack_bonus(0, 1_000_000.0), 60);
         let landed = |level, bonus, guard| {
             (1..=20)
                 .filter(|roll| resolves_as_hit(*roll, monster_attack_bonus(level) + bonus, guard))
