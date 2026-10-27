@@ -749,13 +749,15 @@ async fn dagger_skill_deals_two_full_hits_and_shares_the_attack_window() {
             ServerMessage::PlayerAttacked {
                 damage,
                 hit,
+                critical,
                 dagger_strike,
                 ..
             } => {
                 assert!(hit && dagger_strike.is_some());
+                let base = if critical { damage / 2 } else { damage };
                 assert!(
-                    (20..=23).contains(&damage),
-                    "1d4 + STR 10 + enchant 9, got {damage}"
+                    (20..=23).contains(&base) && (!critical || damage % 2 == 0),
+                    "1d4 + STR 10 + enchant 9 (critical {critical}), got {damage}"
                 );
                 Some((dagger_strike.unwrap(), damage))
             }
