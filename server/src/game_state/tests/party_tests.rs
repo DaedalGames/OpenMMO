@@ -1951,6 +1951,85 @@ async fn partyless_kill_xp_is_unchanged() {
     assert_eq!(xp_gains(&mut alice_rx), [SHARED_KILL_XP]);
 }
 
+/// Alice and bob, unpartied, with prey already worn down by bob's damage.
+async fn xp_rivals(tag: &str, bob_damage: u32) -> (GameState, DirectRx, DirectRx) {
+    let game_state = make_test_game_state(tag);
+    let mut alice_rx = add(&game_state, "alice", 0.0).await;
+    let mut bob_rx = add(&game_state, "bob", 2.0).await;
+    register_character(&game_state, "alice").await;
+    register_character(&game_state, "bob").await;
+    let prey = crate::types::Monster {
+        max_health: 1 + bob_damage,
+        ..make_xp_monster("prey", pos(1.0))
+    };
+    let mut monsters = game_state.monsters.write().await;
+    monsters.insert("prey".to_string(), prey);
+    monsters.record_damage("prey", pid("bob"), bob_damage);
+    drop(monsters);
+    drain(&mut alice_rx);
+    drain(&mut bob_rx);
+    (game_state, alice_rx, bob_rx)
+}
+
+#[tokio::test]
+async fn kill_xp_follows_damage_not_the_final_blow() {
+    let (game_state, mut alice_rx, mut bob_rx) = xp_rivals("kill_xp_by_damage", 4).await;
+
+    kill_monster(&game_state, "alice", "prey").await;
+
+    // Alice dealt 1 of 5 HP: 10 * 1/5 = 2; bob's 4 of 5 earns 8.
+    assert_eq!(xp_gains(&mut alice_rx), [2]);
+    assert_eq!(xp_gains(&mut bob_rx), [8]);
+}
+
+#[tokio::test]
+async fn tiny_damage_share_still_earns_one_xp() {
+    let (game_state, mut alice_rx, mut bob_rx) = xp_rivals("kill_xp_min_one", 99).await;
+
+    kill_monster(&game_state, "alice", "prey").await;
+
+    // Alice's 1 of 100 HP floors to 0 and is raised to 1.
+    assert_eq!(xp_gains(&mut alice_rx), [1]);
+    assert_eq!(xp_gains(&mut bob_rx), [9]);
+}
+
+#[tokio::test]
+async fn party_damage_pools_before_the_split() {
+    let (game_state, mut alice_rx, mut bob_rx) = xp_pair("kill_xp_party_pool", 2.0).await;
+    game_state
+        .monsters
+        .write()
+        .await
+        .record_damage("prey", pid("bob"), 2);
+
+    kill_monster(&game_state, "alice", "prey").await;
+
+    // Pooled, the party holds all 10 XP: 12 with the bonus, 6 each.
+    assert_eq!(xp_gains(&mut alice_rx), [6]);
+    assert_eq!(xp_gains(&mut bob_rx), [6]);
+}
+
+#[tokio::test]
+async fn distant_party_dealer_keeps_its_cut_whatever_the_hit_order() {
+    for (tag, seeded) in [
+        ("kill_xp_dealer_order_ab", [("alice", 1), ("bob", 1)]),
+        ("kill_xp_dealer_order_ba", [("bob", 1), ("alice", 1)]),
+    ] {
+        let (game_state, mut alice_rx, mut bob_rx) = xp_pair(tag, 500.0).await;
+        let mut monsters = game_state.monsters.write().await;
+        for (name, dealt) in seeded {
+            monsters.record_damage("prey", pid(name), dealt);
+        }
+        drop(monsters);
+
+        kill_monster(&game_state, "alice", "prey").await;
+
+        // Bob is out of range but dealt damage, so he still shares the pool.
+        assert_eq!(xp_gains(&mut alice_rx), [6], "{tag}");
+        assert_eq!(xp_gains(&mut bob_rx), [6], "{tag}");
+    }
+}
+
 #[tokio::test]
 async fn level_up_is_celebrated_to_nearby_players_only() {
     let game_state = make_test_game_state("level_up_nearby");

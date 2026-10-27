@@ -1113,6 +1113,7 @@ impl super::GameState {
             // landing at the same instant sees Dead and stops.
             let mut dealt = 0;
             let mut field_raid_boss = false;
+            let mut damage_by = Vec::new();
             let is_dead = {
                 let mut monsters = self.monsters.write().await;
                 let mut died = false;
@@ -1133,7 +1134,11 @@ impl super::GameState {
 
                     died = monster.health == 0;
                 }
+                if dealt > 0 {
+                    monsters.record_damage(&monster_id, *player_id, dealt);
+                }
                 if died {
+                    damage_by = monsters.take_damage(&monster_id);
                     self.combat_audit
                         .kill(player_id, &monster_id, &monster_type);
                     // Through the registry so the kill frees its spawn slot now,
@@ -1259,19 +1264,10 @@ impl super::GameState {
                 self.drain_hunger_for_kill(player_id).await;
                 if let (Some(def), Some(effective_level)) = (def, effective_level) {
                     let base_xp = xp::monster_xp(effective_level, def.guard);
-                    let sharers = self
-                        .party_members_sharing_kill(
-                            player_id,
-                            monster_position,
-                            monster_floor_level,
-                        )
+                    let grants = self
+                        .kill_xp_grants(base_xp, &damage_by, monster_position, monster_floor_level)
                         .await;
-                    let share = xp::party_xp_share(base_xp, sharers.len() as u32 + 1);
-                    let mut recipients = Vec::with_capacity(sharers.len() + 1);
-                    recipients.push(*player_id);
-                    recipients.extend(sharers);
-                    self.grant_monster_kill_xp(&recipients, share, &monster_id)
-                        .await;
+                    self.grant_monster_kill_xp(&grants, &monster_id).await;
                 }
 
                 // Remove the corpse after 60 seconds.
@@ -1294,29 +1290,20 @@ impl super::GameState {
         }
     }
 
-    /// Credit every sharer of a monster kill: cumulative XP, any level-ups
+    /// Credit every recipient of a monster kill: cumulative XP, any level-ups
     /// (HP rolls plus the full heal), dirty marks, and the direct XpGained
-    /// notice. A zero share (tiny monster split) sends nothing. Batched over
-    /// the whole party so one kill takes each lock once.
-    async fn grant_monster_kill_xp(
-        &self,
-        recipients: &[PlayerId],
-        xp_amount: u32,
-        monster_id: &str,
-    ) {
-        if xp_amount == 0 {
-            return;
-        }
+    /// notice. Batched over all recipients so one kill takes each lock once.
+    async fn grant_monster_kill_xp(&self, recipients: &[(PlayerId, u32)], monster_id: &str) {
         // Read-modify-write under one lock: a member can receive two kills'
         // shares concurrently, and a split read/write would lose one.
         let mut grants = Vec::with_capacity(recipients.len());
         {
             let mut map = self.player_characters.write().await;
-            for player_id in recipients {
-                if let Some(entry) = map.get_mut(player_id) {
+            for &(player_id, xp_amount) in recipients {
+                if let Some(entry) = map.get_mut(&player_id) {
                     let old_xp = entry.1;
                     entry.1 += u64::from(xp_amount);
-                    grants.push((*player_id, old_xp, entry.1, entry.2.clone()));
+                    grants.push((player_id, xp_amount, old_xp, entry.1, entry.2.clone()));
                 }
             }
         }
@@ -1331,7 +1318,7 @@ impl super::GameState {
         let mut leveled = Vec::new();
         {
             let mut players = self.players.write().await;
-            for (player_id, old_xp, new_xp, attributes) in &grants {
+            for (player_id, xp_amount, old_xp, new_xp, attributes) in &grants {
                 let old_level = xp::level_from_xp(*old_xp);
                 let new_level = xp::level_from_xp(*new_xp);
                 let leveled_up = new_level > old_level;
@@ -1370,6 +1357,7 @@ impl super::GameState {
                 self.interest_lock().refresh_player(p);
                 notices.push((
                     *player_id,
+                    *xp_amount,
                     p.name.clone(),
                     *new_xp,
                     new_level,
@@ -1393,7 +1381,9 @@ impl super::GameState {
             self.party_vitals_dirty.write().await.extend(leveled);
         }
 
-        for (player_id, name, new_xp, new_level, leveled_at, max_hp, current_hp) in notices {
+        for (player_id, xp_amount, name, new_xp, new_level, leveled_at, max_hp, current_hp) in
+            notices
+        {
             self.publish_subject_change(ServerMessage::PlayerHealthUpdate {
                 player_id,
                 health: current_hp,

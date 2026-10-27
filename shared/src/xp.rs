@@ -17,6 +17,59 @@ pub const PARTY_XP_BONUS_PER_EXTRA_PERCENT: u64 = 25;
 /// party leech across the map.
 pub const PARTY_XP_SHARE_RADIUS: f32 = 150.0;
 
+/// Each damage dealer's cut of a kill's XP, in input order, proportional to
+/// the damage dealt. Every dealer gets at least 1 XP (0 stays 0), and the
+/// cuts sum to `base_xp` unless there are more dealers than XP, when each
+/// gets 1.
+pub fn damage_xp_shares(base_xp: u32, damage: &[u32]) -> Vec<u32> {
+    let total: u64 = damage.iter().map(|&dealt| u64::from(dealt)).sum();
+    if total == 0 {
+        return Vec::new();
+    }
+    let mut shares = vec![1.min(base_xp); damage.len()];
+    let mut pool = u64::from(base_xp);
+    if damage.len() as u64 >= pool {
+        return shares;
+    }
+
+    // Raise the smallest shares to 1; each raise shrinks the rest's pool.
+    let mut order: Vec<usize> = (0..damage.len()).collect();
+    order.sort_by_key(|&i| damage[i]);
+    let mut pool_damage = total;
+    let mut raised = 0;
+    for &i in &order {
+        let dealt = u64::from(damage[i]);
+        if pool * dealt >= pool_damage {
+            break;
+        }
+        pool -= 1;
+        pool_damage -= dealt;
+        raised += 1;
+    }
+
+    // Largest remainder: floor the rest, then hand the leftover XP to the
+    // biggest fractions (ties to the bigger hitter, then the earlier one).
+    let mut leftover = pool;
+    let mut remainders = Vec::with_capacity(order.len() - raised);
+    for &i in &order[raised..] {
+        let exact = pool * u64::from(damage[i]);
+        shares[i] = (exact / pool_damage) as u32;
+        leftover -= exact / pool_damage;
+        remainders.push((i, exact % pool_damage));
+    }
+    remainders.sort_by_key(|&(i, remainder)| {
+        (
+            std::cmp::Reverse(remainder),
+            std::cmp::Reverse(damage[i]),
+            i,
+        )
+    });
+    for &(i, _) in remainders.iter().take(leftover as usize) {
+        shares[i] += 1;
+    }
+    shares
+}
+
 /// Equal per-member share of a monster's XP among `eligible_members` party
 /// members. The killing blow gets no special cut — it only triggers the
 /// split. The pool gains the party bonus, the split is floored, and each
@@ -230,6 +283,63 @@ mod tests {
         // Should terminate without panic at extreme values
         let _ = level_from_xp(u64::MAX);
         let _ = level_from_xp(u64::MAX - 1);
+    }
+
+    #[test]
+    fn damage_share_single_dealer_takes_all() {
+        assert_eq!(damage_xp_shares(17, &[40]), [17]);
+    }
+
+    #[test]
+    fn damage_share_is_proportional() {
+        assert_eq!(damage_xp_shares(10, &[30, 70]), [3, 7]);
+    }
+
+    #[test]
+    fn damage_share_leftover_goes_to_the_largest_fractions() {
+        // 10 / 3 = 3.33 each: the one leftover XP goes to the first dealer.
+        assert_eq!(damage_xp_shares(10, &[1, 1, 1]), [4, 3, 3]);
+        // 2.5 / 3.5 / 4.0: the first two tie on .5, so the bigger hitter wins.
+        assert_eq!(damage_xp_shares(10, &[5, 7, 8]), [2, 4, 4]);
+    }
+
+    #[test]
+    fn damage_share_pays_every_dealer_at_least_one() {
+        assert_eq!(damage_xp_shares(10, &[1, 99]), [1, 9]);
+        // The raised shares come out of the others' pool.
+        assert_eq!(damage_xp_shares(10, &[1, 1, 98]), [1, 1, 8]);
+        assert_eq!(damage_xp_shares(10, &[98, 1, 1]), [8, 1, 1]);
+        assert_eq!(damage_xp_shares(0, &[1, 99]), [0, 0]);
+        assert!(damage_xp_shares(10, &[]).is_empty());
+    }
+
+    #[test]
+    fn damage_share_more_dealers_than_xp_pays_one_each() {
+        assert_eq!(damage_xp_shares(2, &[1, 1, 98]), [1, 1, 1]);
+    }
+
+    #[test]
+    fn damage_share_sums_to_base_xp() {
+        let mut seed = 1u64;
+        for _ in 0..20_000 {
+            seed = seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            let base_xp = (seed >> 33) as u32 % 700;
+            let dealers = 1 + (seed >> 20) as usize % 6;
+            let damage: Vec<u32> = (0..dealers)
+                .map(|i| 1 + ((seed >> (i * 7)) as u32 % 500))
+                .collect();
+            let shares = damage_xp_shares(base_xp, &damage);
+            if (dealers as u32) < base_xp {
+                assert_eq!(
+                    shares.iter().sum::<u32>(),
+                    base_xp,
+                    "{base_xp} {damage:?} -> {shares:?}"
+                );
+            }
+            assert!(shares.iter().all(|&xp| xp >= 1.min(base_xp)));
+        }
     }
 
     #[test]

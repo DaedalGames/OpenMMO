@@ -1,4 +1,4 @@
-use crate::types::{MonsterLifecycle, MonsterState, Position, ServerMessage};
+use crate::types::{MonsterLifecycle, MonsterState, PlayerId, Position, ServerMessage};
 use tracing::{debug, info};
 
 pub(super) const NO_SPAWN_MARGIN: f32 = 30.0;
@@ -10,6 +10,9 @@ pub(crate) struct MonsterRegistry {
     monsters: std::collections::HashMap<String, crate::types::Monster>,
     /// Canonical X positions keep queries correct across the world seam.
     cells: super::SpatialIndex<String>,
+    /// Damage per player, in first-hit order, for the kill XP split. Kept off
+    /// `Monster` so its frequent clones don't copy it.
+    damage: std::collections::HashMap<String, Vec<(PlayerId, u32)>>,
 }
 
 impl MonsterRegistry {
@@ -38,6 +41,7 @@ impl MonsterRegistry {
 
     pub(crate) fn remove(&mut self, id: &str) -> Option<crate::types::Monster> {
         let removed = self.monsters.remove(id);
+        self.damage.remove(id);
         if let Some(monster) = &removed {
             self.cells.remove(id, &monster.position);
         }
@@ -82,6 +86,18 @@ impl MonsterRegistry {
         if let Some(monster) = self.monsters.get_mut(id) {
             monster.state = MonsterState::Dead;
         }
+    }
+
+    pub(crate) fn record_damage(&mut self, id: &str, player_id: PlayerId, dealt: u32) {
+        let log = self.damage.entry(id.to_string()).or_default();
+        match log.iter_mut().find(|(dealer, _)| *dealer == player_id) {
+            Some((_, total)) => *total += dealt,
+            None => log.push((player_id, dealt)),
+        }
+    }
+
+    pub(crate) fn take_damage(&mut self, id: &str) -> Vec<(PlayerId, u32)> {
+        self.damage.remove(id).unwrap_or_default()
     }
 
     /// Move the monster and its spatial index entry together.

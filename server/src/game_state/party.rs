@@ -461,6 +461,52 @@ impl super::GameState {
             .collect()
     }
 
+    /// Kill XP per recipient. Damage is pooled per party, so a party's cut
+    /// matches one member dealing it all. Each cut goes to its dealers plus
+    /// the other party members sharing the kill.
+    pub(crate) async fn kill_xp_grants(
+        &self,
+        base_xp: u32,
+        damage_by: &[(PlayerId, u32)],
+        position: onlinerpg_shared::Position,
+        floor_level: i8,
+    ) -> Vec<(PlayerId, u32)> {
+        let mut pools: Vec<(Option<u64>, Vec<PlayerId>, u32)> = Vec::new();
+        {
+            let parties = self.parties.read().await;
+            for &(dealer, dealt) in damage_by {
+                let party = parties.member_of.get(&dealer).copied();
+                match pools
+                    .iter_mut()
+                    .find(|(pool_party, ..)| party.is_some() && *pool_party == party)
+                {
+                    Some((_, dealers, total)) => {
+                        dealers.push(dealer);
+                        *total += dealt;
+                    }
+                    None => pools.push((party, vec![dealer], dealt)),
+                }
+            }
+        }
+        let damage: Vec<u32> = pools.iter().map(|&(.., total)| total).collect();
+        let mut grants = Vec::new();
+        for ((party, mut recipients, _), cut) in pools
+            .into_iter()
+            .zip(xp::damage_xp_shares(base_xp, &damage))
+        {
+            if party.is_some() {
+                let mut sharers = self
+                    .party_members_sharing_kill(&recipients[0], position, floor_level)
+                    .await;
+                sharers.retain(|id| !recipients.contains(id));
+                recipients.extend(sharers);
+            }
+            let share = xp::party_xp_share(cut, recipients.len() as u32);
+            grants.extend(recipients.into_iter().map(|id| (id, share)));
+        }
+        grants
+    }
+
     /// Teleport hook: the mover can no longer answer the summons aimed at
     /// them, and a lingering entry would block a re-call until it expires.
     pub(crate) async fn void_summons_aimed_at(&self, player_id: &PlayerId) {
