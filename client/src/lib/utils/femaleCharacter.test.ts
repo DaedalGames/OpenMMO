@@ -213,7 +213,9 @@ describe('female modular starter outfits', () => {
         const barbarianStyle =
           item.material === 'leather' || id.startsWith('worn_barbarian_')
         const brilliance = id === 'helm_of_brilliance'
-        const rogueStyle = item.worldModel?.startsWith('armor/rogue_')
+        const rogueStyle =
+          item.worldModel?.startsWith('armor/rogue_') ||
+          ['leather_armor', 'leather_gloves', 'leather_boots'].includes(id)
         const [shown, hidden] = rogueStyle
           ? [`rogue_${part}`, part]
           : brilliance

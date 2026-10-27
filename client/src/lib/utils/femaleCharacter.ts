@@ -247,12 +247,19 @@ function installBootsSwitch(scene: THREE.Object3D, state: FemaleState) {
   return () => refreshes.forEach((refresh) => refresh())
 }
 
+const ROGUE_LEATHER_MODELS = new Set([
+  'armor/leather_armor.glb',
+  'armor/leather_gloves.glb',
+  'armor/leather_boots.glb',
+])
+
 const femaleStyle = (itemId: string | null | undefined): Style | null => {
   if (!itemId) return null
   const item = getItemDef(itemId)
-  if (item?.worldModel?.startsWith('armor/rogue_')) return 'rogue'
-  return item?.material === 'leather' ||
-    item?.worldModel?.startsWith('armor/barbarian_')
+  const model = item?.worldModel ?? ''
+  if (model.startsWith('armor/rogue_') || ROGUE_LEATHER_MODELS.has(model))
+    return 'rogue'
+  return item?.material === 'leather' || model.startsWith('armor/barbarian_')
     ? 'barbarian'
     : 'plate'
 }
