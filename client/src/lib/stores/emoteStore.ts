@@ -27,6 +27,9 @@ export const EXCAVATE_EMOTE_ANIM = 'excavate'
 /** Played instead of the pickup crouch when the item would not fit. */
 export const REFUSE_PICKUP_ANIM = 'shake_head'
 
+/** Played when the player casts Primal Roar. */
+export const ROAR_ANIMATION = 'roar'
+
 /** One-shot clips `/emote <name>` plays. Must match `ONE_SHOT_EMOTES` in
  *  `shared/src/messages.rs` — the server validates the command against it. */
 export const ONE_SHOT_EMOTE_ANIMS = new Set([

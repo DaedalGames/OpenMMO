@@ -23,6 +23,8 @@ export interface MonsterData {
     halfAngle: number
   }
   hitCounter?: number
+  /** `performance.now()` until which Primal Roar's dizzy marker shows. */
+  stunnedUntil?: number
   deadPendingTimer?: number
   lastAttackStartedAt?: number
   impactDelay?: number // Delay until hit state starts

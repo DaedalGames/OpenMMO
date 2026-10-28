@@ -19,6 +19,7 @@ pub(super) enum AttackSkill {
 pub(super) enum AgentAbility {
     GuardianWard,
     Rage,
+    PrimalRoar,
 }
 
 #[derive(Debug, Deserialize)]
@@ -475,11 +476,13 @@ pub(super) const ACTION_SPECS: &[ActionSpec] = &[
     ActionSpec {
         names: &["use_ability"],
         aliases: &[],
-        doc: r#"- Cast a class ability (Knights: Guardian Ward, Barbarians: Rage):
+        doc: r#"- Cast a class ability (Knights: Guardian Ward, Barbarians: Rage,
+  Cavemen: Primal Roar):
   {"type": "use_ability", "ability": "guardian_ward"}
   {"type": "use_ability", "ability": "rage"}
+  {"type": "use_ability", "ability": "primal_roar"}
   Check your class-specific world-state guidance for equipment, MP,
-  cooldown and active buff status. Neither needs a target.
+  cooldown and active buff status. None needs a target.
   The server reports success or failure."#,
     },
     ActionSpec {
@@ -1476,6 +1479,7 @@ pub(super) fn action_to_command(
             ability: match ability {
                 AgentAbility::GuardianWard => onlinerpg_shared::ability::AbilityId::GuardianWard,
                 AgentAbility::Rage => onlinerpg_shared::ability::AbilityId::Rage,
+                AgentAbility::PrimalRoar => onlinerpg_shared::ability::AbilityId::PrimalRoar,
             },
             monster_id: None,
             target_player_id: None,

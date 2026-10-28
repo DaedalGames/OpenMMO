@@ -37,6 +37,7 @@
   import CharacterStatusPane from './CharacterStatusPane.svelte'
   import { earnedTitles } from '../stores/titleStore'
   import { gameStore, visibleMana } from '../stores/gameStore'
+  import { tempHealth } from '../stores/playerHealthDisplay'
   import { titleName } from '../data/titleDefs'
   import {
     characterPanelTab,
@@ -237,7 +238,9 @@
             <div class="stat-row">
               <span class="stat-label">{$t('stat.hp')}</span>
               <span class="stat-value hp-value"
-                >{currentHp}/{maxHp}{#if $playerEffectiveStats?.maxHpBonus}
+                >{currentHp}/{maxHp}{#if $tempHealth}
+                  <span class="temp-hp">+{$tempHealth}</span
+                  >{/if}{#if $playerEffectiveStats?.maxHpBonus}
                   <span class="stat-bonus"
                     >(+{$playerEffectiveStats.maxHpBonus})</span
                   >{/if}</span
@@ -637,6 +640,10 @@
   .hp-value {
     color: #6ee7b7;
     white-space: nowrap;
+  }
+
+  .temp-hp {
+    color: #faf089;
   }
 
   .stat-bonus {

@@ -84,6 +84,12 @@ const ABILITY_SOUNDS: Partial<Record<AbilityId, SoundSpec>> = {
   },
 }
 
+// Primal Roar's cry. Loaded on first roar: only Cavemen cast it.
+const PRIMAL_ROAR_SOUNDS: Record<Gender, SoundSpec> = {
+  female: { url: '/sounds/primal-roar-female.ogg', volume: 0.6, pool: 2 },
+  male: { url: '/sounds/primal-roar-male.ogg', volume: 0.6, pool: 2 },
+}
+
 // Pool 2: party members can level on the same kill.
 const LEVEL_UP_SOUND: SoundSpec = {
   url: '/sounds/level-up.ogg',
@@ -352,6 +358,16 @@ export function stopDungeonDripSounds() {
 
 export function preloadAbilitySounds() {
   preloadSounds(ABILITY_SOUNDS)
+}
+
+export function playPrimalRoarSound(gender: Gender, delayMs = 0) {
+  const spec = PRIMAL_ROAR_SOUNDS[gender]
+  if (delayMs > 0) {
+    preloadAudioPool(spec.url, spec.volume, spec.pool)
+    window.setTimeout(() => playSound(spec), delayMs)
+    return
+  }
+  playSound(spec)
 }
 
 export function playAbilitySound(ability: AbilityId) {

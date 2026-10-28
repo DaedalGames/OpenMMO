@@ -142,6 +142,7 @@ pub(crate) fn test_player(x: f32, z: f32) -> Player {
         invisible: false,
         max_health_bonus: 0,
         max_health_per_level: 0,
+        temp_health: 0,
         back_color: None,
         back_texture: None,
         armor: Default::default(),

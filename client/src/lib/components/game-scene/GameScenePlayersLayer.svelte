@@ -658,6 +658,7 @@
     id === currentPlayer?.id
       ? currentPlayer.rotation
       : (remotePlayers.get(id)?.rotation ?? 0)}
+  roar={(id, audible) => modelFor(id)?.playRoar(audible)}
 />
 
 {#if camera && currentPlayer}

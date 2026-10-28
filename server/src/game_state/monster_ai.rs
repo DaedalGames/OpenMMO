@@ -1,6 +1,7 @@
 //! Server-driven monster brains (doc/SERVER_SIDE_MONSTER_AI.md).
 
 use crate::types::{Monster, MonsterState, PlayerId, Position, ServerMessage};
+use onlinerpg_shared::ability::PRIMAL_ROAR_STAGGER_MS;
 use onlinerpg_shared::dungeon::passability_floor_for_level;
 use onlinerpg_shared::monster_ai::{
     self, AiCommand, AiState, BehaviorTree, ChaseAim, MonsterBrain, NearbyMonster, NearbyPlayer,
@@ -288,6 +289,26 @@ impl super::GameState {
             .entries
             .get(monster_id)
             .and_then(|e| e.brain.target_player_id())
+    }
+
+    #[cfg(test)]
+    pub(crate) async fn brain_state(&self, monster_id: &str) -> Option<AiState> {
+        let brains = self.monster_brains.lock().await;
+        brains.entries.get(monster_id).map(|e| e.brain.state())
+    }
+
+    #[cfg(test)]
+    pub(crate) async fn insert_brain(&self, monster_id: &str, staggers: bool) {
+        let Some(monster) = self.monsters.read().await.get(monster_id).cloned() else {
+            return;
+        };
+        let mut brain = self.new_brain(&monster);
+        brain.staggers = staggers;
+        self.monster_brains
+            .lock()
+            .await
+            .entries
+            .insert(monster_id.to_owned(), Entry::new(brain, Instant::now()));
     }
 
     #[cfg(test)]
@@ -939,6 +960,10 @@ impl super::GameState {
                 .brain
                 .handle_hit_with_behavior_tree(attacker_id, hit, damage)
         };
+        self.apply_brain_commands(monster_id, commands).await;
+    }
+
+    async fn apply_brain_commands(&self, monster_id: &str, commands: Vec<AiCommand>) {
         if commands.is_empty() {
             return;
         }
@@ -953,6 +978,39 @@ impl super::GameState {
             self.apply_ai_command(monster_id, floor_level, command)
                 .await;
         }
+    }
+
+    /// True when the roar staggered the monster.
+    /// Stagger every roared brain under one lock; returns the ones staggered.
+    pub(super) async fn brain_roar(
+        &self,
+        monster_ids: &[String],
+        roarer_id: &PlayerId,
+    ) -> Vec<String> {
+        let reactions: Vec<_> = {
+            let mut brains = self.monster_brains.lock().await;
+            let now = Instant::now();
+            monster_ids
+                .iter()
+                .filter_map(|id| {
+                    let entry = brains.entries.get_mut(id)?;
+                    let owed = entry.owed_ms(now, None);
+                    entry.brain.catch_up(owed);
+                    let commands = entry
+                        .brain
+                        .handle_roar(roarer_id, PRIMAL_ROAR_STAGGER_MS as f32);
+                    Some((id.clone(), commands, entry.brain.state() == AiState::Hit))
+                })
+                .collect()
+        };
+        let mut staggered = Vec::new();
+        for (id, commands, hit) in reactions {
+            self.apply_brain_commands(&id, commands).await;
+            if hit {
+                staggered.push(id);
+            }
+        }
+        staggered
     }
 
     /// Where the brain has the monster right now; the registry trails it by

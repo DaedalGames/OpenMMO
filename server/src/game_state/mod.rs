@@ -357,6 +357,8 @@ pub struct GameState {
     player_action_versions: Arc<RwLock<HashMap<PlayerId, u64>>>,
     path_search: Arc<path_search::PathSearchPool>,
     last_player_attacks: Arc<RwLock<HashMap<PlayerId, u64>>>,
+    /// Unix ms before which the player may not swing (Primal Roar's cast).
+    player_attack_holds: Arc<RwLock<HashMap<PlayerId, u64>>>,
     auto_attacks: Arc<RwLock<HashMap<PlayerId, auto_attack::AttackSession>>>,
     attack_schedule: Arc<Mutex<auto_attack::AttackSchedule>>,
     attack_wakeup: Arc<tokio::sync::Notify>,
@@ -744,6 +746,7 @@ impl GameState {
             player_action_versions: Arc::new(RwLock::new(HashMap::new())),
             path_search: Arc::new(path_search::PathSearchPool::default()),
             last_player_attacks: Arc::new(RwLock::new(HashMap::new())),
+            player_attack_holds: Arc::new(RwLock::new(HashMap::new())),
             auto_attacks: Arc::new(RwLock::new(HashMap::new())),
             attack_schedule: Arc::default(),
             attack_wakeup: Arc::default(),

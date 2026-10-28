@@ -129,6 +129,7 @@
     attackFromLeft={monster.attackFromLeft}
     skill={monster.skill}
     hitCounter={monster.hitCounter}
+    stunnedUntil={monster.stunnedUntil}
     lastDamageInfo={monster.lastDamageInfo}
     droppedWeaponItemDefId={monster.droppedWeaponItemDefId}
     sinkAt={monster.sinkAt}

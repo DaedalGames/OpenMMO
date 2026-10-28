@@ -228,7 +228,9 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v128: raid tokens in `FieldRaidNotice`.
 /// v129: player critical hits and effective critical strike chance.
 /// v130: Barbarian Rage (`AbilityId::Rage`, `PlayerRageToggled`).
-pub const PROTOCOL_VERSION: u32 = 130;
+/// v131: Caveman Primal Roar (`AbilityId::PrimalRoar`, `TempHealthUpdate`,
+/// `MonsterStunned`).
+pub const PROTOCOL_VERSION: u32 = 131;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from
@@ -566,6 +568,7 @@ mod tests {
             invisible: false,
             max_health_bonus: 0,
             max_health_per_level: 0,
+            temp_health: 0,
             back_color: None,
             back_texture: None,
             armor: Default::default(),

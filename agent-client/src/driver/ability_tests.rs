@@ -331,3 +331,55 @@ async fn llm_rage_dispatches_and_waits_out_its_cooldown() {
         })
     ));
 }
+
+#[tokio::test(start_paused = true)]
+async fn primal_roar_prompt_needs_no_weapon_and_shows_temporary_hp() {
+    let (mut state, _rx) = knight_state();
+    let player = state.self_player.as_mut().unwrap();
+    player.class = CharacterClass::Caveman;
+    player.max_health = 200;
+    state.self_equipped.clear();
+    let prompt = state.format_world_state();
+    assert!(prompt.contains("Primal Roar: ready. Your temporary HP: 0."));
+    assert!(prompt.contains(r#"{"type": "use_ability", "ability": "primal_roar"}"#));
+    assert!(prompt.contains("You gain 30 temporary HP for 10s"));
+    assert!(!prompt.contains("Guardian Ward:"));
+    state.push_event(ServerMessage::TempHealthUpdate { amount: 12 });
+    assert!(state
+        .format_world_state()
+        .contains("Your temporary HP: 12."));
+    state.self_player.as_mut().unwrap().class = CharacterClass::Barbarian;
+    assert!(!state.format_world_state().contains("Primal Roar:"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn llm_primal_roar_dispatches_and_waits_out_its_cooldown() {
+    let (mut state, mut rx) = knight_state();
+    state.self_player.as_mut().unwrap().class = CharacterClass::Caveman;
+    state.push_event(ServerMessage::AbilityCooldowns {
+        cooldowns: vec![AbilityTimer {
+            ability: AbilityId::PrimalRoar,
+            remaining_ms: 30_000,
+        }],
+    });
+    let state = Arc::new(Mutex::new(state));
+    let response = r#"{"actions":[{"type":"use_ability","ability":"primal_roar"}]}"#;
+    handle_response(&state, response, &None, &None, false).await;
+    assert!(rx.try_recv().is_err());
+    assert!(state
+        .lock()
+        .await
+        .drain_agent_events()
+        .iter()
+        .any(|line| line.starts_with("[PrimalRoarFailed] Wait 30.0s")));
+    tokio::time::advance(Duration::from_secs(30)).await;
+    handle_response(&state, response, &None, &None, false).await;
+    assert!(matches!(
+        rx.try_recv(),
+        Ok(ClientMessage::UseAbility {
+            ability: AbilityId::PrimalRoar,
+            monster_id: None,
+            target_player_id: None,
+        })
+    ));
+}

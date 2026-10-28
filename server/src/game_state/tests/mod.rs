@@ -162,6 +162,7 @@ pub(super) fn make_player(id: &str, x: f32, z: f32) -> Player {
         invisible: false,
         max_health_bonus: 0,
         max_health_per_level: 0,
+        temp_health: 0,
     }
 }
 

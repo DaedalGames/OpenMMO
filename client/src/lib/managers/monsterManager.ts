@@ -455,6 +455,16 @@ class MonsterManager {
     this.monsters.set(monsterId, { ...monster })
   }
 
+  handleMonsterStunned(monsterIds: string[], durationMs: number) {
+    const until = (globalThis.performance?.now() ?? Date.now()) + durationMs
+    for (const id of monsterIds) {
+      const monster = this.monsters.get(id)
+      if (!monster || monster.state === 'dead') continue
+      monster.stunnedUntil = until
+      this.monsters.set(id, { ...monster })
+    }
+  }
+
   /** A killing blow's flinch is `deathPlaysHit`'s call. */
   private shrugsOffHit(monster: MonsterData) {
     return (

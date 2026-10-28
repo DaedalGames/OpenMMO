@@ -574,6 +574,7 @@ impl super::GameState {
             floor: i8,
             health: u32,
             max_health: u32,
+            shield_hit: bool,
         }
         let now = Self::now_ms();
         let hits: Vec<Hit> = {
@@ -586,9 +587,7 @@ impl super::GameState {
                         return None;
                     }
                     let old_health = player.health;
-                    if !player.invulnerable {
-                        player.health = player.health.saturating_sub(amount);
-                    }
+                    let shield_hit = !player.invulnerable && player.absorb_damage(amount);
                     self.combat_audit.health(old_health, player, "debuff");
                     Some(Hit {
                         pid,
@@ -597,6 +596,7 @@ impl super::GameState {
                         floor: player.floor_level,
                         health: player.health,
                         max_health: player.max_health,
+                        shield_hit,
                     })
                 })
                 .collect()
@@ -609,6 +609,9 @@ impl super::GameState {
         self.party_vitals_dirty.write().await.extend(ids);
         for hit in hits {
             self.stop_bed_rest(&hit.pid).await;
+            if hit.shield_hit {
+                self.send_temp_health(&hit.pid).await;
+            }
             self.publish_nearby(
                 &hit.position,
                 hit.floor,

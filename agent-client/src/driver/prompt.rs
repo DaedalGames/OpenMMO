@@ -417,6 +417,17 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             "[Rage] You fly into a rage for {}s.",
             onlinerpg_shared::ability::RAGE_DURATION_MS / 1000
         )),
+        ServerMessage::AbilityUsed {
+            ability: onlinerpg_shared::ability::AbilityId::PrimalRoar,
+            player_id,
+            ..
+        } if state.self_player_id == Some(*player_id) => Some(format!(
+            "[PrimalRoar] You roar: nearby monsters are stunned and turn on you; {} temporary HP for {}s.",
+            state.self_player.as_ref().map_or(0, |p| {
+                onlinerpg_shared::ability::primal_roar_temp_health(p.max_health)
+            }),
+            onlinerpg_shared::ability::PRIMAL_ROAR_DURATION_MS / 1000
+        )),
         ServerMessage::AbilityRejected { ability, reason }
             if crate::state::buff_ability(*ability).is_some() =>
         {

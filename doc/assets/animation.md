@@ -242,6 +242,17 @@ tip followed the handle. Other rigs and offhand props kept their previous placem
     `node tools/prepare-female-knight.mjs --pack social`로 다시 만들었다 (기존 클립은 바이트 동일).
   - 무게 초과로 바닥 아이템을 들 수 없을 때 줍기 동작 대신 재생된다.
 
+- Roar https://www.mixamo.com/#/?query=roar&type=Motion%2CMotionPack (social pack, `roar` — 야성의 포효 시전 동작)
+  - 2026-10-29 Mixamo, Without Skin(65본)/30fps, `assets/animations/Roar.fbx`. `import_mixamo_animation`으로 `Armature`에 bake(fake user),
+    원본 163프레임 중 16–80프레임(웅크림 → 발 구르기 → 양팔을 벌린 포효 → 상체를 숙여 내지르기)만 남겨 1프레임부터 시작하게 옮겼다.
+    65프레임(2.17초). 처음엔 56프레임에서 잘랐으나 사용자 확인 후 80프레임까지 늘렸다. 숙인 채 이어지는 나머지(81–163)는 버렸다.
+    80프레임에서 Hips가 원점에서 약 25cm 떨어져 있어, 끝나고 idle로 섞일 때 그만큼 미끄러진다.
+    도너 팩 export 후 `graft-glb-clip.py`로 social.glb에 이식했다(99채널, 누락 없음). 플레이어 캐릭터용 팩은
+    `node tools/prepare-modular-character.mjs --pack social`과 `node tools/prepare-female-knight.mjs --pack social`로 다시 만들었다.
+  - 야성의 포효 `AbilityUsed`를 받으면 시전자 모델이 idle·자동 공격 중일 때 한 번 재생한다(`PlayerModel.playRoar`).
+- **[미사용]** Yelling Out, Standing Taunt Battlecry — 같은 날 Mixamo에서 함께 받은 포효 후보.
+  `assets/animations/Yelling Out.fbx`, `assets/animations/Standing Taunt Battlecry.fbx`.
+
 ## Mixamo Animation Export Workflow
 
 새 Mixamo 애니메이션을 offhand/locomotion 등의 pack에 추가할 때:

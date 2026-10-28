@@ -1,4 +1,5 @@
 import { manaState } from './manaStore'
+import { tempHealth } from './playerHealthDisplay'
 import type { LocalizedMessage } from '../i18n'
 import { resetTeleportEffects } from './teleportEffectStore'
 import { resetGroundEruptions } from './groundEruptionStore'
@@ -202,6 +203,7 @@ export const resetGameStore = () => {
   resetTeleportEffects()
   resetGroundEruptions()
   manaState.set(null)
+  tempHealth.set(0)
   resetDaggerSkill()
   resetLandClaimPreview()
   gameStore.set({

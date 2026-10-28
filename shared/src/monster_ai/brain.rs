@@ -98,6 +98,8 @@ pub struct MonsterBrain {
     pub ranged_range: f32,
     /// Off for raid bosses: a crowd's blows would never let one act.
     pub staggers: bool,
+    /// Time left in the Hit stagger; a later blow never shortens it.
+    pub(super) stagger_left_ms: f32,
     pub(super) aggro: Option<Box<super::aggro::Aggro>>,
 }
 
@@ -173,6 +175,7 @@ impl MonsterBrain {
             body: None,
             ranged_range: 0.0,
             staggers: true,
+            stagger_left_ms: 0.0,
             aggro: super::aggro_for(monster_type)
                 .map(|rules| Box::new(super::aggro::Aggro::new(rules))),
         }
@@ -277,6 +280,7 @@ impl MonsterBrain {
             *cooldown = (*cooldown - delta_ms).max(0.0);
         }
         self.cast_left_ms = (self.cast_left_ms - delta_ms).max(0.0);
+        self.stagger_left_ms = (self.stagger_left_ms - delta_ms).max(0.0);
         if let Some(aggro) = &mut self.aggro {
             aggro.advance(delta_ms);
         }
@@ -450,7 +454,7 @@ impl MonsterBrain {
         }
 
         if self.state == AiState::Hit {
-            if self.state_timer_ms < DEFAULT_HIT_STAGGER_MS {
+            if self.stagger_left_ms > 0.0 {
                 return commands;
             }
             self.state = AiState::Idle;
@@ -517,6 +521,30 @@ impl MonsterBrain {
         hit: bool,
         damage: u32,
     ) -> Vec<AiCommand> {
+        self.react(
+            attacker_id,
+            hit,
+            damage,
+            hit.then_some(DEFAULT_HIT_STAGGER_MS),
+        )
+    }
+
+    /// Primal Roar: provoke like a missed swing and stagger for `stagger_ms`.
+    /// The swing cooldown waits out the added stagger.
+    pub fn handle_roar(&mut self, attacker_id: &PlayerId, stagger_ms: f32) -> Vec<AiCommand> {
+        let before = self.stagger_left_ms_now();
+        let commands = self.react(attacker_id, false, 0, Some(stagger_ms));
+        self.attack_cooldown_left_ms += self.stagger_left_ms_now() - before;
+        commands
+    }
+
+    fn react(
+        &mut self,
+        attacker_id: &PlayerId,
+        hit: bool,
+        damage: u32,
+        stagger_ms: Option<f32>,
+    ) -> Vec<AiCommand> {
         let previous_target = self.target_player_id;
         if !self.apply_hit(attacker_id, hit, damage) {
             return vec![];
@@ -530,13 +558,15 @@ impl MonsterBrain {
             return vec![];
         }
 
-        if hit && self.staggers {
+        if let Some(ms) = stagger_ms.filter(|_| self.staggers) {
+            self.stagger_left_ms = self.stagger_left_ms_now().max(ms);
             self.state = AiState::Hit;
             self.state_timer_ms = 0.0;
             vec![self.make_move_cmd()]
-        } else if self.state.is_engaged() {
+        } else if self.state.is_engaged() || self.state == AiState::Hit {
             // Already engaged: idling here stopped a charging monster and
             // slid it back to the last tick's pose on every missed swing.
+            // A miss never cuts a stagger short either.
             vec![]
         } else {
             // A miss (and the server's out-of-range provoke event) still
@@ -546,6 +576,14 @@ impl MonsterBrain {
             let mut commands = Vec::new();
             self.transition_to_idle(&mut commands);
             commands
+        }
+    }
+
+    fn stagger_left_ms_now(&self) -> f32 {
+        if self.state == AiState::Hit {
+            self.stagger_left_ms
+        } else {
+            0.0
         }
     }
 

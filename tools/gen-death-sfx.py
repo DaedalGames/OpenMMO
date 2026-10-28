@@ -129,6 +129,18 @@ PROMPTS = {
         "explosion or thunder."
     ),
     "scp939": "The wet, distorted death shriek of a fleshy eyeless monster, unnatural and wrong",
+    "primal_roar_male": (
+        "A primal caveman warrior's short fierce battle roar: one deep, raw, "
+        "guttural human shout bursting from the chest to frighten wild beasts, "
+        "savage and powerful, about one second, ending abruptly. Human male voice "
+        "only, no animal growl, no words, no music, no reverb."
+    ),
+    "primal_roar_female": (
+        "A primal cavewoman warrior's short fierce battle roar: one raw, powerful, "
+        "guttural female war cry bursting from the chest to frighten wild beasts, "
+        "savage and strong, about one second, ending abruptly. Human female voice "
+        "only, no scream of fear, no animal growl, no words, no music, no reverb."
+    ),
     "level_up": (
         "Fantasy RPG level-up sound: a bright magical ascending shimmer. A quick "
         "rising harp and glockenspiel arpeggio with sparkling twinkles and a soft "

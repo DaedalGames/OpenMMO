@@ -134,6 +134,10 @@ pub struct Player {
     pub max_health_bonus: u32,
     #[serde(skip)]
     pub max_health_per_level: u32,
+    /// Primal Roar's shield, spent before `health`. Owner-only via
+    /// `TempHealthUpdate`.
+    #[serde(skip)]
+    pub temp_health: u32,
 }
 
 /// Backstop for a client that never sends `WorldReady`.
@@ -142,6 +146,15 @@ pub const WORLD_LOADING_GRACE_MS: u64 = 30_000;
 impl Player {
     pub fn is_ready(&self, now_ms: u64) -> bool {
         now_ms >= self.ready_at
+    }
+
+    /// Take `amount` off the temporary shield first, then health. True when
+    /// the shield took some of it.
+    pub fn absorb_damage(&mut self, amount: u32) -> bool {
+        let absorbed = amount.min(self.temp_health);
+        self.temp_health -= absorbed;
+        self.health = self.health.saturating_sub(amount - absorbed);
+        absorbed > 0
     }
 
     pub fn base_max_health(&self) -> u32 {
@@ -330,6 +343,7 @@ mod tests {
             invisible: false,
             max_health_bonus: 0,
             max_health_per_level: 1,
+            temp_health: 0,
             back_color: None,
             back_texture: None,
             armor: Default::default(),
@@ -386,6 +400,7 @@ mod tests {
             invisible: false,
             max_health_bonus: 0,
             max_health_per_level: 0,
+            temp_health: 0,
             back_color: None,
             back_texture: None,
             armor: Default::default(),
@@ -447,6 +462,7 @@ mod tests {
             invisible: false,
             max_health_bonus: 0,
             max_health_per_level: 0,
+            temp_health: 0,
             back_color: None,
             back_texture: None,
             armor: Default::default(),

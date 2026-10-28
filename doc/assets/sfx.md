@@ -431,6 +431,16 @@ Starter 유료 플랜(API 구독 조회로 확인),
 
 ## Abilities
 
+- primal-roar-male.ogg, primal-roar-female.ogg — 야성의 포효 시전자의 외침. 시전자 성별로 고른다.
+  [ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects) API로 2026-10-29 직접 생성. Starter 유료 플랜.
+  1.2초, `prompt_influence=0.5`. 성별마다 3개씩 6개 후보 생성(총 48크레딧) 후 사용자가 둘 다 take 1을 골랐다.
+  프롬프트는 `tools/gen-death-sfx.py`의 `primal_roar_male`·`primal_roar_female`에 기록.
+  끝 무음만 −40 dB 기준으로 잘라 남 0.85초·여 1.02초, 마지막 80 ms 페이드. 꼬리를 0.55초·0.90초로 짧게 끊은 판도
+  들어 봤지만 사용자가 원래 길이를 골랐다. 피크 −3 dB 정규화, 모노 44.1 kHz OGG Vorbis q5. 게임 재생 볼륨 0.6.
+  원본과 필터 체인은 `assets/sfx/primal-roar-2026-10-29/`의 `primal-roar-{male,female}_take1_2026-10-29.mp3`
+  및 같은 이름의 `.json`에 보관.
+  `AbilityUsed`를 받은 뒤 800 ms 늦게 재생해 시전 동작에서 양팔을 벌리는 순간에 맞춘다. 같은 층 20 m 안에서 들린다.
+
 - guardian-ward.ogg — Guardian Ward 방패 버프 발동음. 사용자가 제공한
   `Heavy_shield_buff_ca_#4-1789246371152.mp3`를 사용한다. 출처·생성일·요금제는
   사용자 확인: ElevenLabs Sound Effects, Starter, 2026-09-13.

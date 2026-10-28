@@ -160,6 +160,80 @@ fn handle_hit_transitions_to_hit_state() {
 }
 
 #[test]
+fn a_roar_staggers_longer_than_a_hit_and_a_later_hit_keeps_it() {
+    let (mut brain, players) = chasing_brain();
+    let mut rng = SmallRng::seed_from_u64(42);
+    let tick = |brain: &mut MonsterBrain, ms: f32, rng: &mut SmallRng| {
+        brain.tick_with_behavior_tree(ms, &players, &[], &chase_tree(), &DirectPath, rng);
+    };
+
+    let cmds = brain.handle_roar(&2.into(), 1_500.0);
+    assert!(matches!(
+        cmds.as_slice(),
+        [AiCommand::Move {
+            state: MonsterState::Hit,
+            ..
+        }]
+    ));
+    assert_eq!(brain.target_player_id(), Some(2.into()));
+    assert_eq!(brain.health, 10);
+    tick(&mut brain, 100.0, &mut rng);
+    brain.handle_hit_with_behavior_tree(&2.into(), true, 1);
+    tick(&mut brain, 1_000.0, &mut rng);
+    assert_eq!(brain.state(), AiState::Hit);
+    tick(&mut brain, 400.0, &mut rng);
+    assert_ne!(brain.state(), AiState::Hit);
+
+    brain.handle_hit_with_behavior_tree(&2.into(), true, 1);
+    tick(&mut brain, DEFAULT_HIT_STAGGER_MS - 1.0, &mut rng);
+    assert_eq!(brain.state(), AiState::Hit);
+    tick(&mut brain, 1.0, &mut rng);
+    assert_ne!(brain.state(), AiState::Hit);
+}
+
+#[test]
+fn a_roar_holds_the_swing_cooldown_through_the_stagger() {
+    let mut brain = make_brain();
+    brain.attack_cooldown_left_ms = 300.0;
+    brain.handle_roar(&2.into(), 1_500.0);
+    assert_eq!(brain.attack_cooldown_left_ms, 1_800.0);
+    brain.handle_hit_with_behavior_tree(&2.into(), true, 1);
+    assert_eq!(brain.attack_cooldown_left_ms, 1_800.0);
+
+    let mut brain = make_brain();
+    brain.staggers = false;
+    brain.attack_cooldown_left_ms = 300.0;
+    brain.handle_roar(&2.into(), 1_500.0);
+    assert_eq!(brain.attack_cooldown_left_ms, 300.0);
+}
+
+#[test]
+fn a_missed_swing_does_not_end_a_stagger() {
+    let mut brain = make_brain();
+    brain.handle_roar(&2.into(), 1_500.0);
+    assert!(brain
+        .handle_hit_with_behavior_tree(&2.into(), false, 0)
+        .is_empty());
+    assert_eq!(brain.state(), AiState::Hit);
+    assert_eq!(brain.stagger_left_ms, 1_500.0);
+}
+
+#[test]
+fn a_roar_targets_but_does_not_stagger_an_immune_or_casting_brain() {
+    let mut brain = make_brain();
+    brain.staggers = false;
+    brain.handle_roar(&2.into(), 1_500.0);
+    assert_eq!(brain.target_player_id(), Some(2.into()));
+    assert_ne!(brain.state(), AiState::Hit);
+
+    let mut brain = make_brain();
+    brain.cast_left_ms = 500.0;
+    assert!(brain.handle_roar(&2.into(), 1_500.0).is_empty());
+    assert_eq!(brain.target_player_id(), Some(2.into()));
+    assert_ne!(brain.state(), AiState::Hit);
+}
+
+#[test]
 fn handle_hit_death() {
     let mut brain = make_brain();
 

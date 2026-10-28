@@ -1,4 +1,5 @@
 import { manaState } from '../stores/manaStore'
+import { tempHealth } from '../stores/playerHealthDisplay'
 import {
   showAnnouncement,
   showOperatorNotice,
@@ -814,6 +815,7 @@ export function handleServerMessage(
       housingManager.resetView()
       scheduleResync()
       manaState.set(null)
+      tempHealth.set(0)
       resetFences()
       resetHousePlacement()
       resetEstateStorage()
@@ -1487,6 +1489,12 @@ export function handleServerMessage(
       combatController.attackStopped(data.monster_id, data.request_id)
       break
 
+    case 'MonsterStunned':
+      monsterManager.handleMonsterStunned(
+        data.monster_ids,
+        Number(data.duration_ms)
+      )
+      break
     case 'MonsterSkillStarted':
       monsterManager.handleMonsterSkillStarted(
         data.monster_id,
@@ -2634,6 +2642,9 @@ export function handleServerMessage(
     case 'ManaUpdate':
       manaState.set({ mana: data.mana, max_mana: data.max_mana })
       break
+    case 'TempHealthUpdate':
+      tempHealth.set(data.amount)
+      break
     case 'HungerUpdate': {
       const prev = get(hungerState)
       const band = data.state as HungerBand
@@ -2684,6 +2695,7 @@ export function handleServerMessage(
       }
       for (const [id, key] of [
         ['rage', 'rage'],
+        ['primal_roar', 'primalRoar'],
         ['radiance', 'radiance'],
         ['bow_mark', 'trueAim'],
       ] as const)
@@ -2714,7 +2726,11 @@ export function handleServerMessage(
       break
     }
     case 'AbilityUsed':
-      if (data.ability === GUARDIAN_WARD.id || data.ability === 'radiance')
+      if (
+        data.ability === GUARDIAN_WARD.id ||
+        data.ability === 'radiance' ||
+        data.ability === 'primal_roar'
+      )
         queueAbilityEffect(data as Omit<AbilityEffectEvent, 'startedAt'>)
       break
     case 'DebuffUpdate': {

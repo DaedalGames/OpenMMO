@@ -1422,6 +1422,10 @@ pub enum ServerMessage {
         mana: u32,
         max_mana: u32,
     },
+    /// The owner's Primal Roar shield; 0 when it is spent or gone.
+    TempHealthUpdate {
+        amount: u32,
+    },
     PlayerHealthUpdate {
         player_id: PlayerId,
         health: u32,
@@ -2018,6 +2022,11 @@ pub enum ServerMessage {
         player_id: PlayerId,
         enabled: bool,
     },
+    /// Primal Roar's stagger, for the dizzy marker over each monster.
+    MonsterStunned {
+        monster_ids: Vec<String>,
+        duration_ms: u64,
+    },
     BowMarkUpdate {
         monster_id: Option<String>,
         remaining_ms: u64,
@@ -2145,7 +2154,8 @@ impl ServerMessage {
             | Self::MonsterGroundStrike { .. }
             | Self::MonsterAttackedPlayer { .. }
             | Self::PlayerInstrumentNotes { .. }
-            | Self::AbilityUsed { .. } => DeliveryClass::NearbyEffect,
+            | Self::AbilityUsed { .. }
+            | Self::MonsterStunned { .. } => DeliveryClass::NearbyEffect,
             Self::TerrainTileVersion { .. }
             | Self::LandscapeChanged { .. }
             | Self::LandscapeInvalidated { .. }
@@ -2188,6 +2198,7 @@ impl ServerMessage {
             | Self::PlayerAttackRejected { .. }
             | Self::PlayerAttackStopped { .. }
             | Self::ManaUpdate { .. }
+            | Self::TempHealthUpdate { .. }
             | Self::XpGained { .. }
             | Self::SkillsUpdate { .. }
             | Self::FishingError { .. }

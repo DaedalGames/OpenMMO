@@ -136,6 +136,7 @@ impl SharedState {
             // State-only: tracked on SharedState, shown in the world state.
             ServerMessage::GoldUpdate { .. }
             | ServerMessage::ManaUpdate { .. }
+            | ServerMessage::TempHealthUpdate { .. }
             | ServerMessage::AbilityCooldowns { .. }
             | ServerMessage::BuffUpdate { .. }
             | ServerMessage::GoldGained { .. }
@@ -973,6 +974,9 @@ impl SharedState {
             }
             ServerMessage::ManaUpdate { mana, max_mana } => {
                 self.self_mana = Some((*mana, *max_mana));
+            }
+            ServerMessage::TempHealthUpdate { amount } => {
+                self.self_temp_health = *amount;
             }
             ServerMessage::HungerUpdate {
                 satiation,

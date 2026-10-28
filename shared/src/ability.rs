@@ -8,6 +8,16 @@ pub const RAGE_DURATION_MS: u64 = 10_000;
 pub const RAGE_COOLDOWN_MS: u64 = 20_000;
 pub const RAGE_MANA_COST: u32 = 1;
 pub const RAGE_GUARD_PENALTY: i32 = 2;
+pub const PRIMAL_ROAR_RADIUS: f32 = 4.0;
+/// The stomp in the cast clip; the stun lands here.
+pub const PRIMAL_ROAR_STOMP_MS: u64 = 1_050;
+/// The caster's swings wait out the roar pose.
+pub const PRIMAL_ROAR_CAST_MS: u64 = 1_850;
+/// 1.5 s plus the 2.17 s roar clip the caster spends not swinging.
+pub const PRIMAL_ROAR_STAGGER_MS: u64 = 3_700;
+pub const PRIMAL_ROAR_DURATION_MS: u64 = 10_000;
+pub const PRIMAL_ROAR_COOLDOWN_MS: u64 = 30_000;
+pub const PRIMAL_ROAR_MANA_COST: u32 = 1;
 pub const RADIANCE_DURATION_MS: u64 = 120_000;
 pub const RADIANCE_COOLDOWN_MS: u64 = 800;
 pub const BOW_MARK_DURATION_MS: u64 = 5_000;
@@ -24,6 +34,7 @@ pub enum AbilityId {
     DaggerDoubleSlash,
     Auscultation,
     Rage,
+    PrimalRoar,
 }
 
 impl AbilityId {
@@ -31,6 +42,7 @@ impl AbilityId {
         match self {
             Self::GuardianWard => GUARDIAN_WARD_MANA_COST,
             Self::Rage => RAGE_MANA_COST,
+            Self::PrimalRoar => PRIMAL_ROAR_MANA_COST,
             _ => 0,
         }
     }
@@ -38,6 +50,10 @@ impl AbilityId {
 
 pub fn rage_damage_bonus(level: u32) -> i32 {
     3 + (level / 10) as i32
+}
+
+pub fn primal_roar_temp_health(max_health: u32) -> u32 {
+    (max_health * 15 / 100).max(4)
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

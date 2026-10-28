@@ -333,17 +333,41 @@ impl super::GameState {
             .unwrap_or(0)
     }
 
+    /// Combat breaks invisibility.
+    pub(super) async fn mark_in_combat(&self, player_id: &PlayerId) {
+        let revealed = {
+            let mut players = self.players.write().await;
+            players.get_mut(player_id).is_some_and(|player| {
+                player.last_combat_at = Self::now_ms();
+                self.reveal_locked(player)
+            })
+        };
+        if revealed {
+            self.notify_invisibility(player_id, false).await;
+        }
+    }
+
+    async fn player_attack_hold(&self, player_id: &PlayerId) -> u64 {
+        self.player_attack_holds
+            .read()
+            .await
+            .get(player_id)
+            .copied()
+            .unwrap_or(0)
+    }
+
     pub(super) async fn player_attack_ready(&self, player_id: &PlayerId) -> bool {
-        let since = Self::now_ms().saturating_sub(self.last_player_attack(player_id).await);
-        since >= self.player_attack_interval_ms(player_id).await
+        let now = Self::now_ms();
+        now.saturating_sub(self.last_player_attack(player_id).await)
+            >= self.player_attack_interval_ms(player_id).await
+            && now >= self.player_attack_hold(player_id).await
     }
 
     pub(super) async fn player_attack_remaining_ms(&self, player_id: &PlayerId) -> u64 {
         let last = self.last_player_attack(player_id).await;
-        let remaining = self
-            .player_attack_interval_ms(player_id)
-            .await
-            .saturating_sub(Self::now_ms().saturating_sub(last));
+        let ready_at = (last + self.player_attack_interval_ms(player_id).await)
+            .max(self.player_attack_hold(player_id).await);
+        let remaining = ready_at.saturating_sub(Self::now_ms());
         let next_change = self
             .hunger
             .read()
@@ -352,6 +376,14 @@ impl super::GameState {
             .and_then(|data| data.next_attack_mult_change(tokio::time::Instant::now()))
             .map(|until| until.as_millis() as u64 + 1);
         remaining.min(next_change.unwrap_or(remaining))
+    }
+
+    /// No swing until `ms` from now.
+    pub(super) async fn hold_player_attack(&self, player_id: &PlayerId, ms: u64) {
+        let until = Self::now_ms() + ms;
+        let mut holds = self.player_attack_holds.write().await;
+        let hold = holds.entry(*player_id).or_insert(0);
+        *hold = (*hold).max(until);
     }
 
     async fn claim_player_attack_window(
@@ -363,13 +395,14 @@ impl super::GameState {
         let checked_interval_ms = self
             .scaled_attack_interval_ms(player_id, weapon.attack_interval_ms)
             .await;
+        let held = now < self.player_attack_hold(player_id).await;
         let mut last_attacks = self.last_player_attacks.write().await;
         let last = last_attacks.entry(*player_id).or_insert(0);
         let result = PlayerAttackWindow {
             checked_at_ms: now,
             since_accepted_ms: (*last != 0).then(|| now.saturating_sub(*last)),
             checked_interval_ms,
-            accepted: now.saturating_sub(*last) >= checked_interval_ms,
+            accepted: !held && now.saturating_sub(*last) >= checked_interval_ms,
         };
         if result.accepted {
             *last = now;
@@ -1083,17 +1116,7 @@ impl super::GameState {
             result.roll, result.hit, result.damage
         );
 
-        // Update player combat timestamp and damage logic
-        let revealed = {
-            let mut players = self.players.write().await;
-            players.get_mut(player_id).is_some_and(|player| {
-                player.last_combat_at = Self::now_ms();
-                self.reveal_locked(player)
-            })
-        };
-        if revealed {
-            self.notify_invisibility(player_id, false).await;
-        }
+        self.mark_in_combat(player_id).await;
 
         // Send attack result
         self.publish_nearby(
@@ -1907,6 +1930,7 @@ impl super::GameState {
 
         // Update player HP and combat timestamp
         let mut current_health = 0;
+        let mut shield_hit = false;
         let mut target_loc: Option<(Position, i8)> = None;
         audit.reason = "target_disappeared_or_dead";
 
@@ -1921,7 +1945,7 @@ impl super::GameState {
                 let old_health = player.health;
 
                 if result.hit && !player.invulnerable {
-                    player.health = player.health.saturating_sub(result.damage);
+                    shield_hit = player.absorb_damage(result.damage);
                 }
                 current_health = player.health;
                 audit.resolved(old_health, player, result.hit);
@@ -1930,6 +1954,9 @@ impl super::GameState {
         }
 
         self.stop_bed_rest(target_player_id).await;
+        if shield_hit {
+            self.send_temp_health(target_player_id).await;
+        }
         if result.hit {
             self.cancel_live_instrument_if_active(target_player_id)
                 .await;

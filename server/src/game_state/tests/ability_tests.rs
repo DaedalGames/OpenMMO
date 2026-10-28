@@ -1584,3 +1584,275 @@ async fn rage_adds_level_scaled_damage_to_melee_hits() {
         assert!(hits > 0);
     }
 }
+
+const ROAR: AbilityId = AbilityId::PrimalRoar;
+
+async fn add_roar_player(gs: &GameState, name: &str, character: i64) -> DirectRx {
+    let rx = add_ward_player(gs, name, 0.0, character).await;
+    let mut players = gs.players.write().await;
+    let player = players.get_mut(&pid(name)).unwrap();
+    player.class = CharacterClass::Caveman;
+    player.max_health = 200;
+    player.health = 200;
+    rx
+}
+
+async fn add_roar_target(gs: &GameState, id: &str, x: f32, floor_level: i8, staggers: bool) {
+    let target = make_monster(id, Position { x, y: 0.0, z: 0.0 }, floor_level);
+    gs.monsters.write().await.insert(id.to_owned(), target);
+    gs.insert_brain(id, staggers).await;
+}
+
+fn temp_health_updates(rx: &mut DirectRx) -> Vec<u32> {
+    drain(rx)
+        .into_iter()
+        .filter_map(|m| match m {
+            ServerMessage::TempHealthUpdate { amount } => Some(amount),
+            _ => None,
+        })
+        .collect()
+}
+
+#[tokio::test(start_paused = true)]
+async fn primal_roar_spends_one_mana_and_shields_for_ten_seconds() {
+    let gs = make_test_game_state("roar_cast");
+    let mut rx = add_roar_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    gs.remove_dirty(&id).await;
+    gs.use_ability(&id, ROAR).await;
+    assert_eq!(gs.mana.read().await[&id].mana, 14);
+    assert!(gs.dirty_players.read().await.contains(&id));
+    assert_eq!(gs.players.read().await[&id].temp_health, 30);
+    let updates = drain(&mut rx);
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::AbilityUsed { ability, targets, .. } if *ability == ROAR && targets == &vec![id])));
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::BuffUpdate { buffs } if buffs.iter().any(|b| b.ability == ROAR))));
+    assert!(updates
+        .iter()
+        .any(|m| matches!(m, ServerMessage::TempHealthUpdate { amount: 30 })));
+    tokio::time::advance(Duration::from_millis(9_999)).await;
+    gs.tick_buffs().await;
+    assert_eq!(gs.players.read().await[&id].temp_health, 30);
+    tokio::time::advance(Duration::from_millis(1)).await;
+    gs.tick_buffs().await;
+    assert_eq!(temp_health_updates(&mut rx), vec![0]);
+    let player = &gs.players.read().await[&id];
+    assert_eq!((player.temp_health, player.health), (0, 200));
+}
+
+#[tokio::test]
+async fn primal_roar_shield_is_at_least_four_and_spent_before_health() {
+    let gs = make_test_game_state("roar_minimum");
+    add_roar_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    gs.players.write().await.get_mut(&id).unwrap().max_health = 14;
+    gs.use_ability(&id, ROAR).await;
+    assert_eq!(gs.players.read().await[&id].temp_health, 4);
+
+    let mut players = gs.players.write().await;
+    let player = players.get_mut(&id).unwrap();
+    player.temp_health = 9;
+    player.absorb_damage(5);
+    assert_eq!((player.temp_health, player.health), (4, 200));
+    player.absorb_damage(10);
+    assert_eq!((player.temp_health, player.health), (0, 194));
+}
+
+#[tokio::test]
+async fn primal_roar_shield_takes_monster_blows_before_health() {
+    let gs = make_test_game_state("roar_absorb");
+    let mut rx = add_roar_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    let mut attacker = make_monster(
+        "attacker",
+        Position {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        0,
+    );
+    attacker.level_override = Some(20);
+    gs.monsters
+        .write()
+        .await
+        .insert("attacker".into(), attacker);
+    gs.use_ability(&id, ROAR).await;
+    drain(&mut rx);
+    let mut taken = 0;
+    for _ in 0..50 {
+        gs.monster_attack("attacker", &id).await;
+        for m in drain(&mut rx) {
+            if let ServerMessage::MonsterAttackedPlayer {
+                hit: true, damage, ..
+            } = m
+            {
+                taken += damage;
+            }
+        }
+        let player = &gs.players.read().await[&id];
+        assert_eq!(player.temp_health, 30u32.saturating_sub(taken));
+        assert_eq!(player.health, 200 - taken.saturating_sub(30));
+        if taken > 0 {
+            return;
+        }
+    }
+    panic!("no blow landed");
+}
+
+#[tokio::test]
+async fn primal_roar_ends_when_the_shield_is_spent_or_the_caster_dies() {
+    let gs = make_test_game_state("roar_spent");
+    let mut rx = add_roar_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    gs.use_ability(&id, ROAR).await;
+    drain(&mut rx);
+    gs.players.write().await.get_mut(&id).unwrap().temp_health = 0;
+    gs.send_temp_health(&id).await;
+    let updates = drain(&mut rx);
+    assert!(updates
+        .iter()
+        .any(|m| matches!(m, ServerMessage::BuffUpdate { buffs } if buffs.is_empty())));
+
+    let gs = make_test_game_state("roar_death");
+    add_roar_player(&gs, "caster", 1).await;
+    gs.use_ability(&id, ROAR).await;
+    gs.players.write().await.get_mut(&id).unwrap().health = 0;
+    gs.on_player_died(&id, "test").await;
+    assert_eq!(gs.players.read().await[&id].temp_health, 0);
+}
+
+async fn wait_for_stomp() {
+    tokio::time::sleep(Duration::from_millis(
+        onlinerpg_shared::ability::PRIMAL_ROAR_STOMP_MS + 10,
+    ))
+    .await;
+}
+
+#[tokio::test(start_paused = true)]
+async fn primal_roar_staggers_and_provokes_monsters_within_reach() {
+    let gs = make_test_game_state("roar_stagger");
+    let mut rx = add_roar_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    add_roar_target(&gs, "near", 3.5, 0, true).await;
+    add_roar_target(&gs, "far", 4.5, 0, true).await;
+    add_roar_target(&gs, "below", 1.0, -1, true).await;
+    add_roar_target(&gs, "immune", -2.0, 0, false).await;
+    add_roar_target(&gs, "dead", 2.0, 0, true).await;
+    gs.monsters.write().await.mark_dead("dead");
+    gs.use_ability(&id, ROAR).await;
+    assert_eq!(gs.brain_target("near").await, None);
+    wait_for_stomp().await;
+    assert_eq!(
+        gs.brain_state("near").await,
+        Some(onlinerpg_shared::monster_ai::AiState::Hit)
+    );
+    assert_eq!(gs.brain_target("near").await, Some(id));
+    assert_eq!(gs.brain_target("immune").await, Some(id));
+    assert_ne!(
+        gs.brain_state("immune").await,
+        Some(onlinerpg_shared::monster_ai::AiState::Hit)
+    );
+    for untouched in ["far", "below", "dead"] {
+        assert_eq!(gs.brain_target(untouched).await, None, "{untouched}");
+    }
+    assert!(GameState::in_combat(&gs.players.read().await[&id]));
+    assert!(drain(&mut rx).iter().any(|m| matches!(m,
+        ServerMessage::MonsterStunned { monster_ids, duration_ms }
+            if monster_ids == &vec!["near".to_owned()]
+                && *duration_ms == onlinerpg_shared::ability::PRIMAL_ROAR_STAGGER_MS)));
+}
+
+#[tokio::test(start_paused = true)]
+async fn primal_roar_with_nothing_near_leaves_the_caster_out_of_combat() {
+    let gs = make_test_game_state("roar_alone");
+    let mut rx = add_roar_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    gs.use_ability(&id, ROAR).await;
+    wait_for_stomp().await;
+    assert!(!GameState::in_combat(&gs.players.read().await[&id]));
+    assert!(!drain(&mut rx)
+        .iter()
+        .any(|m| matches!(m, ServerMessage::MonsterStunned { .. })));
+}
+
+#[tokio::test]
+async fn primal_roar_rejects_other_classes_and_mana_without_cost() {
+    let gs = make_test_game_state("roar_requirements");
+    let mut rx = add_roar_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    gs.players.write().await.get_mut(&id).unwrap().class = CharacterClass::Barbarian;
+    gs.use_ability(&id, ROAR).await;
+    rejected(&mut rx, AbilityRejectReason::Unavailable);
+    gs.players.write().await.get_mut(&id).unwrap().class = CharacterClass::Caveman;
+    gs.inventories
+        .write()
+        .await
+        .get_mut(&id)
+        .unwrap()
+        .equipped
+        .clear();
+    gs.mana.write().await.get_mut(&id).unwrap().mana = 0;
+    gs.use_ability(&id, ROAR).await;
+    rejected(&mut rx, AbilityRejectReason::NotEnoughMana);
+    assert_eq!(gs.players.read().await[&id].temp_health, 0);
+    gs.mana.write().await.get_mut(&id).unwrap().mana = 1;
+    gs.use_ability(&id, ROAR).await;
+    assert_eq!(gs.players.read().await[&id].temp_health, 30);
+}
+
+#[tokio::test(start_paused = true)]
+async fn primal_roar_has_a_thirty_second_character_cooldown() {
+    let gs = make_test_game_state("roar_cooldown");
+    let mut rx = add_roar_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    tokio::join!(gs.use_ability(&id, ROAR), gs.use_ability(&id, ROAR));
+    assert_eq!(gs.mana.read().await[&id].mana, 14);
+    tokio::time::advance(Duration::from_secs(29)).await;
+    drain(&mut rx);
+    gs.use_ability(&id, ROAR).await;
+    rejected(&mut rx, AbilityRejectReason::Cooldown);
+    gs.remove_player(&id).await;
+    let mut rx = add_roar_player(&gs, "caster", 1).await;
+    gs.use_ability(&id, ROAR).await;
+    rejected(&mut rx, AbilityRejectReason::Cooldown);
+    tokio::time::advance(Duration::from_secs(1)).await;
+    gs.use_ability(&id, ROAR).await;
+    assert_eq!(gs.players.read().await[&id].temp_health, 30);
+}
+
+#[tokio::test(start_paused = true)]
+async fn primal_roar_does_not_reach_through_walls() {
+    let gs = make_test_game_state("roar_wall");
+    add_roar_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    gs.players.write().await.get_mut(&id).unwrap().position.z = 0.5;
+    add_roar_target(&gs, "behind", 3.5, 0, true).await;
+    gs.monsters
+        .write()
+        .await
+        .get_mut("behind")
+        .unwrap()
+        .position
+        .z = 0.5;
+    gs.sync_region_furniture(0, 0, &[table_placement(2.0, 0.5)]);
+    gs.use_ability(&id, ROAR).await;
+    wait_for_stomp().await;
+    assert_eq!(gs.brain_target("behind").await, None);
+}
+
+#[tokio::test]
+async fn primal_roar_holds_the_casters_next_swing_through_the_roar() {
+    let gs = make_test_game_state("roar_swing_hold");
+    add_roar_player(&gs, "caster", 1).await;
+    add_ward_player(&gs, "other", 2.0, 2).await;
+    let id = pid("caster");
+    assert!(gs.player_attack_ready(&id).await);
+    gs.use_ability(&id, ROAR).await;
+    assert!(!gs.player_attack_ready(&id).await);
+    assert!(gs.player_attack_ready(&pid("other")).await);
+    let remaining = gs.player_attack_remaining_ms(&id).await;
+    let cast = onlinerpg_shared::ability::PRIMAL_ROAR_CAST_MS;
+    assert!(remaining > cast - 100 && remaining <= cast, "{remaining}");
+}

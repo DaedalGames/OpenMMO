@@ -95,6 +95,25 @@ pub fn fishing_cast_ms() -> u32 {
     crate::fishing::CAST_MS
 }
 
+#[derive(Serialize)]
+struct PrimalRoarStats {
+    radius_m: f32,
+    stun_ms: u32,
+    shield_ms: u32,
+    cooldown_ms: u32,
+}
+
+#[wasm_bindgen]
+pub fn primal_roar_stats() -> Result<JsValue, JsError> {
+    use crate::ability::*;
+    to_js(&PrimalRoarStats {
+        radius_m: PRIMAL_ROAR_RADIUS,
+        stun_ms: PRIMAL_ROAR_STAGGER_MS as u32,
+        shield_ms: PRIMAL_ROAR_DURATION_MS as u32,
+        cooldown_ms: PRIMAL_ROAR_COOLDOWN_MS as u32,
+    })
+}
+
 #[wasm_bindgen]
 pub fn fishing_is_stern_cast(dx: f32, dz: f32, boat_rotation: f32) -> bool {
     crate::fishing::is_stern_cast(dx, dz, boat_rotation)

@@ -5,6 +5,7 @@
 
   const HEALTH_BAR_WIDTH = 1.0
   const HEALTH_BAR_HEIGHT = 0.08
+  const TEMP_HEALTH_COLOR = '#faf089'
   const LOCAL_NAMETAG_RENDER_ORDER = 1000
   const LOCAL_NAMETAG_OFFSET_PX = 8
 
@@ -57,7 +58,11 @@
   import { createSecondaryMotionScheduler } from '../effects/secondary-motion-scheduler'
   import { translate } from '../i18n'
   import { visibleMana } from '../stores/gameStore'
-  import { playerHealthDisplay } from '../stores/playerHealthDisplay'
+  import { playPrimalRoarSound } from '../managers/sfxManager'
+  import {
+    playerHealthDisplay,
+    tempHealth,
+  } from '../stores/playerHealthDisplay'
   import { RiderMotion } from '../utils/riderMotion'
   import { MovementRotation } from '../utils/movementRotation'
   import { FishingReel } from '../utils/fishingReel'
@@ -212,6 +217,7 @@
   import {
     DEBUG_ANIM_NAMES,
     EXCAVATE_EMOTE_ANIM,
+    ROAR_ANIMATION,
     HELD_EMOTE_ANIMS,
     isSelfEndingEmote,
     MUSIC_EMOTE_ANIM,
@@ -359,6 +365,10 @@
 
   let displayedHealthRatio = $derived(
     Math.max(0, Math.min(1, displayedHealth / (maxHealth || 1)))
+  )
+  // Drawn after HP; may run past the bar's right edge.
+  const tempHealthRatio = $derived(
+    isCurrentPlayer ? $tempHealth / (maxHealth || 1) : 0
   )
 
   // Reuse character assets across selection and gameplay.
@@ -571,7 +581,12 @@
   let armorEnchantAction: THREE.AnimationAction | null = null
   let enchantPoseUntil = 0
   let enchantWeapon = true
+  let roarPoseUntil = 0
+  // Swing count when the roar began; the attack stance holds until the next.
+  let roarAttackCounter: number | undefined
   const OVERLAP_BEFORE_END = 0.3 // Start next animation overlap 0.3 seconds before current ends
+  // The roar clip's arms fling wide here.
+  const ROAR_CRY_DELAY_MS = 800
   const _nametagPos = new THREE.Vector3()
   const _nametagUp = new THREE.Vector3()
 
@@ -1184,6 +1199,25 @@
     )
   }
 
+  // Primal Roar's cast pose; wins over idle and auto-attack swings.
+  function activeRoarClip() {
+    if (
+      (playerState !== 'idle' && playerState !== 'attack') ||
+      riding ||
+      Date.now() >= roarPoseUntil
+    )
+      return undefined
+    return socialClipsByName.get(ROAR_ANIMATION)
+  }
+
+  function swingIdleClip() {
+    return (
+      (weaponAnimationProfile?.idle
+        ? weaponClips.get(weaponAnimationProfile.idle)
+        : undefined) ?? combatIdleClip()
+    )
+  }
+
   function activeArmorEnchant() {
     return (
       !enchantWeapon &&
@@ -1246,7 +1280,18 @@
       : undefined
     const enchantClip = activeEnchantClip()
     const armorEnchant = activeArmorEnchant()
-    if (playerState === 'idle') {
+    const roarClip = activeRoarClip()
+    if (attackCounter !== roarAttackCounter) roarAttackCounter = undefined
+    const stanceClip =
+      playerState === 'attack' && roarAttackCounter !== undefined
+        ? swingIdleClip()
+        : undefined
+    if (roarClip) {
+      // The idle hand-off near a clip's end must not rewind the roar.
+      if (currentAction?.getClip() === roarClip) return
+      clip = roarClip
+      roarAttackCounter = attackCounter
+    } else if (playerState === 'idle') {
       clip =
         enchantClip ??
         weaponClip ??
@@ -1265,6 +1310,7 @@
         validAnimations[selectMovementAnimation(movementMode)]
     } else if (playerState === 'attack') {
       clip =
+        stanceClip ??
         (isCurrentPlayer && attackCounter === 0
           ? validAnimations[AnimationIndex.COMBAT_IDLE]
           : undefined) ??
@@ -1339,6 +1385,7 @@
 
     const playOnce =
       playerState !== 'moving' &&
+      clip !== stanceClip &&
       !(
         playerState === 'idle' &&
         (clip === weaponClip || clip === enchantClip || armorEnchant)
@@ -1665,6 +1712,18 @@
       setEnchantPoseUntil(until, equippedMainHandItemId !== null)
   }
 
+  export function playRoar(audible: boolean) {
+    if (audible) playPrimalRoarSound(gender, ROAR_CRY_DELAY_MS)
+    const start = Date.now()
+    void loadSocialAnimations().then(() => {
+      const clip = socialClipsByName.get(ROAR_ANIMATION)
+      if (!clip) return
+      // Ends as the idle overlap starts, so the tail blends into idle.
+      roarPoseUntil =
+        start + Math.max(0, clip.duration - OVERLAP_BEFORE_END) * 1000
+    })
+  }
+
   export function setEnchantPoseUntil(until: number, weapon: boolean) {
     enchantPoseUntil = until
     enchantWeapon = weapon
@@ -1924,10 +1983,7 @@
           remainingTime <= 0.05 &&
           clip.name === weaponAnimationProfile?.attack
         ) {
-          const idle =
-            (weaponAnimationProfile?.idle
-              ? weaponClips.get(weaponAnimationProfile.idle)
-              : undefined) ?? combatIdleClip()
+          const idle = swingIdleClip()
           if (idle) startAction(idle, false)
         }
         if (
@@ -2019,13 +2075,15 @@
               ? `interact:${interactionAnim}:${interactionCounter}`
               : playerState === 'moving'
                 ? `moving:${movementMode}`
-                : playerState === 'attack'
-                  ? `attack:${attackCounter}:${daggerCastAt() ?? ''}`
-                  : activeArmorEnchant()
-                    ? 'enchant-armor'
-                    : activeEnchantClip()
-                      ? 'enchant-weapon'
-                      : playerState
+                : activeRoarClip()
+                  ? 'roar'
+                  : playerState === 'attack'
+                    ? `attack:${attackCounter}:${daggerCastAt() ?? ''}`
+                    : activeArmorEnchant()
+                      ? 'enchant-armor'
+                      : activeEnchantClip()
+                        ? 'enchant-weapon'
+                        : playerState
       const animKey = `${equippedMainHandItemId ?? ''}:${stateKey}`
       if (lastAnimKey !== animKey) {
         lastAnimKey = animKey
@@ -2103,7 +2161,12 @@
     <T is={torchFireGroup} />
   {/if}
 
-  {#snippet resourceBar(y: number, ratio: number, color: string)}
+  {#snippet resourceBar(
+    y: number,
+    ratio: number,
+    color: string,
+    shieldRatio = 0
+  )}
     <T.Group position.y={y} renderOrder={LOCAL_NAMETAG_RENDER_ORDER}>
       <T.Mesh>
         <T.PlaneGeometry args={[HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT]} />
@@ -2125,6 +2188,22 @@
           <T is={healthBarFillGeometry} />
           <T.MeshBasicMaterial
             {color}
+            transparent
+            depthTest={false}
+            depthWrite={false}
+          />
+        </T.Mesh>
+      {/if}
+      {#if shieldRatio > 0}
+        <T.Mesh
+          position.x={HEALTH_BAR_WIDTH * (ratio - 0.5)}
+          position.z={0.002}
+          scale.x={shieldRatio}
+          renderOrder={2}
+        >
+          <T is={healthBarFillGeometry} />
+          <T.MeshBasicMaterial
+            color={TEMP_HEALTH_COLOR}
             transparent
             depthTest={false}
             depthWrite={false}
@@ -2168,7 +2247,8 @@
       {@render resourceBar(
         -0.42 + HEALTH_BAR_HEIGHT,
         Math.max(0.001, displayedHealthRatio),
-        '#ff0000'
+        '#ff0000',
+        tempHealthRatio
       )}
       {#if $visibleMana}
         {@render resourceBar(

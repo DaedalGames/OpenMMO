@@ -48,3 +48,6 @@ export class PlayerHealthDisplay {
 }
 
 export const playerHealthDisplay = new PlayerHealthDisplay()
+
+/** The local player's Primal Roar shield; spent before HP. */
+export const tempHealth = writable(0)

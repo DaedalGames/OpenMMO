@@ -1,7 +1,9 @@
 use super::*;
 use onlinerpg_shared::ability::{
-    GUARDIAN_WARD_COOLDOWN_MS, GUARDIAN_WARD_DURATION_MS, GUARDIAN_WARD_RADIUS, RAGE_COOLDOWN_MS,
-    RAGE_DURATION_MS, RAGE_GUARD_PENALTY,
+    GUARDIAN_WARD_COOLDOWN_MS, GUARDIAN_WARD_DURATION_MS, GUARDIAN_WARD_RADIUS,
+    PRIMAL_ROAR_CAST_MS, PRIMAL_ROAR_COOLDOWN_MS, PRIMAL_ROAR_DURATION_MS, PRIMAL_ROAR_RADIUS,
+    PRIMAL_ROAR_STAGGER_MS, PRIMAL_ROAR_STOMP_MS, RAGE_COOLDOWN_MS, RAGE_DURATION_MS,
+    RAGE_GUARD_PENALTY,
 };
 
 pub struct BuffAbility {
@@ -24,6 +26,12 @@ pub fn buff_ability(ability: AbilityId) -> Option<BuffAbility> {
             name: "Rage",
             requires: "a living, unmounted Barbarian",
             equipment: "a melee weapon in your main hand",
+        }),
+        AbilityId::PrimalRoar => Some(BuffAbility {
+            tag: "PrimalRoar",
+            name: "Primal Roar",
+            requires: "a living, unmounted Caveman",
+            equipment: "nothing",
         }),
         _ => None,
     }
@@ -246,6 +254,30 @@ cooldown {}s. No target is needed. Unequipping your melee weapon ends it.
 Use the readiness and rage status above. Wait for server success or failure feedback."#,
                 RAGE_DURATION_MS / 1000,
                 RAGE_COOLDOWN_MS / 1000,
+            ));
+        }
+        if let Some(player) = self
+            .self_player
+            .as_ref()
+            .filter(|player| player.class == onlinerpg_shared::CharacterClass::Caveman)
+        {
+            let (readiness, _) = self.buff_ability_status(player, AbilityId::PrimalRoar, true);
+            let mana_cost = AbilityId::PrimalRoar.mana_cost();
+            let shield = onlinerpg_shared::ability::primal_roar_temp_health(player.max_health);
+            let temp = self.self_temp_health;
+            lines.push(format!(
+                r#"Primal Roar: {readiness}. Your temporary HP: {temp}.
+As a Caveman, cast with {{"type": "use_ability", "ability": "primal_roar"}}.
+Needs {mana_cost} MP and no weapon. You roar for {:.1}s without swinging. At the stomp, {:.1}s in,
+living monsters within {PRIMAL_ROAR_RADIUS}m on your floor, not behind walls, are stunned for {:.1}s
+and turn on you. You gain {shield} temporary HP for {}s at once; it takes damage before your HP
+and does not stack. Cooldown {}s. No target is needed.
+Use the readiness status above. Wait for server success or failure feedback."#,
+                PRIMAL_ROAR_CAST_MS as f32 / 1000.0,
+                PRIMAL_ROAR_STOMP_MS as f32 / 1000.0,
+                PRIMAL_ROAR_STAGGER_MS as f32 / 1000.0,
+                PRIMAL_ROAR_DURATION_MS / 1000,
+                PRIMAL_ROAR_COOLDOWN_MS / 1000,
             ));
         }
         if let Some((satiation, state)) = self.self_hunger {

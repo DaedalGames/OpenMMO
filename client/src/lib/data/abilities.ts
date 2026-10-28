@@ -97,7 +97,24 @@ export const RAGE = {
   buffDescription: 'Melee damage up, Guard -2',
 } as const
 
-export const BUFF_ABILITIES = [GUARDIAN_WARD, RAGE, RADIANCE, TRUE_AIM] as const
+export const PRIMAL_ROAR = {
+  get manaCost() {
+    return ability_mana_cost('primal_roar')
+  },
+  id: 'primal_roar',
+  name: 'Primal Roar',
+  icon: '/icons/skills/primal-roar.png',
+  description: 'Roar to stun nearby monsters and gain temporary HP.',
+  buffDescription: 'Temporary HP takes damage first',
+} as const
+
+export const BUFF_ABILITIES = [
+  GUARDIAN_WARD,
+  RAGE,
+  PRIMAL_ROAR,
+  RADIANCE,
+  TRUE_AIM,
+] as const
 export type AbilityId =
   | (typeof BUFF_ABILITIES)[number]['id']
   | typeof DOUBLE_SLASH.id
@@ -167,6 +184,7 @@ export const FISHING = {
 export const ABILITIES = [
   GUARDIAN_WARD,
   RAGE,
+  PRIMAL_ROAR,
   DOUBLE_SLASH,
   RADIANCE,
   TRUE_AIM,
@@ -184,7 +202,8 @@ export function isAbilityAvailable(
     id === AUSCULTATION.id ||
     (id === DOUBLE_SLASH.id && characterClass === 'rogue') ||
     (id === GUARDIAN_WARD.id && characterClass === 'knight') ||
-    (id === RAGE.id && characterClass === 'barbarian')
+    (id === RAGE.id && characterClass === 'barbarian') ||
+    (id === PRIMAL_ROAR.id && characterClass === 'caveman')
   )
 }
 
@@ -203,6 +222,7 @@ export function abilityEquipmentAllowed(
     )
   if (id === AUSCULTATION.id)
     return equipped.neck?.item_def_id === 'stethoscope'
+  if (id === PRIMAL_ROAR.id) return true
   const weaponType = getItemDef(
     equipped.main_hand?.item_def_id ?? ''
   )?.weaponType

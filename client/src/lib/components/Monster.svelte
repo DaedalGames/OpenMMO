@@ -1,16 +1,36 @@
 <script lang="ts" module>
-  import type { Box3 } from 'three'
+  import * as THREE from 'three'
 
   // Bind-pose bounding box per model file, shared across instances. Sizes the
   // nameplate height and the invisible hover proxy. Deliberately non-reactive.
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
-  const bindPoseBoxByModel = new Map<string, Box3>()
+  const bindPoseBoxByModel = new Map<string, THREE.Box3>()
 
   // Raw corpse ground offset per monster type (die-clip final pose is
   // type-invariant), so the per-vertex scan runs once per type, not per
   // corpse. Deliberately non-reactive.
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   const corpseGroundOffsetByType = new Map<string, number>()
+
+  // Primal Roar's dizzy marker: stars circling over the head, shared by every
+  // stunned monster.
+  const STUN_STAR_COUNT = 3
+  const STUN_STAR_GEOMETRY = (() => {
+    const shape = new THREE.Shape()
+    for (let i = 0; i < 10; i++) {
+      const r = i % 2 === 0 ? 0.09 : 0.04
+      const a = Math.PI / 2 + (i * Math.PI) / 5
+      if (i === 0) shape.moveTo(Math.cos(a) * r, Math.sin(a) * r)
+      else shape.lineTo(Math.cos(a) * r, Math.sin(a) * r)
+    }
+    return new THREE.ShapeGeometry(shape)
+  })()
+  const STUN_STAR_MATERIAL = new THREE.MeshBasicMaterial({
+    color: '#ffe066',
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+  })
 </script>
 
 <script lang="ts">
@@ -19,7 +39,6 @@
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
   import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
   import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js'
-  import * as THREE from 'three'
   import { get } from 'svelte/store'
   import { onDestroy, untrack } from 'svelte'
   import { timeScale } from '../stores/timeStore'
@@ -63,6 +82,7 @@
     attackCounter?: number
     attackFromLeft?: boolean
     hitCounter?: number
+    stunnedUntil?: number
     skill?: MonsterData['skill']
     id: string
     type: string
@@ -81,6 +101,7 @@
     attackCounter,
     attackFromLeft = false,
     hitCounter,
+    stunnedUntil,
     skill,
     id,
     type,
@@ -165,7 +186,11 @@
   let group = $state<THREE.Group>()
   let nametagGroup = $state<THREE.Group | undefined>(undefined)
   let nametagHeight = $state(2.5)
-  let hoverBox = $state<Box3 | null>(null)
+  let stunned = $state(false)
+  let stunGroup = $state<THREE.Group | undefined>(undefined)
+  let stunSpin = 0
+  let stunRadius = 0.25
+  let hoverBox = $state<THREE.Box3 | null>(null)
   let hoverProxyGroup = $state<THREE.Group | undefined>(undefined)
   // Hover hysteresis: the hovered monster's proxy inflates so the pointer
   // must drift further out before the target drops.
@@ -556,6 +581,21 @@
       }
     }
 
+    stunned = (stunnedUntil ?? 0) > performance.now()
+    if (stunned && stunGroup && camera) {
+      stunGroup.position.set(
+        position.x,
+        position.y + nametagHeight - 0.25 - sunk,
+        position.z
+      )
+      stunSpin += deltaTime * 5
+      stunGroup.children.forEach((star, i) => {
+        const a = stunSpin + (i * Math.PI * 2) / STUN_STAR_COUNT
+        star.position.set(Math.cos(a) * stunRadius, 0, Math.sin(a) * stunRadius)
+        star.quaternion.copy(camera.quaternion)
+      })
+    }
+
     // Update nametag to face camera
     if (camera && nametagGroup) {
       nametagGroup.position.set(
@@ -606,6 +646,10 @@
         }
         // Hang the nameplate just above the scaled bind-pose head.
         nametagHeight = box.max.y * initialScale + 0.4
+        stunRadius = Math.min(
+          0.8,
+          Math.max(0.25, (box.max.x - box.min.x) * initialScale * 0.35)
+        )
         hoverBox = box
 
         model = clonedScene
@@ -798,6 +842,19 @@
     {floorLevel}
     fallbackY={position.y}
   />
+{/if}
+
+{#if stunned && monsterState !== 'dead'}
+  <T.Group bind:ref={stunGroup}>
+    {#each { length: STUN_STAR_COUNT }, i (i)}
+      <T.Mesh
+        geometry={STUN_STAR_GEOMETRY}
+        material={STUN_STAR_MATERIAL}
+        renderOrder={4}
+        dispose={false}
+      />
+    {/each}
+  </T.Group>
 {/if}
 
 <!-- Name tag / Debug info -->

@@ -66,5 +66,6 @@ pub fn new_player(
         invisible: false,
         max_health_bonus: 0,
         max_health_per_level: 0,
+        temp_health: 0,
     }
 }

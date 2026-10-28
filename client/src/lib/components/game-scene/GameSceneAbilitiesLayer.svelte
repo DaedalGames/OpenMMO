@@ -13,7 +13,10 @@
     type AbilityEffectEvent,
   } from '../../stores/abilityStore'
   import { teleportLoading } from '../../stores/debugStore'
-  import { unwrapWorldXNear } from '../../terrain/world-wrap'
+  import {
+    shortestWrappedDeltaX,
+    unwrapWorldXNear,
+  } from '../../terrain/world-wrap'
   import type { LocalPlayer } from '../../stores/gameStore'
   import {
     playAbilitySound,
@@ -25,13 +28,16 @@
     floorLevel,
     getAnchor,
     getRotation,
+    roar,
   }: {
     currentPlayer: LocalPlayer | null
     floorLevel: number
     getAnchor: (id: number, shield: boolean, target: THREE.Vector3) => boolean
     getRotation: (id: number) => number
+    roar: (id: number, audible: boolean) => void
   } = $props()
 
+  const ABILITY_EARSHOT_M = 20
   const { camera, renderer, scene } = useThrelte()
   const group = new THREE.Group()
   const anchor = new THREE.Vector3()
@@ -110,6 +116,15 @@
     for (const event of takeAbilityEffects()) {
       if (event.floor_level !== floorLevel || now - event.startedAt > 1000)
         continue
+      const audible =
+        Math.hypot(
+          shortestWrappedDeltaX(currentPlayer.position.x, event.position.x),
+          event.position.z - currentPlayer.position.z
+        ) <= ABILITY_EARSHOT_M
+      if (event.ability === 'primal_roar') {
+        roar(event.player_id, audible)
+        continue
+      }
       const slot =
         slots.find((slot) => !slot.event && slot.ability === event.ability) ??
         (slots.length < 12 ? createSlot(event.ability) : null)
@@ -121,13 +136,7 @@
         event.position.y,
         event.position.z
       )
-      if (
-        event.ability === 'guardian_ward' &&
-        Math.hypot(
-          origin.x - currentPlayer.position.x,
-          origin.z - currentPlayer.position.z
-        ) <= 20
-      )
+      if (event.ability === 'guardian_ward' && audible)
         playAbilitySound(event.ability)
       slot.effect.group.visible = true
       if (slot.effect instanceof RadianceEffect) continue

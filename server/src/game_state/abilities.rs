@@ -5,8 +5,9 @@ use onlinerpg_shared::ability::{
     AbilityId, AbilityRejectReason, AbilityTimer, InspectedEquipment, InspectionResult,
     InspectionTarget, AUSCULTATION_COOLDOWN_MS, AUSCULTATION_RANGE, BOW_MARK_COOLDOWN_MS,
     BOW_MARK_DURATION_MS, GUARDIAN_WARD_COOLDOWN_MS, GUARDIAN_WARD_DURATION_MS,
-    GUARDIAN_WARD_RADIUS, RADIANCE_COOLDOWN_MS, RADIANCE_DURATION_MS, RAGE_COOLDOWN_MS,
-    RAGE_DURATION_MS, RAGE_GUARD_PENALTY,
+    GUARDIAN_WARD_RADIUS, PRIMAL_ROAR_CAST_MS, PRIMAL_ROAR_COOLDOWN_MS, PRIMAL_ROAR_DURATION_MS,
+    PRIMAL_ROAR_RADIUS, PRIMAL_ROAR_STAGGER_MS, PRIMAL_ROAR_STOMP_MS, RADIANCE_COOLDOWN_MS,
+    RADIANCE_DURATION_MS, RAGE_COOLDOWN_MS, RAGE_DURATION_MS, RAGE_GUARD_PENALTY,
 };
 use onlinerpg_shared::inventory::{EquipSlot, PlayerInventory};
 use std::collections::{HashMap, HashSet};
@@ -19,6 +20,7 @@ pub(super) struct Abilities {
     radiances: HashMap<PlayerId, Instant>,
     marks: HashMap<PlayerId, BowMark>,
     rages: HashMap<PlayerId, Instant>,
+    roars: HashMap<PlayerId, Instant>,
     cooldowns: HashMap<(i64, AbilityId), Instant>,
 }
 
@@ -72,6 +74,7 @@ impl Abilities {
                 self.marks.get(player_id).map(|mark| &mark.until),
             ),
             (AbilityId::Rage, self.rages.get(player_id)),
+            (AbilityId::PrimalRoar, self.roars.get(player_id)),
         ]
         .into_iter()
         .filter_map(|(ability, until)| {
@@ -103,6 +106,7 @@ impl GameState {
                 AbilityId::BowMark,
                 AbilityId::Auscultation,
                 AbilityId::Rage,
+                AbilityId::PrimalRoar,
             ]
             .into_iter()
             .map(|ability| AbilityTimer {
@@ -129,6 +133,7 @@ impl GameState {
             AbilityId::GuardianWard => self.try_guardian_ward(player_id).await,
             AbilityId::Radiance => self.try_radiance(player_id).await,
             AbilityId::Rage => self.try_rage(player_id).await,
+            AbilityId::PrimalRoar => self.try_primal_roar(player_id).await,
             AbilityId::BowMark | AbilityId::DaggerDoubleSlash | AbilityId::Auscultation => {
                 Err(AbilityRejectReason::Unavailable)
             }
@@ -143,6 +148,17 @@ impl GameState {
                     .await;
                 for target in &targets {
                     self.send_buff_state(target).await;
+                }
+                if ability == AbilityId::PrimalRoar {
+                    self.send_temp_health(player_id).await;
+                    self.hold_player_attack(player_id, PRIMAL_ROAR_CAST_MS)
+                        .await;
+                    let game = self.clone();
+                    let player_id = *player_id;
+                    tokio::spawn(async move {
+                        tokio::time::sleep(Duration::from_millis(PRIMAL_ROAR_STOMP_MS)).await;
+                        game.roar_at_monsters(&player_id).await;
+                    });
                 }
                 if ability == AbilityId::Radiance
                     && !self
@@ -668,6 +684,148 @@ impl GameState {
         Ok((caster.position, caster.floor_level, vec![*player_id]))
     }
 
+    async fn try_primal_roar(
+        &self,
+        player_id: &PlayerId,
+    ) -> Result<(onlinerpg_shared::Position, i8, Vec<PlayerId>), AbilityRejectReason> {
+        let (position, floor_level) = {
+            let players = self.players.read().await;
+            let caster = players
+                .get(player_id)
+                .filter(|p| {
+                    p.class == CharacterClass::Caveman
+                        && p.is_damageable(Self::now_ms())
+                        && !p.is_mounted()
+                })
+                .ok_or(AbilityRejectReason::Unavailable)?;
+            let character = self
+                .player_characters
+                .read()
+                .await
+                .get(player_id)
+                .ok_or(AbilityRejectReason::Unavailable)?
+                .0;
+            let mut state = self.abilities.write().await;
+            if state.cooldown_ms(character, AbilityId::PrimalRoar) > 0 {
+                return Err(AbilityRejectReason::Cooldown);
+            }
+            self.mana
+                .write()
+                .await
+                .get_mut(player_id)
+                .ok_or(AbilityRejectReason::Unavailable)?
+                .spend(AbilityId::PrimalRoar.mana_cost())?;
+            let now = Instant::now();
+            state.cooldowns.insert(
+                (character, AbilityId::PrimalRoar),
+                now + Duration::from_millis(PRIMAL_ROAR_COOLDOWN_MS),
+            );
+            state.roars.insert(
+                *player_id,
+                now + Duration::from_millis(PRIMAL_ROAR_DURATION_MS),
+            );
+            (caster.position, caster.floor_level)
+        };
+        if let Some(caster) = self
+            .players
+            .write()
+            .await
+            .get_mut(player_id)
+            .filter(|p| p.health > 0)
+        {
+            caster.temp_health =
+                caster
+                    .temp_health
+                    .max(onlinerpg_shared::ability::primal_roar_temp_health(
+                        caster.max_health,
+                    ));
+        }
+        Ok((position, floor_level, vec![*player_id]))
+    }
+
+    /// Stagger and provoke the living monsters within reach of the roar.
+    async fn roar_at_monsters(&self, player_id: &PlayerId) {
+        let Some((position, floor_level)) = self
+            .players
+            .read()
+            .await
+            .get(player_id)
+            .filter(|p| p.health > 0)
+            .map(|p| (p.position, p.floor_level))
+        else {
+            return;
+        };
+        let monster_ids: Vec<String> = {
+            let monsters = self.monsters.read().await;
+            let passability = self.passability_read();
+            monsters
+                .near(&position)
+                .filter(|m| {
+                    m.state != crate::types::MonsterState::Dead
+                        && m.health > 0
+                        && super::combat::reachable_dist_sq(
+                            position,
+                            floor_level,
+                            m.position,
+                            m.floor_level,
+                        )
+                        .is_some_and(|d| d <= PRIMAL_ROAR_RADIUS.powi(2))
+                        && !super::combat::wall_between(
+                            &passability,
+                            position,
+                            m.position,
+                            floor_level,
+                            false,
+                        )
+                })
+                .map(|m| m.id.clone())
+                .collect()
+        };
+        if monster_ids.is_empty() {
+            return;
+        }
+        self.mark_in_combat(player_id).await;
+        let stunned = self.brain_roar(&monster_ids, player_id).await;
+        if !stunned.is_empty() {
+            self.publish_nearby(
+                &position,
+                floor_level,
+                ServerMessage::MonsterStunned {
+                    monster_ids: stunned,
+                    duration_ms: PRIMAL_ROAR_STAGGER_MS,
+                },
+                None,
+            )
+            .await;
+        }
+    }
+
+    /// Tell the owner their shield; a spent one ends the buff.
+    pub(super) async fn send_temp_health(&self, player_id: &PlayerId) {
+        let Some(amount) = self
+            .players
+            .read()
+            .await
+            .get(player_id)
+            .map(|p| p.temp_health)
+        else {
+            return;
+        };
+        self.send_direct_message(player_id, ServerMessage::TempHealthUpdate { amount })
+            .await;
+        if amount == 0
+            && self
+                .abilities
+                .write()
+                .await
+                .roars
+                .remove(player_id)
+                .is_some()
+        {
+            self.send_buff_state(player_id).await;
+        }
+    }
+
     fn wields_rage_weapon(&self, inv: &PlayerInventory) -> bool {
         self.main_hand_def(inv).is_some_and(|(_, def)| {
             matches!(
@@ -716,19 +874,26 @@ impl GameState {
     }
 
     async fn sync_visible_buffs(&self, player_id: &PlayerId) {
+        let mut shield_gone = false;
         let (position, floor_level, changes) = {
             let mut players = self.players.write().await;
             let Some(player) = players.get_mut(player_id) else {
                 return;
             };
-            let (radiance, raging) = {
+            let (radiance, raging, roaring) = {
                 let state = self.abilities.read().await;
+                let now = Instant::now();
                 let radiance = state
                     .radiances
                     .get(player_id)
-                    .is_some_and(|until| *until > Instant::now());
-                (radiance, state.raging(player_id))
+                    .is_some_and(|until| *until > now);
+                let roaring = state.roars.get(player_id).is_some_and(|until| *until > now);
+                (radiance, state.raging(player_id), roaring)
             };
+            if !roaring && player.temp_health > 0 {
+                player.temp_health = 0;
+                shield_gone = true;
+            }
             let mut changes = Vec::new();
             if player.radiance_on != radiance {
                 player.radiance_on = radiance;
@@ -746,6 +911,10 @@ impl GameState {
             }
             (player.position, player.floor_level, changes)
         };
+        if shield_gone {
+            self.send_direct_message(player_id, ServerMessage::TempHealthUpdate { amount: 0 })
+                .await;
+        }
         for message in changes {
             self.publish_nearby(&position, floor_level, message, None)
                 .await;
@@ -759,7 +928,8 @@ impl GameState {
             let radiance = state.radiances.remove(player_id).is_some();
             let mark = state.marks.remove(player_id).is_some();
             let rage = state.rages.remove(player_id).is_some();
-            ward || radiance || mark || rage
+            let roar = state.roars.remove(player_id).is_some();
+            ward || radiance || mark || rage || roar
         };
         if removed {
             self.send_bow_mark_state(player_id).await;
@@ -802,12 +972,14 @@ impl GameState {
                 .iter()
                 .chain(state.radiances.iter())
                 .chain(state.rages.iter())
+                .chain(state.roars.iter())
                 .filter(|(_, until)| **until <= now)
                 .map(|(id, _)| *id)
                 .collect();
             state.wards.retain(|_, until| *until > now);
             state.radiances.retain(|_, until| *until > now);
             state.rages.retain(|_, until| *until > now);
+            state.roars.retain(|_, until| *until > now);
             state.marks.retain(|id, mark| {
                 let valid = mark.until > now && invalid.get(id) != Some(&mark.until);
                 if !valid {
