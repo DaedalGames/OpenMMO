@@ -1,9 +1,9 @@
 use super::{AuthError, AuthService};
+use crate::dungeon_defs::DEPTH_BAND_FLOORS;
 use crate::metrics::{
     DungeonBandCount, DungeonFloorCount, DungeonPopulationSample,
     CONCURRENT_SAMPLE_INTERVAL_SECONDS,
 };
-use onlinerpg_shared::dungeon::DEPTH_BAND_FLOORS;
 use rusqlite::{params, Connection};
 
 impl AuthService {

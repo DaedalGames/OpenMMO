@@ -122,6 +122,14 @@ impl DungeonDefs {
     }
 }
 
+/// Floors per depth band, for respawn pacing and the population metric.
+pub const DEPTH_BAND_FLOORS: u8 = 5;
+
+/// First floor of the band holding `depth` (1, 6, 11, ...).
+pub fn depth_band_start(depth: u8) -> u8 {
+    depth.saturating_sub(1) / DEPTH_BAND_FLOORS * DEPTH_BAND_FLOORS + 1
+}
+
 /// Where a position is, for log lines: the dungeon and depth underground, the
 /// house floor above ground level, or the open surface.
 pub fn place_label(position: &Position, floor_level: i8) -> String {

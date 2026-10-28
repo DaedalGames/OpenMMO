@@ -1,10 +1,11 @@
 use super::{auth_db, history_interval, metrics_response, unix_now, HistoryQuery, MetricsState};
+use crate::dungeon_defs::{depth_band_start, DEPTH_BAND_FLOORS};
 use axum::{
     extract::{Query, State},
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-use onlinerpg_shared::dungeon::{depth_band_start, DEPTH_BAND_FLOORS, MAX_DRAWN_FLOORS};
+use onlinerpg_shared::dungeon::MAX_DRAWN_FLOORS;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 

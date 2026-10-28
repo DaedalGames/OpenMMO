@@ -77,13 +77,6 @@ pub const MIN_DRAWN_FLOORS: u8 = 5;
 pub const MAX_DRAWN_FLOORS: u8 = 20;
 /// Deepest floor a registry `floors` override may ask for.
 pub const MAX_FLOORS: u8 = 25;
-/// Floors per depth band, for respawn pacing and the population metric.
-pub const DEPTH_BAND_FLOORS: u8 = 5;
-
-/// First floor of the band holding `depth` (1, 6, 11, ...).
-pub fn depth_band_start(depth: u8) -> u8 {
-    depth.saturating_sub(1) / DEPTH_BAND_FLOORS * DEPTH_BAND_FLOORS + 1
-}
 
 /// Stair shaft footprint: `SHAFT_W` cells wide, `SHAFT_LEN` along the run.
 /// The run must stay ≤ 16 cells — stairwell intermediate floor keys get

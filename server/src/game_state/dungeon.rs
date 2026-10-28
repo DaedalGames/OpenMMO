@@ -156,8 +156,8 @@ fn monster_respawn_ms(player_count: usize) -> u64 {
 }
 
 fn dungeon_depth_band(depth: u8) -> std::ops::RangeInclusive<u8> {
-    let start = onlinerpg_shared::dungeon::depth_band_start(depth);
-    start..=start + onlinerpg_shared::dungeon::DEPTH_BAND_FLOORS - 1
+    let start = crate::dungeon_defs::depth_band_start(depth);
+    start..=start + crate::dungeon_defs::DEPTH_BAND_FLOORS - 1
 }
 
 fn prop_wall_opposite_dir(layout: &FloorLayout, x: i32, z: i32) -> (i32, i32) {
