@@ -65,6 +65,8 @@ Guardian Ward는 대상 수와 무관하게 시전자만 비용을 낸다. 재�
 
 True Aim은 조준 기술이면 MP 0, 마법적 명중 보조이면 MP 비용을 둔다. Radiance·True Aim은 마나 도입 후에도 공개 결정 전까지 숨긴다.
 
+Barbarian·Caveman·Valkyrie·Priest·Bard의 기본 스킬 설계는 [클래스 기본 스킬](abilities/CLASS_SKILLS.md)에 있다.
+
 ## 4. 능력치·MP·마법 전투
 
 | 수치 | WIS | INT |
@@ -474,7 +476,7 @@ MP 계산은 [shared/src/mana.rs](../shared/src/mana.rs), 상태·회복은 [ser
 
 | 범위 | 남은 결정 |
 | --- | --- |
-| 추가 마법 | 주문별 계수·비용·습득 조건, 치유·보호 효과의 능력치·장비 연동, 다단·지속 피해의 분배·중단 처리 |
+| 추가 마법 | 주문별 계수·비용·습득 조건, 치유·보호 효과의 능력치·장비 연동, 다단·지속 피해의 분배·중단 처리. Priest 치유 초안은 [클래스 기본 스킬](abilities/CLASS_SKILLS.md) |
 | 속성 피해·저항 | 속성 체계 도입 시 피해 유형·속성별 저항 계산식·중첩·상한 |
 | 기존 비공개 능력 | Radiance·True Aim의 공개 조건·분류·비용 |
 | 생활 스킬 | 고급 낚시 NPC 배치·비용, 신규 어종·미끼 규칙 ([낚시 설계](FISHING.md)) |
