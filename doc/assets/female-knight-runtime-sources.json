@@ -1,7 +1,7 @@
 {
   "date": "2026-10-27",
   "inputs": {
-    "tools/prepare-female-knight.mjs": "76043daaa49052f6d65fd5c0119ebfc708f96790a119fb5c8fbb2f175a4fab9a",
+    "tools/prepare-female-knight.mjs": "21b6648ac1bf8174c5ebc9a6093b80fe62d446b62cf246a840617da0eec2ad2e",
     "client/src/lib/utils/female-clip-bake.ts": "ffe7b1e7dbefe8d7877efa81aba171c499bd639061246dbd8fa2c64059b71e7f",
     "client/src/lib/utils/female-boot-ground.ts": "1af7ff84eca863f1879f67841201c79726ad83e6de67c6ef73be4516979b8f6c",
     "assets/modular_human_female_01/rig_v1/female-base.glb": "3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5",
@@ -80,7 +80,7 @@
     "client/public/models/characters/modular_female/brilliance_helmet.glb": "6412563345705ea8c042d16a14b549cf55cb93722e8f729eb9de1899149b84e3",
     "client/public/models/characters/modular_female/animations/locomotion.glb": "ac05d97b3ffdb36b58b7cd63679a00dc2fedc9d5f4bd685a1d2375684ecb62b2",
     "client/public/models/characters/modular_female/animations/combat_melee.glb": "869edc2065228cb3a9062c401f68b62744fe8a4f610477d30f4721926ae235b6",
-    "client/public/models/characters/modular_female/animations/social.glb": "91b2dca5d4b79966757b77b50c165c04e3d64958e7a15a5e53400c7b6b120a60",
+    "client/public/models/characters/modular_female/animations/social.glb": "a5c5ec4da2172e124f66846025d1e2ef48e0b8f9f86d78ca215c48f72461fd6a",
     "client/public/models/characters/modular_female/animations/fishing.glb": "29e8bc965fa7ff86c1a80b246b59bdf1e4fa5aee8cef63089d2c23648677fa22",
     "client/public/models/characters/modular_female/animations/combat_ranged.glb": "4ca6c8a8831ad1ad4b50d273ccfed8dc57e0e05526f41a33b167a341ac2ec2f2",
     "client/public/models/characters/modular_female/animations/offhand.glb": "0d117e7853290b53fc37c5d01034eb79917e2351a8cee8341df519acb5a79fc6",

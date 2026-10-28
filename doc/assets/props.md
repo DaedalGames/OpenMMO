@@ -7,6 +7,7 @@
   - 모델·아이콘: 프로젝트 자체 제작 Blender 메시·렌더, 프로젝트와 동일 라이선스. Meshy 미사용. `client/public/models/objects/hearthbound_rug.glb`, `client/public/items/objects/hearthbound_rug.png`.
   - 2.4×1.6m 평면, 2삼각형, 바닥에서 1.2cm 높이, 중심 원점, 상향 법선. 평면 소품이므로 일반 아이템의 약 4,000폴리곤 목표보다 단순하게 제작했다. 1024×683 RGBA 텍스처, alpha MASK 0.5, 양면·거친 직물 재질. 술 사이 투명도 유지, 이동 충돌 없음.
   - 재생성: `blender -b -t 4 -P tools/blender-scripts/build_hearthbound_rug.py`. 소스·생성 기록·미리보기는 `assets/items/hearthbound_rug/`에 저장. 아이콘은 공통 Cycles 직교 렌더 512²→128².
+  - 2026-10-28 전송량 최적화: 원본 1024×683 PNG를 같은 크기의 WebP q94로 변환했다. GLB는 1,638,688 → 394,820바이트, gzip level 6은 1,638,376 → 394,145바이트(75.9% 감소)다. 메시 속성과 알파 값은 동일하며 Three.js로 같은 조명의 단독 모델을 비교했다. 게임 화면 비교는 아직 하지 않았다. Blender에서 GLB를 생성한 뒤 `node tools/optimize-hearthbound-rug.mjs client/public/models/objects/hearthbound_rug.glb client/public/models/objects/hearthbound_rug.glb`를 실행한다. 게임용 바이너리는 Hugging Face에 게시하고 `assets.lock`에 고정했다.
   - `hearthbound_rug` 맵 에디터 오브젝트와 `furniture_hearthbound_rug` 실내·야외 배치 아이템 등록. ORKEA 전시물 ID 112와 점원 메뉴에서 2,000동화(20은화)에 판매한다. 바닥 전시는 운영자가 직접 배치했다. 영지에 설치하면 영지 귀환 주문서의 도착 지점이 되며, 설치 위치·층·방향을 사용한다. 여러 개면 먼저 설치한 안전한 러그를 선택한다.
 
 - bed.glb https://sketchfab.com/3d-models/old-wooden-bed-frame-and-dirty-sheets-79c856755e6a44a3bcf19671e5c70d2d

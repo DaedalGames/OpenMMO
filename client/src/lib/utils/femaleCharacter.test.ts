@@ -62,6 +62,30 @@ const hasAssets = existsSync(
 
 describe('female modular starter outfits', () => {
   it.skipIf(!hasAssets)(
+    'loads and plays the female social animation pack',
+    async () => {
+      const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)
+      const { modelRoot } = createCharacterModelRoot(source.scene)
+      const pack = await loadCharacterAnimationPack(
+        MODULAR_FEMALE_MODEL_PATH,
+        CHARACTER_ANIMATION_PACK_PATHS.social
+      )
+      const clip = pack.animations.find(
+        (animation) => animation.name === 'sit_idle'
+      )
+      expect(clip).toBeDefined()
+      expect(clip!.duration).toBeGreaterThan(0)
+      const hips = modelRoot.getObjectByName('Hips')!
+      const mixer = new THREE.AnimationMixer(modelRoot)
+      mixer.clipAction(clip!).play()
+      mixer.setTime(clip!.duration / 2)
+      expect(hips.position.toArray().every(Number.isFinite)).toBe(true)
+      expect(hips.quaternion.toArray().every(Number.isFinite)).toBe(true)
+      mixer.stopAllAction()
+      disposeCharacterSkeletons(modelRoot)
+    }
+  )
+  it.skipIf(!hasAssets)(
     'stores game dimensions in the rig and keeps attached props at unit scale',
     async () => {
       const source = await loadCharacterModel(MODULAR_FEMALE_MODEL_PATH)

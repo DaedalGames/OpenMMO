@@ -85,9 +85,9 @@ await Promise.all([MeshoptEncoder.ready, MeshoptDecoder.ready])
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS)
   .registerDependencies({ 'meshopt.encoder': MeshoptEncoder, 'meshopt.decoder': MeshoptDecoder })
 // Replaces the file instead of rewriting it, since worktrees may hard-link these GLBs.
-async function write(path, doc) {
+async function write(path, doc, compressSocial = false) {
   const bottom = path === `${output}/bottom.glb`
-  if (path === `${output}/base.glb` || bottom) {
+  if (path === `${output}/base.glb` || bottom || compressSocial) {
     await doc.transform(prune({ propertyTypes: [PropertyType.MATERIAL, PropertyType.TEXTURE] }))
     // Preserve vertex and triangle numbering for outfit masks; do not quantize.
     doc.createExtension(EXTMeshoptCompression).setRequired(true)
@@ -95,7 +95,7 @@ async function write(path, doc) {
   }
   // Pelt rigs rewrite positions in place, which interleaved attributes do not support.
   const pelt = doc.getRoot().listNodes().some(node => node.getExtras().pelt_physics)
-  io.setVertexLayout(pelt || bottom ? VertexLayout.SEPARATE : VertexLayout.INTERLEAVED)
+  io.setVertexLayout(pelt || bottom || compressSocial ? VertexLayout.SEPARATE : VertexLayout.INTERLEAVED)
   writeFileSync(`${path}.tmp`, await io.writeBinary(doc))
   renameSync(`${path}.tmp`, path)
 }
@@ -198,7 +198,7 @@ async function bakeBootsAndGrip(module, load) {
         }
       }
     }
-    await write(path, doc)
+    await write(path, doc, path === `${output}/animations/social.glb`)
     console.log(`${path}: baked ${bakes.length} clips`)
   }
 }

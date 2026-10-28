@@ -50,6 +50,15 @@ node tools/compress-glb-meshes.mjs SOURCE.glb OUTPUT.glb --lossless
 Three.js로 해독한 정점·스킨·본 변환·27개 애니메이션의 642개 트랙 및 사용 텍스처 바이트가 기존과 같았다.
 [입출력 기록의 `base_optimization`](female-knight-runtime-sources.json)에 상세 결과가 있다.
 
+### 소셜 동작 다운로드 최적화 — 2026-10-28
+
+`animations/social.glb`의 동작 데이터를 양자화 없이 Meshopt로 압축한다.
+GLB는 2,584,864 → 1,689,720바이트, gzip level 6은 1,379,542 → 962,593바이트
+(30.2% 감소)다. `node tools/prepare-female-knight.mjs --pack social`로 재생성한다.
+Three.js 디코더로 비교한 80개 클립의 980개 트랙·124,579개 키프레임과 노드 변환이 동일하다.
+게임의 로더 경로를 이용한 앉기 동작 테스트도 수행한다.
+게임용 바이너리는 Hugging Face에 게시하고 `assets.lock`에 고정했다.
+
 ## 장비 교체와 검증
 
 투구를 해제하면 단발 헤어를 복원하고, 장갑을 해제하면 소매를 복원한다.
