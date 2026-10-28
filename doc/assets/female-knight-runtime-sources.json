@@ -1,7 +1,7 @@
 {
   "date": "2026-10-27",
   "inputs": {
-    "tools/prepare-female-knight.mjs": "c3c8a192ebd7b62733d6b7617141ec98bec0ce737d5a562c55acb604f42ab0a7",
+    "tools/prepare-female-knight.mjs": "76043daaa49052f6d65fd5c0119ebfc708f96790a119fb5c8fbb2f175a4fab9a",
     "client/src/lib/utils/female-clip-bake.ts": "ffe7b1e7dbefe8d7877efa81aba171c499bd639061246dbd8fa2c64059b71e7f",
     "client/src/lib/utils/female-boot-ground.ts": "1af7ff84eca863f1879f67841201c79726ad83e6de67c6ef73be4516979b8f6c",
     "assets/modular_human_female_01/rig_v1/female-base.glb": "3eb7c0a5f3c6b30aec0fbae0b70c8fd925e4cb91772647420007eee795a1e0a5",
@@ -72,7 +72,7 @@
     "client/public/models/characters/modular_female/barbarian_boots.glb": "403ed0acb737d0161aba607a6930d533f6d39f4a72506af90e8a9f684b39a8a9",
     "client/public/models/characters/modular_female/barbarian_gloves.glb": "0a461b99b6a4f3d62bdf61f82f8e180a800d5151959e557c05a4322103ae1fa4",
     "client/public/models/characters/modular_female/barbarian_helmet.glb": "c0e86a1cdd83c84e75e8cb020db6f24d370a568520eb97e5376d51e41b5800e3",
-    "client/public/models/characters/modular_female/rogue_top.glb": "3d2381772c9590cd61d7617205fd6e11b0edae1fcc96f290b0f03acd27a36318",
+    "client/public/models/characters/modular_female/rogue_top.glb": "ff43afc9a30323a58dc586718c4d364508a32148ae0242f093fc170aed0490c1",
     "client/public/models/characters/modular_female/rogue_bottom.glb": "20ba336442bcda92abeeb8a7d4b17490574950f0758a7a6141d4b045a00b8dd4",
     "client/public/models/characters/modular_female/rogue_boots.glb": "daf6f5c694ff58e0cdb9a000bd04a2d005374ba17d512c3dedd7b7a9deb86d0a",
     "client/public/models/characters/modular_female/rogue_gloves.glb": "46398b2f6dd0043d8f0c7b0f0cf179d77405439b85082da9b116d0e0041dc29e",
