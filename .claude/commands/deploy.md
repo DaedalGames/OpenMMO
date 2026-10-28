@@ -79,6 +79,12 @@ detach it:
 ```bash
 ssh prod 'setsid nohup bash ~/work/OnlineRPG/tools/deploy-prod.sh > ~/deploy-latest.log 2>&1 < /dev/null &'
 ```
+Its first step (`==> update notice`) sends `SIGUSR1` to the server, which
+broadcasts `data/announce.txt` and refuses new game entries (admins and NPCs
+excepted) until the restart. The file is tracked and read before `git pull`, so
+a committed change takes effect on the following deploy; do not edit it on prod,
+or the pull fails. If the script stops before
+the restart, its exit trap sends `SIGUSR2` to lift the block.
 The script builds before publishing binaries/web assets and restarting services.
 Separately applied world-data edits are already live changes; account for them
 in the deployment's backup, cache-refresh, and recovery plan.

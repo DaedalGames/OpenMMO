@@ -8,7 +8,16 @@ if [[ ${DEPLOY_FROM_SNAPSHOT:-} != 1 ]]; then
     cat "$0" > "$snap"
     DEPLOY_FROM_SNAPSHOT=1 exec bash "$snap" "$@"
 fi
-trap 'rm -f "$0"' EXIT
+signal_server() { sudo systemctl kill --kill-who=main -s "$1" "$SERVICE"; }
+logins_paused=0
+cleanup() {
+    # A deploy that stops before the restart must not leave logins refused.
+    if [[ $logins_paused == 1 ]]; then
+        signal_server SIGUSR2 || echo "warning: could not resume logins on $SERVICE" >&2
+    fi
+    rm -f "$0"
+}
+trap cleanup EXIT
 
 REPO=${REPO:-$HOME/work/OnlineRPG}
 WEBROOT=${WEBROOT:-/var/www/openmmo}
@@ -25,6 +34,14 @@ dashboard_root=$(realpath -m -- "$DASHBOARD_WEBROOT")
 if [[ "$game_root/" == "$dashboard_root/"* || "$dashboard_root/" == "$game_root/"* ]]; then
     echo "error: WEBROOT and DASHBOARD_WEBROOT must not overlap" >&2
     exit 1
+fi
+
+# SIGUSR1 broadcasts data/announce.txt and refuses new entries until restart.
+echo "==> update notice"
+if signal_server SIGUSR1; then
+    logins_paused=1
+else
+    echo "warning: update notice not sent to $SERVICE" >&2
 fi
 
 echo "==> git pull"
@@ -121,6 +138,8 @@ sudo install -D -m 644 tools/systemd/openmmo-server.service.d/watchdog.conf \
 sudo systemctl daemon-reload
 
 echo "==> restart $SERVICE"
+# The restarted server starts unpaused, and an early SIGUSR2 would kill it.
+logins_paused=0
 sudo systemctl restart "$SERVICE"
 sleep 3
 sudo systemctl is-active "$SERVICE"

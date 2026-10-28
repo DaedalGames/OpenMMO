@@ -1458,13 +1458,13 @@ class NetworkManager {
       return { ok: false, message: 'Socket is not connected' }
     }
 
-    this.lastCharacterId = characterId
     return this.requestWithTimeout(
       8000,
       'Game entry timed out',
       (settle, onCleanup) => {
         onCleanup(
           this.joinSuccess.on(() => {
+            this.lastCharacterId = characterId
             settle({ ok: true })
           })
         )
@@ -1579,6 +1579,7 @@ class NetworkManager {
     characters?: AccountCharacter[]
   }> {
     this.resetAllState()
+    this.lastCharacterId = null
 
     const serverUrl = this.lastServerUrl
     const googleIdToken = getApiAuthToken()

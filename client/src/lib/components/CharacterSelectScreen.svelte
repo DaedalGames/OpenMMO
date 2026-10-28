@@ -319,9 +319,10 @@
     background: rgba(175, 45, 45, 0.2);
     color: #ffd2d2;
     font-size: 13px;
-    max-width: 400px;
+    width: max-content;
+    max-width: min(400px, calc(100vw - 32px));
     text-align: center;
-    white-space: nowrap;
+    white-space: pre-line;
   }
 
   @media (max-width: 600px), (max-height: 700px) {

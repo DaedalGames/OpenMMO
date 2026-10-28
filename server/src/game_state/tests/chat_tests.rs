@@ -785,6 +785,20 @@ async fn announcement_rejects_empty_and_oversized_messages_but_accepts_the_cap()
 }
 
 #[tokio::test]
+async fn update_notice_is_broadcast_and_pauses_logins() {
+    let game_state = make_test_game_state("update_notice");
+    let mut broadcast_rx = game_state.subscribe();
+    let text = "잠시 후 업데이트가 있을 예정입니다.\nAn update is coming shortly.";
+
+    game_state.pause_logins_for_update(text);
+    let broadcast = broadcast_rx.try_recv().expect("update notice");
+    assert!(
+        matches!(rmp_serde::from_slice::<ServerMessage>(&broadcast.bytes), Ok(ServerMessage::ServerAnnouncement { message }) if message == text)
+    );
+    assert!(game_state.logins_paused());
+}
+
+#[tokio::test]
 async fn escape_command_returns_a_stuck_player_to_spawn() {
     let game_state = make_test_game_state("escape_to_spawn");
     let auth = make_test_auth("escape_to_spawn");

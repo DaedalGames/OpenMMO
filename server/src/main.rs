@@ -198,6 +198,39 @@ async fn shutdown_signal() {
     }
 }
 
+/// SIGUSR1 (deploy start): broadcast `announce.txt` and pause logins.
+/// SIGUSR2 (deploy aborted): resume logins.
+#[cfg(unix)]
+fn listen_for_update_notice(game_state: Arc<GameState>, notice_path: PathBuf) {
+    use tokio::signal::unix::{signal, SignalKind};
+
+    let (mut pause, mut resume) = match (
+        signal(SignalKind::user_defined1()),
+        signal(SignalKind::user_defined2()),
+    ) {
+        (Ok(pause), Ok(resume)) => (pause, resume),
+        (Err(e), _) | (_, Err(e)) => {
+            error!("Failed to install update notice signal handlers: {}", e);
+            return;
+        }
+    };
+    tokio::spawn(async move {
+        loop {
+            tokio::select! {
+                Some(()) = pause.recv() => {
+                    let notice = tokio::fs::read_to_string(&notice_path).await.unwrap_or_else(|e| {
+                        warn!("Failed to read {}: {}", notice_path.display(), e);
+                        String::new()
+                    });
+                    game_state.pause_logins_for_update(notice.trim());
+                }
+                Some(()) = resume.recv() => game_state.resume_logins(),
+                else => return,
+            }
+        }
+    });
+}
+
 #[cfg(not(unix))]
 async fn shutdown_signal() {
     if let Err(e) = tokio::signal::ctrl_c().await {
@@ -334,6 +367,7 @@ struct StatePaths {
     cape_textures: PathBuf,
     banned_names: PathBuf,
     ip_notices: PathBuf,
+    update_notice: PathBuf,
 }
 
 fn state_paths(state_dir: &Path) -> StatePaths {
@@ -345,6 +379,7 @@ fn state_paths(state_dir: &Path) -> StatePaths {
         cape_textures: state_dir.join("cape-textures"),
         banned_names: state_dir.join("banned_names.txt"),
         ip_notices: state_dir.join("ip_notices.txt"),
+        update_notice: state_dir.join("announce.txt"),
     }
 }
 
@@ -561,6 +596,8 @@ async fn main() -> ExitCode {
         splat_sampler,
         Arc::clone(&cape_textures),
     ));
+    #[cfg(unix)]
+    listen_for_update_notice(Arc::clone(&game_state), paths.update_notice.clone());
     game_state.load_npc_schedules(&npc_io).await;
     game_state
         .tick_combat_audit(
@@ -1135,6 +1172,7 @@ mod tests {
         assert_eq!(paths.npc_token, PathBuf::from("./data/npc_token"));
         assert_eq!(paths.housing, PathBuf::from("./data/housing"));
         assert_eq!(paths.announcements, PathBuf::from("./data/announcements"));
+        assert_eq!(paths.update_notice, PathBuf::from("./data/announce.txt"));
         assert_eq!(
             args.npc_data_dir,
             PathBuf::from("./agent-client/data/npcs"),
@@ -1175,6 +1213,10 @@ mod tests {
             PathBuf::from("/srv/state/announcements")
         );
         assert_eq!(paths.ip_notices, PathBuf::from("/srv/state/ip_notices.txt"));
+        assert_eq!(
+            paths.update_notice,
+            PathBuf::from("/srv/state/announce.txt")
+        );
         assert_eq!(args.npc_data_dir, PathBuf::from("/srv/npcs"));
     }
 

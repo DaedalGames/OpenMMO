@@ -435,6 +435,8 @@ pub struct GameState {
     /// arriving at random.
     #[cfg(test)]
     ambient_spawns_enabled: Arc<std::sync::atomic::AtomicBool>,
+    /// Set by the pre-deploy notice; new characters cannot enter until restart.
+    logins_paused: Arc<std::sync::atomic::AtomicBool>,
     housing_io: Arc<HousingIO>,
     terrain_io: Arc<onlinerpg_terrain::io::TerrainIO>,
     /// Uploaded cape textures: what a worn `cape_texture` is checked against
@@ -788,6 +790,7 @@ impl GameState {
             splat_sampler,
             #[cfg(test)]
             ambient_spawns_enabled: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            logins_paused: Arc::new(std::sync::atomic::AtomicBool::new(false)),
             monster_brains: Arc::new(Mutex::new(monster_ai::ServerBrains::new())),
             housing_io,
             cape_textures,

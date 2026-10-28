@@ -3,6 +3,7 @@ use crate::auth::{ban_message, unix_now, AuthService, DEFAULT_BAN_REASON};
 use crate::types::{ClientKind, Player, PlayerId, ServerMessage};
 use onlinerpg_shared::messages::{strip_command, ANNOUNCEMENT_MAX_CHARS};
 use std::collections::HashMap;
+use std::sync::atomic::Ordering;
 use std::time::{Duration, Instant};
 use tracing::{error, info, warn};
 
@@ -1004,6 +1005,12 @@ impl super::GameState {
     }
 
     fn announce_command(&self, admin_id: &PlayerId, message: &str) -> Result<String, String> {
+        self.broadcast_announcement(message)?;
+        info!(player = ?admin_id, len = message.len(), "server announcement sent");
+        Ok("Announcement sent to all online players.".to_string())
+    }
+
+    fn broadcast_announcement(&self, message: &str) -> Result<(), String> {
         if message.is_empty() {
             return Err("Announce: /announce <message>".to_string());
         }
@@ -1015,8 +1022,25 @@ impl super::GameState {
         self.broadcast(ServerMessage::ServerAnnouncement {
             message: message.to_string(),
         });
-        info!(player = ?admin_id, len = message.len(), "server announcement sent");
-        Ok("Announcement sent to all online players.".to_string())
+        Ok(())
+    }
+
+    /// Pre-deploy notice: broadcasts `notice` and refuses new entries.
+    pub fn pause_logins_for_update(&self, notice: &str) {
+        self.logins_paused.store(true, Ordering::Relaxed);
+        if let Err(e) = self.broadcast_announcement(notice) {
+            warn!(error = %e, "update notice not broadcast");
+        }
+        info!("logins paused for update");
+    }
+
+    pub fn resume_logins(&self) {
+        self.logins_paused.store(false, Ordering::Relaxed);
+        info!("logins resumed");
+    }
+
+    pub fn logins_paused(&self) -> bool {
+        self.logins_paused.load(Ordering::Relaxed)
     }
 
     async fn give_command(

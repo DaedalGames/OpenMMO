@@ -168,7 +168,7 @@ describe('automatic rejoin', () => {
 
   afterEach(() => {
     networkManager.disconnect()
-    setApiAuthToken(null)
+    networkManager.clearSession()
     vi.unstubAllGlobals()
     vi.useRealTimers()
   })
@@ -203,5 +203,25 @@ describe('automatic rejoin', () => {
     await vi.waitFor(() =>
       expect(sent()).toContain(JSON.stringify('WorldReady'))
     )
+  })
+
+  it('does not rejoin a character whose entry was refused', async () => {
+    authenticate()
+    const entry = networkManager.requestEnterGame(9)
+    await vi.waitFor(() =>
+      expect(sent()).toContain(
+        JSON.stringify({ EnterGame: { character_id: 9 } })
+      )
+    )
+    networkManager.characterError.emit('paused')
+    expect(await entry).toEqual({ ok: false, message: 'paused' })
+    TestWebSocket.current.send.mockClear()
+
+    TestWebSocket.current.onclose?.({ code: 1006, reason: '' })
+    await vi.runOnlyPendingTimersAsync()
+    authenticate()
+    await vi.runOnlyPendingTimersAsync()
+    expect(sent()).toContainEqual(expect.stringContaining('Authenticate'))
+    expect(sent()).not.toContainEqual(expect.stringContaining('EnterGame'))
   })
 })

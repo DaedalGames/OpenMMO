@@ -306,6 +306,7 @@ const PARTY_POSITIONS_MIN_INTERVAL: Duration = Duration::from_secs(2);
 /// a rewritten client can ask for.
 const FRIENDS_ONLINE_MIN_INTERVAL: Duration = Duration::from_secs(5);
 const FURNITURE_TIP_INTERVAL: Duration = Duration::from_secs(300);
+const LOGINS_PAUSED_MESSAGE: &str = "서버 업데이트를 준비 중입니다. 업데이트가 끝난 뒤 다시 접속해 주세요.\nThe server is preparing an update. Please reconnect after it finishes.";
 
 /// True at most once per clamp window; a clamped poll does not refresh the
 /// window, so spam cannot starve refreshes.
@@ -1414,6 +1415,17 @@ async fn handle_client_message(
                     "Account resumed its lingering character"
                 );
                 return Ok(responses);
+            }
+
+            if game_state.logins_paused() && !state.is_admin && !state.is_official_npc {
+                info!(
+                    account = authed_account_name,
+                    character = selected_character.name,
+                    "Refusing entry while logins are paused for an update"
+                );
+                return Ok(vec![ServerMessage::CharacterError {
+                    message: LOGINS_PAUSED_MESSAGE.to_string(),
+                }]);
             }
 
             // Skills and dungeon history load before any registration: a failed
@@ -3014,6 +3026,55 @@ mod tests {
                 _ => unreachable!(),
             }), "step {index}: {responses:?}");
         }
+    }
+
+    #[tokio::test]
+    async fn paused_logins_refuse_entry_until_resumed() {
+        let game = Arc::new(crate::game_state::tests::make_test_game_state(
+            "paused_entry",
+        ));
+        let auth = Arc::new(crate::game_state::tests::make_test_auth("paused_entry"));
+        let account = auth.login_google("paused-entry").unwrap();
+        let character_id = auth
+            .create_character(
+                &account,
+                "PausedEntry",
+                &roll_character_attributes(&CharacterClass::Knight, crate::types::Gender::Male),
+                16,
+                CharacterClass::Knight,
+                crate::types::Gender::Male,
+            )
+            .unwrap()
+            .id;
+        let mut state = ConnectionState::new(Ipv4Addr::LOCALHOST.into());
+        handle_handshake(
+            &client_info(onlinerpg_shared::PROTOCOL_VERSION, "web"),
+            &mut state,
+        );
+        finish_auth(&game, &auth, &mut state, account, false).await;
+        let auth_ctx = test_auth_ctx();
+        let encoded =
+            onlinerpg_shared::serialize_client_msg(&ClientMessage::EnterGame { character_id })
+                .unwrap();
+
+        game.pause_logins_for_update("update soon");
+        let responses = handle_client_message(&encoded, &game, &auth, &auth_ctx, &mut state)
+            .await
+            .unwrap();
+        assert!(
+            matches!(responses.as_slice(), [ServerMessage::CharacterError { message }] if message == LOGINS_PAUSED_MESSAGE),
+            "{responses:?}"
+        );
+        assert_eq!(state.player_id, None);
+
+        game.resume_logins();
+        let responses = handle_client_message(&encoded, &game, &auth, &auth_ctx, &mut state)
+            .await
+            .unwrap();
+        assert!(
+            matches!(responses.first(), Some(ServerMessage::JoinSuccess { .. })),
+            "{responses:?}"
+        );
     }
 
     #[tokio::test]
