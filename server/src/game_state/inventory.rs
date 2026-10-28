@@ -508,6 +508,7 @@ impl super::GameState {
         inventory: PlayerInventory,
     ) {
         self.set_player_gear(player_id, &inventory).await;
+        self.end_rage_if_weapon_lost(player_id, &inventory).await;
         self.refresh_hunger_gear_drain(player_id, &inventory).await;
         self.send_direct_message(player_id, ServerMessage::InventoryUpdated { inventory })
             .await;

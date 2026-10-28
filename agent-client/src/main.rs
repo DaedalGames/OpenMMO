@@ -593,6 +593,7 @@ pub fn msg_name(msg: &onlinerpg_shared::ServerMessage) -> &'static str {
         ServerMessage::AbilityCooldowns { .. } => "AbilityCooldowns",
         ServerMessage::BuffUpdate { .. } => "BuffUpdate",
         ServerMessage::PlayerRadianceToggled { .. } => "PlayerRadianceToggled",
+        ServerMessage::PlayerRageToggled { .. } => "PlayerRageToggled",
         ServerMessage::BowMarkUpdate { .. } => "BowMarkUpdate",
         ServerMessage::InvisibilityChanged { .. } => "InvisibilityChanged",
         ServerMessage::InspectionResult { .. } => "InspectionResult",

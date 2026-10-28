@@ -1,9 +1,73 @@
 use super::*;
 use onlinerpg_shared::ability::{
-    GUARDIAN_WARD_COOLDOWN_MS, GUARDIAN_WARD_DURATION_MS, GUARDIAN_WARD_RADIUS,
+    GUARDIAN_WARD_COOLDOWN_MS, GUARDIAN_WARD_DURATION_MS, GUARDIAN_WARD_RADIUS, RAGE_COOLDOWN_MS,
+    RAGE_DURATION_MS, RAGE_GUARD_PENALTY,
 };
 
+pub struct BuffAbility {
+    pub tag: &'static str,
+    pub name: &'static str,
+    pub requires: &'static str,
+    pub equipment: &'static str,
+}
+
+pub fn buff_ability(ability: AbilityId) -> Option<BuffAbility> {
+    match ability {
+        AbilityId::GuardianWard => Some(BuffAbility {
+            tag: "GuardianWard",
+            name: "Guardian Ward",
+            requires: "a living, unmounted Knight with an MP pool",
+            equipment: "a one-handed sword or mace and an off-hand shield",
+        }),
+        AbilityId::Rage => Some(BuffAbility {
+            tag: "Rage",
+            name: "Rage",
+            requires: "a living, unmounted Barbarian",
+            equipment: "a melee weapon in your main hand",
+        }),
+        _ => None,
+    }
+}
+
 impl SharedState {
+    fn buff_ability_status(
+        &self,
+        player: &Player,
+        ability: AbilityId,
+        equipped: bool,
+    ) -> (String, String) {
+        let wait = self.ability_wait(ability);
+        let mana_cost = ability.mana_cost();
+        let readiness = if player.health == 0 {
+            "respawn first".to_string()
+        } else if player.is_mounted() {
+            "dismount first".to_string()
+        } else if !equipped {
+            let equipment = buff_ability(ability).map_or("the required gear", |a| a.equipment);
+            format!("equip {equipment} first")
+        } else if !wait.is_zero() {
+            format!("ready in {:.1}s", wait.as_secs_f32())
+        } else {
+            match self.self_mana {
+                Some((mana, _)) if mana >= mana_cost => "ready".to_string(),
+                Some(_) => format!("not enough MP; requires {mana_cost} MP"),
+                None => "waiting for MP state".to_string(),
+            }
+        };
+        let remaining = self
+            .buff_expires_at
+            .get(&ability)
+            .map_or(std::time::Duration::ZERO, |expires| {
+                expires.saturating_duration_since(tokio::time::Instant::now())
+            });
+        let buff = if remaining.is_zero() {
+            "not active".to_string()
+        } else {
+            format!("active for {:.1}s", remaining.as_secs_f32())
+        };
+        (readiness, buff)
+    }
+
     pub fn main_hand_def(&self) -> Option<&'static crate::item_defs::ItemDef> {
         self.self_equipped
             .get(&onlinerpg_shared::inventory::EquipSlot::MainHand)
@@ -145,34 +209,9 @@ not mean both strikes hit."#
                 matches!(def.weapon_type.as_deref(), Some("sword" | "mace"))
                     && def.hands.unwrap_or(1) < 2
             }) && off.is_some_and(|def| def.armor_type.as_deref() == Some("shield"));
-            let wait = self.ability_wait(AbilityId::GuardianWard);
+            let (readiness, buff) =
+                self.buff_ability_status(player, AbilityId::GuardianWard, equipped);
             let mana_cost = AbilityId::GuardianWard.mana_cost();
-            let readiness = if player.health == 0 {
-                "respawn first".to_string()
-            } else if player.is_mounted() {
-                "dismount first".to_string()
-            } else if !equipped {
-                "equip a one-handed sword or mace and an off-hand shield first".to_string()
-            } else if !wait.is_zero() {
-                format!("ready in {:.1}s", wait.as_secs_f32())
-            } else {
-                match self.self_mana {
-                    Some((mana, _)) if mana >= mana_cost => "ready".to_string(),
-                    Some(_) => format!("not enough MP; requires {mana_cost} MP"),
-                    None => "waiting for MP state".to_string(),
-                }
-            };
-            let remaining = self
-                .buff_expires_at
-                .get(&AbilityId::GuardianWard)
-                .map_or(std::time::Duration::ZERO, |expires| {
-                    expires.saturating_duration_since(tokio::time::Instant::now())
-                });
-            let buff = if remaining.is_zero() {
-                "not active".to_string()
-            } else {
-                format!("active for {:.1}s", remaining.as_secs_f32())
-            };
             lines.push(format!(
                 r#"Guardian Ward: {readiness}. Your ward: {buff}.
 As a Knight, cast with {{"type": "use_ability", "ability": "guardian_ward"}}.
@@ -182,6 +221,31 @@ for {}s; cooldown {}s. No target is needed. Recasting refreshes the duration; it
 Use the readiness and ward status above. Wait for server success or failure feedback."#,
                 GUARDIAN_WARD_DURATION_MS / 1000,
                 GUARDIAN_WARD_COOLDOWN_MS / 1000,
+            ));
+        }
+        if let Some(player) = self
+            .self_player
+            .as_ref()
+            .filter(|player| player.class == onlinerpg_shared::CharacterClass::Barbarian)
+        {
+            let equipped = self.main_hand_def().is_some_and(|def| {
+                matches!(
+                    def.weapon_type.as_deref(),
+                    Some("sword" | "great_sword" | "axe" | "mace" | "club" | "spear" | "dagger")
+                )
+            });
+            let (readiness, buff) = self.buff_ability_status(player, AbilityId::Rage, equipped);
+            let mana_cost = AbilityId::Rage.mana_cost();
+            let bonus = onlinerpg_shared::ability::rage_damage_bonus(player.level);
+            lines.push(format!(
+                r#"Rage: {readiness}. Your rage: {buff}.
+As a Barbarian, cast with {{"type": "use_ability", "ability": "rage"}}.
+Requires a melee weapon in your main hand and {mana_cost} MP.
+For {}s your melee hits deal +{bonus} damage and your Guard drops by {RAGE_GUARD_PENALTY};
+cooldown {}s. No target is needed. Unequipping your melee weapon ends it.
+Use the readiness and rage status above. Wait for server success or failure feedback."#,
+                RAGE_DURATION_MS / 1000,
+                RAGE_COOLDOWN_MS / 1000,
             ));
         }
         if let Some((satiation, state)) = self.self_hunger {

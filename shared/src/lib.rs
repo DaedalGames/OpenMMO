@@ -227,7 +227,8 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// per skill victim.
 /// v128: raid tokens in `FieldRaidNotice`.
 /// v129: player critical hits and effective critical strike chance.
-pub const PROTOCOL_VERSION: u32 = 129;
+/// v130: Barbarian Rage (`AbilityId::Rage`, `PlayerRageToggled`).
+pub const PROTOCOL_VERSION: u32 = 130;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from
@@ -550,6 +551,7 @@ mod tests {
             is_official_npc: false,
             torch_on: false,
             radiance_on: false,
+            raging: false,
             floor_level: 0,
             object_type: None,
             main_hand: None,

@@ -76,7 +76,28 @@ export const TRUE_AIM = {
   ],
 } as const
 
-export const BUFF_ABILITIES = [GUARDIAN_WARD, RADIANCE, TRUE_AIM] as const
+const RAGE_WEAPON_TYPES = [
+  'sword',
+  'great_sword',
+  'axe',
+  'mace',
+  'club',
+  'spear',
+  'dagger',
+] as const
+
+export const RAGE = {
+  get manaCost() {
+    return ability_mana_cost('rage')
+  },
+  id: 'rage',
+  name: 'Rage',
+  icon: '/icons/skills/rage.png',
+  description: 'Melee attacks deal more damage, but your guard drops.',
+  buffDescription: 'Melee damage up, Guard -2',
+} as const
+
+export const BUFF_ABILITIES = [GUARDIAN_WARD, RAGE, RADIANCE, TRUE_AIM] as const
 export type AbilityId =
   | (typeof BUFF_ABILITIES)[number]['id']
   | typeof DOUBLE_SLASH.id
@@ -145,6 +166,7 @@ export const FISHING = {
 
 export const ABILITIES = [
   GUARDIAN_WARD,
+  RAGE,
   DOUBLE_SLASH,
   RADIANCE,
   TRUE_AIM,
@@ -161,7 +183,8 @@ export function isAbilityAvailable(
     (id === FISHING.id && learned.includes(FISHING.id)) ||
     id === AUSCULTATION.id ||
     (id === DOUBLE_SLASH.id && characterClass === 'rogue') ||
-    (id === GUARDIAN_WARD.id && characterClass === 'knight')
+    (id === GUARDIAN_WARD.id && characterClass === 'knight') ||
+    (id === RAGE.id && characterClass === 'barbarian')
   )
 }
 
@@ -180,11 +203,15 @@ export function abilityEquipmentAllowed(
     )
   if (id === AUSCULTATION.id)
     return equipped.neck?.item_def_id === 'stethoscope'
+  const weaponType = getItemDef(
+    equipped.main_hand?.item_def_id ?? ''
+  )?.weaponType
   if (id === TRUE_AIM.id || id === DOUBLE_SLASH.id)
     return (
-      getItemDef(equipped.main_hand?.item_def_id ?? '')?.weaponType ===
-      (id === DOUBLE_SLASH.id ? DAGGER_SKILL.weaponType : 'bow')
+      weaponType === (id === DOUBLE_SLASH.id ? DAGGER_SKILL.weaponType : 'bow')
     )
+  if (id === RAGE.id)
+    return RAGE_WEAPON_TYPES.some((type) => type === weaponType)
   return id === RADIANCE.id || guardianWardEquipment(equipped)
 }
 

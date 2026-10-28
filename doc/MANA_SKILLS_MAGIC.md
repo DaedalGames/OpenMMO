@@ -31,7 +31,7 @@ STR·DEX에 투자한 물리 전투와 INT·WIS에 투자한 마법 전투가 �
 
 | 분류 | 예 | MP 비용 |
 | --- | --- | --- |
-| 전투 기술 | Double Slash | 없음 |
+| 전투 기술 | Double Slash, 광폭화 | Double Slash 없음, 광폭화 1. 클래스 기본 스킬은 1 이상([클래스 기본 스킬](abilities/CLASS_SKILLS.md)) |
 | 마법·마법적 스킬 | Guardian Ward, Radiance | 능력별로 지정 |
 | 생활 스킬 | Fishing | 없음 |
 
@@ -58,6 +58,7 @@ STR·DEX에 투자한 물리 전투와 INT·WIS에 투자한 마법 전투가 �
 | --- | --- | --- | --- | --- |
 | Double Slash | Rogue 기본 | 전투 기술 | MP 0 | 단검 필요. 다음 기본 공격을 2연격으로 대체. 쿨다운 10초 |
 | Guardian Ward | Knight 기본 | 방어 마법 | MP 2 | Sword/Mace + Shield. 즉시 발동. 자신·주변 파티원의 물리 Guard +10%. 지속 60초, 쿨다운 45초 |
+| 광폭화 (Rage) | Barbarian 기본 | 전투 기술 | MP 1 | 근접 무기. 즉시 발동. 근접 피해 +(3 + Level/10), Guard -2. 지속 10초, 쿨다운 20초 |
 | Radiance | 비공개 | 조명 마법 | 켜기 미정, 끄기 MP 0 | 켠 뒤 120초 유지. 켜기·끄기 쿨다운 0.8초 |
 | True Aim | 비공개 | 미정 | 분류에 따라 결정 | Bow로 개인 대상 표식. 지속 5초, 쿨다운 10초 |
 

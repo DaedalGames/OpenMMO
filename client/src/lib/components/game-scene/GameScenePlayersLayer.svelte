@@ -8,6 +8,7 @@
   import GameSceneAbilitiesLayer from './GameSceneAbilitiesLayer.svelte'
   import GameSceneEnchantSuccessLayer from './GameSceneEnchantSuccessLayer.svelte'
   import GameSceneLevelUpLayer from './GameSceneLevelUpLayer.svelte'
+  import GameSceneRageAuraLayer from './GameSceneRageAuraLayer.svelte'
   import GameSceneTeleportLayer from './GameSceneTeleportLayer.svelte'
   import GameSceneGroundEruptionLayer from './GameSceneGroundEruptionLayer.svelte'
   import { teleportHiddenPlayers } from '../../stores/teleportEffectStore'
@@ -306,6 +307,7 @@
 
   let enchantLayer: GameSceneEnchantSuccessLayer | undefined
   let levelUpLayer: GameSceneLevelUpLayer | undefined
+  let rageAuraLayer: GameSceneRageAuraLayer | undefined
   let teleportLayer: GameSceneTeleportLayer | undefined
   let groundEruptionLayer: GameSceneGroundEruptionLayer | undefined
   // One shadow light: enchantment, fire, local light, then nearby light.
@@ -578,6 +580,7 @@
     groundEruptionLayer?.update()
     enchantLayer?.update()
     levelUpLayer?.update()
+    rageAuraLayer?.update(deltaTime)
     if (currentPlayer) updateRadianceStrength(currentPlayer, deltaTime)
     for (const player of otherPlayers.values())
       updateRadianceStrength(player, deltaTime)
@@ -640,6 +643,12 @@
   {currentPlayer}
   getAnchor={(id, target) => getAbilityAnchor(id, false, target)}
   setPose={(id, until) => modelFor(id)?.setLevelUpPoseUntil(until)}
+/>
+<GameSceneRageAuraLayer
+  bind:this={rageAuraLayer}
+  {currentPlayer}
+  {otherPlayers}
+  getAnchor={(id, target) => getAbilityAnchor(id, false, target)}
 />
 <GameSceneAbilitiesLayer
   {currentPlayer}

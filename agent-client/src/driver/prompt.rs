@@ -409,23 +409,29 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
                 player_name(state, player_id),
             ))
         }
-        ServerMessage::AbilityRejected {
-            ability: onlinerpg_shared::ability::AbilityId::GuardianWard,
-            reason,
-        } => {
+        ServerMessage::AbilityUsed {
+            ability: onlinerpg_shared::ability::AbilityId::Rage,
+            player_id,
+            ..
+        } if state.self_player_id == Some(*player_id) => Some(format!(
+            "[Rage] You fly into a rage for {}s.",
+            onlinerpg_shared::ability::RAGE_DURATION_MS / 1000
+        )),
+        ServerMessage::AbilityRejected { ability, reason }
+            if crate::state::buff_ability(*ability).is_some() =>
+        {
             use onlinerpg_shared::ability::AbilityRejectReason;
+            let info = crate::state::buff_ability(*ability)?;
             let reason = match reason {
                 AbilityRejectReason::Unavailable => {
-                    "unavailable in your current state; requires a living, unmounted Knight with an MP pool"
+                    format!("unavailable in your current state; requires {}", info.requires)
                 }
-                AbilityRejectReason::Equipment => {
-                    "equip a one-handed sword or mace and an off-hand shield"
-                }
-                AbilityRejectReason::Cooldown => "still on cooldown; check readiness",
-                AbilityRejectReason::NotEnoughMana => "not enough MP",
-                AbilityRejectReason::OutOfRange => "target is out of range",
+                AbilityRejectReason::Equipment => format!("equip {}", info.equipment),
+                AbilityRejectReason::Cooldown => "still on cooldown; check readiness".into(),
+                AbilityRejectReason::NotEnoughMana => "not enough MP".into(),
+                AbilityRejectReason::OutOfRange => "target is out of range".into(),
             };
-            Some(format!("[GuardianWardFailed] {reason}."))
+            Some(format!("[{}Failed] {reason}.", info.tag))
         }
         ServerMessage::DaggerDoubleSlashStarted {
             player_id,

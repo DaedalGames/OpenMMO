@@ -255,3 +255,79 @@ async fn guardian_ward_feedback_and_reconnect_use_authoritative_state() {
         Duration::from_secs(20)
     );
 }
+
+fn barbarian_state() -> (SharedState, mpsc::Receiver<ClientMessage>) {
+    let (mut state, rx) = knight_state();
+    state.self_player.as_mut().unwrap().class = CharacterClass::Barbarian;
+    state.self_equipped.clear();
+    equip(&mut state, EquipSlot::MainHand, "worn_iron_sword");
+    (state, rx)
+}
+
+#[tokio::test(start_paused = true)]
+async fn rage_prompt_matches_class_melee_weapon_and_mana() {
+    let (mut state, _rx) = barbarian_state();
+    let prompt = state.format_world_state();
+    assert!(prompt.contains("Rage: ready. Your rage: not active."));
+    assert!(prompt.contains(r#"{"type": "use_ability", "ability": "rage"}"#));
+    assert!(prompt.contains("deal +3 damage and your Guard drops by 2"));
+    assert!(!prompt.contains("Guardian Ward:"));
+    for (main, ready) in [
+        ("great_sword", true),
+        ("spear", true),
+        ("dagger", true),
+        ("bow", false),
+    ] {
+        equip(&mut state, EquipSlot::MainHand, main);
+        assert_eq!(
+            state.format_world_state().contains("Rage: ready."),
+            ready,
+            "{main}"
+        );
+    }
+    state.self_equipped.clear();
+    assert!(state
+        .format_world_state()
+        .contains("Rage: equip a melee weapon in your main hand first."));
+    equip(&mut state, EquipSlot::MainHand, "worn_iron_sword");
+    state.push_event(ServerMessage::ManaUpdate {
+        mana: 0,
+        max_mana: 10,
+    });
+    assert!(state
+        .format_world_state()
+        .contains("not enough MP; requires 1 MP"));
+    state.self_player.as_mut().unwrap().class = CharacterClass::Knight;
+    assert!(!state.format_world_state().contains("Rage:"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn llm_rage_dispatches_and_waits_out_its_cooldown() {
+    let (mut state, mut rx) = barbarian_state();
+    state.push_event(ServerMessage::AbilityCooldowns {
+        cooldowns: vec![AbilityTimer {
+            ability: AbilityId::Rage,
+            remaining_ms: 20_000,
+        }],
+    });
+    let state = Arc::new(Mutex::new(state));
+    let response = r#"{"actions":[{"type":"use_ability","ability":"rage"}]}"#;
+    handle_response(&state, response, &None, &None, false).await;
+    assert!(rx.try_recv().is_err());
+    assert!(state
+        .lock()
+        .await
+        .drain_agent_events()
+        .iter()
+        .any(|line| line.starts_with("[RageFailed] Wait 20.0s")));
+    tokio::time::advance(Duration::from_secs(20)).await;
+    handle_response(&state, response, &None, &None, false).await;
+    assert!(matches!(
+        rx.try_recv(),
+        Ok(ClientMessage::UseAbility {
+            ability: AbilityId::Rage,
+            monster_id: None,
+            target_player_id: None,
+        })
+    ));
+}

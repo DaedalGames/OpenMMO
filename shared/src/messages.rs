@@ -2014,6 +2014,10 @@ pub enum ServerMessage {
         player_id: PlayerId,
         enabled: bool,
     },
+    PlayerRageToggled {
+        player_id: PlayerId,
+        enabled: bool,
+    },
     BowMarkUpdate {
         monster_id: Option<String>,
         remaining_ms: u64,
@@ -2125,7 +2129,8 @@ impl ServerMessage {
             | Self::MealAppeared { .. }
             | Self::MealEaten { .. }
             | Self::MealRemoved { .. }
-            | Self::PlayerRadianceToggled { .. } => DeliveryClass::NearbyState,
+            | Self::PlayerRadianceToggled { .. }
+            | Self::PlayerRageToggled { .. } => DeliveryClass::NearbyState,
             Self::PlayerTeleportEffect { .. }
             | Self::DungeonChestOpened { .. }
             | Self::ChatMessage { .. }

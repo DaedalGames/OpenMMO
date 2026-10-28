@@ -377,7 +377,7 @@ impl super::GameState {
         result
     }
 
-    fn main_hand_def<'a>(
+    pub(super) fn main_hand_def<'a>(
         &'a self,
         inv: &'a PlayerInventory,
     ) -> Option<(&'a ItemInstance, &'a crate::item_defs::ItemDefinition)> {
@@ -1041,11 +1041,18 @@ impl super::GameState {
         };
 
         let hit_mod = self.hunger_hit_mod(player_id).await;
-        let guaranteed = self
-            .abilities
-            .read()
-            .await
-            .marks_target(player_id, &monster_id);
+        let (guaranteed, raging) = {
+            let abilities = self.abilities.read().await;
+            (
+                abilities.marks_target(player_id, &monster_id),
+                abilities.raging(player_id),
+            )
+        };
+        let rage_bonus = if raging {
+            onlinerpg_shared::ability::rage_damage_bonus(player_level)
+        } else {
+            0
+        };
 
         let critical_chance_percent = self
             .inventories
@@ -1064,7 +1071,7 @@ impl super::GameState {
                 target_guard,
                 &weapon.dice,
                 ammo.as_ref().map(|round| round.dice.as_str()),
-                ability_mod + weapon.enchant,
+                ability_mod + weapon.enchant + rage_bonus,
                 guaranteed,
             );
             result.apply_critical(critical_chance_percent, &mut rand::thread_rng());

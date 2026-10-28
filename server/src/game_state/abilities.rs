@@ -5,9 +5,10 @@ use onlinerpg_shared::ability::{
     AbilityId, AbilityRejectReason, AbilityTimer, InspectedEquipment, InspectionResult,
     InspectionTarget, AUSCULTATION_COOLDOWN_MS, AUSCULTATION_RANGE, BOW_MARK_COOLDOWN_MS,
     BOW_MARK_DURATION_MS, GUARDIAN_WARD_COOLDOWN_MS, GUARDIAN_WARD_DURATION_MS,
-    GUARDIAN_WARD_RADIUS, RADIANCE_COOLDOWN_MS, RADIANCE_DURATION_MS,
+    GUARDIAN_WARD_RADIUS, RADIANCE_COOLDOWN_MS, RADIANCE_DURATION_MS, RAGE_COOLDOWN_MS,
+    RAGE_DURATION_MS, RAGE_GUARD_PENALTY,
 };
-use onlinerpg_shared::inventory::EquipSlot;
+use onlinerpg_shared::inventory::{EquipSlot, PlayerInventory};
 use std::collections::{HashMap, HashSet};
 use std::time::Duration;
 use tokio::time::Instant;
@@ -17,6 +18,7 @@ pub(super) struct Abilities {
     wards: HashMap<PlayerId, Instant>,
     radiances: HashMap<PlayerId, Instant>,
     marks: HashMap<PlayerId, BowMark>,
+    rages: HashMap<PlayerId, Instant>,
     cooldowns: HashMap<(i64, AbilityId), Instant>,
 }
 
@@ -41,15 +43,23 @@ impl Abilities {
     }
 
     pub(super) fn guard(&self, player_id: &PlayerId, base: i32) -> i32 {
-        if self
+        let warded = self
             .wards
             .get(player_id)
-            .is_some_and(|until| *until > Instant::now())
-        {
-            base + base.max(0) / 10
+            .is_some_and(|until| *until > Instant::now());
+        let ward = if warded { base.max(0) / 10 } else { 0 };
+        let rage = if self.raging(player_id) {
+            RAGE_GUARD_PENALTY
         } else {
-            base
-        }
+            0
+        };
+        base + ward - rage
+    }
+
+    pub(super) fn raging(&self, player_id: &PlayerId) -> bool {
+        self.rages
+            .get(player_id)
+            .is_some_and(|until| *until > Instant::now())
     }
 
     pub(super) fn buff_message(&self, player_id: &PlayerId) -> ServerMessage {
@@ -61,6 +71,7 @@ impl Abilities {
                 AbilityId::BowMark,
                 self.marks.get(player_id).map(|mark| &mark.until),
             ),
+            (AbilityId::Rage, self.rages.get(player_id)),
         ]
         .into_iter()
         .filter_map(|(ability, until)| {
@@ -91,6 +102,7 @@ impl GameState {
                 AbilityId::Radiance,
                 AbilityId::BowMark,
                 AbilityId::Auscultation,
+                AbilityId::Rage,
             ]
             .into_iter()
             .map(|ability| AbilityTimer {
@@ -116,13 +128,14 @@ impl GameState {
         let result = match ability {
             AbilityId::GuardianWard => self.try_guardian_ward(player_id).await,
             AbilityId::Radiance => self.try_radiance(player_id).await,
+            AbilityId::Rage => self.try_rage(player_id).await,
             AbilityId::BowMark | AbilityId::DaggerDoubleSlash | AbilityId::Auscultation => {
                 Err(AbilityRejectReason::Unavailable)
             }
         };
         match result {
             Ok((position, floor_level, targets)) => {
-                if ability == AbilityId::GuardianWard {
+                if ability.mana_cost() > 0 {
                     self.mark_dirty(player_id).await;
                     self.send_mana_update(player_id).await;
                 }
@@ -609,43 +622,134 @@ impl GameState {
         Ok((caster.position, caster.floor_level, targets))
     }
 
+    async fn try_rage(
+        &self,
+        player_id: &PlayerId,
+    ) -> Result<(onlinerpg_shared::Position, i8, Vec<PlayerId>), AbilityRejectReason> {
+        let players = self.players.read().await;
+        let caster = players
+            .get(player_id)
+            .filter(|p| {
+                p.class == CharacterClass::Barbarian
+                    && p.is_damageable(Self::now_ms())
+                    && !p.is_mounted()
+            })
+            .ok_or(AbilityRejectReason::Unavailable)?;
+        let chars = self.player_characters.read().await;
+        let character = chars
+            .get(player_id)
+            .ok_or(AbilityRejectReason::Unavailable)?
+            .0;
+        if !self
+            .inventories
+            .read()
+            .await
+            .get(player_id)
+            .is_some_and(|inv| self.wields_rage_weapon(inv))
+        {
+            return Err(AbilityRejectReason::Equipment);
+        }
+        let mut state = self.abilities.write().await;
+        if state.cooldown_ms(character, AbilityId::Rage) > 0 {
+            return Err(AbilityRejectReason::Cooldown);
+        }
+        let mut mana = self.mana.write().await;
+        mana.get_mut(player_id)
+            .ok_or(AbilityRejectReason::Unavailable)?
+            .spend(AbilityId::Rage.mana_cost())?;
+        let now = Instant::now();
+        state.cooldowns.insert(
+            (character, AbilityId::Rage),
+            now + Duration::from_millis(RAGE_COOLDOWN_MS),
+        );
+        state
+            .rages
+            .insert(*player_id, now + Duration::from_millis(RAGE_DURATION_MS));
+        Ok((caster.position, caster.floor_level, vec![*player_id]))
+    }
+
+    fn wields_rage_weapon(&self, inv: &PlayerInventory) -> bool {
+        self.main_hand_def(inv).is_some_and(|(_, def)| {
+            matches!(
+                def.weapon_type,
+                Some(
+                    WeaponType::Sword
+                        | WeaponType::GreatSword
+                        | WeaponType::Axe
+                        | WeaponType::Mace
+                        | WeaponType::Club
+                        | WeaponType::Spear
+                        | WeaponType::Dagger
+                )
+            )
+        })
+    }
+
+    pub(super) async fn end_rage_if_weapon_lost(
+        &self,
+        player_id: &PlayerId,
+        inv: &PlayerInventory,
+    ) {
+        if self.wields_rage_weapon(inv)
+            || !self.abilities.read().await.rages.contains_key(player_id)
+        {
+            return;
+        }
+        if self
+            .abilities
+            .write()
+            .await
+            .rages
+            .remove(player_id)
+            .is_some()
+        {
+            self.send_buff_state(player_id).await;
+        }
+    }
+
     async fn send_buff_state(&self, player_id: &PlayerId) {
-        self.sync_radiance_state(player_id).await;
+        self.sync_visible_buffs(player_id).await;
         let message = self.abilities.read().await.buff_message(player_id);
         self.send_direct_message(player_id, message).await;
         self.send_direct_message(player_id, self.effective_stats(player_id).await.into())
             .await;
     }
 
-    async fn sync_radiance_state(&self, player_id: &PlayerId) {
-        let changed = {
+    async fn sync_visible_buffs(&self, player_id: &PlayerId) {
+        let (position, floor_level, changes) = {
             let mut players = self.players.write().await;
             let Some(player) = players.get_mut(player_id) else {
                 return;
             };
-            let enabled = self
-                .abilities
-                .read()
-                .await
-                .radiances
-                .get(player_id)
-                .is_some_and(|until| *until > Instant::now());
-            if player.radiance_on == enabled {
-                return;
+            let (radiance, raging) = {
+                let state = self.abilities.read().await;
+                let radiance = state
+                    .radiances
+                    .get(player_id)
+                    .is_some_and(|until| *until > Instant::now());
+                (radiance, state.raging(player_id))
+            };
+            let mut changes = Vec::new();
+            if player.radiance_on != radiance {
+                player.radiance_on = radiance;
+                changes.push(ServerMessage::PlayerRadianceToggled {
+                    player_id: *player_id,
+                    enabled: radiance,
+                });
             }
-            player.radiance_on = enabled;
-            (player.position, player.floor_level, enabled)
+            if player.raging != raging {
+                player.raging = raging;
+                changes.push(ServerMessage::PlayerRageToggled {
+                    player_id: *player_id,
+                    enabled: raging,
+                });
+            }
+            (player.position, player.floor_level, changes)
         };
-        self.publish_nearby(
-            &changed.0,
-            changed.1,
-            ServerMessage::PlayerRadianceToggled {
-                player_id: *player_id,
-                enabled: changed.2,
-            },
-            None,
-        )
-        .await;
+        for message in changes {
+            self.publish_nearby(&position, floor_level, message, None)
+                .await;
+        }
     }
 
     pub(super) async fn clear_buffs(&self, player_id: &PlayerId) {
@@ -654,7 +758,8 @@ impl GameState {
             let ward = state.wards.remove(player_id).is_some();
             let radiance = state.radiances.remove(player_id).is_some();
             let mark = state.marks.remove(player_id).is_some();
-            ward || radiance || mark
+            let rage = state.rages.remove(player_id).is_some();
+            ward || radiance || mark || rage
         };
         if removed {
             self.send_bow_mark_state(player_id).await;
@@ -696,11 +801,13 @@ impl GameState {
                 .wards
                 .iter()
                 .chain(state.radiances.iter())
+                .chain(state.rages.iter())
                 .filter(|(_, until)| **until <= now)
                 .map(|(id, _)| *id)
                 .collect();
             state.wards.retain(|_, until| *until > now);
             state.radiances.retain(|_, until| *until > now);
+            state.rages.retain(|_, until| *until > now);
             state.marks.retain(|id, mark| {
                 let valid = mark.until > now && invalid.get(id) != Some(&mark.until);
                 if !valid {

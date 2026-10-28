@@ -306,6 +306,7 @@ function toLocalPlayer(sp: ServerPlayer): LocalPlayer {
     gender: sp.gender,
     appearance: sp.appearance,
     radianceOn: sp.radiance_on ?? false,
+    raging: sp.raging ?? false,
   }
 }
 
@@ -322,6 +323,7 @@ function toRemotePlayer(sp: ServerPlayer): RemotePlayer {
     mount: sp.mount ?? null,
     torchOn: sp.torch_on,
     radianceOn: sp.radiance_on ?? false,
+    raging: sp.raging ?? false,
     wet: sp.wet ?? false,
     title: sp.title ?? null,
     mainHand: sp.main_hand ?? null,
@@ -1735,6 +1737,9 @@ export function handleServerMessage(
     case 'PlayerRadianceToggled':
       updatePlayer(data.player_id, { radianceOn: data.enabled })
       break
+    case 'PlayerRageToggled':
+      updatePlayer(data.player_id, { raging: data.enabled })
+      break
 
     case 'PlayerMountChanged': {
       updatePlayer(data.player_id, { mount: data.mount })
@@ -2677,26 +2682,16 @@ export function handleServerMessage(
           sender: 'local',
         })
       }
-      if (next.radiance && !before.radiance)
-        addCombatMessage({
-          text: translate('buff.radianceApplied'),
-          sender: 'local',
-        })
-      else if (!next.radiance && before.radiance)
-        addCombatMessage({
-          text: translate('buff.radianceExpired'),
-          sender: 'local',
-        })
-      if (next.bow_mark && !before.bow_mark)
-        addCombatMessage({
-          text: translate('buff.trueAimApplied'),
-          sender: 'local',
-        })
-      else if (!next.bow_mark && before.bow_mark)
-        addCombatMessage({
-          text: translate('buff.trueAimExpired'),
-          sender: 'local',
-        })
+      for (const [id, key] of [
+        ['rage', 'rage'],
+        ['radiance', 'radiance'],
+        ['bow_mark', 'trueAim'],
+      ] as const)
+        if (!next[id] !== !before[id])
+          addCombatMessage({
+            text: translate(`buff.${key}${next[id] ? 'Applied' : 'Expired'}`),
+            sender: 'local',
+          })
       break
     }
     case 'InspectionResult':

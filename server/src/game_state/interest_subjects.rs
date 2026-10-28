@@ -198,6 +198,7 @@ impl Interest {
             }
             ServerMessage::PlayerTorchToggled { player_id, .. }
             | ServerMessage::PlayerRadianceToggled { player_id, .. }
+            | ServerMessage::PlayerRageToggled { player_id, .. }
             | ServerMessage::PlayerWetToggled { player_id, .. }
             | ServerMessage::PlayerMountChanged { player_id, .. }
             | ServerMessage::PlayerTitleChanged { player_id, .. }
@@ -213,6 +214,7 @@ impl Interest {
                             match msg {
                                 ServerMessage::PlayerTorchToggled { enabled, .. } => { player.torch_on = *enabled; },
                                 ServerMessage::PlayerRadianceToggled { enabled, .. } => { player.radiance_on = *enabled; },
+                                ServerMessage::PlayerRageToggled { enabled, .. } => { player.raging = *enabled; },
                                 ServerMessage::PlayerWetToggled { wet, .. } => { player.wet = *wet; },
                                 ServerMessage::PlayerMountChanged { mount, .. } => { player.mount = *mount; },
                                 ServerMessage::PlayerTitleChanged { title, .. } => { player.title = title.clone(); },

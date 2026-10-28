@@ -48,6 +48,7 @@ export type ServerPlayer = {
   mount?: MountKind | null
   torch_on: boolean
   radiance_on?: boolean
+  raging?: boolean
   floor_level: number
   object_type?: string
   /** Placement id of the occupied chair/bed (v47); absent for emotes. */

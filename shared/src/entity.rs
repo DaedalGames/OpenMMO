@@ -100,6 +100,8 @@ pub struct Player {
     #[serde(default)]
     pub radiance_on: bool,
     #[serde(default)]
+    pub raging: bool,
+    #[serde(default)]
     pub armor: crate::character::ArmorEquipment,
     #[serde(default)]
     pub appearance: crate::character::CharacterAppearance,
@@ -313,6 +315,7 @@ mod tests {
             is_official_npc: false,
             torch_on: false,
             radiance_on: false,
+            raging: false,
             floor_level: 0,
             object_type: None,
             main_hand: None,
@@ -368,6 +371,7 @@ mod tests {
             is_official_npc: false,
             torch_on: false,
             radiance_on: false,
+            raging: false,
             floor_level: 0,
             object_type: None,
             main_hand: None,
@@ -428,6 +432,7 @@ mod tests {
             is_official_npc: false,
             torch_on: true,
             radiance_on: true,
+            raging: false,
             floor_level: 0,
             object_type: None,
             main_hand: None,

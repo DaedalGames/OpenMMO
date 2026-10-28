@@ -63,6 +63,7 @@ interface PlayerBase {
   mount?: MountKind | null
   torchOn?: boolean
   radianceOn?: boolean
+  raging?: boolean
   /** Soaked, so nearby clients draw wet footprints (doc/DEBUFF.md). */
   wet?: boolean
   /** Shown title id (doc/TITLES.md). */

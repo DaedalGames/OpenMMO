@@ -1365,3 +1365,222 @@ async fn auscultation_serializes_simultaneous_casts_and_releases_cooldown_after_
     examine(&gs, None, Some(pid("target"))).await;
     inspection(&mut rx);
 }
+
+const RAGE: AbilityId = AbilityId::Rage;
+
+async fn add_rage_player(gs: &GameState, name: &str, character: i64) -> DirectRx {
+    let rx = add_ward_player(gs, name, 0.0, character).await;
+    gs.players.write().await.get_mut(&pid(name)).unwrap().class = CharacterClass::Barbarian;
+    rx
+}
+
+#[tokio::test(start_paused = true)]
+async fn rage_spends_one_mana_lowers_guard_and_expires_after_ten_seconds() {
+    let gs = make_test_game_state("rage_cast");
+    let mut rx = add_rage_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    gs.remove_dirty(&id).await;
+    gs.use_ability(&id, RAGE).await;
+    assert_eq!(gs.mana.read().await[&id].mana, 14);
+    assert!(gs.dirty_players.read().await.contains(&id));
+    assert_eq!(gs.effective_guard(&id).await, 29);
+    let updates = drain(&mut rx);
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::AbilityUsed { ability, targets, .. } if *ability == RAGE && targets == &vec![id])));
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::BuffUpdate { buffs } if buffs.iter().any(|b| b.ability == RAGE))));
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::PlayerRageToggled { player_id, enabled: true } if *player_id == id)));
+    assert!(gs.players.read().await[&id].raging);
+    tokio::time::advance(Duration::from_millis(9_999)).await;
+    assert_eq!(gs.effective_guard(&id).await, 29);
+    tokio::time::advance(Duration::from_millis(1)).await;
+    assert_eq!(gs.effective_guard(&id).await, 31);
+    gs.tick_buffs().await;
+    let updates = drain(&mut rx);
+    assert!(updates
+        .iter()
+        .any(|m| matches!(m, ServerMessage::BuffUpdate { buffs } if buffs.is_empty())));
+    assert!(updates
+        .iter()
+        .any(|m| matches!(m, ServerMessage::PlayerRageToggled { enabled: false, .. })));
+    assert!(!gs.players.read().await[&id].raging);
+}
+
+#[tokio::test]
+async fn rage_is_visible_to_nearby_players_and_clears_on_weapon_loss() {
+    let gs = make_test_game_state("rage_visible");
+    add_rage_player(&gs, "caster", 1).await;
+    let mut watcher = add_ward_player(&gs, "watcher", 3.0, 2).await;
+    let id = pid("caster");
+    gs.use_ability(&id, RAGE).await;
+    assert!(drain(&mut watcher).iter().any(|m| matches!(m,
+        ServerMessage::PlayerRageToggled { player_id, enabled: true } if *player_id == id)));
+    gs.unequip_item(&id, EquipSlot::MainHand).await;
+    assert!(drain(&mut watcher).iter().any(|m| matches!(m,
+        ServerMessage::PlayerRageToggled { player_id, enabled: false } if *player_id == id)));
+}
+
+#[tokio::test]
+async fn rage_rejects_other_classes_missing_melee_weapon_and_mana_without_cost() {
+    let gs = make_test_game_state("rage_requirements");
+    let mut rx = add_rage_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    let expect_rejected = |rx: &mut DirectRx, reason| {
+        let responses = drain(rx);
+        assert!(responses.iter().any(|m| matches!(m,
+            ServerMessage::AbilityRejected { ability, reason: actual } if *ability == RAGE && *actual == reason)));
+        assert!(!responses
+            .iter()
+            .any(|m| matches!(m, ServerMessage::AbilityUsed { .. })));
+    };
+
+    gs.players.write().await.get_mut(&id).unwrap().class = CharacterClass::Knight;
+    gs.use_ability(&id, RAGE).await;
+    expect_rejected(&mut rx, AbilityRejectReason::Unavailable);
+    gs.players.write().await.get_mut(&id).unwrap().class = CharacterClass::Barbarian;
+
+    for weapon in [Some("bow"), Some("torch"), None] {
+        let mut inventories = gs.inventories.write().await;
+        let inv = inventories.get_mut(&id).unwrap();
+        inv.equipped.remove(&EquipSlot::MainHand);
+        if let Some(weapon) = weapon {
+            inv.equipped
+                .insert(EquipSlot::MainHand, bag_item(5, weapon, 1));
+        }
+        drop(inventories);
+        gs.use_ability(&id, RAGE).await;
+        expect_rejected(&mut rx, AbilityRejectReason::Equipment);
+    }
+
+    gs.inventories
+        .write()
+        .await
+        .get_mut(&id)
+        .unwrap()
+        .equipped
+        .insert(EquipSlot::MainHand, bag_item(5, "great_sword", 1));
+    gs.mana.write().await.get_mut(&id).unwrap().mana = 0;
+    gs.use_ability(&id, RAGE).await;
+    expect_rejected(&mut rx, AbilityRejectReason::NotEnoughMana);
+    assert!(!gs.abilities.read().await.raging(&id));
+
+    gs.mana.write().await.get_mut(&id).unwrap().mana = 1;
+    gs.use_ability(&id, RAGE).await;
+    assert_eq!(gs.mana.read().await[&id].mana, 0);
+    assert!(gs.abilities.read().await.raging(&id));
+}
+
+#[tokio::test(start_paused = true)]
+async fn rage_has_a_twenty_second_character_cooldown() {
+    let gs = make_test_game_state("rage_cooldown");
+    let mut rx = add_rage_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    tokio::join!(gs.use_ability(&id, RAGE), gs.use_ability(&id, RAGE));
+    assert_eq!(gs.mana.read().await[&id].mana, 14);
+    tokio::time::advance(Duration::from_secs(19)).await;
+    drain(&mut rx);
+    gs.use_ability(&id, RAGE).await;
+    rejected(&mut rx, AbilityRejectReason::Cooldown);
+    assert_eq!(gs.mana.read().await[&id].mana, 14);
+    gs.remove_player(&id).await;
+    let mut rx = add_rage_player(&gs, "caster", 1).await;
+    gs.use_ability(&id, RAGE).await;
+    rejected(&mut rx, AbilityRejectReason::Cooldown);
+    tokio::time::advance(Duration::from_secs(1)).await;
+    gs.use_ability(&id, RAGE).await;
+    assert!(gs.abilities.read().await.raging(&id));
+}
+
+#[tokio::test]
+async fn rage_guard_penalty_comes_off_the_warded_guard() {
+    let gs = make_test_game_state("rage_with_ward");
+    add_rage_player(&gs, "barbarian", 1).await;
+    add_ward_player(&gs, "knight", 1.0, 2).await;
+    party(&gs, "knight", "barbarian").await;
+    gs.use_ability(&pid("knight"), WARD).await;
+    assert_eq!(gs.effective_guard(&pid("barbarian")).await, 34);
+    gs.use_ability(&pid("barbarian"), RAGE).await;
+    assert_eq!(gs.effective_guard(&pid("barbarian")).await, 32);
+}
+
+#[tokio::test]
+async fn rage_survives_melee_swaps_but_ends_without_a_melee_weapon() {
+    let gs = make_test_game_state("rage_weapon_loss");
+    let mut rx = add_rage_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    {
+        let mut inventories = gs.inventories.write().await;
+        let bag = &mut inventories.get_mut(&id).unwrap().bag;
+        bag.push(bag_item(5, "spear", 1));
+        bag.push(bag_item(6, "bow", 1));
+    }
+    gs.use_ability(&id, RAGE).await;
+    gs.equip_item(&id, 5).await;
+    assert!(gs.abilities.read().await.raging(&id));
+    drain(&mut rx);
+    gs.equip_item(&id, 6).await;
+    assert!(!gs.abilities.read().await.raging(&id));
+    assert!(drain(&mut rx)
+        .iter()
+        .any(|m| matches!(m, ServerMessage::BuffUpdate { buffs } if buffs.is_empty())));
+
+    let gs = make_test_game_state("rage_weapon_unequip");
+    add_rage_player(&gs, "caster", 1).await;
+    gs.use_ability(&id, RAGE).await;
+    gs.unequip_item(&id, EquipSlot::OffHand).await;
+    assert!(gs.abilities.read().await.raging(&id));
+    gs.unequip_item(&id, EquipSlot::MainHand).await;
+    assert!(!gs.abilities.read().await.raging(&id));
+}
+
+#[tokio::test]
+async fn rage_ends_on_death() {
+    let gs = make_test_game_state("rage_death");
+    add_rage_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    gs.use_ability(&id, RAGE).await;
+    gs.players.write().await.get_mut(&id).unwrap().health = 0;
+    gs.on_player_died(&id, "test").await;
+    assert!(!gs.abilities.read().await.raging(&id));
+    assert_eq!(gs.effective_guard(&id).await, 31);
+}
+
+#[tokio::test]
+async fn rage_adds_level_scaled_damage_to_melee_hits() {
+    // Level 50, STR 10, 1d4 dagger: a plain hit deals at most 8 even when
+    // critical; Rage adds +8, so a raging hit deals at least 9.
+    for raging in [false, true] {
+        let mut hits = 0;
+        for attempt in 0..12 {
+            let gs = make_test_game_state(&format!("rage_damage_{raging}_{attempt}"));
+            add_rage_player(&gs, "caster", 1).await;
+            let id = pid("caster");
+            gs.players.write().await.get_mut(&id).unwrap().level = 50;
+            gs.inventories
+                .write()
+                .await
+                .get_mut(&id)
+                .unwrap()
+                .equipped
+                .insert(EquipSlot::MainHand, bag_item(1, "dagger", 1));
+            add_mark_target(&gs, "target", 1.0).await;
+            if raging {
+                gs.use_ability(&id, RAGE).await;
+                assert!(gs.abilities.read().await.raging(&id));
+            }
+            gs.player_attack(&id, "target".to_owned(), None).await;
+            let damage = 1000 - gs.monsters.read().await["target"].health;
+            if damage == 0 {
+                continue;
+            }
+            hits += 1;
+            if raging {
+                assert!(damage >= 9, "raging hit dealt {damage}");
+            } else {
+                assert!(damage <= 8, "plain hit dealt {damage}");
+            }
+        }
+        assert!(hits > 0);
+    }
+}

@@ -105,18 +105,14 @@ impl SharedState {
         let player_attack = double_slash || matches!(&msg, ClientMessage::PlayerAttack { .. });
         let fishing_cast = matches!(&msg, ClientMessage::FishingCast { .. });
         let fishing_stop = matches!(&msg, ClientMessage::FishingStop);
-        if matches!(
-            &msg,
-            ClientMessage::UseAbility {
-                ability: AbilityId::GuardianWard,
-                ..
-            }
-        ) {
-            let wait = self.ability_wait(AbilityId::GuardianWard);
-            if !wait.is_zero() {
+        if let ClientMessage::UseAbility { ability, .. } = &msg {
+            let wait = self.ability_wait(*ability);
+            if let Some(info) = super::buff_ability(*ability).filter(|_| !wait.is_zero()) {
                 self.push_agent_event(format!(
-                    "[GuardianWardFailed] Wait {:.1}s before casting Guardian Ward again.",
-                    wait.as_secs_f32()
+                    "[{}Failed] Wait {:.1}s before casting {} again.",
+                    info.tag,
+                    wait.as_secs_f32(),
+                    info.name
                 ));
                 return Ok(());
             }

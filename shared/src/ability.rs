@@ -4,6 +4,10 @@ pub const GUARDIAN_WARD_RADIUS: f32 = 20.0;
 pub const GUARDIAN_WARD_DURATION_MS: u64 = 60_000;
 pub const GUARDIAN_WARD_COOLDOWN_MS: u64 = 45_000;
 pub const GUARDIAN_WARD_MANA_COST: u32 = 2;
+pub const RAGE_DURATION_MS: u64 = 10_000;
+pub const RAGE_COOLDOWN_MS: u64 = 20_000;
+pub const RAGE_MANA_COST: u32 = 1;
+pub const RAGE_GUARD_PENALTY: i32 = 2;
 pub const RADIANCE_DURATION_MS: u64 = 120_000;
 pub const RADIANCE_COOLDOWN_MS: u64 = 800;
 pub const BOW_MARK_DURATION_MS: u64 = 5_000;
@@ -19,15 +23,21 @@ pub enum AbilityId {
     BowMark,
     DaggerDoubleSlash,
     Auscultation,
+    Rage,
 }
 
 impl AbilityId {
     pub fn mana_cost(self) -> u32 {
         match self {
             Self::GuardianWard => GUARDIAN_WARD_MANA_COST,
+            Self::Rage => RAGE_MANA_COST,
             _ => 0,
         }
     }
+}
+
+pub fn rage_damage_bonus(level: u32) -> i32 {
+    3 + (level / 10) as i32
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

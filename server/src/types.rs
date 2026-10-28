@@ -46,6 +46,7 @@ pub fn new_player(
         is_official_npc,
         torch_on: false,
         radiance_on: false,
+        raging: false,
         wet: false,
         title: None,
         floor_level: 0,
