@@ -162,6 +162,7 @@
     updateCameraWithOffset as applyCameraOffset,
     updateOrthographicFrustum,
   } from './game-scene/camera-utils'
+  import { applyCameraKick } from '../effects/camera-kick'
   import {
     type TerrainTile,
     terrainRetainTiles,
@@ -898,6 +899,13 @@
       // Update camera with preserved offset
       const cameraUpdateStart = performance.now()
       updateCameraWithOffset(cameraOffset)
+      if (camera && currentPlayer)
+        applyCameraKick(
+          camera,
+          currentPlayer.position,
+          viewportSize.width,
+          viewportSize.height
+        )
       loopProfiler.record('cameraUpdate', performance.now() - cameraUpdateStart)
 
       // Compute sun snapshot once per frame (reused by lighting + water)

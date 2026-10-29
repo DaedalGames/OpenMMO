@@ -383,3 +383,93 @@ async fn llm_primal_roar_dispatches_and_waits_out_its_cooldown() {
         })
     ));
 }
+
+fn valkyrie_state() -> (SharedState, mpsc::Receiver<ClientMessage>) {
+    let (mut state, rx) = knight_state();
+    state.self_player.as_mut().unwrap().class = CharacterClass::Valkyrie;
+    state.self_equipped.clear();
+    equip(&mut state, EquipSlot::MainHand, "worn_iron_sword");
+    (state, rx)
+}
+
+#[tokio::test(start_paused = true)]
+async fn valhalla_charge_prompt_matches_class_one_handed_weapon_and_range() {
+    let (mut state, _rx) = valkyrie_state();
+    let prompt = state.format_world_state();
+    assert!(prompt.contains("Valhalla Charge: ready."));
+    assert!(prompt.contains(
+        r#"{"type": "use_ability", "ability": "valhalla_charge", "target": "<monster id>"}"#
+    ));
+    assert!(prompt.contains("4-10m away"));
+    assert!(prompt.contains("to 60% for 3s (1.5s for bosses). Cooldown 10s."));
+    for (main, ready) in [
+        ("spear", true),
+        ("steel_longsword", true),
+        ("great_sword", false),
+        ("mace", false),
+    ] {
+        equip(&mut state, EquipSlot::MainHand, main);
+        assert_eq!(
+            state
+                .format_world_state()
+                .contains("Valhalla Charge: ready."),
+            ready,
+            "{main}"
+        );
+    }
+    state.self_player.as_mut().unwrap().class = CharacterClass::Barbarian;
+    assert!(!state.format_world_state().contains("Valhalla Charge:"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn llm_valhalla_charge_sends_its_target_and_follows_the_dash() {
+    let (state, mut rx) = valkyrie_state();
+    let state = Arc::new(Mutex::new(state));
+    let response =
+        r#"{"actions":[{"type":"use_ability","ability":"valhalla_charge","target":"m21"}]}"#;
+    handle_response(&state, response, &None, &None, false).await;
+    assert!(matches!(
+        rx.try_recv(),
+        Ok(ClientMessage::UseAbility {
+            ability: AbilityId::ValhallaCharge,
+            monster_id: Some(id),
+            target_player_id: None,
+        }) if id == "m21"
+    ));
+    let mut state = state.lock().await;
+    let player = state.self_player.clone().unwrap();
+    let landed = onlinerpg_shared::Position {
+        x: 5.0,
+        y: 0.0,
+        z: 3.0,
+    };
+    let charged = ServerMessage::PlayerCharged {
+        player_id: player.id,
+        monster_id: "m21".into(),
+        from: player.position,
+        position: landed,
+        rotation: 1.0,
+        floor_level: 0,
+        duration_ms: 400,
+    };
+    assert!(prompt::format_event(&state, &charged)
+        .unwrap()
+        .starts_with("[ValhallaCharge] You charge m21 and land at (5.0, 3.0)"));
+    state.push_event(charged);
+    assert_eq!(state.self_player.as_ref().unwrap().position, landed);
+    for (reason, expected) in [
+        (AbilityRejectReason::TooClose, "too close"),
+        (AbilityRejectReason::Blocked, "path is blocked"),
+        (AbilityRejectReason::Equipment, "one-handed sword or spear"),
+    ] {
+        let line = prompt::format_event(
+            &state,
+            &ServerMessage::AbilityRejected {
+                ability: AbilityId::ValhallaCharge,
+                reason,
+            },
+        )
+        .unwrap();
+        assert!(line.starts_with("[ValhallaChargeFailed]") && line.contains(expected));
+    }
+}

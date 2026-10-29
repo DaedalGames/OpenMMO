@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PlayerInteraction } from '../network/networkTypes'
+  import type { PlayerCharge, PlayerInteraction } from '../network/networkTypes'
   import { ServerMovement } from './player-control/server-movement'
   import { syncOwnFloor, ownPlayerFloor } from '../network/ownFloor'
   import { translate } from '../i18n'
@@ -56,7 +56,16 @@
     AUSCULTATION,
     FISHING,
     isAbilityAvailable,
+    VALHALLA_CHARGE,
   } from '../data/abilities'
+  import { beginAbility, isAbilityPending } from '../stores/abilityStore'
+  import {
+    cancelChargeTargeting,
+    chargeDashPose,
+    chargeTargeting,
+    type ChargeDash,
+  } from '../stores/chargeStrikeStore'
+  import { kickCamera } from '../effects/camera-kick'
   import {
     playPropSound,
     preloadFishingSounds,
@@ -535,7 +544,7 @@
   }
 
   function stopAndFace(rotation: number) {
-    if ($localTeleportActive) return
+    if (serverHoldsPosition()) return
     serverMovement.clear()
     networkManager.sendPlayerFace(rotation)
   }
@@ -867,6 +876,72 @@
   }
 
   let chaseGoal: Position | null = null
+  let chargeDash: ChargeDash | null = null
+
+  function serverHoldsPosition() {
+    return $localTeleportActive || chargeDash !== null
+  }
+
+  /** The server moved us: drop every local plan to walk somewhere. */
+  function dropLocalMovement() {
+    playerControlMachine.clearQueuedEvents()
+    chaseGoal = null
+    abandonLocalActions()
+    pendingExit = null
+    serverMovement.clear(false)
+    keyboardSender.reset()
+    cancelAutoTravel()
+    if (
+      playerControlMachine.stateName === 'moving' ||
+      playerControlMachine.stateName === 'keyboard_moving'
+    )
+      transitionTo('idle')
+  }
+
+  function beginChargeDash(charge: PlayerCharge) {
+    dropLocalMovement()
+    officialPosition = { ...charge.position }
+    chargeDash = {
+      from: charge.from,
+      to: charge.position,
+      rotation: charge.rotation,
+      startedAt: performance.now(),
+      durationMs: charge.duration_ms,
+    }
+    combatController.restartCombat(charge.monster_id)
+    startCombatAttack(charge.monster_id)
+  }
+
+  function advanceChargeDash(dash: ChargeDash) {
+    if (!currentPlayer || currentPlayer.health <= 0) {
+      chargeDash = null
+      return
+    }
+    const { position, speed, done } = chargeDashPose(dash, performance.now())
+    playerRotation = dash.rotation
+    currentSpeed = speed
+    writePlayerPosition(position, dash.rotation)
+    if (!done) {
+      setPlayerState({
+        ...playerState,
+        state: 'moving',
+        speed,
+        rotation: dash.rotation,
+        movementMode: 'run',
+      })
+      return
+    }
+    chargeDash = null
+    kickCamera(dash.rotation)
+    setPlayerState(
+      buildAttackState(
+        playerState,
+        dash.rotation,
+        combatController.attackCounter
+      )
+    )
+    transitionTo('attacking')
+  }
 
   function updatePlayerMovement(deltaTime: number) {
     if (!currentPlayer) return
@@ -930,6 +1005,7 @@
       case 'chasing':
         if (
           result.newTarget &&
+          !isAbilityPending(VALHALLA_CHARGE.id) &&
           (!chaseGoal ||
             travelDistance(chaseGoal, result.newTarget) > 1.5 ||
             !serverMovement.active)
@@ -1191,7 +1267,7 @@
       inputHandler.hasKeysPressed ||
       currentPlayer?.id !== interaction.player_id ||
       currentPlayer.health <= 0 ||
-      $localTeleportActive
+      serverHoldsPosition()
     )
       return
     enterInteraction(
@@ -1839,23 +1915,28 @@
     })
   }
 
+  /** The monster or player under a targeting click. */
+  function actorAt(event: MouseEvent, playerMeshes: THREE.Object3D[]) {
+    return inputHandler.processHover(event, {
+      camera,
+      objectMeshes: [],
+      tipHatMeshes: [],
+      stallMeshes: [],
+      mealMeshes: [],
+      propMeshes: [],
+      groundItemMeshes: [],
+      monsterMeshes: monsterHoverMeshes,
+      playerMeshes,
+      isHoverable,
+      ownerName,
+    })
+  }
+
   function handleCanvasClickIntent(event: MouseEvent) {
-    if ($localTeleportActive) return
+    if (serverHoldsPosition()) return
     if (get(inspectionTargeting)) {
       if (event.button !== 0) return
-      const hover = inputHandler.processHover(event, {
-        camera,
-        objectMeshes: [],
-        tipHatMeshes: [],
-        stallMeshes: [],
-        mealMeshes: [],
-        propMeshes: [],
-        groundItemMeshes: [],
-        monsterMeshes: monsterHoverMeshes,
-        playerMeshes: playerHoverMeshes,
-        isHoverable,
-        ownerName,
-      })
+      const hover = actorAt(event, playerHoverMeshes)
       const target = takeInspectionTarget(
         hover?.kind === 'monster'
           ? { kind: 'monster', monster_id: hover.monsterId }
@@ -1870,6 +1951,15 @@
           target.kind === 'monster' ? target.monster_id : null,
           target.kind === 'player' ? target.player_id : null
         )
+      return
+    }
+    if (get(chargeTargeting)) {
+      if (event.button !== 0) return
+      const hover = actorAt(event, [])
+      if (hover?.kind !== 'monster') return
+      cancelChargeTargeting()
+      if (beginAbility(VALHALLA_CHARGE.id))
+        networkManager.sendUseAbility(VALHALLA_CHARGE.id, hover.monsterId)
       return
     }
     if (event.button === 0 && $cameraRotationEnabled && !get(fishingTargeting))
@@ -1911,7 +2001,7 @@
 
   function handleCanvasDragMove(event: MouseEvent) {
     if (
-      $localTeleportActive ||
+      serverHoldsPosition() ||
       !currentPlayer ||
       currentPlayer.health <= 0 ||
       $cameraRotationEnabled ||
@@ -1921,6 +2011,7 @@
       get(estateFurnitureEditorActive) ||
       get(inspectionTargeting) ||
       get(fishingTargeting) ||
+      get(chargeTargeting) ||
       inputHandler.hasKeysPressed
     )
       return
@@ -2029,7 +2120,7 @@
   }
 
   function dispatchPlayerControlEvent(event: PlayerControlEvent) {
-    if ($localTeleportActive && event.type === 'canvas_intent') return
+    if (serverHoldsPosition() && event.type === 'canvas_intent') return
     // A fresh click supersedes the armed walk-up action, even one that starts
     // no movement of its own (a cast, an in-reach interaction). A click that
     // hit nothing at all shouldn't cancel the walk the player is already on.
@@ -2066,6 +2157,10 @@
     options: PlayerControlUpdateOptions
   ) {
     if ($localTeleportActive) return
+    if (chargeDash) {
+      advanceChargeDash(chargeDash)
+      return
+    }
     if (options.editorMode) {
       if (serverMovement.active || serverMovement.stopping) stopMovement()
       cancelAutoTravel()
@@ -2214,11 +2309,12 @@
     )
     const canvasCursor = renderer.domElement.style.cursor
     const unsubscribeTargeting = derived(
-      [inspectionTargeting, fishingTargeting],
-      (states) => states.some(Boolean)
-    ).subscribe((active) => {
-      renderer.domElement.style.cursor = active ? 'crosshair' : canvasCursor
-      if (!active || !currentPlayer) return
+      [inspectionTargeting, fishingTargeting, chargeTargeting],
+      ([inspecting, fishing, charging]) =>
+        inspecting || fishing ? 'stop' : charging ? 'aim' : null
+    ).subscribe((mode) => {
+      renderer.domElement.style.cursor = mode ? 'crosshair' : canvasCursor
+      if (mode !== 'stop' || !currentPlayer) return
       cancelAutoTravel()
       combatController.cancelCombat()
       clearPropSwingTimers()
@@ -2314,7 +2410,11 @@
     canvas.addEventListener('pointerleave', handlePointerLeave)
 
     const unsubscribeMovePath = networkManager.movePath.on((path) => {
-      if (!currentPlayer || currentPlayer.health <= 0 || $localTeleportActive) {
+      if (
+        !currentPlayer ||
+        currentPlayer.health <= 0 ||
+        serverHoldsPosition()
+      ) {
         serverMovement.clear(false)
         return
       }
@@ -2327,7 +2427,7 @@
         if (
           !currentPlayer ||
           currentPlayer.health <= 0 ||
-          $localTeleportActive
+          serverHoldsPosition()
         ) {
           serverMovement.clear(false)
           return
@@ -2397,28 +2497,19 @@
         void applyServerInteraction(interaction)
       }
     )
+    const unsubscribeCharged = networkManager.playerCharged.on(beginChargeDash)
     const unsubscribeRelocated = networkManager.playerRelocated.on(
       (position, rotation) => {
+        chargeDash = null
         interactionRevision++
-        playerControlMachine.clearQueuedEvents()
         clearCombat()
-        chaseGoal = null
-        abandonLocalActions()
-        pendingExit = null
         dungeonManager.clearPendingBreak()
         dungeonManager.clearPendingOpen()
-        serverMovement.clear(false)
-        keyboardSender.reset()
+        dropLocalMovement()
         officialPosition = { ...position }
         playerRotation = rotation
         writePlayerPosition(position, rotation)
-        if (
-          playerControlMachine.stateName === 'moving' ||
-          playerControlMachine.stateName === 'keyboard_moving' ||
-          playerControlMachine.stateName === 'attacking'
-        )
-          transitionTo('idle')
-        cancelAutoTravel()
+        if (playerControlMachine.stateName === 'attacking') transitionTo('idle')
       }
     )
     const unsubscribeNetworkEvents = subscribePlayerNetworkEvents({
@@ -2438,6 +2529,7 @@
       unsubscribeTargeting()
       cancelInspection()
       cancelFishingTargeting()
+      cancelChargeTargeting()
       renderer.domElement.style.cursor = canvasCursor
       unsubscribeTravel()
       unsubscribeTeleport()
@@ -2458,6 +2550,7 @@
       interactionRevision++
       unsubscribeInteraction()
       unsubscribeRelocated()
+      unsubscribeCharged()
       unsubscribeNetworkEvents()
       playerControlMachine.dispose()
       clearStandUpTimer()

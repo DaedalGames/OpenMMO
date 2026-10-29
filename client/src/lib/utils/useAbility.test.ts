@@ -3,6 +3,7 @@ import { get, writable } from 'svelte/store'
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest'
 import { initSharedWasm, testItem } from './ability.fixture'
 import { networkManager } from '../network/socket'
+import { combatController } from '../managers/combatController'
 import { abilityCooldowns, resetAbilities } from '../stores/abilityStore'
 import {
   acknowledgeDaggerSkill,
@@ -23,6 +24,7 @@ import {
   resetQuickslots,
 } from '../stores/quickslotStore'
 import { useAbility } from './useAbility'
+import { chargeTargeting } from '../stores/chargeStrikeStore'
 import { FISHING, getAbility, isAbilityAvailable } from '../data/abilities'
 import {
   fishingTargeting,
@@ -59,6 +61,7 @@ beforeAll(initSharedWasm)
 
 beforeEach(() => {
   vi.clearAllMocks()
+  chargeTargeting.set(false)
   vi.useFakeTimers()
   vi.setSystemTime(1000)
   resetAbilities()
@@ -268,4 +271,43 @@ it('switches between fishing and inspection targeting and resets on logout', () 
   useAbility(FISHING.id)
   resetFishingStore()
   expect(get(fishingTargeting)).toBe(false)
+})
+
+it('sends Valhalla Charge at the targeted monster with a one-handed sword or spear', () => {
+  updatePlayer({ characterClass: 'valkyrie' })
+  const target = vi.mocked(combatController.getAbilityTarget)
+  target.mockReturnValue(null)
+  for (const [weapon, allowed] of [
+    ['great_sword', false],
+    ['mace', false],
+    ['spear', true],
+  ] as const) {
+    inventoryStore.set({ bag: [], equipped: { main_hand: testItem(weapon) } })
+    useAbility('valhalla_charge')
+    if (!allowed)
+      expect(reportSkillFailure).toHaveBeenLastCalledWith(
+        'Equip a one-handed sword or spear to use Valhalla Charge.'
+      )
+    expect(get(chargeTargeting)).toBe(allowed)
+  }
+  useAbility('valhalla_charge')
+  expect(get(chargeTargeting)).toBe(false)
+  useAbility('valhalla_charge')
+  useAbility('auscultation')
+  expect(get(chargeTargeting)).toBe(false)
+  expect(networkManager.sendUseAbility).not.toHaveBeenCalled()
+  target.mockReturnValue('m21')
+  useAbility('valhalla_charge')
+  expect(get(chargeTargeting)).toBe(false)
+  expect(networkManager.sendUseAbility).toHaveBeenCalledExactlyOnceWith(
+    'valhalla_charge',
+    'm21'
+  )
+  updatePlayer({ characterClass: 'knight' })
+  expect(isAbilityAvailable('valhalla_charge', 'knight')).toBe(false)
+  expect(isAbilityAvailable('valhalla_charge', 'valkyrie')).toBe(true)
+  const icon = getAbility('valhalla_charge')!.icon
+  expect(
+    readFileSync(new URL(`../../../public${icon}`, import.meta.url)).length
+  ).toBeGreaterThan(0)
 })

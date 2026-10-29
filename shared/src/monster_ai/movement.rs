@@ -355,7 +355,7 @@ impl MonsterBrain {
         let dx = shortest_world_delta_x(self.position.x, wp_x);
         let dz = wp_z - self.position.z;
         let dist = (dx * dx + dz * dz).sqrt();
-        let step = self.move_speed * delta_ms / 1000.0;
+        let step = self.step_speed() * delta_ms / 1000.0;
         let snap = dist <= step;
         let (nx, nz) = if snap {
             (wp_x, wp_z)

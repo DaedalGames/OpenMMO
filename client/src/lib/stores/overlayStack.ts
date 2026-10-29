@@ -35,6 +35,7 @@ export type OverlayId =
   | 'inspection'
   | 'inspectionTarget'
   | 'fishingTarget'
+  | 'chargeTarget'
   | 'weatherRadar'
   | 'operatorNotice'
 
@@ -72,6 +73,7 @@ const OVERLAYS: Record<OverlayId, { layer: number; close?: () => void }> = {
   inspection: { layer: 0 },
   inspectionTarget: { layer: 7 },
   fishingTarget: { layer: 7 },
+  chargeTarget: { layer: 7 },
   operatorNotice: { layer: 8 },
 }
 

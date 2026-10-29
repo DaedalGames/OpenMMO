@@ -114,6 +114,29 @@ pub fn primal_roar_stats() -> Result<JsValue, JsError> {
     })
 }
 
+#[derive(Serialize)]
+struct ValhallaChargeStats {
+    min_range_m: f32,
+    max_range_m: f32,
+    slow_percent: u32,
+    slow_ms: u32,
+    short_slow_ms: u32,
+    cooldown_ms: u32,
+}
+
+#[wasm_bindgen]
+pub fn valhalla_charge_stats() -> Result<JsValue, JsError> {
+    use crate::ability::*;
+    to_js(&ValhallaChargeStats {
+        min_range_m: VALHALLA_CHARGE_MIN_RANGE,
+        max_range_m: VALHALLA_CHARGE_MAX_RANGE,
+        slow_percent: ((1.0 - VALHALLA_CHARGE_SLOW_MULT) * 100.0).round() as u32,
+        slow_ms: VALHALLA_CHARGE_SLOW_MS as u32,
+        short_slow_ms: VALHALLA_CHARGE_SHORT_SLOW_MS as u32,
+        cooldown_ms: VALHALLA_CHARGE_COOLDOWN_MS as u32,
+    })
+}
+
 #[wasm_bindgen]
 pub fn fishing_is_stern_cast(dx: f32, dz: f32, boat_rotation: f32) -> bool {
     crate::fishing::is_stern_cast(dx, dz, boat_rotation)

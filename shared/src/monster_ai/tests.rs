@@ -234,6 +234,36 @@ fn a_roar_targets_but_does_not_stagger_an_immune_or_casting_brain() {
 }
 
 #[test]
+fn a_slow_shortens_each_step_until_it_wears_off() {
+    let mut brain = make_brain();
+    brain.move_speed = 5.0;
+    brain.waypoints = vec![PathWaypoint {
+        x: 100.0,
+        z: 10.0,
+        floor: 0,
+    }];
+    brain.handle_slow(0.6, 3_000.0);
+    brain.follow_path(1_000.0);
+    assert!((brain.position.x - 13.0).abs() < 1e-4);
+    brain.advance_timers(1_999.0);
+    brain.handle_slow(0.6, 3_000.0);
+    brain.advance_timers(2_999.0);
+    brain.follow_path(1_000.0);
+    assert!((brain.position.x - 16.0).abs() < 1e-4);
+    brain.advance_timers(1.0);
+    brain.follow_path(1_000.0);
+    assert!((brain.position.x - 21.0).abs() < 1e-4);
+}
+
+#[test]
+fn a_dead_brain_takes_no_slow() {
+    let mut brain = make_brain();
+    brain.handle_death();
+    brain.handle_slow(0.6, 3_000.0);
+    assert_eq!(brain.slow_left_ms, 0.0);
+}
+
+#[test]
 fn handle_hit_death() {
     let mut brain = make_brain();
 

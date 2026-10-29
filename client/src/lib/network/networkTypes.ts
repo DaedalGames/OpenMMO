@@ -614,6 +614,16 @@ export type MovePath = {
   speed: number
   termination: 'reached' | 'unreachable' | 'node_limit'
 }
+/** Valhalla Charge: the server already has the charger at `position`. */
+export type PlayerCharge = {
+  player_id: number
+  monster_id: string
+  from: Position
+  position: Position
+  rotation: number
+  floor_level: number
+  duration_ms: number
+}
 export type MoveProgress = {
   request_id: number
   server_time_ms: number

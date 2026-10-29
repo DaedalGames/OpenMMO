@@ -156,6 +156,7 @@ async fn double_slash_request(interrupt: bool) {
                 ServerMessage::PlayerAttacked {
                     player_id,
                     dagger_strike: Some(strike),
+                    charge: false,
                     ..
                 } if player_id == id => {
                     assert!(started);

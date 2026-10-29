@@ -3,7 +3,7 @@ import {
   max_cast_distance_m,
 } from '../wasm/onlinerpg_shared'
 import { translate } from '../i18n'
-import { getItemDef } from './itemDefs'
+import { getItemDef, isTwoHanded } from './itemDefs'
 import { DAGGER_SKILL } from './daggerSkill'
 import type {
   CharacterClass,
@@ -108,6 +108,17 @@ export const PRIMAL_ROAR = {
   buffDescription: 'Temporary HP takes damage first',
 } as const
 
+export const VALHALLA_CHARGE = {
+  get manaCost() {
+    return ability_mana_cost('valhalla_charge')
+  },
+  id: 'valhalla_charge',
+  target: 'monster',
+  name: 'Valhalla Charge',
+  icon: '/icons/skills/valhalla-charge.png',
+  description: 'Charge a monster, strike it once, and slow it down.',
+} as const
+
 export const BUFF_ABILITIES = [
   GUARDIAN_WARD,
   RAGE,
@@ -119,6 +130,7 @@ export type AbilityId =
   | (typeof BUFF_ABILITIES)[number]['id']
   | typeof DOUBLE_SLASH.id
   | typeof AUSCULTATION.id
+  | typeof VALHALLA_CHARGE.id
 export type AbilityTimer = {
   ability: AbilityId
   remaining_ms: number
@@ -185,6 +197,7 @@ export const ABILITIES = [
   GUARDIAN_WARD,
   RAGE,
   PRIMAL_ROAR,
+  VALHALLA_CHARGE,
   DOUBLE_SLASH,
   RADIANCE,
   TRUE_AIM,
@@ -203,7 +216,8 @@ export function isAbilityAvailable(
     (id === DOUBLE_SLASH.id && characterClass === 'rogue') ||
     (id === GUARDIAN_WARD.id && characterClass === 'knight') ||
     (id === RAGE.id && characterClass === 'barbarian') ||
-    (id === PRIMAL_ROAR.id && characterClass === 'caveman')
+    (id === PRIMAL_ROAR.id && characterClass === 'caveman') ||
+    (id === VALHALLA_CHARGE.id && characterClass === 'valkyrie')
   )
 }
 
@@ -232,6 +246,11 @@ export function abilityEquipmentAllowed(
     )
   if (id === RAGE.id)
     return RAGE_WEAPON_TYPES.some((type) => type === weaponType)
+  if (id === VALHALLA_CHARGE.id)
+    return (
+      (weaponType === 'sword' || weaponType === 'spear') &&
+      !isTwoHanded(equipped.main_hand?.item_def_id)
+    )
   return id === RADIANCE.id || guardianWardEquipment(equipped)
 }
 
@@ -249,6 +268,8 @@ export function abilityEquipmentNotMet(id: string) {
   if (id === AUSCULTATION.id)
     return translate('skillFailure.auscultationEquipment')
   if (id === DOUBLE_SLASH.id) return translate('skillFailure.daggerEquipment')
+  if (id === VALHALLA_CHARGE.id)
+    return translate('skillFailure.valhallaChargeEquipment')
   return abilityRequirementsNotMet(abilityDisplayName(id))
 }
 

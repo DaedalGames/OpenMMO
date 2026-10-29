@@ -335,7 +335,9 @@ class MonsterManager {
      *  the quiver — a remote shooter's bag is not visible from here. */
     ammoItemDefId?: string | null,
     daggerSkill = false,
-    critical = false
+    critical = false,
+    /** Valhalla Charge: the blade lands as the dash arrives. */
+    chargeImpactMs?: number
   ) {
     const monster = this.monsters.get(monsterId)
     if (!monster || monster.state === 'dead') return
@@ -388,7 +390,9 @@ class MonsterManager {
       : 0
     monster.impactDelay = ranged
       ? PLAYER_RANGED_IMPACT_DELAY_MS + flightMs
-      : PLAYER_ATTACK_IMPACT_DELAY_MS
+      : chargeImpactMs !== undefined
+        ? Math.max(1, chargeImpactMs)
+        : PLAYER_ATTACK_IMPACT_DELAY_MS
     monster.targetPlayerId = playerId
     monster.isLastHitSuccess = hit
     const weaponMaterial = weaponItemDefId
@@ -417,7 +421,7 @@ class MonsterManager {
       // Every swing that misses whooshes, another player's included.
       playSwordMissSound(
         getMaterialMissSoundUrl(weaponMaterial),
-        SWORD_MISS_DELAY_MS
+        chargeImpactMs ?? SWORD_MISS_DELAY_MS
       )
     }
     if (isLocalPlayerAttack) {
@@ -463,6 +467,22 @@ class MonsterManager {
       monster.stunnedUntil = until
       this.monsters.set(id, { ...monster })
     }
+  }
+
+  handleMonsterSlowed(monsterId: string, moveMult: number, durationMs: number) {
+    const monster = this.monsters.get(monsterId)
+    if (!monster || monster.state === 'dead') return
+    monster.slowedUntil =
+      (globalThis.performance?.now() ?? Date.now()) + durationMs
+    monster.slowMult = moveMult
+  }
+
+  private stepSpeed(monster: MonsterData) {
+    if (monster.slowedUntil === undefined) return monster.moveSpeed
+    if (monster.slowedUntil > performance.now())
+      return monster.moveSpeed * (monster.slowMult ?? 1)
+    monster.slowedUntil = undefined
+    return monster.moveSpeed
   }
 
   /** A killing blow's flinch is `deathPlaysHit`'s call. */
@@ -811,7 +831,7 @@ class MonsterManager {
     const c = monster.syncCorrection
     if (!c) return false
     const rate = this.isMovementState(monster.state)
-      ? monster.moveSpeed * SYNC_CATCHUP_FRACTION
+      ? this.stepSpeed(monster) * SYNC_CATCHUP_FRACTION
       : monster.state === 'hit' || monster.state === 'attack'
         ? SYNC_COMBAT_ABSORB_MPS
         : SYNC_IDLE_ABSORB_MPS
@@ -841,7 +861,7 @@ class MonsterManager {
     monster: MonsterData,
     target: { x: number; y: number; z: number },
     deltaTime: number, // in ms
-    speed = monster.moveSpeed,
+    speed = this.stepSpeed(monster),
     face = true
   ): boolean {
     // Positions are canonical, so a step toward a target across the seam has

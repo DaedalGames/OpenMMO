@@ -21,6 +21,7 @@
   import LevelBadge from './LevelBadge.svelte'
   import TradeWindow from './TradeWindow.svelte'
   import FishingPrompt from './FishingPrompt.svelte'
+  import ChargeTargetPrompt from './ChargeTargetPrompt.svelte'
   import TradeOfferToast from './TradeOfferToast.svelte'
   import PartyInviteToast from './PartyInviteToast.svelte'
   import PlayerTradeWindow from './PlayerTradeWindow.svelte'
@@ -253,6 +254,7 @@
     <InstrumentPanel />
     <NpcContextMenu />
     <FishingPrompt />
+    <ChargeTargetPrompt />
   {/if}
 
   {#if !$mapEditorMode}

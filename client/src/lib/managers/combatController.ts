@@ -94,6 +94,13 @@ export class CombatController {
     return { attackCounter: this._attackCounter, startRequested }
   }
 
+  /** A new attack request even when one on `monsterId` is running, so the
+   *  server's stop for the old one cannot end it. */
+  restartCombat(monsterId: string): CombatStart {
+    this.stopAttack(false)
+    return this.beginCombat(monsterId, true)
+  }
+
   private stopAttack(notifyServer = true) {
     if (!this._attackRequested) return
     this._attackRequested = false

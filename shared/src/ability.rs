@@ -18,6 +18,15 @@ pub const PRIMAL_ROAR_STAGGER_MS: u64 = 3_700;
 pub const PRIMAL_ROAR_DURATION_MS: u64 = 10_000;
 pub const PRIMAL_ROAR_COOLDOWN_MS: u64 = 30_000;
 pub const PRIMAL_ROAR_MANA_COST: u32 = 1;
+pub const VALHALLA_CHARGE_MIN_RANGE: f32 = 4.0;
+pub const VALHALLA_CHARGE_MAX_RANGE: f32 = 10.0;
+pub const VALHALLA_CHARGE_DASH_MS: u64 = 400;
+pub const VALHALLA_CHARGE_SLOW_MULT: f32 = 0.6;
+pub const VALHALLA_CHARGE_SLOW_MS: u64 = 3_000;
+/// For bosses and stagger-immune monsters.
+pub const VALHALLA_CHARGE_SHORT_SLOW_MS: u64 = 1_500;
+pub const VALHALLA_CHARGE_COOLDOWN_MS: u64 = 10_000;
+pub const VALHALLA_CHARGE_MANA_COST: u32 = 1;
 pub const RADIANCE_DURATION_MS: u64 = 120_000;
 pub const RADIANCE_COOLDOWN_MS: u64 = 800;
 pub const BOW_MARK_DURATION_MS: u64 = 5_000;
@@ -35,6 +44,7 @@ pub enum AbilityId {
     Auscultation,
     Rage,
     PrimalRoar,
+    ValhallaCharge,
 }
 
 impl AbilityId {
@@ -43,6 +53,7 @@ impl AbilityId {
             Self::GuardianWard => GUARDIAN_WARD_MANA_COST,
             Self::Rage => RAGE_MANA_COST,
             Self::PrimalRoar => PRIMAL_ROAR_MANA_COST,
+            Self::ValhallaCharge => VALHALLA_CHARGE_MANA_COST,
             _ => 0,
         }
     }
@@ -70,6 +81,8 @@ pub enum AbilityRejectReason {
     Cooldown,
     OutOfRange,
     NotEnoughMana,
+    TooClose,
+    Blocked,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

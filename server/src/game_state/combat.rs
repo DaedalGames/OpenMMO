@@ -205,7 +205,7 @@ pub(super) fn offset_position_at_angle(origin: Position, angle: f32, distance: f
 
 /// Everything the attack roll needs once a `PlayerAttack` request has cleared
 /// every gate in `validate_player_attack`.
-struct PlayerAttackContext {
+pub(super) struct PlayerAttackContext {
     monster_type: String,
     monster_position: Position,
     monster_floor_level: i8,
@@ -302,7 +302,7 @@ impl super::GameState {
         });
     }
 
-    async fn player_attack_interval_ms(&self, player_id: &PlayerId) -> u64 {
+    pub(super) async fn player_attack_interval_ms(&self, player_id: &PlayerId) -> u64 {
         let weapon_interval = self
             .inventories
             .read()
@@ -378,12 +378,29 @@ impl super::GameState {
         remaining.min(next_change.unwrap_or(remaining))
     }
 
-    /// No swing until `ms` from now.
-    pub(super) async fn hold_player_attack(&self, player_id: &PlayerId, ms: u64) {
+    /// No swing until `ms` from now. Returns that moment, for a release.
+    pub(super) async fn hold_player_attack(&self, player_id: &PlayerId, ms: u64) -> u64 {
         let until = Self::now_ms() + ms;
         let mut holds = self.player_attack_holds.write().await;
         let hold = holds.entry(*player_id).or_insert(0);
         *hold = (*hold).max(until);
+        until
+    }
+
+    /// Lift the hold `until` unless a later one replaced it.
+    pub(super) async fn release_player_attack_hold(&self, player_id: &PlayerId, until: u64) {
+        let mut holds = self.player_attack_holds.write().await;
+        if holds.get(player_id) == Some(&until) {
+            holds.remove(player_id);
+        }
+    }
+
+    /// The swing just landed counts as the player's last basic attack.
+    pub(super) async fn restart_player_attack_interval(&self, player_id: &PlayerId) {
+        self.last_player_attacks
+            .write()
+            .await
+            .insert(*player_id, Self::now_ms());
     }
 
     async fn claim_player_attack_window(
@@ -597,7 +614,7 @@ impl super::GameState {
     /// logs, so a new gate can never silently drop a request. Side effect: an
     /// out-of-range swing within provoke range still aggros the monster onto
     /// the attacker.
-    async fn validate_player_attack(
+    pub(super) async fn validate_player_attack(
         &self,
         player_id: &PlayerId,
         monster_id: &str,
@@ -800,7 +817,7 @@ impl super::GameState {
         if !accepted {
             return true;
         }
-        self.resolve_player_attack(player_id, monster_id, context, auth, None)
+        self.resolve_player_attack(player_id, monster_id, context, auth, None, false)
             .await;
         true
     }
@@ -1004,6 +1021,7 @@ impl super::GameState {
                             context,
                             auth,
                             Some(strike),
+                            false,
                         )
                         .await;
                         None
@@ -1029,14 +1047,15 @@ impl super::GameState {
         }
     }
 
-    async fn resolve_player_attack(
+    pub(super) async fn resolve_player_attack(
         &self,
         player_id: &PlayerId,
         monster_id: String,
         context: PlayerAttackContext,
         auth: Option<&crate::auth::AuthService>,
         dagger_strike: Option<u8>,
-    ) {
+        charge: bool,
+    ) -> bool {
         let PlayerAttackContext {
             monster_type,
             monster_position,
@@ -1131,6 +1150,7 @@ impl super::GameState {
                 critical: result.critical,
                 ammo_item_def_id: ammo.map(|round| round.item_def_id),
                 dagger_strike,
+                charge,
             },
             None,
         )
@@ -1150,7 +1170,7 @@ impl super::GameState {
 
                 if let Some(monster) = monsters.get_mut(&monster_id) {
                     if monster.state == MonsterState::Dead {
-                        return; // Already dead
+                        return false;
                     }
 
                     dealt = result.damage.min(monster.health);
@@ -1282,7 +1302,7 @@ impl super::GameState {
                     corpse_position,
                     monster_floor_level,
                     effective_level,
-                    if dagger_strike.is_some() {
+                    if dagger_strike.is_some() || charge {
                         Duration::ZERO
                     } else if weapon.ability.is_some() {
                         *PLAYER_RANGED_IMPACT_DELAY
@@ -1318,6 +1338,7 @@ impl super::GameState {
                 });
             }
         }
+        result.hit
     }
 
     /// Credit every recipient of a monster kill: cumulative XP, any level-ups

@@ -423,6 +423,28 @@ impl GameState {
         }
     }
 
+    /// Ground under a dash's landing; `None` when it would change floors.
+    pub(super) async fn dash_landing_y(&self, floor_level: i8, to: Position) -> Option<f32> {
+        if floor_level <= 0 {
+            if let Some(entrance) = self.dungeon_defs.entrance_at(to.x, to.z) {
+                let dungeons = self.dungeons.read().await;
+                if let Some(runtime) = dungeons.get(&entrance.id) {
+                    let floor = dungeon_floor_after_step(
+                        floor_level,
+                        &entrance.position(),
+                        &runtime.layouts,
+                        to,
+                    );
+                    if floor != floor_level {
+                        return None;
+                    }
+                }
+            }
+        }
+        self.goal_ground_y(dungeon::passability_floor_for_level(floor_level), to)
+            .await
+    }
+
     async fn find_goal_route(
         &self,
         player: &Player,
@@ -882,7 +904,13 @@ fn advance_plan(
     (status, travelled)
 }
 
-fn swept_blocked(cache: &PassabilityCache, from: Position, dx: f32, dz: f32, floor: u8) -> bool {
+pub(super) fn swept_blocked(
+    cache: &PassabilityCache,
+    from: Position,
+    dx: f32,
+    dz: f32,
+    floor: u8,
+) -> bool {
     if passability::wrapped_block_info(
         cache,
         from.x,

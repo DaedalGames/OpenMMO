@@ -88,6 +88,7 @@
 - `client/public/icons/skills/true-aim.png` — True Aim 어빌리티·퀵슬롯 아이콘. OpenAI Codex built-in ImageGen, workspace-provided tier (정확한 등급은 도구에 공개되지 않음), 생성 2026-09-13. 프로젝트용 생성 이미지이며 OpenAI 서비스 약관의 출력물 이용 조건에 따른다. 기존 Double Slash 아이콘을 스타일 참조로 사용한 검은 바탕의 은백색 조준 문양. [실제 생성 프롬프트](true-aim-icon-prompt.txt).
 - `client/public/icons/skills/rage.png` — 광폭화(Rage) Barbarian 스킬·퀵슬롯 아이콘. OpenAI Codex built-in ImageGen, ChatGPT Pro 20x, 생성 2026-10-29. 프로젝트용 생성 이미지이며 OpenAI 서비스 약관의 출력물 이용 조건에 따른다. Double Slash v2를 스타일 참조로 첨부했다. 검은 바탕에 은백색 단색으로 비스듬히 든 양손 도끼와 아래에서 솟는 분노의 붓선. 같은 프롬프트 틀로 만든 시안 두 개 중 사용자가 선택했다. [실제 생성 프롬프트](rage-icon-prompt.txt).
 - `client/public/icons/skills/primal-roar.png` — 야성의 포효(Primal Roar) Caveman 스킬·퀵슬롯 아이콘. 광폭화 시안으로 함께 생성한 포효하는 얼굴이며, 사용자가 이 스킬 아이콘으로 골랐다(2026-10-29). 생성 도구·등급·날짜·조건은 위 광폭화와 같다. [실제 생성 프롬프트](primal-roar-icon-prompt.txt).
+- `client/public/icons/skills/valhalla-charge.png` — 발할라의 돌격(Valhalla Charge) Valkyrie 스킬·퀵슬롯 아이콘. OpenAI Codex built-in ImageGen(Codex CLI 0.162.1), ChatGPT Pro 20x, 생성 2026-10-29. 프로젝트용 생성 이미지이며 OpenAI 서비스 약관의 출력물 이용 조건에 따른다. Double Slash v2를 스타일 참조로 첨부했다. 검은 바탕에 은백색 단색으로 앞으로 찌르는 창, 창날 밑의 작은 날개, 뒤로 끌리는 속도 붓선. 같은 프롬프트로 만든 시안 두 개 중 창날이 또렷한 쪽을 골랐다(다른 시안은 자루 끝 깃 때문에 화살처럼 보였다). [실제 생성 프롬프트](valhalla-charge-icon-prompt.txt).
 
 ## 캐릭터 생성 외형 아이콘 — 2026-10-05
 

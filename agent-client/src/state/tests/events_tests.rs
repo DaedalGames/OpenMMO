@@ -17,6 +17,7 @@ async fn schedule_combat_survives_event_drains_and_expires_when_fighting_stops()
         critical: false,
         ammo_item_def_id: None,
         dagger_strike: None,
+        charge: false,
     };
     s.push_event(attack(PlayerId::from(id.get() + 1), "m_other"));
     assert!(!s.schedule_combat_active());

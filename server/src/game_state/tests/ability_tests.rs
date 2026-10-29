@@ -1856,3 +1856,215 @@ async fn primal_roar_holds_the_casters_next_swing_through_the_roar() {
     let cast = onlinerpg_shared::ability::PRIMAL_ROAR_CAST_MS;
     assert!(remaining > cast - 100 && remaining <= cast, "{remaining}");
 }
+
+const CHARGE: AbilityId = AbilityId::ValhallaCharge;
+
+async fn add_charge_player(gs: &GameState, name: &str, character: i64) -> DirectRx {
+    let rx = add_ward_player(gs, name, 0.0, character).await;
+    gs.players.write().await.get_mut(&pid(name)).unwrap().class = CharacterClass::Valkyrie;
+    rx
+}
+
+async fn add_charge_target(gs: &GameState, id: &str, x: f32) {
+    add_mark_target(gs, id, x).await;
+    gs.insert_brain(id, true).await;
+}
+
+async fn charge(gs: &GameState, name: &str, target: &str) {
+    gs.use_targeted_ability(&pid(name), CHARGE, Some(target), None, None)
+        .await;
+}
+
+async fn wait_for_arrival() {
+    tokio::time::sleep(Duration::from_millis(
+        onlinerpg_shared::ability::VALHALLA_CHARGE_DASH_MS + 10,
+    ))
+    .await;
+}
+
+fn charge_cooldown_ms(updates: &[ServerMessage]) -> Option<u64> {
+    updates.iter().rev().find_map(|m| match m {
+        ServerMessage::AbilityCooldowns { cooldowns } => cooldowns
+            .iter()
+            .find(|c| c.ability == CHARGE)
+            .map(|c| c.remaining_ms),
+        _ => None,
+    })
+}
+
+#[tokio::test(start_paused = true)]
+async fn valhalla_charge_dashes_into_reach_and_strikes_once() {
+    let gs = make_test_game_state("charge_cast");
+    let mut rx = add_charge_player(&gs, "caster", 1).await;
+    let mut watcher = add_ward_player(&gs, "watcher", 3.0, 2).await;
+    add_charge_target(&gs, "target", 7.0).await;
+    let id = pid("caster");
+    gs.remove_dirty(&id).await;
+    charge(&gs, "caster", "target").await;
+    assert_eq!(gs.mana.read().await[&id].mana, 14);
+    assert!(gs.dirty_players.read().await.contains(&id));
+    let position = gs.players.read().await[&id].position;
+    assert!((position.x - 5.3).abs() < 1e-3, "{position:?}");
+    assert!(position.z.abs() < 1e-3);
+    let updates = drain(&mut rx);
+    assert_eq!(charge_cooldown_ms(&updates), Some(10_000));
+    for updates in [updates, drain(&mut watcher)] {
+        assert!(updates.iter().any(|m| matches!(m,
+            ServerMessage::PlayerCharged { player_id, monster_id, from, position, duration_ms, .. }
+                if *player_id == id && monster_id == "target" && from.x == 0.0
+                    && (position.x - 5.3).abs() < 1e-3 && *duration_ms == 400)));
+        assert!(!updates
+            .iter()
+            .any(|m| matches!(m, ServerMessage::PlayerAttacked { .. })));
+    }
+    assert!(!gs.player_attack_ready(&id).await);
+    wait_for_arrival().await;
+    let updates = drain(&mut watcher);
+    let attacks: Vec<bool> = updates
+        .iter()
+        .filter_map(|m| match m {
+            ServerMessage::PlayerAttacked {
+                player_id,
+                monster_id,
+                hit,
+                charge: true,
+                ..
+            } if *player_id == id && monster_id == "target" => Some(*hit),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(attacks.len(), 1);
+    let slowed = updates.iter().any(|m| matches!(m,
+        ServerMessage::MonsterSlowed { monster_id, duration_ms: 3_000, .. } if monster_id == "target"));
+    assert_eq!(slowed, attacks[0]);
+    assert!(!gs.player_attack_ready(&id).await);
+}
+
+#[tokio::test(start_paused = true)]
+async fn valhalla_charge_slows_bosses_and_stagger_immune_monsters_for_half_as_long() {
+    let gs = make_test_game_state("charge_boss_slow");
+    let mut rx = add_charge_player(&gs, "caster", 1).await;
+    for (id, monster_type, duration) in [
+        ("plain", "test_monster", 3_000),
+        ("boss", "goblin_boss", 1_500),
+        ("immune", "terraclash", 1_500),
+    ] {
+        add_charge_target(&gs, id, 5.0).await;
+        gs.monsters.write().await.get_mut(id).unwrap().monster_type = monster_type.into();
+        drain(&mut rx);
+        gs.slow_monster(id).await;
+        assert!(drain(&mut rx).iter().any(|m| matches!(m,
+            ServerMessage::MonsterSlowed { monster_id, duration_ms, move_mult }
+                if monster_id == id && *duration_ms == duration && *move_mult == 0.6)));
+    }
+    gs.monsters.write().await.mark_dead("plain");
+    gs.slow_monster("plain").await;
+    assert!(!drain(&mut rx)
+        .iter()
+        .any(|m| matches!(m, ServerMessage::MonsterSlowed { .. })));
+}
+
+#[tokio::test]
+async fn valhalla_charge_rejects_without_spending_mana_or_cooldown() {
+    let gs = make_test_game_state("charge_requirements");
+    let mut rx = add_charge_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    add_charge_target(&gs, "target", 7.0).await;
+    add_charge_target(&gs, "close", 3.5).await;
+    add_charge_target(&gs, "far", 10.5).await;
+    let set_weapon = |item: &'static str| {
+        let gs = gs.clone();
+        async move {
+            gs.inventories
+                .write()
+                .await
+                .get_mut(&pid("caster"))
+                .unwrap()
+                .equipped
+                .insert(EquipSlot::MainHand, bag_item(1, item, 1));
+        }
+    };
+
+    gs.players.write().await.get_mut(&id).unwrap().class = CharacterClass::Knight;
+    charge(&gs, "caster", "target").await;
+    rejected(&mut rx, AbilityRejectReason::Unavailable);
+    gs.players.write().await.get_mut(&id).unwrap().class = CharacterClass::Valkyrie;
+
+    for weapon in ["great_sword", "mace", "bow"] {
+        set_weapon(weapon).await;
+        charge(&gs, "caster", "target").await;
+        rejected(&mut rx, AbilityRejectReason::Equipment);
+    }
+    set_weapon("spear").await;
+
+    charge(&gs, "caster", "close").await;
+    rejected(&mut rx, AbilityRejectReason::TooClose);
+    charge(&gs, "caster", "far").await;
+    rejected(&mut rx, AbilityRejectReason::OutOfRange);
+    gs.use_targeted_ability(&id, CHARGE, None, None, None).await;
+    rejected(&mut rx, AbilityRejectReason::Unavailable);
+
+    gs.players.write().await.get_mut(&id).unwrap().position.z = 0.5;
+    gs.monsters
+        .write()
+        .await
+        .get_mut("target")
+        .unwrap()
+        .position
+        .z = 0.5;
+    gs.sync_region_furniture(0, 0, &[table_placement(3.0, 0.5)]);
+    charge(&gs, "caster", "target").await;
+    rejected(&mut rx, AbilityRejectReason::Blocked);
+    gs.sync_region_furniture(0, 0, &[]);
+
+    gs.last_player_attacks
+        .write()
+        .await
+        .insert(id, GameState::now_ms());
+    charge(&gs, "caster", "target").await;
+    rejected(&mut rx, AbilityRejectReason::Cooldown);
+    gs.last_player_attacks.write().await.remove(&id);
+
+    assert_eq!(gs.mana.read().await[&id].mana, 15);
+    gs.mana.write().await.get_mut(&id).unwrap().mana = 0;
+    charge(&gs, "caster", "target").await;
+    rejected(&mut rx, AbilityRejectReason::NotEnoughMana);
+
+    assert_eq!(gs.players.read().await[&id].position.x, 0.0);
+    assert_eq!(
+        charge_cooldown_ms(&[gs.ability_cooldown_message(&id).await]),
+        Some(0)
+    );
+    gs.mana.write().await.get_mut(&id).unwrap().mana = 1;
+    charge(&gs, "caster", "target").await;
+    assert!(gs.players.read().await[&id].position.x > 5.0);
+}
+
+#[tokio::test(start_paused = true)]
+async fn valhalla_charge_cut_short_keeps_its_cooldown_and_skips_the_swing() {
+    let gs = make_test_game_state("charge_cut_short");
+    let mut rx = add_charge_player(&gs, "caster", 1).await;
+    let id = pid("caster");
+    add_charge_target(&gs, "target", 7.0).await;
+    charge(&gs, "caster", "target").await;
+    gs.monsters.write().await.mark_dead("target");
+    wait_for_arrival().await;
+    let updates = drain(&mut rx);
+    assert!(!updates
+        .iter()
+        .any(|m| matches!(m, ServerMessage::PlayerAttacked { .. })));
+    assert!(gs.player_attack_ready(&id).await);
+    assert!(charge_cooldown_ms(&[gs.ability_cooldown_message(&id).await]).unwrap() > 9_000);
+
+    add_charge_target(&gs, "second", 12.0).await;
+    tokio::time::advance(Duration::from_secs(10)).await;
+    charge(&gs, "caster", "second").await;
+    let landed = gs.players.read().await[&id].position;
+    assert!((landed.x - 10.3).abs() < 1e-3, "{landed:?}");
+    gs.request_move_goal(id, 1, 5.0, 0.0, false).await;
+    wait_for_arrival().await;
+    assert!(!drain(&mut rx)
+        .iter()
+        .any(|m| matches!(m, ServerMessage::PlayerAttacked { .. })));
+    assert!(gs.player_attack_ready(&id).await);
+}

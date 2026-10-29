@@ -20,6 +20,7 @@ pub(super) enum AgentAbility {
     GuardianWard,
     Rage,
     PrimalRoar,
+    ValhallaCharge,
 }
 
 #[derive(Debug, Deserialize)]
@@ -43,7 +44,16 @@ pub(super) enum AgentAction {
         skill: Option<AttackSkill>,
     },
     #[serde(rename = "use_ability")]
-    UseAbility { ability: AgentAbility },
+    UseAbility {
+        ability: AgentAbility,
+        #[serde(
+            alias = "targetId",
+            alias = "target_id",
+            alias = "target",
+            alias = "id"
+        )]
+        monster_id: Option<String>,
+    },
     #[serde(rename = "move")]
     Move {
         // Character name: approach them and stop a polite distance short
@@ -477,12 +487,13 @@ pub(super) const ACTION_SPECS: &[ActionSpec] = &[
         names: &["use_ability"],
         aliases: &[],
         doc: r#"- Cast a class ability (Knights: Guardian Ward, Barbarians: Rage,
-  Cavemen: Primal Roar):
+  Cavemen: Primal Roar, Valkyries: Valhalla Charge):
   {"type": "use_ability", "ability": "guardian_ward"}
   {"type": "use_ability", "ability": "rage"}
   {"type": "use_ability", "ability": "primal_roar"}
+  {"type": "use_ability", "ability": "valhalla_charge", "target": "m21"}
   Check your class-specific world-state guidance for equipment, MP,
-  cooldown and active buff status. None needs a target.
+  cooldown and active buff status. Only Valhalla Charge takes a monster target.
   The server reports success or failure."#,
     },
     ActionSpec {
@@ -855,7 +866,11 @@ impl AgentAction {
             | Self::Buy { .. }
             | Self::Buyback { .. }
             | Self::Fish { .. }
-            | Self::Respawn => true,
+            | Self::Respawn
+            | Self::UseAbility {
+                ability: AgentAbility::ValhallaCharge,
+                ..
+            } => true,
             Self::Say { .. }
             | Self::UseAbility { .. }
             | Self::BuyFromPlayer { .. }
@@ -1475,13 +1490,19 @@ pub(super) fn action_to_command(
                 monster_id: monster_id.clone(),
             },
         }),
-        AgentAction::UseAbility { ability } => Some(ClientMessage::UseAbility {
+        AgentAction::UseAbility {
+            ability,
+            monster_id,
+        } => Some(ClientMessage::UseAbility {
             ability: match ability {
                 AgentAbility::GuardianWard => onlinerpg_shared::ability::AbilityId::GuardianWard,
                 AgentAbility::Rage => onlinerpg_shared::ability::AbilityId::Rage,
                 AgentAbility::PrimalRoar => onlinerpg_shared::ability::AbilityId::PrimalRoar,
+                AgentAbility::ValhallaCharge => {
+                    onlinerpg_shared::ability::AbilityId::ValhallaCharge
+                }
             },
-            monster_id: None,
+            monster_id: monster_id.clone(),
             target_player_id: None,
         }),
         AgentAction::Move {

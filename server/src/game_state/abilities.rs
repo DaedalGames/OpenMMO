@@ -24,6 +24,20 @@ pub(super) struct Abilities {
     cooldowns: HashMap<(i64, AbilityId), Instant>,
 }
 
+pub(super) struct MonsterTarget {
+    position: onlinerpg_shared::Position,
+    pub(super) floor_level: i8,
+    rotation: f32,
+    body: Option<onlinerpg_shared::monster_body::BodyFootprint>,
+}
+
+impl MonsterTarget {
+    /// The nearest point of its body to `from`, where reach is measured.
+    pub(super) fn surface(&self, from: &onlinerpg_shared::Position) -> onlinerpg_shared::Position {
+        onlinerpg_shared::monster_body::reach_point(self.body, self.position, self.rotation, from)
+    }
+}
+
 struct BowMark {
     monster_id: String,
     floor_level: i8,
@@ -37,7 +51,14 @@ impl Abilities {
             .is_some_and(|mark| mark.monster_id == monster_id && mark.until > Instant::now())
     }
 
-    fn cooldown_ms(&self, character: i64, ability: AbilityId) -> u64 {
+    pub(super) fn start_cooldown(&mut self, character: i64, ability: AbilityId, ms: u64) {
+        self.cooldowns.insert(
+            (character, ability),
+            Instant::now() + Duration::from_millis(ms),
+        );
+    }
+
+    pub(super) fn cooldown_ms(&self, character: i64, ability: AbilityId) -> u64 {
         self.cooldowns
             .get(&(character, ability))
             .map(|until| until.saturating_duration_since(Instant::now()).as_millis() as u64)
@@ -107,6 +128,7 @@ impl GameState {
                 AbilityId::Auscultation,
                 AbilityId::Rage,
                 AbilityId::PrimalRoar,
+                AbilityId::ValhallaCharge,
             ]
             .into_iter()
             .map(|ability| AbilityTimer {
@@ -134,9 +156,10 @@ impl GameState {
             AbilityId::Radiance => self.try_radiance(player_id).await,
             AbilityId::Rage => self.try_rage(player_id).await,
             AbilityId::PrimalRoar => self.try_primal_roar(player_id).await,
-            AbilityId::BowMark | AbilityId::DaggerDoubleSlash | AbilityId::Auscultation => {
-                Err(AbilityRejectReason::Unavailable)
-            }
+            AbilityId::BowMark
+            | AbilityId::DaggerDoubleSlash
+            | AbilityId::Auscultation
+            | AbilityId::ValhallaCharge => Err(AbilityRejectReason::Unavailable),
         };
         match result {
             Ok((position, floor_level, targets)) => {
@@ -212,6 +235,12 @@ impl GameState {
                 }
                 _ => self.use_ability(player_id, ability).await,
             }
+            return;
+        }
+        if let (AbilityId::ValhallaCharge, Some(monster_id), None) =
+            (ability, monster_id, target_player_id)
+        {
+            self.valhalla_charge(player_id, monster_id, auth).await;
             return;
         }
         if ability == AbilityId::Auscultation {
@@ -406,11 +435,28 @@ impl GameState {
             inspection.guard = state.guard(&player_id, inspection.guard);
         }
         inspection.equipment.sort_by_key(|item| item.slot.as_str());
-        state.cooldowns.insert(
-            (character, AbilityId::Auscultation),
-            Instant::now() + Duration::from_millis(AUSCULTATION_COOLDOWN_MS),
-        );
+        state.start_cooldown(character, AbilityId::Auscultation, AUSCULTATION_COOLDOWN_MS);
         Ok(inspection)
+    }
+
+    /// A living monster where its brain has it now, for an ability aimed at it.
+    pub(super) async fn live_monster_target(&self, monster_id: &str) -> Option<MonsterTarget> {
+        let mut target = self
+            .monsters
+            .read()
+            .await
+            .get(monster_id)
+            .filter(|m| m.state != crate::types::MonsterState::Dead && m.health > 0)
+            .map(|m| MonsterTarget {
+                position: m.position,
+                floor_level: m.floor_level,
+                rotation: m.rotation,
+                body: self.monster_defs.get(&m.monster_type).and_then(|d| d.body),
+            })?;
+        if let Some(position) = self.brain_position_now(monster_id).await {
+            target.position = position;
+        }
+        Some(target)
     }
 
     async fn try_bow_mark(
@@ -419,29 +465,13 @@ impl GameState {
         monster_id: Option<&str>,
     ) -> Result<(), AbilityRejectReason> {
         use super::combat::{reachable_dist_sq, wall_between};
-        use crate::types::MonsterState;
 
         let monster_id = monster_id.ok_or(AbilityRejectReason::Unavailable)?;
-        let (mut target_position, target_floor, target_rotation, target_body) = self
-            .monsters
-            .read()
+        let target = self
+            .live_monster_target(monster_id)
             .await
-            .get(monster_id)
-            .filter(|monster| monster.state != MonsterState::Dead && monster.health > 0)
-            .map(|monster| {
-                (
-                    monster.position,
-                    monster.floor_level,
-                    monster.rotation,
-                    self.monster_defs
-                        .get(&monster.monster_type)
-                        .and_then(|d| d.body),
-                )
-            })
             .ok_or(AbilityRejectReason::Unavailable)?;
-        if let Some(position) = self.brain_position_now(monster_id).await {
-            target_position = position;
-        }
+        let target_floor = target.floor_level;
         let players = self.players.read().await;
         let caster = players
             .get(player_id)
@@ -462,12 +492,7 @@ impl GameState {
         let range = weapon
             .weapon_range()
             .ok_or(AbilityRejectReason::Equipment)?;
-        let target_position = onlinerpg_shared::monster_body::reach_point(
-            target_body,
-            target_position,
-            target_rotation,
-            &caster.position,
-        );
+        let target_position = target.surface(&caster.position);
         let distance = reachable_dist_sq(
             caster.position,
             caster.floor_level,
@@ -492,10 +517,7 @@ impl GameState {
             return Err(AbilityRejectReason::Cooldown);
         }
         let now = Instant::now();
-        state.cooldowns.insert(
-            (character, AbilityId::BowMark),
-            now + Duration::from_millis(BOW_MARK_COOLDOWN_MS),
-        );
+        state.start_cooldown(character, AbilityId::BowMark, BOW_MARK_COOLDOWN_MS);
         state.marks.insert(
             *player_id,
             BowMark {
@@ -547,10 +569,7 @@ impl GameState {
             return Err(AbilityRejectReason::Cooldown);
         }
         let now = Instant::now();
-        state.cooldowns.insert(
-            (character, AbilityId::Radiance),
-            now + Duration::from_millis(RADIANCE_COOLDOWN_MS),
-        );
+        state.start_cooldown(character, AbilityId::Radiance, RADIANCE_COOLDOWN_MS);
         if state
             .radiances
             .get(player_id)
@@ -625,9 +644,10 @@ impl GameState {
             .ok_or(AbilityRejectReason::Unavailable)?;
         data.spend(AbilityId::GuardianWard.mana_cost())?;
         let now = Instant::now();
-        state.cooldowns.insert(
-            (character, AbilityId::GuardianWard),
-            now + Duration::from_millis(GUARDIAN_WARD_COOLDOWN_MS),
+        state.start_cooldown(
+            character,
+            AbilityId::GuardianWard,
+            GUARDIAN_WARD_COOLDOWN_MS,
         );
         for target in &targets {
             state.wards.insert(
@@ -674,10 +694,7 @@ impl GameState {
             .ok_or(AbilityRejectReason::Unavailable)?
             .spend(AbilityId::Rage.mana_cost())?;
         let now = Instant::now();
-        state.cooldowns.insert(
-            (character, AbilityId::Rage),
-            now + Duration::from_millis(RAGE_COOLDOWN_MS),
-        );
+        state.start_cooldown(character, AbilityId::Rage, RAGE_COOLDOWN_MS);
         state
             .rages
             .insert(*player_id, now + Duration::from_millis(RAGE_DURATION_MS));
@@ -716,10 +733,7 @@ impl GameState {
                 .ok_or(AbilityRejectReason::Unavailable)?
                 .spend(AbilityId::PrimalRoar.mana_cost())?;
             let now = Instant::now();
-            state.cooldowns.insert(
-                (character, AbilityId::PrimalRoar),
-                now + Duration::from_millis(PRIMAL_ROAR_COOLDOWN_MS),
-            );
+            state.start_cooldown(character, AbilityId::PrimalRoar, PRIMAL_ROAR_COOLDOWN_MS);
             state.roars.insert(
                 *player_id,
                 now + Duration::from_millis(PRIMAL_ROAR_DURATION_MS),

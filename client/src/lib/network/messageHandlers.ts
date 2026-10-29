@@ -1,6 +1,11 @@
 import { manaState } from '../stores/manaStore'
 import { tempHealth } from '../stores/playerHealthDisplay'
 import {
+  beginChargeStrike,
+  chargeImpactMs,
+  resetChargeStrikes,
+} from '../stores/chargeStrikeStore'
+import {
   showAnnouncement,
   showOperatorNotice,
 } from '../stores/announcementStore'
@@ -250,6 +255,7 @@ import type {
   ServerGroundItem,
   MovePath,
   MoveProgress,
+  PlayerCharge,
   PlayerInteraction,
   Position,
   ServerMonster,
@@ -488,6 +494,7 @@ export type MessageEvents = {
   movePath: NetworkEvent<(path: MovePath) => void>
   moveProgress: NetworkEvent<(progress: MoveProgress) => void>
   playerRelocated: NetworkEvent<(position: Position, rotation: number) => void>
+  playerCharged: NetworkEvent<(charge: PlayerCharge) => void>
 }
 
 function isSelfPlayer(playerId: number): boolean {
@@ -816,6 +823,7 @@ export function handleServerMessage(
       scheduleResync()
       manaState.set(null)
       tempHealth.set(0)
+      resetChargeStrikes()
       resetFences()
       resetHousePlacement()
       resetEstateStorage()
@@ -1065,6 +1073,23 @@ export function handleServerMessage(
         if (player) player.floorLevel = data.floor_level
         return state
       })
+      break
+    }
+
+    case 'PlayerCharged': {
+      const charge = { ...data, duration_ms: Number(data.duration_ms) }
+      beginChargeStrike(data.player_id, charge.duration_ms)
+      if (isSelfPlayer(data.player_id)) {
+        syncOwnFloor(data.floor_level, data.position.x, data.position.z)
+        events.playerCharged.emit(charge)
+        break
+      }
+      remotePlayerManager.dashPlayer(charge)
+      if (
+        get(gameStore).otherPlayers.get(data.player_id)?.floorLevel !==
+        data.floor_level
+      )
+        updatePlayer(data.player_id, { floorLevel: data.floor_level })
       break
     }
 
@@ -1385,7 +1410,7 @@ export function handleServerMessage(
     case 'PlayerAttacked': {
       const gameState = get(gameStore)
       const isLocalAttacker = gameState.currentPlayer?.id === data.player_id
-      if (data.dagger_strike == null) {
+      if (data.dagger_strike == null && !data.charge) {
         clearDaggerCast(data.player_id)
         remotePlayerManager.handleAttack(data.player_id)
         if (isLocalAttacker) combatController.attackConfirmed(data.monster_id)
@@ -1416,7 +1441,8 @@ export function handleServerMessage(
         data.damage,
         data.ammo_item_def_id,
         data.dagger_strike != null,
-        data.critical
+        data.critical,
+        data.charge ? chargeImpactMs(data.player_id) : undefined
       )
       break
     }
@@ -1484,6 +1510,13 @@ export function handleServerMessage(
     case 'MonsterStunned':
       monsterManager.handleMonsterStunned(
         data.monster_ids,
+        Number(data.duration_ms)
+      )
+      break
+    case 'MonsterSlowed':
+      monsterManager.handleMonsterSlowed(
+        data.monster_id,
+        data.move_mult,
         Number(data.duration_ms)
       )
       break
@@ -2709,6 +2742,10 @@ export function handleServerMessage(
         text = translate('skillFailure.mana')
       else if (data.reason === 'out_of_range')
         text = translate('skillFailure.range')
+      else if (data.reason === 'too_close')
+        text = translate('skillFailure.tooClose')
+      else if (data.reason === 'blocked')
+        text = translate('skillFailure.blocked')
       else if (data.reason === 'cooldown')
         text = translate('skillFailure.cooldown', { name })
       else if (data.reason === 'equipment')

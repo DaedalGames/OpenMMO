@@ -156,6 +156,12 @@
   import { DaggerBladeTrail } from '../effects/dagger-blade-trail'
   import { DAGGER_SKILL } from '../data/daggerSkill'
   import { daggerSkillCasts } from '../stores/daggerSkillStore'
+  import {
+    CHARGE_STAB_HOLD_MS,
+    CHARGE_STAB_LEAD_MS,
+    chargeLandsAt,
+  } from '../stores/chargeStrikeStore'
+  import { PLAYER_ATTACK_IMPACT_DELAY_MS } from '../data/combatTiming'
   import { gameStore } from '../stores/gameStore'
   import { pickRandom } from '../utils/randomUtils'
   import {
@@ -167,6 +173,7 @@
   import {
     getWeaponAnimation,
     weaponAnimationClipName,
+    weaponAnimationFor,
   } from '../data/weaponAnimationDefs'
   import { loadWeaponAnimations } from '../utils/weaponAnimations'
   import {
@@ -582,8 +589,11 @@
   let enchantPoseUntil = 0
   let enchantWeapon = true
   let roarPoseUntil = 0
-  // Swing count when the roar began; the attack stance holds until the next.
-  let roarAttackCounter: number | undefined
+  // Swing count when a roar or charge stab took over; the attack stance holds
+  // until the next.
+  let heldSwingCounter: number | undefined
+  // Valhalla Charge thrusts the rogue's dagger stab with whatever is in hand.
+  let chargeStabClip: THREE.AnimationClip | undefined
   const OVERLAP_BEFORE_END = 0.3 // Start next animation overlap 0.3 seconds before current ends
   // The roar clip's arms fling wide here.
   const ROAR_CRY_DELAY_MS = 800
@@ -720,12 +730,39 @@
   let attachedWeaponItemId: string | null = null
   let daggerClip: THREE.AnimationClip | undefined
   let daggerTrail: DaggerBladeTrail | undefined
+  function modelPlayerId() {
+    return isCurrentPlayer ? get(gameStore).currentPlayer?.id : remotePlayerId
+  }
   function daggerCastAt() {
-    const id = isCurrentPlayer
-      ? get(gameStore).currentPlayer?.id
-      : remotePlayerId
+    const id = modelPlayerId()
     return id === undefined ? undefined : get(daggerSkillCasts).get(id)
   }
+  /** When the charge's dash lands, while the stab around it plays. */
+  function chargeStabLandsAt() {
+    if (!chargeStabClip || riding) return undefined
+    const id = modelPlayerId()
+    const landsAt = id === undefined ? undefined : chargeLandsAt(id)
+    if (landsAt === undefined) return undefined
+    const toLanding = landsAt - Date.now()
+    return toLanding <= CHARGE_STAB_LEAD_MS && toLanding > -CHARGE_STAB_HOLD_MS
+      ? landsAt
+      : undefined
+  }
+  $effect(() => {
+    const root = modelRoot
+    const profile = weaponAnimationFor({ weaponType: 'dagger' })
+    const stab = profile?.attack
+    if (!root || characterClass !== 'valkyrie' || !profile || !stab) return
+    let cancelled = false
+    void loadWeaponAnimations(modelPath, root, profile)
+      .then((clips) => {
+        if (!cancelled) chargeStabClip = clips.get(stab)
+      })
+      .catch((error) => console.error('Failed to load the charge stab', error))
+    return () => {
+      cancelled = true
+    }
+  })
   $effect(() => {
     const root = modelRoot
     if (
@@ -1281,16 +1318,25 @@
     const enchantClip = activeEnchantClip()
     const armorEnchant = activeArmorEnchant()
     const roarClip = activeRoarClip()
-    if (attackCounter !== roarAttackCounter) roarAttackCounter = undefined
+    if (attackCounter !== heldSwingCounter) heldSwingCounter = undefined
     const stanceClip =
-      playerState === 'attack' && roarAttackCounter !== undefined
+      playerState === 'attack' && heldSwingCounter !== undefined
         ? swingIdleClip()
         : undefined
+    const stabLandsAt = chargeStabLandsAt()
+    if (stabLandsAt !== undefined && chargeStabClip) {
+      heldSwingCounter = attackCounter
+      startAction(chargeStabClip, true, 0.065)
+      seekCurrentAction(
+        (PLAYER_ATTACK_IMPACT_DELAY_MS - (stabLandsAt - Date.now())) / 1000
+      )
+      return
+    }
     if (roarClip) {
       // The idle hand-off near a clip's end must not rewind the roar.
       if (currentAction?.getClip() === roarClip) return
       clip = roarClip
-      roarAttackCounter = attackCounter
+      heldSwingCounter = attackCounter
     } else if (playerState === 'idle') {
       clip =
         enchantClip ??
@@ -1397,15 +1443,23 @@
       if (armorEnchant) armorEnchantAction = currentAction
       else enchantAction = currentAction
     }
-    if (clip === daggerClip && currentAction) {
-      currentAction.time = Math.min(
-        clip.duration,
-        Math.max(0, (Date.now() - (daggerCastAt() ?? Date.now())) / 1000)
-      )
-    }
+    if (clip === daggerClip)
+      seekCurrentAction((Date.now() - (daggerCastAt() ?? Date.now())) / 1000)
   }
 
-  function startAction(clip: THREE.AnimationClip, playOnce: boolean) {
+  function seekCurrentAction(seconds: number) {
+    if (currentAction)
+      currentAction.time = Math.min(
+        currentAction.getClip().duration,
+        Math.max(0, seconds)
+      )
+  }
+
+  function startAction(
+    clip: THREE.AnimationClip,
+    playOnce: boolean,
+    fadeSeconds?: number
+  ) {
     if (!mixer) return
     const newAction = mixer.clipAction(clip)
     newAction.reset()
@@ -1416,12 +1470,14 @@
     if (currentAction && newAction !== currentAction) {
       newAction.crossFadeFrom(
         currentAction,
-        clip === daggerClip
-          ? 0.065
-          : clip.name === EXCAVATE_EMOTE_ANIM ||
-              currentAction.getClip().name === EXCAVATE_EMOTE_ANIM
-            ? 0.85
-            : 0.3,
+        fadeSeconds !== undefined
+          ? fadeSeconds
+          : clip === daggerClip
+            ? 0.065
+            : clip.name === EXCAVATE_EMOTE_ANIM ||
+                currentAction.getClip().name === EXCAVATE_EMOTE_ANIM
+              ? 0.85
+              : 0.3,
         false
       )
     }
@@ -2066,6 +2122,7 @@
 
     // Update animation state
     if (validAnimations.length > 0) {
+      const stabLandsAt = chargeStabLandsAt()
       const stateKey =
         boating && canRow
           ? 'boating'
@@ -2073,17 +2130,19 @@
             ? 'riding'
             : playerState === 'interact'
               ? `interact:${interactionAnim}:${interactionCounter}`
-              : playerState === 'moving'
-                ? `moving:${movementMode}`
-                : activeRoarClip()
-                  ? 'roar'
-                  : playerState === 'attack'
-                    ? `attack:${attackCounter}:${daggerCastAt() ?? ''}`
-                    : activeArmorEnchant()
-                      ? 'enchant-armor'
-                      : activeEnchantClip()
-                        ? 'enchant-weapon'
-                        : playerState
+              : stabLandsAt !== undefined
+                ? `charge-stab:${stabLandsAt}`
+                : playerState === 'moving'
+                  ? `moving:${movementMode}`
+                  : activeRoarClip()
+                    ? 'roar'
+                    : playerState === 'attack'
+                      ? `attack:${attackCounter}:${daggerCastAt() ?? ''}`
+                      : activeArmorEnchant()
+                        ? 'enchant-armor'
+                        : activeEnchantClip()
+                          ? 'enchant-weapon'
+                          : playerState
       const animKey = `${equippedMainHandItemId ?? ''}:${stateKey}`
       if (lastAnimKey !== animKey) {
         lastAnimKey = animKey

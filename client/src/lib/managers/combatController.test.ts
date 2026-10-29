@@ -209,6 +209,17 @@ describe('CombatController', () => {
       expect(controller.attackCounter).toBe(2)
     })
 
+    it('restarts the request so the stop for the replaced one is ignored', () => {
+      const { controller, stop } = attacking()
+      const replaced = controller.attackRequestId
+      expect(controller.restartCombat('m1').startRequested).toBe(true)
+      expect(controller.attackRequestId).not.toBe(replaced)
+      controller.attackStopped('m1', replaced)
+      controller.attackConfirmed('m1')
+      expect(stop).not.toHaveBeenCalled()
+      expect(tick(controller).action).toBe('attack_cycle')
+    })
+
     it('stops the server attack once when combat is cancelled', () => {
       const { controller, stop } = attacking()
       const requestId = controller.attackRequestId

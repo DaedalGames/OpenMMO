@@ -230,7 +230,9 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v130: Barbarian Rage (`AbilityId::Rage`, `PlayerRageToggled`).
 /// v131: Caveman Primal Roar (`AbilityId::PrimalRoar`, `TempHealthUpdate`,
 /// `MonsterStunned`).
-pub const PROTOCOL_VERSION: u32 = 131;
+/// v132: Valkyrie Valhalla Charge (`AbilityId::ValhallaCharge`, `PlayerCharged`,
+/// `MonsterSlowed`, `PlayerAttacked.charge`, `AbilityRejectReason::TooClose`/`Blocked`).
+pub const PROTOCOL_VERSION: u32 = 132;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from
@@ -440,6 +442,7 @@ mod tests {
                 critical: true,
                 ammo_item_def_id: None,
                 dagger_strike: Some(1),
+                charge: false,
             },
         ] {
             let bytes = serialize_server_msg(&message).unwrap();
@@ -792,6 +795,7 @@ mod tests {
                 critical: false,
                 ammo_item_def_id: None,
                 dagger_strike: None,
+                charge: false,
             },
             ServerMessage::EffectiveStatsUpdated {
                 guard: 13,

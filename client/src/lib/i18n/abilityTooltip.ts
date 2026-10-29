@@ -1,7 +1,15 @@
 import type { SkillTooltipParams } from '../actions/skillTooltip'
-import { PRIMAL_ROAR, RAGE, type ABILITIES } from '../data/abilities'
+import {
+  PRIMAL_ROAR,
+  RAGE,
+  VALHALLA_CHARGE,
+  type ABILITIES,
+} from '../data/abilities'
 import { DAGGER_SKILL } from '../data/daggerSkill'
-import { primal_roar_stats } from '../wasm/onlinerpg_shared'
+import {
+  primal_roar_stats,
+  valhalla_charge_stats,
+} from '../wasm/onlinerpg_shared'
 import { translate, type Locale } from './index'
 
 export function abilityTooltip(
@@ -60,18 +68,71 @@ export function abilityTooltip(
           { label: text('skill.cooldown'), value: seconds(roar.cooldown_ms) },
         ]
       }
+      case VALHALLA_CHARGE.id: {
+        const charge = chargeStats()
+        return [
+          combatSkill,
+          { label: text('skill.class'), value: text('class.valkyrie') },
+          {
+            label: text('skill.weapon'),
+            value: text('ability.valhalla_charge.weapon'),
+          },
+          {
+            label: text('skill.range'),
+            value: `${charge.min_range_m}–${charge.max_range_m} m`,
+          },
+          {
+            label: text('skill.slow'),
+            value: translate(
+              'ability.valhalla_charge.slow',
+              {
+                percent: charge.slow_percent,
+                seconds: seconds(charge.slow_ms),
+              },
+              language
+            ),
+          },
+          { label: text('skill.cooldown'), value: seconds(charge.cooldown_ms) },
+        ]
+      }
       default:
         return ability.stats
     }
+  }
+
+  function details() {
+    if (ability.id === RAGE.id || ability.id === PRIMAL_ROAR.id)
+      return [text(`ability.${ability.id}.details`)]
+    if (ability.id !== VALHALLA_CHARGE.id) return ability.details
+    const charge = chargeStats()
+    return [
+      translate(
+        'ability.valhalla_charge.details',
+        {
+          min: charge.min_range_m,
+          max: charge.max_range_m,
+          short: seconds(charge.short_slow_ms),
+        },
+        language
+      ),
+    ]
   }
 
   return {
     name: text(`ability.${ability.id}.name`),
     description: text(`ability.${ability.id}.description`),
     stats: stats(),
-    details:
-      ability.id === RAGE.id || ability.id === PRIMAL_ROAR.id
-        ? [text(`ability.${ability.id}.details`)]
-        : ability.details,
+    details: details(),
+  }
+}
+
+function chargeStats() {
+  return valhalla_charge_stats() as {
+    min_range_m: number
+    max_range_m: number
+    slow_percent: number
+    slow_ms: number
+    short_slow_ms: number
+    cooldown_ms: number
   }
 }

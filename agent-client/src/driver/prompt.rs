@@ -428,6 +428,15 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             }),
             onlinerpg_shared::ability::PRIMAL_ROAR_DURATION_MS / 1000
         )),
+        ServerMessage::PlayerCharged {
+            player_id,
+            monster_id,
+            position,
+            ..
+        } if state.self_player_id == Some(*player_id) => Some(format!(
+            "[ValhallaCharge] You charge {monster_id} and land at ({:.1}, {:.1}); your swing follows on arrival.",
+            position.x, position.z
+        )),
         ServerMessage::AbilityRejected { ability, reason }
             if crate::state::buff_ability(*ability).is_some() =>
         {
@@ -441,6 +450,8 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
                 AbilityRejectReason::Cooldown => "still on cooldown; check readiness".into(),
                 AbilityRejectReason::NotEnoughMana => "not enough MP".into(),
                 AbilityRejectReason::OutOfRange => "target is out of range".into(),
+                AbilityRejectReason::TooClose => "target is too close".into(),
+                AbilityRejectReason::Blocked => "the straight path is blocked".into(),
             };
             Some(format!("[{}Failed] {reason}.", info.tag))
         }

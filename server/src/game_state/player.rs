@@ -950,7 +950,7 @@ impl super::GameState {
     }
 
     /// Serialize trusted relocations with movement.
-    async fn apply_player_position(
+    pub(super) async fn apply_player_position(
         &self,
         player_id: &PlayerId,
         new_position: Position,

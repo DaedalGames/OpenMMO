@@ -48,6 +48,10 @@ impl ItemDef {
         self.consumable
     }
 
+    pub fn is_two_handed(&self) -> bool {
+        self.hands.unwrap_or(1) >= 2
+    }
+
     pub fn is_teleport_scroll(&self) -> bool {
         matches!(
             self.category.as_deref(),

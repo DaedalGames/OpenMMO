@@ -80,11 +80,12 @@ export function timerSnapshot(
   )
 }
 
+export function isAbilityPending(id: AbilityId, now = Date.now()) {
+  return (get(abilityPending)[id] ?? 0) > now
+}
+
 export function canBeginAbility(id: AbilityId, now = Date.now()) {
-  return !(
-    (get(abilityCooldowns)[id] ?? 0) > now ||
-    (get(abilityPending)[id] ?? 0) > now
-  )
+  return !((get(abilityCooldowns)[id] ?? 0) > now || isAbilityPending(id, now))
 }
 
 export function beginAbility(id: AbilityId, now = Date.now()) {
@@ -106,7 +107,7 @@ export function applyAbilityCooldowns(
 export type AbilityEffectEvent = {
   ability: Exclude<
     AbilityId,
-    'bow_mark' | 'auscultation' | 'dagger_double_slash'
+    'bow_mark' | 'auscultation' | 'dagger_double_slash' | 'valhalla_charge'
   >
   player_id: number
   position: Position

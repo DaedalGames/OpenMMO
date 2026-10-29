@@ -25,6 +25,9 @@ export interface MonsterData {
   hitCounter?: number
   /** `performance.now()` until which Primal Roar's dizzy marker shows. */
   stunnedUntil?: number
+  /** Valhalla Charge: moves at `slowMult` until this `performance.now()`. */
+  slowedUntil?: number
+  slowMult?: number
   deadPendingTimer?: number
   lastAttackStartedAt?: number
   impactDelay?: number // Delay until hit state starts

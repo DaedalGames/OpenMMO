@@ -18,10 +18,11 @@ import {
 } from '../utils/movementUtils'
 import { entityGroundY } from './entity-ground'
 import { FishingAnimationName, SitAnimationName } from '../types/animations'
-import { shortestWrappedDeltaX } from '../terrain/world-wrap'
+import { shortestWrappedDeltaX, wrapWorldX } from '../terrain/world-wrap'
 import type { TerrainHeightManager } from './terrainHeightManager'
 import { mountFloats, mountSpeedMult } from '../utils/mounts'
-import type { MountKind } from '../network/networkTypes'
+import type { MountKind, PlayerCharge } from '../network/networkTypes'
+import { chargeDashPose, type ChargeDash } from '../stores/chargeStrikeStore'
 import { floatingSurfaceY } from '../utils/floatingSurface'
 
 // Use the same movement config as local player
@@ -130,6 +131,9 @@ class PlayerStateManager {
   // Timestamp (performance.now()) when each player's attack animation started
   private attackStartTimes = new Map<number, number>()
 
+  // Valhalla Charge legs, run on their own clock ahead of the walk.
+  private dashes = new Map<number, ChargeDash>()
+
   // Move remote players toward their target positions with acceleration/deceleration
   update(deltaTime: number) {
     const dt = deltaTime / 1000 // Convert to seconds
@@ -155,6 +159,12 @@ class PlayerStateManager {
       // Get current interpolated position or initialize from player position
       const currentPlayer = this.players.get(playerId)
       if (!currentPlayer) return
+
+      const dash = this.dashes.get(playerId)
+      if (dash) {
+        this.advanceDash(playerId, dash, now, otherPlayers.get(playerId))
+        return
+      }
 
       if (FROZEN_STATES.has(currentPlayer.state)) return
 
@@ -336,6 +346,7 @@ class PlayerStateManager {
 
   // Initialize remote player state with position and rotation
   initPlayer(playerId: number, position: Position, rotation: number) {
+    this.dashes.delete(playerId)
     this.trails.delete(playerId)
     this.targetPositions.set(playerId, { ...position })
     this.targetSprinting.delete(playerId)
@@ -350,6 +361,7 @@ class PlayerStateManager {
 
   // Clean up data for players that have left
   removePlayer(playerId: number) {
+    this.dashes.delete(playerId)
     this.players.delete(playerId)
     this.movementData.delete(playerId)
     this.targetPositions.delete(playerId)
@@ -370,6 +382,7 @@ class PlayerStateManager {
     this.targetSprinting.clear()
     this.attackQueue.clear()
     this.trails.clear()
+    this.dashes.clear()
     this.attackStartTimes.clear()
     this.hitCounters.clear()
   }
@@ -399,6 +412,7 @@ class PlayerStateManager {
   }
 
   handleRespawn(playerId: number, position: Position, rotation: number) {
+    this.dashes.delete(playerId)
     this.trails.delete(playerId)
     this.movementData.delete(playerId)
     this.attackQueue.delete(playerId)
@@ -413,7 +427,51 @@ class PlayerStateManager {
     })
   }
 
+  dashPlayer(charge: PlayerCharge) {
+    const id = charge.player_id
+    this.trails.delete(id)
+    this.attackStartTimes.delete(id)
+    this.movementData.delete(id)
+    this.targetPositions.set(id, { ...charge.position })
+    this.targetRotations.set(id, charge.rotation)
+    this.targetSprinting.set(id, true)
+    const player = this.players.get(id)
+    if (!player) return
+    this.dashes.set(id, {
+      from: { ...player.position },
+      to: { ...charge.position },
+      rotation: charge.rotation,
+      startedAt: performance.now(),
+      durationMs: charge.duration_ms,
+    })
+  }
+
+  private advanceDash(
+    playerId: number,
+    dash: ChargeDash,
+    now: number,
+    other: { floorLevel?: number; mount?: MountKind | null } | undefined
+  ) {
+    const { position, speed, done } = chargeDashPose(dash, now)
+    position.x = wrapWorldX(position.x)
+    position.y = this.groundY(
+      other?.mount ?? null,
+      other?.floorLevel ?? 0,
+      position,
+      position.y
+    )
+    if (done) this.dashes.delete(playerId)
+    this.players.set(playerId, {
+      position,
+      state: done ? 'idle' : 'moving',
+      speed,
+      rotation: dash.rotation,
+      movementMode: done ? undefined : 'run',
+    })
+  }
+
   teleportPlayer(playerId: number, position: Position, rotation: number) {
+    this.dashes.delete(playerId)
     this.trails.delete(playerId)
     this.targetPositions.set(playerId, { ...position })
     this.seedHitCounter(playerId)

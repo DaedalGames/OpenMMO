@@ -252,6 +252,7 @@ pub(crate) mod time;
 mod tip_hat;
 mod titles;
 mod trading;
+mod valhalla_charge;
 pub mod weather;
 pub use trading::BUYBACK_SWEEP_PERIOD;
 

@@ -9,7 +9,12 @@ import {
   abilityEquipmentNotMet,
   getAbility,
   isAbilityAvailable,
+  VALHALLA_CHARGE,
 } from '../data/abilities'
+import {
+  cancelChargeTargeting,
+  chargeTargeting,
+} from '../stores/chargeStrikeStore'
 import { combatController } from '../managers/combatController'
 import { monsterManager } from '../managers/monsterManager'
 import { networkManager } from '../network/socket'
@@ -44,6 +49,7 @@ export function useAbility(id: string) {
     return
   if (id !== AUSCULTATION.id) cancelInspection()
   if (id !== FISHING.id) cancelFishingTargeting()
+  if (id !== VALHALLA_CHARGE.id) cancelChargeTargeting()
   if (player.health <= 0) {
     reportSkillFailure(translate('skillFailure.dead'))
     return
@@ -99,6 +105,11 @@ export function useAbility(id: string) {
         monsterManager.monsters.get(monsterId)
       )
     : null
+  if (ability.id === VALHALLA_CHARGE.id && !target) {
+    chargeTargeting.update((on) => !on)
+    return
+  }
+  cancelChargeTargeting()
   if (needsTarget && !target) {
     reportSkillFailure(
       translate('skillFailure.target', { name: abilityDisplayName(ability.id) })

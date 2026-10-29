@@ -189,6 +189,14 @@ impl SharedState {
                     EventUrgency::Noise
                 }
             }
+            ServerMessage::PlayerCharged { player_id, .. } => {
+                if self_id == Some(player_id) {
+                    EventUrgency::Routine
+                } else {
+                    EventUrgency::Noise
+                }
+            }
+            ServerMessage::MonsterSlowed { .. } => EventUrgency::Noise,
             ServerMessage::PlayerRespawned { player } => {
                 if self_id == Some(&player.id) {
                     EventUrgency::Urgent
@@ -540,6 +548,19 @@ impl SharedState {
                     self.relocate_self(*position, *rotation, *floor_level);
                     // Any teleport settles the pending summons.
                     self.pending_party_summons.clear();
+                }
+                self.apply_player_pose(player_id, *position, *rotation, *floor_level);
+            }
+            ServerMessage::PlayerCharged {
+                player_id,
+                position,
+                rotation,
+                floor_level,
+                ..
+            } => {
+                if self.self_player_id.as_ref() == Some(player_id) {
+                    self.apply_move_progress(*position, *rotation, *floor_level);
+                    self.invalidate_position();
                 }
                 self.apply_player_pose(player_id, *position, *rotation, *floor_level);
             }
@@ -1357,6 +1378,7 @@ impl SharedState {
             }
             ServerMessage::PlayerMoved { player_id, .. }
             | ServerMessage::PlayerTeleported { player_id, .. }
+            | ServerMessage::PlayerCharged { player_id, .. }
                 if self.self_player_id.as_ref() == Some(player_id) =>
             {
                 self.check_sightings();

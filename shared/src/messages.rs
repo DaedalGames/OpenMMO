@@ -1086,6 +1086,17 @@ pub enum ServerMessage {
         #[serde(default)]
         floor_level: i8,
     },
+    /// Valhalla Charge. The server already has the charger at `position`;
+    /// viewers run the model there from `from` over `duration_ms`.
+    PlayerCharged {
+        player_id: PlayerId,
+        monster_id: String,
+        from: Position,
+        position: Position,
+        rotation: f32,
+        floor_level: i8,
+        duration_ms: u64,
+    },
     PlayerTeleportEffect {
         player_id: PlayerId,
         position: Position,
@@ -1335,6 +1346,9 @@ pub enum ServerMessage {
         /// cannot see for anyone but themselves.
         ammo_item_def_id: Option<String>,
         dagger_strike: Option<u8>,
+        /// Valhalla Charge's arrival blow, landing as the dash does.
+        #[serde(default)]
+        charge: bool,
     },
     DaggerDoubleSlashStarted {
         player_id: PlayerId,
@@ -2027,6 +2041,12 @@ pub enum ServerMessage {
         monster_ids: Vec<String>,
         duration_ms: u64,
     },
+    /// Valhalla Charge's slow; viewers walk the monster at `move_mult`.
+    MonsterSlowed {
+        monster_id: String,
+        move_mult: f32,
+        duration_ms: u64,
+    },
     BowMarkUpdate {
         monster_id: Option<String>,
         remaining_ms: u64,
@@ -2087,6 +2107,7 @@ impl ServerMessage {
             | Self::PlayerDisappeared { .. }
             | Self::PlayerMoved { .. }
             | Self::PlayerTeleported { .. }
+            | Self::PlayerCharged { .. }
             | Self::DungeonPropBroken { .. }
             | Self::DungeonPropOpened { .. }
             | Self::DungeonPropsState { .. }
@@ -2155,7 +2176,8 @@ impl ServerMessage {
             | Self::MonsterAttackedPlayer { .. }
             | Self::PlayerInstrumentNotes { .. }
             | Self::AbilityUsed { .. }
-            | Self::MonsterStunned { .. } => DeliveryClass::NearbyEffect,
+            | Self::MonsterStunned { .. }
+            | Self::MonsterSlowed { .. } => DeliveryClass::NearbyEffect,
             Self::TerrainTileVersion { .. }
             | Self::LandscapeChanged { .. }
             | Self::LandscapeInvalidated { .. }

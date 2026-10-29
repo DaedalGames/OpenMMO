@@ -584,7 +584,7 @@ impl MonsterBrain {
     /// them at the target itself overshoots the standing cell the chase
     /// actually stops at, and every sync yanks the model back.
     fn make_chase_move_cmd(&mut self, target_pos: crate::Position) -> AiCommand {
-        let lookahead = self.move_speed * NETWORK_SYNC_INTERVAL_MS / 1000.0 * 2.0;
+        let lookahead = self.step_speed() * NETWORK_SYNC_INTERVAL_MS / 1000.0 * 2.0;
         let engage = self.chase_stop_range().map(|r| (target_pos, r));
         let aim = self.path_lookahead(lookahead, engage);
         self.move_cmd_to(aim)

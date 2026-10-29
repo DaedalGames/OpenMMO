@@ -8,6 +8,7 @@ import type {
   MoveDirection,
   MovePath,
   MoveProgress,
+  PlayerCharge,
   PlayerInteraction,
   StallBuyLine,
   TradeLineItem,
@@ -169,6 +170,7 @@ class NetworkManager {
   readonly moveProgress = createEvent<(progress: MoveProgress) => void>()
   readonly playerRelocated =
     createEvent<(position: Position, rotation: number) => void>()
+  readonly playerCharged = createEvent<(charge: PlayerCharge) => void>()
 
   constructor() {
     // Reset backoff only after authentication succeeds.
@@ -213,6 +215,7 @@ class NetworkManager {
       movePath: this.movePath,
       moveProgress: this.moveProgress,
       playerRelocated: this.playerRelocated,
+      playerCharged: this.playerCharged,
     }
   }
 

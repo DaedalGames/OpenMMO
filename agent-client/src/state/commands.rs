@@ -117,6 +117,20 @@ impl SharedState {
                 return Ok(());
             }
         }
+        if let ClientMessage::UseAbility {
+            ability: AbilityId::ValhallaCharge,
+            ..
+        } = &msg
+        {
+            let wait = self.player_attack_wait();
+            if !wait.is_zero() {
+                self.push_agent_event(format!(
+                    "[ValhallaChargeFailed] Your basic attack is still recovering; wait {:.1}s before charging.",
+                    wait.as_secs_f32()
+                ));
+                return Ok(());
+            }
+        }
         if double_slash {
             let wait = self.double_slash_wait().max(self.player_attack_wait());
             if !wait.is_zero() {

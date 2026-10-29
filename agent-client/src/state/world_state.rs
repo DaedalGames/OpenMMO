@@ -3,7 +3,9 @@ use onlinerpg_shared::ability::{
     GUARDIAN_WARD_COOLDOWN_MS, GUARDIAN_WARD_DURATION_MS, GUARDIAN_WARD_RADIUS,
     PRIMAL_ROAR_CAST_MS, PRIMAL_ROAR_COOLDOWN_MS, PRIMAL_ROAR_DURATION_MS, PRIMAL_ROAR_RADIUS,
     PRIMAL_ROAR_STAGGER_MS, PRIMAL_ROAR_STOMP_MS, RAGE_COOLDOWN_MS, RAGE_DURATION_MS,
-    RAGE_GUARD_PENALTY,
+    RAGE_GUARD_PENALTY, VALHALLA_CHARGE_COOLDOWN_MS, VALHALLA_CHARGE_DASH_MS,
+    VALHALLA_CHARGE_MAX_RANGE, VALHALLA_CHARGE_MIN_RANGE, VALHALLA_CHARGE_SHORT_SLOW_MS,
+    VALHALLA_CHARGE_SLOW_MS, VALHALLA_CHARGE_SLOW_MULT,
 };
 
 pub struct BuffAbility {
@@ -32,6 +34,12 @@ pub fn buff_ability(ability: AbilityId) -> Option<BuffAbility> {
             name: "Primal Roar",
             requires: "a living, unmounted Caveman",
             equipment: "nothing",
+        }),
+        AbilityId::ValhallaCharge => Some(BuffAbility {
+            tag: "ValhallaCharge",
+            name: "Valhalla Charge",
+            requires: "a living, unmounted Valkyrie and a living monster target on your floor",
+            equipment: "a one-handed sword or spear in your main hand",
         }),
         _ => None,
     }
@@ -214,8 +222,7 @@ not mean both strikes hit."#
                 .get(&onlinerpg_shared::inventory::EquipSlot::OffHand)
                 .and_then(|item| crate::item_defs::get(&item.item_def_id));
             let equipped = main.is_some_and(|def| {
-                matches!(def.weapon_type.as_deref(), Some("sword" | "mace"))
-                    && def.hands.unwrap_or(1) < 2
+                matches!(def.weapon_type.as_deref(), Some("sword" | "mace")) && !def.is_two_handed()
             }) && off.is_some_and(|def| def.armor_type.as_deref() == Some("shield"));
             let (readiness, buff) =
                 self.buff_ability_status(player, AbilityId::GuardianWard, equipped);
@@ -278,6 +285,33 @@ Use the readiness status above. Wait for server success or failure feedback."#,
                 PRIMAL_ROAR_STAGGER_MS as f32 / 1000.0,
                 PRIMAL_ROAR_DURATION_MS / 1000,
                 PRIMAL_ROAR_COOLDOWN_MS / 1000,
+            ));
+        }
+        if let Some(player) = self
+            .self_player
+            .as_ref()
+            .filter(|player| player.class == onlinerpg_shared::CharacterClass::Valkyrie)
+        {
+            let equipped = self.main_hand_def().is_some_and(|def| {
+                matches!(def.weapon_type.as_deref(), Some("sword" | "spear"))
+                    && !def.is_two_handed()
+            });
+            let (readiness, _) =
+                self.buff_ability_status(player, AbilityId::ValhallaCharge, equipped);
+            let mana_cost = AbilityId::ValhallaCharge.mana_cost();
+            lines.push(format!(
+                r#"Valhalla Charge: {readiness}.
+As a Valkyrie, cast with {{"type": "use_ability", "ability": "valhalla_charge", "target": "<monster id>"}}.
+Requires a one-handed sword or spear and {mana_cost} MP, and your basic attack must be ready.
+The monster must be {VALHALLA_CHARGE_MIN_RANGE}-{VALHALLA_CHARGE_MAX_RANGE}m away on your floor with a clear,
+walkable straight line. You dash into melee reach in {:.1}s and swing once on arrival; a hit slows
+its movement to {}% for {}s ({}s for bosses). Cooldown {}s. Keep fighting with "attack" afterwards.
+Use the readiness status above. Wait for server success or failure feedback."#,
+                VALHALLA_CHARGE_DASH_MS as f32 / 1000.0,
+                (VALHALLA_CHARGE_SLOW_MULT * 100.0).round(),
+                VALHALLA_CHARGE_SLOW_MS / 1000,
+                VALHALLA_CHARGE_SHORT_SLOW_MS as f32 / 1000.0,
+                VALHALLA_CHARGE_COOLDOWN_MS / 1000,
             ));
         }
         if let Some((satiation, state)) = self.self_hunger {

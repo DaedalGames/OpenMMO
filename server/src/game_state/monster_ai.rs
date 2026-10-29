@@ -61,6 +61,12 @@ impl Entry {
         delta.min(MAX_BRAIN_DELTA_MS)
     }
 
+    /// Let the brain live out the time owed up to `now` outside a tick.
+    fn catch_up(&mut self, now: Instant) {
+        let owed = self.owed_ms(now, None);
+        self.brain.catch_up(owed);
+    }
+
     /// Mark the brain watched this tick. A brain nobody watched last tick
     /// owes nothing: paying that time back is a teleport to whoever looks.
     fn watch(&mut self, gen: u64, now: Instant) {
@@ -954,8 +960,7 @@ impl super::GameState {
             };
             // A swing lands between ticks; the hit pose must not rewind the
             // monster to the last tick's step.
-            let owed = entry.owed_ms(Instant::now(), None);
-            entry.brain.catch_up(owed);
+            entry.catch_up(Instant::now());
             entry
                 .brain
                 .handle_hit_with_behavior_tree(attacker_id, hit, damage)
@@ -994,8 +999,7 @@ impl super::GameState {
                 .iter()
                 .filter_map(|id| {
                     let entry = brains.entries.get_mut(id)?;
-                    let owed = entry.owed_ms(now, None);
-                    entry.brain.catch_up(owed);
+                    entry.catch_up(now);
                     let commands = entry
                         .brain
                         .handle_roar(roarer_id, PRIMAL_ROAR_STAGGER_MS as f32);
@@ -1013,13 +1017,23 @@ impl super::GameState {
         staggered
     }
 
+    /// True when the brain took the slow.
+    pub(super) async fn brain_slow(&self, monster_id: &str, mult: f32, ms: u64) -> bool {
+        let mut brains = self.monster_brains.lock().await;
+        let Some(entry) = brains.entries.get_mut(monster_id) else {
+            return false;
+        };
+        entry.catch_up(Instant::now());
+        entry.brain.handle_slow(mult, ms as f32);
+        !entry.brain.is_dead()
+    }
+
     /// Where the brain has the monster right now; the registry trails it by
     /// up to a sync interval while it runs.
     pub(super) async fn brain_position_now(&self, monster_id: &str) -> Option<Position> {
         let mut brains = self.monster_brains.lock().await;
         let entry = brains.entries.get_mut(monster_id)?;
-        let owed = entry.owed_ms(Instant::now(), None);
-        entry.brain.catch_up(owed);
+        entry.catch_up(Instant::now());
         Some(entry.brain.position)
     }
 

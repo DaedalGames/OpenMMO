@@ -261,6 +261,7 @@ async fn double_slash_readiness_and_feedback_follow_server_events() {
         critical: false,
         ammo_item_def_id: None,
         dagger_strike: Some(1),
+        charge: false,
     };
     assert!(prompt::format_event(&state, &hit)
         .unwrap()

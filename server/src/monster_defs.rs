@@ -58,6 +58,8 @@ pub struct MonsterDefinition {
     pub ranged_attack_range: f32,
     #[serde(rename = "staggerImmune", default)]
     pub stagger_immune: bool,
+    #[serde(default)]
+    pub boss: bool,
     #[serde(rename = "attackCooldown")]
     pub attack_cooldown: u32,
     /// Behavior tree name (data-src/behavior_trees.json).
