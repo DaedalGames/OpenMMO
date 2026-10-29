@@ -37,6 +37,7 @@
     type TravelDestination,
   } from '../utils/autoTravel'
   import { networkManager } from '../network/socket'
+  import { reportAttackRejected } from '../network/messageHandlers'
   import { monsterManager } from '../managers/monsterManager'
   import { remotePlayerManager } from '../managers/remotePlayerManager'
   import {
@@ -92,6 +93,7 @@
     canCarryOne,
     localTorchEquipped,
     inventoryStore,
+    outOfAmmo,
   } from '../stores/inventoryStore'
   import { hungerState, SPRINT_MIN_SATIATION } from '../stores/hungerStore'
   import {
@@ -702,9 +704,18 @@
     combatController.cancelCombat({ notifyServer: false })
   }
 
+  function refuseWithoutAmmo(): boolean {
+    if (!outOfAmmo($inventoryStore)) return false
+    combatController.cancelCombat()
+    transitionToIdle()
+    reportAttackRejected('out_of_ammo')
+    return true
+  }
+
   /** Take the monster as a target and walk at it, attacking on arrival. */
   /** A solid body's centre is sealed, so walk to its surface instead. */
   function chaseAndAttack(monsterId: string, goal: Position) {
+    if (refuseWithoutAmmo()) return
     combatController.beginCombat(monsterId, false)
     const aim = currentPlayer
       ? monsterManager.engagePosition(monsterId, currentPlayer.position, goal)
@@ -731,6 +742,7 @@
 
   // Initiate attack on a monster
   function initiateAttack(monsterId: string) {
+    if (refuseWithoutAmmo()) return
     cancelAutoTravel()
     if (getInteractionExitKind(playerState) === 'pickup') {
       finishPendingPickup()

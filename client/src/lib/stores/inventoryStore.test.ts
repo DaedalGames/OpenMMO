@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { fitsOneUnit, isTorchItemDefId, wornAmmoStack } from './inventoryStore'
+import {
+  fitsOneUnit,
+  isTorchItemDefId,
+  outOfAmmo,
+  wornAmmoStack,
+} from './inventoryStore'
 
 describe('isTorchItemDefId', () => {
   it('recognizes every carried torch variant', () => {
@@ -14,15 +19,15 @@ describe('isTorchItemDefId', () => {
   })
 })
 
-describe('wornAmmoStack', () => {
-  const bag = (...ids: string[]) =>
-    ids.map((item_def_id, i) => ({
-      instance_id: i + 1,
-      item_def_id,
-      quantity: 10,
-      enchant: 0,
-    }))
+const bag = (...ids: string[]) =>
+  ids.map((item_def_id, i) => ({
+    instance_id: i + 1,
+    item_def_id,
+    quantity: 10,
+    enchant: 0,
+  }))
 
+describe('wornAmmoStack', () => {
   it('names the stack the hand cell is drawing', () => {
     expect(
       wornAmmoStack({
@@ -72,6 +77,34 @@ describe('wornAmmoStack', () => {
         active_ammo: null,
       })
     ).toBeUndefined()
+  })
+})
+
+describe('outOfAmmo', () => {
+  it('refuses a bow with no arrows in the bag', () => {
+    expect(
+      outOfAmmo({
+        bag: bag('iron_sword'),
+        equipped: { main_hand: bag('bow')[0] },
+      })
+    ).toBe(true)
+  })
+
+  /** The server draws the best round of the kind when none is chosen. */
+  it('allows a bow with any arrow in the bag', () => {
+    expect(
+      outOfAmmo({
+        bag: bag('steel_arrow'),
+        equipped: { main_hand: bag('bow')[0] },
+      })
+    ).toBe(false)
+  })
+
+  it('never refuses a weapon that fires nothing', () => {
+    expect(
+      outOfAmmo({ bag: [], equipped: { main_hand: bag('iron_sword')[0] } })
+    ).toBe(false)
+    expect(outOfAmmo({ bag: [], equipped: {} })).toBe(false)
   })
 })
 

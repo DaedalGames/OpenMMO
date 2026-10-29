@@ -1473,15 +1473,7 @@ export function handleServerMessage(
           monsterManager.remove(data.monster_id)
         }
       }
-      const reasonKey = ATTACK_REJECTION_MESSAGES[data.reason]
-      addCombatMessage({
-        text: translate('combat.attackRejected', {
-          reason: reasonKey ? translate(reasonKey) : data.reason,
-        }),
-        sender: 'local',
-        name: translate('chat.you'),
-        hit: false,
-      })
+      reportAttackRejected(data.reason)
       break
     }
 
@@ -2849,6 +2841,18 @@ const ATTACK_REJECTION_MESSAGES: Record<string, MessageKey> = {
   out_of_range: 'combat.out_of_range',
   attacker_dead: 'combat.attackerDead',
   out_of_ammo: 'combat.outOfAmmo',
+}
+
+export function reportAttackRejected(reason: string) {
+  const reasonKey = ATTACK_REJECTION_MESSAGES[reason]
+  addCombatMessage({
+    text: translate('combat.attackRejected', {
+      reason: reasonKey ? translate(reasonKey) : reason,
+    }),
+    sender: 'local',
+    name: translate('chat.you'),
+    hit: false,
+  })
 }
 
 /** A monster's blow on one player: the local damage readout, then the

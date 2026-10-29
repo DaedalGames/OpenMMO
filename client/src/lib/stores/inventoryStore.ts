@@ -101,6 +101,19 @@ export function wornAmmoStack(
   return inv.bag.find((item) => item.item_def_id === inv.active_ammo)
 }
 
+/** Mirrors the server's ammo gate (`loaded_ammo`): a weapon that fires ammo
+ *  needs a round of its kind somewhere in the bag. */
+export function outOfAmmo(
+  inv: Pick<PlayerInventory, 'bag' | 'equipped'>
+): boolean {
+  const kind = getItemDef(inv.equipped.main_hand?.item_def_id ?? '')?.ammoKind
+  if (!kind) return false
+  return !inv.bag.some((item) => {
+    const def = getItemDef(item.item_def_id)
+    return def?.category === 'ammo' && def.ammoKind === kind
+  })
+}
+
 export function isTorchItemDefId(id: string | null | undefined): boolean {
   return id != null && TORCH_ITEM_IDS.includes(id)
 }
