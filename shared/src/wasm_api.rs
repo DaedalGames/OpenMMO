@@ -137,6 +137,23 @@ pub fn valhalla_charge_stats() -> Result<JsValue, JsError> {
     })
 }
 
+#[derive(Serialize)]
+struct HealingPrayerStats {
+    range_m: f32,
+    cooldown_ms: u32,
+    dice: &'static str,
+}
+
+#[wasm_bindgen]
+pub fn healing_prayer_stats() -> Result<JsValue, JsError> {
+    use crate::ability::*;
+    to_js(&HealingPrayerStats {
+        range_m: HEALING_PRAYER_RANGE,
+        cooldown_ms: HEALING_PRAYER_COOLDOWN_MS as u32,
+        dice: HEALING_PRAYER_DICE,
+    })
+}
+
 #[wasm_bindgen]
 pub fn fishing_is_stern_cast(dx: f32, dz: f32, boat_rotation: f32) -> bool {
     crate::fishing::is_stern_cast(dx, dz, boat_rotation)

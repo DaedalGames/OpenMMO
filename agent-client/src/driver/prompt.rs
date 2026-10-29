@@ -184,8 +184,10 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             }];
             for p in players.iter() {
                 lines.push(format!(
-                    "  Player: {} Lv.{} HP {}/{}",
-                    p.name, p.level, p.health, p.max_health
+                    "  Player: {} Lv.{} {}",
+                    p.name,
+                    p.level,
+                    crate::state::hp_text(p.health, p.max_health)
                 ));
             }
             if !dialogue_only {
@@ -437,10 +439,35 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             "[ValhallaCharge] You charge {monster_id} and land at ({:.1}, {:.1}); your swing follows on arrival.",
             position.x, position.z
         )),
+        ServerMessage::HealingPrayed {
+            player_id,
+            target_player_id,
+            monster_id,
+            amount,
+        } => {
+            let self_id = state.self_player_id?;
+            match (monster_id, target_player_id) {
+                (Some(monster_id), _) if *player_id == self_id => Some(format!(
+                    "[HealingPrayer] Your prayer sears {monster_id} for {amount} damage."
+                )),
+                (None, Some(target)) if *player_id == self_id && *target == self_id => {
+                    Some(format!("[HealingPrayer] You heal yourself for {amount} HP."))
+                }
+                (None, Some(target)) if *player_id == self_id => Some(format!(
+                    "[HealingPrayer] You heal {} for {amount} HP.",
+                    player_name(state, target)
+                )),
+                (None, Some(target)) if *target == self_id => Some(format!(
+                    "[HealingPrayer] {} heals you for {amount} HP.",
+                    player_name(state, player_id)
+                )),
+                _ => None,
+            }
+        }
         ServerMessage::AbilityRejected { ability, reason }
             if crate::state::buff_ability(*ability).is_some() =>
         {
-            use onlinerpg_shared::ability::AbilityRejectReason;
+            use onlinerpg_shared::ability::{AbilityId, AbilityRejectReason};
             let info = crate::state::buff_ability(*ability)?;
             let reason = match reason {
                 AbilityRejectReason::Unavailable => {
@@ -451,7 +478,16 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
                 AbilityRejectReason::NotEnoughMana => "not enough MP".into(),
                 AbilityRejectReason::OutOfRange => "target is out of range".into(),
                 AbilityRejectReason::TooClose => "target is too close".into(),
+                AbilityRejectReason::Blocked if *ability == AbilityId::HealingPrayer => {
+                    "a wall blocks your sight of the target".into()
+                }
                 AbilityRejectReason::Blocked => "the straight path is blocked".into(),
+                AbilityRejectReason::FullHealth => {
+                    "the target is already at full HP; nothing was spent".into()
+                }
+                AbilityRejectReason::NotUndead => {
+                    "only undead monsters can be harmed by it; nothing was spent".into()
+                }
             };
             Some(format!("[{}Failed] {reason}.", info.tag))
         }
@@ -545,10 +581,10 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             victims
                 .iter()
                 .map(|v| format!(
-                    "{} dmg={} hp={}",
+                    "{} dmg={} {}",
                     player_name(state, &v.player_id),
                     v.damage,
-                    v.current_health
+                    victim_hp(state, &v.player_id, v.current_health)
                 ))
                 .collect::<Vec<_>>()
                 .join(", ")
@@ -575,8 +611,9 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             current_health,
             ..
         } => Some(format!(
-            "[MonsterAttack] {monster_id} -> {}: hit={hit} dmg={damage} hp={current_health}",
-            player_name(state, player_id)
+            "[MonsterAttack] {monster_id} -> {}: hit={hit} dmg={damage} {}",
+            player_name(state, player_id),
+            victim_hp(state, player_id, *current_health)
         )),
         ServerMessage::PlayerDead { player_id } => {
             Some(format!("[PlayerDead] {}", player_name(state, player_id)))
@@ -585,8 +622,9 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             let is_self = state.self_player_id.as_ref() == Some(&player.id);
             if !is_self {
                 return Some(format!(
-                    "[Respawn] {} HP {}/{}",
-                    player.name, player.health, player.max_health
+                    "[Respawn] {} {}",
+                    player.name,
+                    crate::state::hp_text(player.health, player.max_health)
                 ));
             }
             let (x, z) = (player.position.x, player.position.z);
@@ -820,6 +858,14 @@ fn caught_line(item_def_id: &str, size_cm: u16, trophy: bool) -> String {
 /// Falls back to the raw ID if the player is not found.
 pub(super) fn player_name(state: &SharedState, player_id: &PlayerId) -> String {
     state.player_display_name(player_id)
+}
+
+fn victim_hp(state: &SharedState, player_id: &PlayerId, health: u32) -> String {
+    if state.knows_hp_of(player_id) {
+        format!("hp={health}")
+    } else {
+        crate::state::hp_text(health, 0)
+    }
 }
 
 /// Format current schedule context for inclusion in LLM prompts.

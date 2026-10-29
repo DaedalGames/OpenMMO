@@ -437,6 +437,24 @@ class MonsterManager {
     this.monsters.set(monsterId, { ...monster })
   }
 
+  /** Healing Prayer searing an undead: it flinches at once, no swing. */
+  handlePrayerStruck(monsterId: string, playerId: number, damage: number) {
+    const monster = this.monsters.get(monsterId)
+    if (!monster || monster.state === 'dead') return
+    monster.impactDelay = 1
+    monster.targetPlayerId = playerId
+    monster.isLastHitSuccess = true
+    monster.pendingSwordHitSoundUrl = undefined
+    if (playerId === get(gameStore).currentPlayer?.id)
+      monster.pendingDamageText = {
+        delay: 1 + DAMAGE_TEXT_AFTER_IMPACT_MS,
+        damage,
+        hit: true,
+        critical: false,
+      }
+    this.monsters.set(monsterId, { ...monster })
+  }
+
   handleMonsterSkillStarted(
     monsterId: string,
     skill: string,

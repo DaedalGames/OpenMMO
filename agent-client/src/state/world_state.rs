@@ -1,11 +1,12 @@
 use super::*;
 use onlinerpg_shared::ability::{
     GUARDIAN_WARD_COOLDOWN_MS, GUARDIAN_WARD_DURATION_MS, GUARDIAN_WARD_RADIUS,
-    PRIMAL_ROAR_CAST_MS, PRIMAL_ROAR_COOLDOWN_MS, PRIMAL_ROAR_DURATION_MS, PRIMAL_ROAR_RADIUS,
-    PRIMAL_ROAR_STAGGER_MS, PRIMAL_ROAR_STOMP_MS, RAGE_COOLDOWN_MS, RAGE_DURATION_MS,
-    RAGE_GUARD_PENALTY, VALHALLA_CHARGE_COOLDOWN_MS, VALHALLA_CHARGE_DASH_MS,
-    VALHALLA_CHARGE_MAX_RANGE, VALHALLA_CHARGE_MIN_RANGE, VALHALLA_CHARGE_SHORT_SLOW_MS,
-    VALHALLA_CHARGE_SLOW_MS, VALHALLA_CHARGE_SLOW_MULT,
+    HEALING_PRAYER_COOLDOWN_MS, HEALING_PRAYER_DICE, HEALING_PRAYER_RANGE, PRIMAL_ROAR_CAST_MS,
+    PRIMAL_ROAR_COOLDOWN_MS, PRIMAL_ROAR_DURATION_MS, PRIMAL_ROAR_RADIUS, PRIMAL_ROAR_STAGGER_MS,
+    PRIMAL_ROAR_STOMP_MS, RAGE_COOLDOWN_MS, RAGE_DURATION_MS, RAGE_GUARD_PENALTY,
+    VALHALLA_CHARGE_COOLDOWN_MS, VALHALLA_CHARGE_DASH_MS, VALHALLA_CHARGE_MAX_RANGE,
+    VALHALLA_CHARGE_MIN_RANGE, VALHALLA_CHARGE_SHORT_SLOW_MS, VALHALLA_CHARGE_SLOW_MS,
+    VALHALLA_CHARGE_SLOW_MULT,
 };
 
 pub struct BuffAbility {
@@ -41,7 +42,24 @@ pub fn buff_ability(ability: AbilityId) -> Option<BuffAbility> {
             requires: "a living, unmounted Valkyrie and a living monster target on your floor",
             equipment: "a one-handed sword or spear in your main hand",
         }),
+        AbilityId::HealingPrayer => Some(BuffAbility {
+            tag: "HealingPrayer",
+            name: "Healing Prayer",
+            requires: "a living, unmounted Priest and a living player or undead monster target in sight on your floor",
+            equipment: "nothing",
+        }),
         _ => None,
+    }
+}
+
+/// Exact only when the server disclosed `max_health`; otherwise alive or dead.
+pub fn hp_text(health: u32, max_health: u32) -> String {
+    if max_health > 0 {
+        format!("HP {health}/{max_health}")
+    } else if health > 0 {
+        "alive (HP hidden)".to_string()
+    } else {
+        "dead".to_string()
     }
 }
 
@@ -82,6 +100,25 @@ impl SharedState {
             format!("active for {:.1}s", remaining.as_secs_f32())
         };
         (readiness, buff)
+    }
+
+    /// Whether `health` values for this player arrive exact.
+    pub fn knows_hp_of(&self, player_id: &PlayerId) -> bool {
+        self.self_player_id.as_ref() == Some(player_id)
+            || self
+                .nearby_players
+                .get(player_id)
+                .is_some_and(|p| p.max_health > 0)
+    }
+
+    /// Party members' exact HP stands in for a hidden nearby value.
+    fn player_hp_text(&self, player: &Player) -> String {
+        match self.party_members.iter().find(|m| m.id == player.id) {
+            Some(member) if player.max_health == 0 && member.max_hp > 0 => {
+                hp_text(member.hp, member.max_hp)
+            }
+            _ => hp_text(player.health, player.max_health),
+        }
     }
 
     pub fn main_hand_def(&self) -> Option<&'static crate::item_defs::ItemDef> {
@@ -314,6 +351,41 @@ Use the readiness status above. Wait for server success or failure feedback."#,
                 VALHALLA_CHARGE_COOLDOWN_MS / 1000,
             ));
         }
+        if let Some(player) = self
+            .self_player
+            .as_ref()
+            .filter(|player| player.class == onlinerpg_shared::CharacterClass::Priest)
+        {
+            let (readiness, _) = self.buff_ability_status(player, AbilityId::HealingPrayer, true);
+            let mana_cost = AbilityId::HealingPrayer.mana_cost();
+            let roll = self
+                .characters
+                .iter()
+                .find(|c| c.name == player.name)
+                .map_or_else(
+                    || format!("{HEALING_PRAYER_DICE} + Level/3 + WIS modifier"),
+                    |c| {
+                        let bonus = onlinerpg_shared::ability::healing_prayer_bonus(
+                            player.level,
+                            c.attributes.wis,
+                        );
+                        format!("{HEALING_PRAYER_DICE}{bonus:+}")
+                    },
+                );
+            let undead = crate::monster_defs::undead_names().join(", ");
+            lines.push(format!(
+                r#"Healing Prayer: {readiness}.
+As a Priest, heal yourself with {{"type": "use_ability", "ability": "healing_prayer"}}.
+Add "target": "<player name>" to heal another living player, or "target": "<monster id>" to harm
+an undead monster. Needs {mana_cost} MP and works with any gear. The target must be within {HEALING_PRAYER_RANGE}m
+on your floor with no wall between you. It restores {roll} HP (at least 1), never above max HP;
+a target already at full HP refuses it without cost. It harms only undead monsters ({undead}),
+for the same roll; any other monster refuses it. Cooldown {}s. Other players show only alive or
+dead unless they are in your party or you wear a stethoscope.
+Use the readiness status above. Wait for server success or failure feedback."#,
+                HEALING_PRAYER_COOLDOWN_MS / 1000,
+            ));
+        }
         if let Some((satiation, state)) = self.self_hunger {
             let mut line = format!("Hunger: {state:?} ({satiation}/1000)");
             if !self.self_debuffs.is_empty() {
@@ -418,11 +490,12 @@ Use the readiness status above. Wait for server success or failure feedback."#,
                 .party_members
                 .iter()
                 .map(|m| {
-                    if Some(m.id) == self.party_leader {
-                        format!("{} (leader)", m.name)
+                    let leader = if Some(m.id) == self.party_leader {
+                        " (leader)"
                     } else {
-                        m.name.clone()
-                    }
+                        ""
+                    };
+                    format!("{}{leader} {}", m.name, hp_text(m.hp, m.max_hp))
                 })
                 .collect();
             lines.push(format!("Your party: {}", names.join(", ")));
@@ -469,8 +542,13 @@ Use the readiness status above. Wait for server success or failure feedback."#,
                 _ => String::new(),
             };
             lines.push(format!(
-                "Player: {}{npc_tag}{favor_tag} Lv.{} HP {}/{} at ({:.1}, {:.1}, {:.1})",
-                p.name, p.level, p.health, p.max_health, p.position.x, p.position.y, p.position.z
+                "Player: {}{npc_tag}{favor_tag} Lv.{} {} at ({:.1}, {:.1}, {:.1})",
+                p.name,
+                p.level,
+                self.player_hp_text(p),
+                p.position.x,
+                p.position.y,
+                p.position.z
             ));
             if let Some(title) = p.title.as_deref() {
                 lines.push(format!(
@@ -486,9 +564,15 @@ Use the readiness status above. Wait for server success or failure feedback."#,
         }
 
         if !self.dialogue_only() {
+            let priest = sp.is_some_and(|p| p.class == onlinerpg_shared::CharacterClass::Priest);
             for m in self.monsters_on_my_floor() {
+                let undead = if priest && crate::monster_defs::is_undead(&m.monster_type) {
+                    " (undead)"
+                } else {
+                    ""
+                };
                 lines.push(format!(
-                    "Monster: {} [{}] HP {}/{} state={} at ({:.1}, {:.1}, {:.1})",
+                    "Monster: {} [{}]{undead} HP {}/{} state={} at ({:.1}, {:.1}, {:.1})",
                     crate::monster_defs::monster_name(&m.monster_type),
                     m.id,
                     m.health,

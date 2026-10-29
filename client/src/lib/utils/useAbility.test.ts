@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { get, writable } from 'svelte/store'
+import { get, writable, type Writable } from 'svelte/store'
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest'
 import { initSharedWasm, testItem } from './ability.fixture'
 import { networkManager } from '../network/socket'
@@ -32,12 +32,23 @@ import {
   resetFishingStore,
 } from '../stores/fishingStore'
 import { skillsStore, resetSkillsStore } from '../stores/skillsStore'
+import { hoveredPartyMemberId, partyRoster } from '../stores/partyStore'
+import { monsterManager } from '../managers/monsterManager'
+import {
+  hoveredMonsterId as hoveredMonster,
+  hoveredPlayerId as hoveredPlayer,
+  type RemotePlayer,
+} from '../stores/gameStore'
 import { currentDungeonDepth } from '../stores/dungeonStore'
 import { playerVisualFloorLevel } from '../stores/housingStore'
 
+const hoveredMonsterId = hoveredMonster as unknown as Writable<string | null>
+const hoveredPlayerId = hoveredPlayer as unknown as Writable<number | null>
+
 vi.mock('../stores/gameStore', () => ({
-  gameStore: writable({ currentPlayer: null }),
+  gameStore: writable({ currentPlayer: null, otherPlayers: new Map() }),
   hoveredMonsterId: writable(null),
+  hoveredPlayerId: writable(null),
   reportSkillFailure: vi.fn(),
 }))
 vi.mock('../network/socket', () => ({
@@ -310,4 +321,68 @@ it('sends Valhalla Charge at the targeted monster with a one-handed sword or spe
   expect(
     readFileSync(new URL(`../../../public${icon}`, import.meta.url)).length
   ).toBeGreaterThan(0)
+})
+
+it('aims Healing Prayer at a hovered party row, player or undead, else yourself', () => {
+  updatePlayer({ characterClass: 'priest', health: 10, maxHealth: 10 })
+  useAbility('healing_prayer')
+  expect(reportSkillFailure).toHaveBeenLastCalledWith(
+    "The target's HP is already full."
+  )
+  expect(networkManager.sendUseAbility).not.toHaveBeenCalled()
+
+  const cast = (expected: [string | null, number | null]) => {
+    resetAbilities()
+    useAbility('healing_prayer')
+    expect(networkManager.sendUseAbility).toHaveBeenLastCalledWith(
+      'healing_prayer',
+      ...expected
+    )
+  }
+  updatePlayer({ health: 4 })
+  cast([null, null])
+  const monsters = monsterManager.monsters as Map<string, unknown>
+  monsters.set('m1', { id: 'm1', type: 'goblin', state: 'idle' })
+  monsters.set('m2', { id: 'm2', type: 'skeleton', state: 'idle' })
+  hoveredMonsterId.set('m1')
+  cast([null, null])
+  hoveredMonsterId.set('m2')
+  cast(['m2', null])
+
+  gameStore.update((state) => ({
+    ...state,
+    otherPlayers: new Map([
+      [7, { id: 7, health: 1, maxHealth: 0 } as RemotePlayer],
+    ]),
+  }))
+  hoveredPlayerId.set(7)
+  cast([null, 7])
+  partyRoster.set({
+    leaderId: 8,
+    members: [{ id: 8, name: 'Ann', class: 'knight', hp: 30, max_hp: 30 }],
+  })
+  hoveredPartyMemberId.set(8)
+  vi.mocked(networkManager.sendUseAbility).mockClear()
+  resetAbilities()
+  useAbility('healing_prayer')
+  expect(reportSkillFailure).toHaveBeenLastCalledWith(
+    "The target's HP is already full."
+  )
+  expect(networkManager.sendUseAbility).not.toHaveBeenCalled()
+  partyRoster.set({
+    leaderId: 8,
+    members: [{ id: 8, name: 'Ann', class: 'knight', hp: 12, max_hp: 30 }],
+  })
+  cast([null, 8])
+  hoveredPartyMemberId.set(null)
+  hoveredPlayerId.set(null)
+  hoveredMonsterId.set(null)
+  partyRoster.set(null)
+  monsters.clear()
+  for (const id of ['healing_prayer', 'radiance'])
+    expect(
+      readFileSync(
+        new URL(`../../../public${getAbility(id)!.icon}`, import.meta.url)
+      ).length
+    ).toBeGreaterThan(0)
 })

@@ -45,6 +45,7 @@ import {
   updateBowMark,
   timerSnapshot,
   queueAbilityEffect,
+  queuePrayerPose,
   type AbilityEffectEvent,
 } from '../stores/abilityStore'
 import {
@@ -1513,6 +1514,15 @@ export function handleServerMessage(
         Number(data.duration_ms)
       )
       break
+    case 'HealingPrayed':
+      handleHealingPrayed(
+        data.player_id,
+        data.target_player_id,
+        data.monster_id,
+        data.amount
+      )
+      break
+
     case 'MonsterSlowed':
       monsterManager.handleMonsterSlowed(
         data.monster_id,
@@ -2746,6 +2756,10 @@ export function handleServerMessage(
         text = translate('skillFailure.tooClose')
       else if (data.reason === 'blocked')
         text = translate('skillFailure.blocked')
+      else if (data.reason === 'full_health')
+        text = translate('skillFailure.fullHealth')
+      else if (data.reason === 'not_undead')
+        text = translate('skillFailure.notUndead')
       else if (data.reason === 'cooldown')
         text = translate('skillFailure.cooldown', { name })
       else if (data.reason === 'equipment')
@@ -2941,6 +2955,43 @@ export function markMonsterSkillSpots(
       sound: marks.sound,
     })
   }
+}
+
+/** Healing Prayer, as told to its caster and its target; the HP itself
+ *  arrives in `PlayerHealthUpdate`. */
+function handleHealingPrayed(
+  casterId: number,
+  targetId: number | null,
+  monsterId: string | null,
+  amount: number
+) {
+  queuePrayerPose(casterId)
+  const state = get(gameStore)
+  const selfId = state.currentPlayer?.id
+  if (monsterId) {
+    monsterManager.handlePrayerStruck(monsterId, casterId, amount)
+    if (casterId === selfId)
+      addCombatMessage({
+        text: translate('combat.prayerSeared', { damage: amount }),
+        sender: 'local',
+        hit: true,
+      })
+    return
+  }
+  if (targetId === null || (casterId !== selfId && targetId !== selfId)) return
+  let text = translate('combat.prayerHealedSelf', { amount })
+  if (casterId !== targetId)
+    text =
+      casterId === selfId
+        ? translate('combat.prayerHealed', {
+            amount,
+            name: actorName(targetId),
+          })
+        : translate('combat.prayerHealedYou', {
+            amount,
+            name: actorName(casterId),
+          })
+  addCombatMessage({ text, sender: 'local' })
 }
 
 // A crowd hit at once groans as a few voices, not dozens.

@@ -107,7 +107,11 @@ export function applyAbilityCooldowns(
 export type AbilityEffectEvent = {
   ability: Exclude<
     AbilityId,
-    'bow_mark' | 'auscultation' | 'dagger_double_slash' | 'valhalla_charge'
+    | 'bow_mark'
+    | 'auscultation'
+    | 'dagger_double_slash'
+    | 'valhalla_charge'
+    | 'healing_prayer'
   >
   player_id: number
   position: Position
@@ -123,6 +127,18 @@ export function queueAbilityEffect(
   effects.push({ ...event, startedAt: Date.now() })
 }
 
+let prayers: number[] = []
+/** A Healing Prayer caster, for their cast pose. */
+export function queuePrayerPose(playerId: number) {
+  prayers.push(playerId)
+}
+
+export function takePrayerPoses() {
+  const next = prayers
+  prayers = []
+  return next
+}
+
 export function takeAbilityEffects() {
   const next = effects
   effects = []
@@ -135,4 +151,5 @@ export function resetAbilities() {
   activeBuffs.set({})
   abilityPending.set({})
   effects = []
+  prayers = []
 }

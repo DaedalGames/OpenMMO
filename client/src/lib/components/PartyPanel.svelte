@@ -1,9 +1,11 @@
 <script lang="ts">
   import { SvelteSet } from 'svelte/reactivity'
+  import { onDestroy } from 'svelte'
   import {
     partyRoster,
     PARTY_MAX_MEMBERS,
     classIconPath,
+    hoveredPartyMemberId,
   } from '../stores/partyStore'
   import { gameStore } from '../stores/gameStore'
   import { npcContextMenu, type NpcMenuEntry } from '../stores/npcMenuStore'
@@ -26,6 +28,11 @@
   )
   $effect(() => {
     if (kickTargetId !== null && !kickTarget) kickTargetId = null
+  })
+
+  onDestroy(() => hoveredPartyMemberId.set(null))
+  $effect(() => {
+    if (collapsed) hoveredPartyMemberId.set(null)
   })
 
   function hpPercent(hp: number, maxHp: number): number {
@@ -96,6 +103,8 @@
           class:dead={member.hp === 0}
           role="listitem"
           oncontextmenu={(e) => openMemberMenu(e, member)}
+          onmouseenter={() => hoveredPartyMemberId.set(member.id)}
+          onmouseleave={() => hoveredPartyMemberId.set(null)}
         >
           {#if iconPath && !failedIcons.has(member.class)}
             <img

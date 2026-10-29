@@ -1635,6 +1635,9 @@ async fn handle_client_message(
             player.invisible = inventory
                 .as_ref()
                 .is_some_and(|inv| game_state.wears_invisibility(inv));
+            if let Some(inv) = &inventory {
+                game_state.sync_health_viewer(&id, inv);
+            }
             player.set_base_max_health(max_hp);
             player.health = selected_character
                 .health
@@ -3210,6 +3213,68 @@ mod tests {
             "{decoded:?}"
         );
         let _ = std::fs::remove_file(notices);
+    }
+
+    #[tokio::test]
+    async fn entering_with_a_stethoscope_on_shows_other_players_hp() {
+        let game = Arc::new(crate::game_state::tests::make_test_game_state(
+            "enter_stethoscope",
+        ));
+        let auth = Arc::new(crate::game_state::tests::make_test_auth(
+            "enter_stethoscope",
+        ));
+        let account = auth.login_npc("npc_enter_stethoscope").unwrap();
+        let character = auth
+            .create_character(
+                &account,
+                "Medic",
+                &CharacterAttributes {
+                    r#str: 12,
+                    dex: 12,
+                    con: 12,
+                    int: 12,
+                    wis: 12,
+                    cha: 12,
+                    guard: 10,
+                },
+                16,
+                CharacterClass::Priest,
+                crate::types::Gender::Male,
+            )
+            .unwrap();
+        let mut rows = auth.load_inventory(character.id).unwrap();
+        rows.push(crate::auth::ItemRow {
+            locked: false,
+            item_def_id: "stethoscope".into(),
+            quantity: 1,
+            equip_slot: Some("neck".into()),
+            enchant: 0,
+            cape_color: None,
+            cape_texture: None,
+        });
+        auth.save_batch(&[], &[(character.id, rows)], &[], &[], None)
+            .unwrap();
+        let mut state = ConnectionState::new(Ipv4Addr::LOCALHOST.into());
+        handle_handshake(
+            &client_info(onlinerpg_shared::PROTOCOL_VERSION, "web"),
+            &mut state,
+        );
+        finish_auth(&game, &auth, &mut state, account.clone(), false).await;
+        let request = onlinerpg_shared::serialize_client_msg(&ClientMessage::EnterGame {
+            character_id: character.id,
+        })
+        .unwrap();
+        let responses = handle_client_message(&request, &game, &auth, &test_auth_ctx(), &mut state)
+            .await
+            .unwrap();
+        let player = responses
+            .iter()
+            .find_map(|message| match message {
+                ServerMessage::JoinSuccess { player, .. } => Some(player),
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("expected game entry, got {responses:?}"));
+        assert!(game.sees_all_health(&player.id));
     }
 
     #[tokio::test]

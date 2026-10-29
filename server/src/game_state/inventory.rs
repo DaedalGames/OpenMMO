@@ -1419,7 +1419,13 @@ impl super::GameState {
         }
 
         self.consume_one_and_sync(player_id, instance_id).await;
-        self.roll_heal_and_broadcast(player_id, heal_dice).await;
+        self.heal_player(
+            player_id,
+            crate::game::combat::roll_dice(heal_dice),
+            "potion",
+            |p| p.drank_at = Self::now_ms(),
+        )
+        .await;
     }
 
     /// Eat food or fish; raw fish near a campfire grills instead.
@@ -1581,40 +1587,40 @@ impl super::GameState {
         Some((placement, floor_level))
     }
 
-    /// Roll `dice` and heal an alive, wounded player, broadcasting the new HP.
-    async fn roll_heal_and_broadcast(&self, player_id: &PlayerId, dice: &str) {
-        let healed = {
+    /// Heal an alive, wounded player by up to `amount` and broadcast the new HP.
+    /// Returns the HP restored and the player as healed.
+    pub(super) async fn heal_player(
+        &self,
+        player_id: &PlayerId,
+        amount: u32,
+        source: &str,
+        on_heal: impl FnOnce(&mut crate::types::Player),
+    ) -> Option<(u32, crate::types::Player)> {
+        let (restored, player) = {
             let mut players = self.players.write().await;
-            players.get_mut(player_id).and_then(|player| {
-                (player.health > 0 && player.health < player.max_health).then(|| {
-                    let amount = crate::game::combat::roll_dice(dice);
-                    let old_health = player.health;
-                    player.health = (player.health + amount).min(player.max_health);
-                    player.drank_at = Self::now_ms();
-                    self.combat_audit.health(old_health, player, "potion");
-                    (
-                        player.health,
-                        player.max_health,
-                        player.position,
-                        player.floor_level,
-                    )
-                })
-            })
+            let player = players
+                .get_mut(player_id)
+                .filter(|p| p.health > 0 && p.health < p.max_health)?;
+            let old_health = player.health;
+            player.health = player.health.saturating_add(amount).min(player.max_health);
+            on_heal(player);
+            self.combat_audit.health(old_health, player, source);
+            (player.health - old_health, player.clone())
         };
-        if let Some((health, max_health, position, floor_level)) = healed {
-            self.mark_party_vitals_dirty(player_id).await;
-            self.publish_nearby(
-                &position,
-                floor_level,
-                ServerMessage::PlayerHealthUpdate {
-                    player_id: *player_id,
-                    health,
-                    max_health,
-                },
-                None,
-            )
-            .await;
-        }
+        self.mark_dirty(player_id).await;
+        self.mark_party_vitals_dirty(player_id).await;
+        self.publish_nearby(
+            &player.position,
+            player.floor_level,
+            ServerMessage::PlayerHealthUpdate {
+                player_id: *player_id,
+                health: player.health,
+                max_health: player.max_health,
+            },
+            None,
+        )
+        .await;
+        Some((restored, player))
     }
 
     /// If the player is defeated (or gone), message them and return true so

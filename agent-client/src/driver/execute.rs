@@ -17,8 +17,8 @@ use crate::state::{
 use onlinerpg_shared::messages::BagLineItem;
 
 use super::action::{
-    action_to_command, asks_for_great_chest, parse_turn_tolerant, resolve_move_goal, AgentAction,
-    GoalError, PickupRef, Qty,
+    action_to_command, asks_for_great_chest, parse_turn_tolerant, resolve_move_goal, AgentAbility,
+    AgentAction, GoalError, PickupRef, Qty,
 };
 use super::combat::{
     approach_player, chase_monster, chest_arrive_range, follow_player, walk_to_ground_item,
@@ -605,6 +605,36 @@ pub(super) async fn handle_response(
         }
         if matches!(action, AgentAction::CancelPlayerTrade) {
             state.lock().await.cancel_player_trade().await;
+            continue;
+        }
+
+        if let AgentAction::UseAbility {
+            ability: AgentAbility::HealingPrayer,
+            monster_id: target,
+        } = action
+        {
+            let mut s = state.lock().await;
+            let target = target.as_deref().map(str::trim).unwrap_or_default();
+            let (monster_id, target_player_id) = if target.is_empty() || s.names_self(target) {
+                (None, None)
+            } else if s.nearby_monsters.contains_key(target) {
+                (Some(target.to_string()), None)
+            } else if let Some((id, _)) = s.resolve_nearby_player(target) {
+                (None, Some(id))
+            } else {
+                s.push_agent_event(format!(
+                    "[HealingPrayerFailed] No player or monster '{target}' is nearby; nothing was sent."
+                ));
+                continue;
+            };
+            let cmd = onlinerpg_shared::ClientMessage::UseAbility {
+                ability: onlinerpg_shared::ability::AbilityId::HealingPrayer,
+                monster_id,
+                target_player_id,
+            };
+            if let Err(e) = s.send_command(cmd).await {
+                error!("Failed to send healing_prayer: {e}");
+            }
             continue;
         }
 

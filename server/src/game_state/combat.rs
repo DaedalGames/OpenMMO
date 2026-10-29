@@ -217,6 +217,15 @@ pub(super) struct PlayerAttackContext {
     ammo: Option<LoadedAmmo>,
 }
 
+/// A monster a player's blow or prayer lands on.
+pub(super) struct StruckMonster<'a> {
+    pub(super) monster_id: &'a str,
+    pub(super) monster_type: &'a str,
+    pub(super) position: Position,
+    pub(super) floor_level: i8,
+    pub(super) level_override: Option<u8>,
+}
+
 /// The wielded main-hand weapon as combat reads it. Resolved once per request,
 /// under the one `inventories` read the range gate already needs.
 struct EquippedWeapon {
@@ -516,6 +525,12 @@ impl super::GameState {
 
     pub fn wears_invisibility(&self, inv: &PlayerInventory) -> bool {
         self.equipped_defs(inv).any(|d| d.has_invisibility())
+    }
+
+    pub fn wears_stethoscope(inv: &PlayerInventory) -> bool {
+        inv.equipped
+            .get(&EquipSlot::Neck)
+            .is_some_and(|item| item.item_def_id == "stethoscope")
     }
 
     pub fn equipped_max_health_per_level(&self, inv: &PlayerInventory) -> u32 {
@@ -1158,187 +1173,221 @@ impl super::GameState {
 
         if !result.hit {
             self.brain_hit(&monster_id, player_id, false, 0).await;
-        } else {
-            // Damage and the kill claim share one guard, so a second attacker
-            // landing at the same instant sees Dead and stops.
-            let mut dealt = 0;
-            let mut field_raid_boss = false;
-            let mut damage_by = Vec::new();
-            let is_dead = {
-                let mut monsters = self.monsters.write().await;
-                let mut died = false;
-
-                if let Some(monster) = monsters.get_mut(&monster_id) {
-                    if monster.state == MonsterState::Dead {
-                        return false;
-                    }
-
-                    dealt = result.damage.min(monster.health);
-                    field_raid_boss = monster.lifecycle == MonsterLifecycle::FieldRaid;
-                    monster.health = monster.health.saturating_sub(result.damage);
-                    self.interest_lock().refresh_monster(monster);
-                    debug!(
-                        "Monster {} HP: {}/{}",
-                        monster_id, monster.health, monster.max_health
-                    );
-
-                    died = monster.health == 0;
-                }
-                if dealt > 0 {
-                    monsters.record_damage(&monster_id, *player_id, dealt);
-                }
-                if died {
-                    damage_by = monsters.take_damage(&monster_id);
-                    self.combat_audit
-                        .kill(player_id, &monster_id, &monster_type);
-                    // Through the registry so the kill frees its spawn slot now,
-                    // not when the corpse is swept 60s later.
-                    monsters.mark_dead(&monster_id);
-                }
-                died
-            };
-            if monster_floor_level < 0 {
-                self.record_boss_damage(&monster_id, player_id, dealt).await;
-            } else if field_raid_boss && is_dead {
-                // Off the kill path, like a dungeon boss's titles.
-                let game_state = self.clone();
-                let player_id = *player_id;
-                let auth = auth.cloned();
-                tokio::spawn(async move {
-                    game_state
-                        .settle_field_raid_kill(&player_id, dealt, auth.as_ref())
-                        .await;
-                });
-            } else if field_raid_boss {
-                self.record_field_raid_hit(player_id, dealt).await;
-            }
-            if !is_dead {
-                self.brain_hit(&monster_id, player_id, true, result.damage)
-                    .await;
-            } else {
-                // Loot lands where the monster fell, which is not where the
-                // registry has it: that only advances on the brain's tick, and
-                // a bow kills a monster mid-charge, metres along from its last
-                // sync. Read the brain before `brain_death` drops it.
-                let corpse_position = self
-                    .brain_position_now(&monster_id)
-                    .await
-                    .unwrap_or(monster_position);
-                self.release_body(&monster_id, &monster_type);
-                self.brain_death(&monster_id).await;
-                let def = self.monster_defs.get(&monster_type);
-                // Depth-scaled dungeon monsters count as their effective level.
-                let effective_level = monster_level_override.or(def.map(|d| d.level));
-                let dropped_weapon_item_def_id = def
-                    .filter(|def| {
-                        def.weapon_drop_chance >= 1.0
-                            || rand::thread_rng().gen::<f32>() < def.weapon_drop_chance
-                    })
-                    .and_then(|def| def.weapon.as_deref())
-                    .and_then(|weapon| self.item_defs.item_def_id_for_weapon_ref(weapon));
-
-                info!(
-                    "Player {} killed {} (lvl {}) at ({:.1},{:.1}) {}; weapon drop: {}",
-                    player_name,
-                    monster_type,
-                    effective_level.unwrap_or(0),
-                    corpse_position.x,
-                    corpse_position.z,
-                    crate::dungeon_defs::place_label(&corpse_position, monster_floor_level),
-                    dropped_weapon_item_def_id.as_deref().unwrap_or("none")
-                );
-                self.record_monster_kill(&monster_type, effective_level.unwrap_or(0));
-                self.publish_nearby(
-                    &monster_position,
-                    monster_floor_level,
-                    ServerMessage::MonsterDead {
-                        monster_id: monster_id.clone(),
-                        dropped_weapon_item_def_id: dropped_weapon_item_def_id.clone(),
-                    },
-                    None,
-                )
-                .await;
-
-                let weapon_drop = if let Some(item_def_id) = dropped_weapon_item_def_id {
-                    let instance_id = self.next_instance_id().await;
-                    // Scatter off the corpse, then clamp onto walkable dungeon
-                    // floor: pickup is a pure proximity check, so an item
-                    // behind a wall would be lost.
-                    let drop_position = self
-                        .loot_drop_position(
-                            corpse_position,
-                            monster_floor_level,
-                            dropped_weapon_position(corpse_position),
-                        )
-                        .await;
-                    Some(GroundItem {
-                        instance_id,
-                        item_def_id,
-                        position: drop_position,
-                        floor_level: monster_floor_level,
-                        quantity: 1,
-                        enchant: 0,
-                        dropped_by: None,
-                        cape_color: None,
-                        cape_texture: None,
-                    })
-                } else {
-                    None
-                };
-                let mut monster_drops = def.map_or_else(Vec::new, |def| {
-                    crate::world_drop_defs::roll_independent(
-                        def.drop_entries().iter().map(|(id, c)| (id.as_str(), *c)),
-                        &mut rand::thread_rng(),
-                    )
-                });
-                monster_drops.extend(
-                    self.on_dungeon_monster_dead(&monster_id, player_id, auth)
-                        .await,
-                );
-                // All kill loot waits for the blow to land.
-                self.spawn_kill_loot_after_impact(
-                    weapon_drop,
-                    monster_drops,
-                    corpse_position,
-                    monster_floor_level,
-                    effective_level,
-                    if dagger_strike.is_some() || charge {
-                        Duration::ZERO
-                    } else if weapon.ability.is_some() {
-                        *PLAYER_RANGED_IMPACT_DELAY
-                    } else {
-                        *PLAYER_ATTACK_IMPACT_DELAY
-                    },
-                );
-
-                self.drain_hunger_for_kill(player_id).await;
-                if let (Some(def), Some(effective_level)) = (def, effective_level) {
-                    let base_xp = xp::monster_xp(effective_level, def.guard);
-                    let grants = self
-                        .kill_xp_grants(base_xp, &damage_by, monster_position, monster_floor_level)
-                        .await;
-                    self.grant_monster_kill_xp(&grants, &monster_id).await;
-                }
-
-                // Remove the corpse after 60 seconds.
-                let game_state = self.clone();
-                let id_to_remove = monster_id.clone();
-                tokio::spawn(async move {
-                    tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
-                    let still_dead = game_state
-                        .monsters
-                        .read()
-                        .await
-                        .get(&id_to_remove)
-                        .is_some_and(|monster| monster.state == MonsterState::Dead);
-                    if still_dead {
-                        debug!("Monster {} removed after 60s corpse time", id_to_remove);
-                        game_state.despawn_monsters(vec![id_to_remove]).await;
-                    }
-                });
-            }
+            return false;
         }
-        result.hit
+        let loot_delay = if dagger_strike.is_some() || charge {
+            Duration::ZERO
+        } else if weapon.ability.is_some() {
+            *PLAYER_RANGED_IMPACT_DELAY
+        } else {
+            *PLAYER_ATTACK_IMPACT_DELAY
+        };
+        self.damage_monster(
+            player_id,
+            &player_name,
+            StruckMonster {
+                monster_id: &monster_id,
+                monster_type: &monster_type,
+                position: monster_position,
+                floor_level: monster_floor_level,
+                level_override: monster_level_override,
+            },
+            result.damage,
+            loot_delay,
+            auth,
+        )
+        .await
+    }
+
+    /// Take `damage` off a monster for `player_id`; a kill runs its death,
+    /// loot and XP. False when it was already dead.
+    pub(super) async fn damage_monster(
+        &self,
+        player_id: &PlayerId,
+        player_name: &str,
+        target: StruckMonster<'_>,
+        damage: u32,
+        loot_delay: Duration,
+        auth: Option<&crate::auth::AuthService>,
+    ) -> bool {
+        let StruckMonster {
+            monster_id,
+            monster_type,
+            position: monster_position,
+            floor_level: monster_floor_level,
+            level_override: monster_level_override,
+        } = target;
+        // Damage and the kill claim share one guard, so a second attacker
+        // landing at the same instant sees Dead and stops.
+        let mut dealt = 0;
+        let mut field_raid_boss = false;
+        let mut damage_by = Vec::new();
+        let is_dead = {
+            let mut monsters = self.monsters.write().await;
+            let mut died = false;
+
+            if let Some(monster) = monsters.get_mut(monster_id) {
+                if monster.state == MonsterState::Dead {
+                    return false;
+                }
+
+                dealt = damage.min(monster.health);
+                field_raid_boss = monster.lifecycle == MonsterLifecycle::FieldRaid;
+                monster.health = monster.health.saturating_sub(damage);
+                self.interest_lock().refresh_monster(monster);
+                debug!(
+                    "Monster {} HP: {}/{}",
+                    monster_id, monster.health, monster.max_health
+                );
+
+                died = monster.health == 0;
+            }
+            if dealt > 0 {
+                monsters.record_damage(monster_id, *player_id, dealt);
+            }
+            if died {
+                damage_by = monsters.take_damage(monster_id);
+                self.combat_audit.kill(player_id, monster_id, monster_type);
+                // Through the registry so the kill frees its spawn slot now,
+                // not when the corpse is swept 60s later.
+                monsters.mark_dead(monster_id);
+            }
+            died
+        };
+        if monster_floor_level < 0 {
+            self.record_boss_damage(monster_id, player_id, dealt).await;
+        } else if field_raid_boss && is_dead {
+            // Off the kill path, like a dungeon boss's titles.
+            let game_state = self.clone();
+            let player_id = *player_id;
+            let auth = auth.cloned();
+            tokio::spawn(async move {
+                game_state
+                    .settle_field_raid_kill(&player_id, dealt, auth.as_ref())
+                    .await;
+            });
+        } else if field_raid_boss {
+            self.record_field_raid_hit(player_id, dealt).await;
+        }
+        if !is_dead {
+            self.brain_hit(monster_id, player_id, true, damage).await;
+        } else {
+            // Loot lands where the monster fell, which is not where the
+            // registry has it: that only advances on the brain's tick, and
+            // a bow kills a monster mid-charge, metres along from its last
+            // sync. Read the brain before `brain_death` drops it.
+            let corpse_position = self
+                .brain_position_now(monster_id)
+                .await
+                .unwrap_or(monster_position);
+            self.release_body(monster_id, monster_type);
+            self.brain_death(monster_id).await;
+            let def = self.monster_defs.get(monster_type);
+            // Depth-scaled dungeon monsters count as their effective level.
+            let effective_level = monster_level_override.or(def.map(|d| d.level));
+            let dropped_weapon_item_def_id = def
+                .filter(|def| {
+                    def.weapon_drop_chance >= 1.0
+                        || rand::thread_rng().gen::<f32>() < def.weapon_drop_chance
+                })
+                .and_then(|def| def.weapon.as_deref())
+                .and_then(|weapon| self.item_defs.item_def_id_for_weapon_ref(weapon));
+
+            info!(
+                "Player {} killed {} (lvl {}) at ({:.1},{:.1}) {}; weapon drop: {}",
+                player_name,
+                monster_type,
+                effective_level.unwrap_or(0),
+                corpse_position.x,
+                corpse_position.z,
+                crate::dungeon_defs::place_label(&corpse_position, monster_floor_level),
+                dropped_weapon_item_def_id.as_deref().unwrap_or("none")
+            );
+            self.record_monster_kill(monster_type, effective_level.unwrap_or(0));
+            self.publish_nearby(
+                &monster_position,
+                monster_floor_level,
+                ServerMessage::MonsterDead {
+                    monster_id: monster_id.to_owned(),
+                    dropped_weapon_item_def_id: dropped_weapon_item_def_id.clone(),
+                },
+                None,
+            )
+            .await;
+
+            let weapon_drop = if let Some(item_def_id) = dropped_weapon_item_def_id {
+                let instance_id = self.next_instance_id().await;
+                // Scatter off the corpse, then clamp onto walkable dungeon
+                // floor: pickup is a pure proximity check, so an item
+                // behind a wall would be lost.
+                let drop_position = self
+                    .loot_drop_position(
+                        corpse_position,
+                        monster_floor_level,
+                        dropped_weapon_position(corpse_position),
+                    )
+                    .await;
+                Some(GroundItem {
+                    instance_id,
+                    item_def_id,
+                    position: drop_position,
+                    floor_level: monster_floor_level,
+                    quantity: 1,
+                    enchant: 0,
+                    dropped_by: None,
+                    cape_color: None,
+                    cape_texture: None,
+                })
+            } else {
+                None
+            };
+            let mut monster_drops = def.map_or_else(Vec::new, |def| {
+                crate::world_drop_defs::roll_independent(
+                    def.drop_entries().iter().map(|(id, c)| (id.as_str(), *c)),
+                    &mut rand::thread_rng(),
+                )
+            });
+            monster_drops.extend(
+                self.on_dungeon_monster_dead(monster_id, player_id, auth)
+                    .await,
+            );
+            // All kill loot waits for the blow to land.
+            self.spawn_kill_loot_after_impact(
+                weapon_drop,
+                monster_drops,
+                corpse_position,
+                monster_floor_level,
+                effective_level,
+                loot_delay,
+            );
+
+            self.drain_hunger_for_kill(player_id).await;
+            if let (Some(def), Some(effective_level)) = (def, effective_level) {
+                let base_xp = xp::monster_xp(effective_level, def.guard);
+                let grants = self
+                    .kill_xp_grants(base_xp, &damage_by, monster_position, monster_floor_level)
+                    .await;
+                self.grant_monster_kill_xp(&grants, monster_id).await;
+            }
+
+            // Remove the corpse after 60 seconds.
+            let game_state = self.clone();
+            let id_to_remove = monster_id.to_owned();
+            tokio::spawn(async move {
+                tokio::time::sleep(tokio::time::Duration::from_secs(60)).await;
+                let still_dead = game_state
+                    .monsters
+                    .read()
+                    .await
+                    .get(&id_to_remove)
+                    .is_some_and(|monster| monster.state == MonsterState::Dead);
+                if still_dead {
+                    debug!("Monster {} removed after 60s corpse time", id_to_remove);
+                    game_state.despawn_monsters(vec![id_to_remove]).await;
+                }
+            });
+        }
+        true
     }
 
     /// Credit every recipient of a monster kill: cumulative XP, any level-ups

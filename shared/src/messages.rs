@@ -45,6 +45,7 @@ pub enum MoveStatus {
 pub struct SkillVictim {
     pub player_id: PlayerId,
     pub damage: u32,
+    /// Hidden like `Player::health`.
     pub current_health: u32,
 }
 
@@ -1422,6 +1423,7 @@ pub enum ServerMessage {
         hit: bool,
         roll: u8,
         damage: u32,
+        /// Hidden like `Player::health`.
         current_health: u32,
         /// Struck by a `MonsterGroundStrike` eruption, already shown.
         ranged: bool,
@@ -1440,6 +1442,8 @@ pub enum ServerMessage {
     TempHealthUpdate {
         amount: u32,
     },
+    /// Viewers without HP access get `health` 1 while alive (0 when dead) and
+    /// `max_health` 0; see `Player::health`.
     PlayerHealthUpdate {
         player_id: PlayerId,
         health: u32,
@@ -2047,6 +2051,14 @@ pub enum ServerMessage {
         move_mult: f32,
         duration_ms: u64,
     },
+    /// Healing Prayer landed: `amount` HP restored to the player, or damage
+    /// dealt to the undead monster. The new HP follows on its own.
+    HealingPrayed {
+        player_id: PlayerId,
+        target_player_id: Option<PlayerId>,
+        monster_id: Option<String>,
+        amount: u32,
+    },
     BowMarkUpdate {
         monster_id: Option<String>,
         remaining_ms: u64,
@@ -2097,6 +2109,56 @@ pub enum DeliveryClass {
 }
 
 impl ServerMessage {
+    /// Players whose HP this message carries; see `Player::health`.
+    pub fn health_owners(&self) -> Vec<PlayerId> {
+        match self {
+            Self::PlayerJoined { player }
+            | Self::PlayerAppeared { player }
+            | Self::PlayerRespawned { player } => vec![player.id],
+            Self::PlayerHealthUpdate { player_id, .. }
+            | Self::MonsterAttackedPlayer { player_id, .. } => vec![*player_id],
+            Self::MonsterSkillStruck { victims, .. } => {
+                victims.iter().map(|victim| victim.player_id).collect()
+            }
+            _ => vec![],
+        }
+    }
+
+    /// Leave `viewer` only whether other players are alive, not their HP.
+    /// Covers the same messages as `health_owners`.
+    pub fn hide_health(&mut self, viewer: PlayerId) {
+        let alive = |health: &mut u32| *health = (*health).min(1);
+        match self {
+            Self::PlayerJoined { player }
+            | Self::PlayerAppeared { player }
+            | Self::PlayerRespawned { player }
+                if player.id != viewer =>
+            {
+                alive(&mut player.health);
+                player.max_health = 0;
+            }
+            Self::PlayerHealthUpdate {
+                player_id,
+                health,
+                max_health,
+            } if *player_id != viewer => {
+                alive(health);
+                *max_health = 0;
+            }
+            Self::MonsterAttackedPlayer {
+                player_id,
+                current_health,
+                ..
+            } if *player_id != viewer => alive(current_health),
+            Self::MonsterSkillStruck { victims, .. } => {
+                for victim in victims.iter_mut().filter(|v| v.player_id != viewer) {
+                    alive(&mut victim.current_health);
+                }
+            }
+            _ => {}
+        }
+    }
+
     pub fn delivery_class(&self) -> DeliveryClass {
         match self {
             Self::DungeonDoorState { .. }
@@ -2177,7 +2239,8 @@ impl ServerMessage {
             | Self::PlayerInstrumentNotes { .. }
             | Self::AbilityUsed { .. }
             | Self::MonsterStunned { .. }
-            | Self::MonsterSlowed { .. } => DeliveryClass::NearbyEffect,
+            | Self::MonsterSlowed { .. }
+            | Self::HealingPrayed { .. } => DeliveryClass::NearbyEffect,
             Self::TerrainTileVersion { .. }
             | Self::LandscapeChanged { .. }
             | Self::LandscapeInvalidated { .. }

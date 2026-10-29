@@ -1,5 +1,6 @@
 import type { SkillTooltipParams } from '../actions/skillTooltip'
 import {
+  HEALING_PRAYER,
   PRIMAL_ROAR,
   RAGE,
   VALHALLA_CHARGE,
@@ -7,6 +8,7 @@ import {
 } from '../data/abilities'
 import { DAGGER_SKILL } from '../data/daggerSkill'
 import {
+  healing_prayer_stats,
   primal_roar_stats,
   valhalla_charge_stats,
 } from '../wasm/onlinerpg_shared'
@@ -95,13 +97,42 @@ export function abilityTooltip(
           { label: text('skill.cooldown'), value: seconds(charge.cooldown_ms) },
         ]
       }
+      case HEALING_PRAYER.id: {
+        const prayer = healing_prayer_stats() as {
+          range_m: number
+          cooldown_ms: number
+          dice: string
+        }
+        return [
+          { label: text('skill.type'), value: text('skill.magic') },
+          { label: text('skill.class'), value: text('class.priest') },
+          {
+            label: text('skill.target'),
+            value: text('ability.healing_prayer.target'),
+          },
+          {
+            label: text('skill.healing'),
+            value: translate(
+              'ability.healing_prayer.amount',
+              { dice: prayer.dice },
+              language
+            ),
+          },
+          { label: text('skill.range'), value: `${prayer.range_m} m` },
+          { label: text('skill.cooldown'), value: seconds(prayer.cooldown_ms) },
+        ]
+      }
       default:
         return ability.stats
     }
   }
 
   function details() {
-    if (ability.id === RAGE.id || ability.id === PRIMAL_ROAR.id)
+    if (
+      ability.id === RAGE.id ||
+      ability.id === PRIMAL_ROAR.id ||
+      ability.id === HEALING_PRAYER.id
+    )
       return [text(`ability.${ability.id}.details`)]
     if (ability.id !== VALHALLA_CHARGE.id) return ability.details
     const charge = chargeStats()

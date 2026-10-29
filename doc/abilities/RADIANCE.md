@@ -23,4 +23,4 @@ ABILITIES 아이콘을 기존 퀵슬롯으로 드래그해 등록한다. 활성 
 
 통합 프로토콜 v77: 서버·클라이언트 WASM·에이전트 클라이언트를 함께 빌드해야 한다. 영구 DB 스키마 변경은 없다.
 
-아이콘: [출처](../assets/ui.md), [생성 프롬프트](../assets/radiance-icon-prompt.txt).
+아이콘: 처음 만든 아이콘([출처](../assets/ui.md), [생성 프롬프트](../assets/radiance-icon-prompt.txt))은 2026-10-30 치유의 기도 아이콘(`healing-prayer.png`)으로 옮겼다. Radiance 아이콘은 새로 그려야 하며, 그때까지 같은 파일을 쓴다.

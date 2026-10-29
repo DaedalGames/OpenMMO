@@ -218,6 +218,7 @@ pub(crate) use field_raid::FIELD_RAID_TICK;
 mod friends;
 mod furniture_shop;
 mod goal_movement;
+mod healing_prayer;
 mod house_building;
 pub(crate) mod hunger;
 mod instrument;

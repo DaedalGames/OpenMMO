@@ -54,6 +54,9 @@ pub struct Player {
     pub position: Position,
     pub rotation: f32,
     pub level: u32,
+    /// Exact only for the player themself and stethoscope wearers. Everyone
+    /// else gets 1 while alive (0 when dead) and `max_health` 0, so
+    /// `health > 0` still reads as alive (doc/abilities/CLASS_SKILLS.md §5).
     pub health: u32,
     pub max_health: u32,
     pub class: CharacterClass,

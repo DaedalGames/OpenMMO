@@ -432,3 +432,85 @@ fn a_coordinate_off_the_floor_it_would_walk_on_is_refused_before_any_walk() {
     s.self_floor_level = 0;
     assert_eq!(s.resolve_goal_floor(outside.0, outside.1, None), Ok(0));
 }
+
+fn hidden_bob() -> Player {
+    let mut bob = test_player(2.0, 0.0);
+    bob.id = PlayerId::from(2);
+    bob.name = "Bob".into();
+    bob.health = 1;
+    bob.max_health = 0;
+    bob
+}
+
+#[test]
+fn other_players_hp_shows_only_when_disclosed() {
+    let (mut s, _rx) = test_state();
+    let me = test_player(0.0, 0.0);
+    s.self_player_id = Some(me.id);
+    s.self_player = Some(me);
+    let bob = hidden_bob();
+    s.push_event(ServerMessage::PlayerAppeared {
+        player: bob.clone(),
+    });
+    let world = s.format_world_state();
+    assert!(world.contains("You: Me Lv.1 Rogue HP 10/10"), "{world}");
+    assert!(
+        world.contains("Player: Bob Lv.1 alive (HP hidden) at"),
+        "{world}"
+    );
+    assert!(!world.contains("HP 1/0"), "{world}");
+    let stethoscope = |health, max_health| ServerMessage::PlayerHealthUpdate {
+        player_id: bob.id,
+        health,
+        max_health,
+    };
+    s.push_event(stethoscope(7, 20));
+    assert!(s
+        .format_world_state()
+        .contains("Player: Bob Lv.1 HP 7/20 at"));
+    s.push_event(stethoscope(1, 0));
+    assert!(s
+        .format_world_state()
+        .contains("Player: Bob Lv.1 alive (HP hidden) at"));
+    s.push_event(ServerMessage::PlayerDead { player_id: bob.id });
+    assert!(s.format_world_state().contains("Player: Bob Lv.1 dead at"));
+    assert_eq!(s.self_player.as_ref().unwrap().health, 10);
+}
+
+#[test]
+fn party_vitals_keep_member_hp_exact() {
+    use onlinerpg_shared::messages::{PartyMember, PartyMemberVitals};
+    let (mut s, _rx) = test_state();
+    let me = test_player(0.0, 0.0);
+    s.self_player_id = Some(me.id);
+    s.self_player = Some(me.clone());
+    let bob = hidden_bob();
+    s.push_event(ServerMessage::PlayerAppeared {
+        player: bob.clone(),
+    });
+    let member = |player: &Player, hp| PartyMember {
+        id: player.id,
+        name: player.name.clone(),
+        hp,
+        max_hp: 20,
+        class: player.class.clone(),
+    };
+    s.push_event(ServerMessage::PartyState {
+        leader_id: me.id,
+        members: vec![member(&me, 10), member(&bob, 20)],
+    });
+    let vitals = ServerMessage::PartyVitals {
+        members: vec![PartyMemberVitals {
+            id: bob.id,
+            hp: 6,
+            max_hp: 20,
+        }],
+    };
+    s.push_event(vitals);
+    let world = s.format_world_state();
+    assert!(
+        world.contains("Your party: Me (leader) HP 10/20, Bob HP 6/20"),
+        "{world}"
+    );
+    assert!(world.contains("Player: Bob Lv.1 HP 6/20 at"), "{world}");
+}

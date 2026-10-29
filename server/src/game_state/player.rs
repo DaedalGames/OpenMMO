@@ -866,6 +866,7 @@ impl super::GameState {
         self.drop_player_trade(player_id, "They left.").await;
         self.last_player_attacks.write().await.remove(player_id);
         self.player_attack_holds.write().await.remove(player_id);
+        self.interest_lock().set_health_viewer(*player_id, false);
         let dungeon_exit = {
             let players = self.players.read().await;
             players
@@ -1407,6 +1408,12 @@ impl super::GameState {
             .await;
     }
 
+    /// Stethoscope wearers see other players' exact HP.
+    pub(crate) fn sync_health_viewer(&self, player_id: &PlayerId, inventory: &PlayerInventory) {
+        self.interest_lock()
+            .set_health_viewer(*player_id, Self::wears_stethoscope(inventory));
+    }
+
     /// Broadcast changed gear, including armor and cape customization.
     pub async fn set_player_gear(&self, player_id: &PlayerId, inventory: &PlayerInventory) {
         let main_hand = inventory.equipped_def_id(EquipSlot::MainHand);
@@ -1416,6 +1423,7 @@ impl super::GameState {
         let armor = inventory.equipped_armor();
         let max_hp_per_level = self.equipped_max_health_per_level(inventory);
         let cloaked = self.wears_invisibility(inventory);
+        self.sync_health_viewer(player_id, inventory);
         let changed = {
             let mut players = self.players.write().await;
             let Some(player) = players.get_mut(player_id) else {

@@ -8,9 +8,11 @@ import {
   abilityEquipmentAllowed,
   abilityEquipmentNotMet,
   getAbility,
+  HEALING_PRAYER,
   isAbilityAvailable,
   VALHALLA_CHARGE,
 } from '../data/abilities'
+import { getMonsterDef } from '../data/monsterDefs'
 import {
   cancelChargeTargeting,
   chargeTargeting,
@@ -23,8 +25,10 @@ import { daggerSkillState, queueDaggerSkill } from '../stores/daggerSkillStore'
 import {
   gameStore,
   hoveredMonsterId,
+  hoveredPlayerId,
   reportSkillFailure,
 } from '../stores/gameStore'
+import { hoveredPartyMemberId, partyRoster } from '../stores/partyStore'
 import { cancelInspection, queueInspection } from '../stores/inspectionStore'
 import { inventoryStore } from '../stores/inventoryStore'
 import { manaState } from '../stores/manaStore'
@@ -99,6 +103,12 @@ export function useAbility(id: string) {
     queueDaggerSkill()
     return
   }
+  if (ability.id === HEALING_PRAYER.id) {
+    const target = healingPrayerTarget()
+    if (target && beginAbility(ability.id))
+      networkManager.sendUseAbility(ability.id, target.monster, target.player)
+    return
+  }
   const needsTarget = 'target' in ability && ability.target === 'monster'
   const target = needsTarget
     ? combatController.getAbilityTarget(get(hoveredMonsterId), (monsterId) =>
@@ -118,4 +128,46 @@ export function useAbility(id: string) {
   }
   if (beginAbility(ability.id))
     networkManager.sendUseAbility(ability.id, target)
+}
+
+/** A hovered party row or player, then a hovered undead, else yourself. */
+function healingPrayerTarget(): {
+  monster: string | null
+  player: number | null
+} | null {
+  const state = get(gameStore)
+  const self = state.currentPlayer
+  const memberId = get(hoveredPartyMemberId)
+  const member = get(partyRoster)?.members.find((m) => m.id === memberId)
+  const playerId = get(hoveredPlayerId)
+  const player =
+    playerId === null ? undefined : state.otherPlayers.get(playerId)
+  const known =
+    member && member.id !== self?.id
+      ? { id: member.id, health: member.hp, maxHealth: member.max_hp }
+      : player && player.health > 0
+        ? { id: player.id, health: player.health, maxHealth: player.maxHealth }
+        : null
+  if (known) {
+    if (known.maxHealth > 0 && known.health >= known.maxHealth) {
+      reportSkillFailure(translate('skillFailure.fullHealth'))
+      return null
+    }
+    return { monster: null, player: known.id }
+  }
+  const monsterId = get(hoveredMonsterId)
+  const monster = monsterId ? monsterManager.monsters.get(monsterId) : undefined
+  if (
+    monsterId &&
+    monster &&
+    monster.state !== 'dead' &&
+    !monster.isDeadPending &&
+    getMonsterDef(monster.type)?.undead
+  )
+    return { monster: monsterId, player: null }
+  if (self && self.health >= self.maxHealth) {
+    reportSkillFailure(translate('skillFailure.fullHealth'))
+    return null
+  }
+  return { monster: null, player: null }
 }

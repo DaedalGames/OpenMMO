@@ -27,6 +27,10 @@ pub const VALHALLA_CHARGE_SLOW_MS: u64 = 3_000;
 pub const VALHALLA_CHARGE_SHORT_SLOW_MS: u64 = 1_500;
 pub const VALHALLA_CHARGE_COOLDOWN_MS: u64 = 10_000;
 pub const VALHALLA_CHARGE_MANA_COST: u32 = 1;
+pub const HEALING_PRAYER_RANGE: f32 = 10.0;
+pub const HEALING_PRAYER_COOLDOWN_MS: u64 = 8_000;
+pub const HEALING_PRAYER_MANA_COST: u32 = 6;
+pub const HEALING_PRAYER_DICE: &str = "2d6";
 pub const RADIANCE_DURATION_MS: u64 = 120_000;
 pub const RADIANCE_COOLDOWN_MS: u64 = 800;
 pub const BOW_MARK_DURATION_MS: u64 = 5_000;
@@ -45,6 +49,7 @@ pub enum AbilityId {
     Rage,
     PrimalRoar,
     ValhallaCharge,
+    HealingPrayer,
 }
 
 impl AbilityId {
@@ -54,6 +59,7 @@ impl AbilityId {
             Self::Rage => RAGE_MANA_COST,
             Self::PrimalRoar => PRIMAL_ROAR_MANA_COST,
             Self::ValhallaCharge => VALHALLA_CHARGE_MANA_COST,
+            Self::HealingPrayer => HEALING_PRAYER_MANA_COST,
             _ => 0,
         }
     }
@@ -65,6 +71,15 @@ pub fn rage_damage_bonus(level: u32) -> i32 {
 
 pub fn primal_roar_temp_health(max_health: u32) -> u32 {
     (max_health * 15 / 100).max(4)
+}
+
+/// Added to the `HEALING_PRAYER_DICE` roll; `wis_mod` as in `mana::max_mana`.
+pub fn healing_prayer_bonus(level: u32, wis: u8) -> i32 {
+    (level / 3) as i32 + (i32::from(wis) - 10) / 2
+}
+
+pub fn healing_prayer_amount(roll: u32, level: u32, wis: u8) -> u32 {
+    (roll as i32 + healing_prayer_bonus(level, wis)).max(1) as u32
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -83,6 +98,8 @@ pub enum AbilityRejectReason {
     NotEnoughMana,
     TooClose,
     Blocked,
+    FullHealth,
+    NotUndead,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

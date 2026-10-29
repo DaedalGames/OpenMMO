@@ -42,7 +42,8 @@ export const RADIANCE = {
   },
   id: 'radiance',
   name: 'Radiance',
-  icon: '/icons/skills/radiance.png',
+  // Borrows Healing Prayer's icon until its own is redrawn.
+  icon: '/icons/skills/healing-prayer.png',
   description: 'Illuminate your surroundings with magical light.',
   buffDescription: 'Illuminates nearby surroundings.',
   stats: [
@@ -119,6 +120,16 @@ export const VALHALLA_CHARGE = {
   description: 'Charge a monster, strike it once, and slow it down.',
 } as const
 
+export const HEALING_PRAYER = {
+  get manaCost() {
+    return ability_mana_cost('healing_prayer')
+  },
+  id: 'healing_prayer',
+  name: 'Healing Prayer',
+  icon: '/icons/skills/healing-prayer.png',
+  description: 'Heal yourself or another player, or sear an undead monster.',
+} as const
+
 export const BUFF_ABILITIES = [
   GUARDIAN_WARD,
   RAGE,
@@ -131,6 +142,7 @@ export type AbilityId =
   | typeof DOUBLE_SLASH.id
   | typeof AUSCULTATION.id
   | typeof VALHALLA_CHARGE.id
+  | typeof HEALING_PRAYER.id
 export type AbilityTimer = {
   ability: AbilityId
   remaining_ms: number
@@ -198,6 +210,7 @@ export const ABILITIES = [
   RAGE,
   PRIMAL_ROAR,
   VALHALLA_CHARGE,
+  HEALING_PRAYER,
   DOUBLE_SLASH,
   RADIANCE,
   TRUE_AIM,
@@ -217,7 +230,8 @@ export function isAbilityAvailable(
     (id === GUARDIAN_WARD.id && characterClass === 'knight') ||
     (id === RAGE.id && characterClass === 'barbarian') ||
     (id === PRIMAL_ROAR.id && characterClass === 'caveman') ||
-    (id === VALHALLA_CHARGE.id && characterClass === 'valkyrie')
+    (id === VALHALLA_CHARGE.id && characterClass === 'valkyrie') ||
+    (id === HEALING_PRAYER.id && characterClass === 'priest')
   )
 }
 
@@ -236,7 +250,7 @@ export function abilityEquipmentAllowed(
     )
   if (id === AUSCULTATION.id)
     return equipped.neck?.item_def_id === 'stethoscope'
-  if (id === PRIMAL_ROAR.id) return true
+  if (id === PRIMAL_ROAR.id || id === HEALING_PRAYER.id) return true
   const weaponType = getItemDef(
     equipped.main_hand?.item_def_id ?? ''
   )?.weaponType

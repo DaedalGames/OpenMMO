@@ -62,6 +62,7 @@ EXPORT_PACKS = {
         "yawn",
         "shake_head",
         "roar",
+        "heal",
     ],
     "offhand": [
         "torch_idle1",

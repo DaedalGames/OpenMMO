@@ -346,7 +346,7 @@ function draw() {
     ctx.arc(sx, sy, 5 * devicePixelRatio, 0, 7);
     ctx.fillStyle = p.is_official_npc ? "#b48ae0" : "#59c2e6";
     ctx.fill();
-    hpbar(sx, sy, p.health / p.max_health);
+    if (p.max_health > 0) hpbar(sx, sy, p.health / p.max_health);
     label(sx, sy, p.name, p.is_official_npc ? "#d7c3f2" : "#bde6f5");
   }
 

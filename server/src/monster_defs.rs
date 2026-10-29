@@ -60,6 +60,9 @@ pub struct MonsterDefinition {
     pub stagger_immune: bool,
     #[serde(default)]
     pub boss: bool,
+    /// Healing Prayer harms it instead of healing.
+    #[serde(default)]
+    pub undead: bool,
     #[serde(rename = "attackCooldown")]
     pub attack_cooldown: u32,
     /// Behavior tree name (data-src/behavior_trees.json).

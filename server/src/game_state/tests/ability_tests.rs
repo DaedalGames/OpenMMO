@@ -2068,3 +2068,285 @@ async fn valhalla_charge_cut_short_keeps_its_cooldown_and_skips_the_swing() {
         .any(|m| matches!(m, ServerMessage::PlayerAttacked { .. })));
     assert!(gs.player_attack_ready(&id).await);
 }
+
+const PRAYER: AbilityId = AbilityId::HealingPrayer;
+
+async fn add_priest(gs: &GameState, name: &str, character: i64) -> DirectRx {
+    let rx = add_ward_player(gs, name, 0.0, character).await;
+    gs.players.write().await.get_mut(&pid(name)).unwrap().class = CharacterClass::Priest;
+    rx
+}
+
+async fn add_wounded(gs: &GameState, name: &str, x: f32, character: i64) -> DirectRx {
+    let rx = add_ward_player(gs, name, x, character).await;
+    let mut players = gs.players.write().await;
+    let player = players.get_mut(&pid(name)).unwrap();
+    player.health = 10;
+    player.max_health = 100;
+    gs.interest_lock().refresh_player(player);
+    rx
+}
+
+async fn pray(gs: &GameState, monster: Option<&str>, player: Option<&str>) {
+    gs.use_targeted_ability(&pid("caster"), PRAYER, monster, player.map(pid), None)
+        .await;
+}
+
+fn prayed(updates: &[ServerMessage]) -> Option<u32> {
+    updates.iter().find_map(|m| match m {
+        ServerMessage::HealingPrayed { amount, .. } => Some(*amount),
+        _ => None,
+    })
+}
+
+fn health_seen(updates: &[ServerMessage], name: &str) -> Option<(u32, u32)> {
+    updates.iter().rev().find_map(|m| match m {
+        ServerMessage::PlayerHealthUpdate {
+            player_id,
+            health,
+            max_health,
+        } if *player_id == pid(name) => Some((*health, *max_health)),
+        _ => None,
+    })
+}
+
+#[tokio::test(start_paused = true)]
+async fn healing_prayer_heals_two_d6_plus_level_and_wisdom_for_six_mana() {
+    let gs = make_test_game_state("prayer_heal");
+    let mut rx = add_priest(&gs, "caster", 1).await;
+    let mut ally = add_wounded(&gs, "ally", 5.0, 2).await;
+    let id = pid("caster");
+    gs.players.write().await.get_mut(&id).unwrap().level = 30;
+    gs.player_characters
+        .write()
+        .await
+        .get_mut(&id)
+        .unwrap()
+        .2
+        .wis = 17;
+    pray(&gs, None, Some("ally")).await;
+    let health = gs.players.read().await[&pid("ally")].health;
+    assert!(
+        (25..=35).contains(&health),
+        "2d6 + 10 + 3 on 10 HP: {health}"
+    );
+    assert_eq!(gs.mana.read().await[&id].mana, 9);
+    assert!(gs.dirty_players.read().await.contains(&pid("ally")));
+    let updates = drain(&mut rx);
+    assert_eq!(prayed(&updates), Some(health - 10));
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::AbilityCooldowns { cooldowns }
+            if cooldowns.iter().any(|c| c.ability == PRAYER && c.remaining_ms == 8_000))));
+    assert_eq!(health_seen(&drain(&mut ally), "ally"), Some((health, 100)));
+
+    tokio::time::advance(Duration::from_millis(7_999)).await;
+    pray(&gs, None, Some("ally")).await;
+    rejected(&mut rx, AbilityRejectReason::Cooldown);
+    assert_eq!(gs.mana.read().await[&id].mana, 9);
+    tokio::time::advance(Duration::from_millis(1)).await;
+    pray(&gs, None, Some("ally")).await;
+    assert_eq!(gs.mana.read().await[&id].mana, 3);
+}
+
+#[tokio::test]
+async fn healing_prayer_heals_the_caster_by_default_and_discards_overflow() {
+    let gs = make_test_game_state("prayer_self");
+    let mut rx = add_priest(&gs, "caster", 1).await;
+    let id = pid("caster");
+    gs.players.write().await.get_mut(&id).unwrap().health = 9;
+    gs.use_ability(&id, PRAYER).await;
+    rejected(&mut rx, AbilityRejectReason::Unavailable);
+    pray(&gs, None, None).await;
+    assert_eq!(gs.players.read().await[&id].health, 10);
+    assert_eq!(prayed(&drain(&mut rx)), Some(1));
+}
+
+#[tokio::test]
+async fn healing_prayer_rejects_without_cost() {
+    let gs = make_test_game_state("prayer_rejects");
+    let mut rx = add_priest(&gs, "caster", 1).await;
+    add_wounded(&gs, "ally", 5.0, 2).await;
+    let set_ally = |x: f32, floor: i8, health: u32| {
+        let gs = gs.clone();
+        async move {
+            let mut players = gs.players.write().await;
+            let ally = players.get_mut(&pid("ally")).unwrap();
+            (ally.position.x, ally.floor_level, ally.health) = (x, floor, health);
+        }
+    };
+    for (x, floor, health, reason) in [
+        (5.0, 0, 100, AbilityRejectReason::FullHealth),
+        (10.01, 0, 10, AbilityRejectReason::OutOfRange),
+        (5.0, 1, 10, AbilityRejectReason::Unavailable),
+        (5.0, 0, 0, AbilityRejectReason::Unavailable),
+    ] {
+        set_ally(x, floor, health).await;
+        pray(&gs, None, Some("ally")).await;
+        rejected(&mut rx, reason);
+    }
+    set_ally(1.0, 0, 10).await;
+    gs.sync_region_furniture(0, 0, &[table_placement(0.5, 0.0)]);
+    pray(&gs, None, Some("ally")).await;
+    rejected(&mut rx, AbilityRejectReason::Blocked);
+    gs.sync_region_furniture(0, 0, &[]);
+    pray(&gs, None, None).await;
+    rejected(&mut rx, AbilityRejectReason::FullHealth);
+    gs.players
+        .write()
+        .await
+        .get_mut(&pid("caster"))
+        .unwrap()
+        .class = CharacterClass::Knight;
+    pray(&gs, None, Some("ally")).await;
+    rejected(&mut rx, AbilityRejectReason::Unavailable);
+    assert_eq!(gs.mana.read().await[&pid("caster")].mana, 15);
+    assert_eq!(gs.players.read().await[&pid("ally")].health, 10);
+
+    gs.players
+        .write()
+        .await
+        .get_mut(&pid("caster"))
+        .unwrap()
+        .class = CharacterClass::Priest;
+    gs.mana.write().await.get_mut(&pid("caster")).unwrap().mana = 5;
+    pray(&gs, None, Some("ally")).await;
+    rejected(&mut rx, AbilityRejectReason::NotEnoughMana);
+    gs.mana.write().await.get_mut(&pid("caster")).unwrap().mana = 6;
+    pray(&gs, None, Some("ally")).await;
+    assert!(gs.players.read().await[&pid("ally")].health > 10);
+}
+
+#[tokio::test]
+async fn healing_prayer_harms_only_undead_monsters_and_can_kill_them() {
+    let gs = make_test_game_state("prayer_undead");
+    let mut rx = add_priest(&gs, "caster", 1).await;
+    add_charge_target(&gs, "target", 6.0).await;
+    gs.monsters
+        .write()
+        .await
+        .get_mut("target")
+        .unwrap()
+        .monster_type = "goblin".into();
+    pray(&gs, Some("target"), None).await;
+    rejected(&mut rx, AbilityRejectReason::NotUndead);
+    assert_eq!(gs.mana.read().await[&pid("caster")].mana, 15);
+
+    gs.monsters
+        .write()
+        .await
+        .get_mut("target")
+        .unwrap()
+        .monster_type = "skeleton".into();
+    pray(&gs, Some("target"), Some("caster")).await;
+    rejected(&mut rx, AbilityRejectReason::Unavailable);
+    pray(&gs, Some("target"), None).await;
+    let health = gs.monsters.read().await["target"].health;
+    assert!((988..=998).contains(&health), "{health}");
+    assert_eq!(prayed(&drain(&mut rx)), Some(1000 - health));
+    assert!(GameState::in_combat(
+        &gs.players.read().await[&pid("caster")]
+    ));
+
+    add_charge_target(&gs, "weak", 6.0).await;
+    {
+        let mut monsters = gs.monsters.write().await;
+        let weak = monsters.get_mut("weak").unwrap();
+        weak.monster_type = "skeleton_weak".into();
+        weak.health = 1;
+    }
+    gs.abilities.write().await.start_cooldown(1, PRAYER, 0);
+    pray(&gs, Some("weak"), None).await;
+    assert_eq!(gs.monsters.read().await["weak"].state, MonsterState::Dead);
+}
+
+#[tokio::test]
+async fn healing_prayer_puts_the_caster_in_combat_only_when_the_target_fights() {
+    let gs = make_test_game_state("prayer_combat_time");
+    add_priest(&gs, "caster", 1).await;
+    add_wounded(&gs, "ally", 5.0, 2).await;
+    pray(&gs, None, Some("ally")).await;
+    assert_eq!(gs.players.read().await[&pid("caster")].last_combat_at, 0);
+
+    gs.abilities.write().await.start_cooldown(1, PRAYER, 0);
+    gs.players
+        .write()
+        .await
+        .get_mut(&pid("ally"))
+        .unwrap()
+        .last_combat_at = GameState::now_ms();
+    pray(&gs, None, Some("ally")).await;
+    assert!(GameState::in_combat(
+        &gs.players.read().await[&pid("caster")]
+    ));
+}
+
+#[tokio::test]
+async fn other_players_hp_reaches_only_themselves_and_stethoscope_wearers() {
+    let gs = make_test_game_state("hp_privacy");
+    add_priest(&gs, "caster", 1).await;
+    let mut ally = add_wounded(&gs, "ally", 5.0, 2).await;
+    let mut watcher = add_ward_player(&gs, "watcher", 3.0, 3).await;
+    let mut doctor = add_ward_player(&gs, "doctor", 4.0, 4).await;
+    let mut gear = gs.inventories.read().await[&pid("doctor")].clone();
+    gear.equipped
+        .insert(EquipSlot::Neck, bag_item(9, "stethoscope", 1));
+    gs.set_player_gear(&pid("doctor"), &gear).await;
+    assert_eq!(health_seen(&drain(&mut doctor), "ally"), Some((10, 100)));
+
+    pray(&gs, None, Some("ally")).await;
+    let healed = gs.players.read().await[&pid("ally")].health;
+    assert_eq!(health_seen(&drain(&mut ally), "ally"), Some((healed, 100)));
+    assert_eq!(health_seen(&drain(&mut watcher), "ally"), Some((1, 0)));
+    assert_eq!(
+        health_seen(&drain(&mut doctor), "ally"),
+        Some((healed, 100))
+    );
+
+    gs.reset_world_view(&pid("watcher")).await;
+    assert!(drain(&mut watcher).iter().any(|m| matches!(m,
+        ServerMessage::PlayerAppeared { player }
+            if player.id == pid("ally") && player.health == 1 && player.max_health == 0)));
+
+    let position = gs.players.read().await[&pid("ally")].position;
+    gs.publish_nearby(
+        &position,
+        0,
+        ServerMessage::MonsterSkillStruck {
+            monster_id: "m".into(),
+            skill: onlinerpg_shared::monster_ai::MonsterSkillId::EarthRoar,
+            victims: vec![
+                onlinerpg_shared::messages::SkillVictim {
+                    player_id: pid("ally"),
+                    damage: 5,
+                    current_health: 40,
+                },
+                onlinerpg_shared::messages::SkillVictim {
+                    player_id: pid("watcher"),
+                    damage: 5,
+                    current_health: 7,
+                },
+            ],
+            burn: false,
+        },
+        None,
+    )
+    .await;
+    let struck = |updates: Vec<ServerMessage>| {
+        updates
+            .into_iter()
+            .find_map(|m| match m {
+                ServerMessage::MonsterSkillStruck { victims, .. } => {
+                    Some(victims.iter().map(|v| v.current_health).collect::<Vec<_>>())
+                }
+                _ => None,
+            })
+            .unwrap()
+    };
+    assert_eq!(struck(drain(&mut ally)), vec![40, 1]);
+    assert_eq!(struck(drain(&mut watcher)), vec![1, 7]);
+    assert_eq!(struck(drain(&mut doctor)), vec![40, 7]);
+
+    gear.equipped.remove(&EquipSlot::Neck);
+    gs.set_player_gear(&pid("doctor"), &gear).await;
+    assert_eq!(health_seen(&drain(&mut doctor), "ally"), Some((1, 0)));
+}

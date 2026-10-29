@@ -21,6 +21,7 @@ pub(super) enum AgentAbility {
     Rage,
     PrimalRoar,
     ValhallaCharge,
+    HealingPrayer,
 }
 
 #[derive(Debug, Deserialize)]
@@ -46,6 +47,7 @@ pub(super) enum AgentAction {
     #[serde(rename = "use_ability")]
     UseAbility {
         ability: AgentAbility,
+        /// A monster id; Healing Prayer also takes a player name.
         #[serde(
             alias = "targetId",
             alias = "target_id",
@@ -487,13 +489,17 @@ pub(super) const ACTION_SPECS: &[ActionSpec] = &[
         names: &["use_ability"],
         aliases: &[],
         doc: r#"- Cast a class ability (Knights: Guardian Ward, Barbarians: Rage,
-  Cavemen: Primal Roar, Valkyries: Valhalla Charge):
+  Cavemen: Primal Roar, Valkyries: Valhalla Charge, Priests: Healing Prayer):
   {"type": "use_ability", "ability": "guardian_ward"}
   {"type": "use_ability", "ability": "rage"}
   {"type": "use_ability", "ability": "primal_roar"}
   {"type": "use_ability", "ability": "valhalla_charge", "target": "m21"}
+  {"type": "use_ability", "ability": "healing_prayer"}
+  {"type": "use_ability", "ability": "healing_prayer", "target": "darkcocoa"}
   Check your class-specific world-state guidance for equipment, MP,
-  cooldown and active buff status. Only Valhalla Charge takes a monster target.
+  cooldown and active buff status. Valhalla Charge takes a monster target.
+  Healing Prayer heals you without a target, or the player name or undead
+  monster id you give as target.
   The server reports success or failure."#,
     },
     ActionSpec {
@@ -1501,6 +1507,7 @@ pub(super) fn action_to_command(
                 AgentAbility::ValhallaCharge => {
                     onlinerpg_shared::ability::AbilityId::ValhallaCharge
                 }
+                AgentAbility::HealingPrayer => onlinerpg_shared::ability::AbilityId::HealingPrayer,
             },
             monster_id: monster_id.clone(),
             target_player_id: None,

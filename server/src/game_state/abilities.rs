@@ -25,8 +25,10 @@ pub(super) struct Abilities {
 }
 
 pub(super) struct MonsterTarget {
-    position: onlinerpg_shared::Position,
+    pub(super) position: onlinerpg_shared::Position,
     pub(super) floor_level: i8,
+    pub(super) monster_type: String,
+    pub(super) level_override: Option<u8>,
     rotation: f32,
     body: Option<onlinerpg_shared::monster_body::BodyFootprint>,
 }
@@ -129,6 +131,7 @@ impl GameState {
                 AbilityId::Rage,
                 AbilityId::PrimalRoar,
                 AbilityId::ValhallaCharge,
+                AbilityId::HealingPrayer,
             ]
             .into_iter()
             .map(|ability| AbilityTimer {
@@ -159,7 +162,8 @@ impl GameState {
             AbilityId::BowMark
             | AbilityId::DaggerDoubleSlash
             | AbilityId::Auscultation
-            | AbilityId::ValhallaCharge => Err(AbilityRejectReason::Unavailable),
+            | AbilityId::ValhallaCharge
+            | AbilityId::HealingPrayer => Err(AbilityRejectReason::Unavailable),
         };
         match result {
             Ok((position, floor_level, targets)) => {
@@ -235,6 +239,11 @@ impl GameState {
                 }
                 _ => self.use_ability(player_id, ability).await,
             }
+            return;
+        }
+        if ability == AbilityId::HealingPrayer {
+            self.healing_prayer(player_id, monster_id, target_player_id, auth)
+                .await;
             return;
         }
         if let (AbilityId::ValhallaCharge, Some(monster_id), None) =
@@ -326,8 +335,7 @@ impl GameState {
         let inventories = self.inventories.read().await;
         if !inventories
             .get(player_id)
-            .and_then(|inv| inv.equipped.get(&EquipSlot::Neck))
-            .is_some_and(|item| item.item_def_id == "stethoscope")
+            .is_some_and(Self::wears_stethoscope)
         {
             return Err(AbilityRejectReason::Equipment);
         }
@@ -403,14 +411,7 @@ impl GameState {
             return Err(AbilityRejectReason::OutOfRange);
         }
         let furniture_cache = if let InspectionTarget::Player { player_id: id } = &target {
-            let player = &players[id];
-            match (player.object_type.as_deref(), player.object_id) {
-                (Some(kind), Some(id)) => self
-                    .interaction_placement(player, kind, id)
-                    .await
-                    .map(|(_, cache, _)| cache),
-                _ => None,
-            }
+            self.furniture_passability(&players[id]).await
         } else {
             None
         };
@@ -439,6 +440,18 @@ impl GameState {
         Ok(inspection)
     }
 
+    /// Passability around the furniture a player sits or lies on, so a line
+    /// to them is not blocked by it.
+    pub(super) async fn furniture_passability(
+        &self,
+        player: &crate::types::Player,
+    ) -> Option<onlinerpg_shared::pathfinding::PassabilityCache> {
+        let (kind, id) = (player.object_type.as_deref()?, player.object_id?);
+        self.interaction_placement(player, kind, id)
+            .await
+            .map(|(_, cache, _)| cache)
+    }
+
     /// A living monster where its brain has it now, for an ability aimed at it.
     pub(super) async fn live_monster_target(&self, monster_id: &str) -> Option<MonsterTarget> {
         let mut target = self
@@ -450,6 +463,8 @@ impl GameState {
             .map(|m| MonsterTarget {
                 position: m.position,
                 floor_level: m.floor_level,
+                monster_type: m.monster_type.clone(),
+                level_override: m.level_override,
                 rotation: m.rotation,
                 body: self.monster_defs.get(&m.monster_type).and_then(|d| d.body),
             })?;

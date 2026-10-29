@@ -131,3 +131,6 @@ export interface PendingPartySummon {
 
 /** Unanswered summons, oldest first, same queue discipline as invites. */
 export const pendingPartySummons = writable<PendingPartySummon[]>([])
+
+/** Party panel row under the cursor; Healing Prayer aims there first. */
+export const hoveredPartyMemberId = writable<number | null>(null)

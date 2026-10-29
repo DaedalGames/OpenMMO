@@ -197,6 +197,17 @@ impl SharedState {
                 }
             }
             ServerMessage::MonsterSlowed { .. } => EventUrgency::Noise,
+            ServerMessage::HealingPrayed {
+                player_id,
+                target_player_id,
+                ..
+            } => {
+                if self_id == Some(player_id) || self_id == target_player_id.as_ref() {
+                    EventUrgency::Routine
+                } else {
+                    EventUrgency::Noise
+                }
+            }
             ServerMessage::PlayerRespawned { player } => {
                 if self_id == Some(&player.id) {
                     EventUrgency::Urgent
@@ -774,10 +785,14 @@ impl SharedState {
                 player_id,
                 health,
                 max_health,
-            } if self.self_player_id.as_ref() == Some(player_id) => {
-                if let Some(p) = self.self_player.as_mut() {
-                    p.health = *health;
-                    p.max_health = *max_health;
+            } => {
+                if self.self_player_id.as_ref() == Some(player_id) {
+                    if let Some(p) = self.self_player.as_mut() {
+                        (p.health, p.max_health) = (*health, *max_health);
+                    }
+                }
+                if let Some(p) = self.nearby_players.get_mut(player_id) {
+                    (p.health, p.max_health) = (*health, *max_health);
                 }
             }
             // Monster damage arrives only through these three, so without them
@@ -1203,6 +1218,14 @@ impl SharedState {
                 // A summons only lives while its caster shares the roster.
                 self.pending_party_summons
                     .retain(|s| members.iter().any(|m| m.id == s.caster_id));
+            }
+            ServerMessage::PartyVitals { ref members } => {
+                for vitals in members {
+                    if let Some(m) = self.party_members.iter_mut().find(|m| m.id == vitals.id) {
+                        m.hp = vitals.hp;
+                        m.max_hp = vitals.max_hp;
+                    }
+                }
             }
             ServerMessage::InventoryState { ref inventory }
             | ServerMessage::InventoryUpdated { ref inventory } => {

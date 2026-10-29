@@ -70,6 +70,8 @@ export interface MonsterDefinition {
   scale?: number
   /** Dungeon boss: shows a nameplate on the client. */
   boss?: boolean
+  /** Healing Prayer harms it instead of healing. */
+  undead?: boolean
   /** Optional weapon item id, or legacy model path relative to /models/. */
   weapon?: string
   /** Chance from 0-1 that the weapon is dropped on death. */

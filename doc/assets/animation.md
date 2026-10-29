@@ -250,6 +250,15 @@ tip followed the handle. Other rigs and offhand props kept their previous placem
     도너 팩 export 후 `graft-glb-clip.py`로 social.glb에 이식했다(99채널, 누락 없음). 플레이어 캐릭터용 팩은
     `node tools/prepare-modular-character.mjs --pack social`과 `node tools/prepare-female-knight.mjs --pack social`로 다시 만들었다.
   - 야성의 포효 `AbilityUsed`를 받으면 시전자 모델이 idle·자동 공격 중일 때 한 번 재생한다(`PlayerModel.playRoar`).
+- Magic Heal (Mixamo, social pack, `heal` — 치유의 기도 시전 동작)
+  - 2026-10-30 Mixamo, Without Skin(65본)/30fps, 사용자가 받은 `Magic Heal.fbx`를 `assets/animations/Magic Heal.fbx`로 옮겼다.
+    `import_mixamo_animation`으로 `Armature`에 bake(fake user). 81프레임(2.7초)을 자르지 않고 그대로 쓴다.
+    웅크린 자세에서 일어나 한 손을 앞으로 뻗어 손바닥을 펴고(약 1.0–1.7초) 다시 웅크린 자세로 돌아온다.
+    중간에 Hips가 약 50cm 앞으로 나갔다가 마지막 프레임에 처음 위치로 돌아온다.
+    도너 팩 export 후 `graft-glb-clip.py`로 social.glb에 이식했다(99채널, 누락 없음). 플레이어 캐릭터용 팩은
+    `node tools/prepare-modular-character.mjs --pack social`과 `node tools/prepare-female-knight.mjs --pack social`로 다시 만들었다.
+  - `HealingPrayed`를 받으면 시전자 모델이 idle·자동 공격 중일 때 한 번 재생한다(`PlayerModel.playHeal`).
+    서버가 시전 중 스윙을 막지 않으므로 다음 자동 공격 스윙이 오면 그 스윙이 끊고 들어간다. 이동 중에는 생략된다.
 - **[미사용]** Yelling Out, Standing Taunt Battlecry — 같은 날 Mixamo에서 함께 받은 포효 후보.
   `assets/animations/Yelling Out.fbx`, `assets/animations/Standing Taunt Battlecry.fbx`.
 

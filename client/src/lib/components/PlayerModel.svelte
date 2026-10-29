@@ -224,6 +224,7 @@
   import {
     DEBUG_ANIM_NAMES,
     EXCAVATE_EMOTE_ANIM,
+    HEAL_ANIMATION,
     ROAR_ANIMATION,
     HELD_EMOTE_ANIMS,
     isSelfEndingEmote,
@@ -588,7 +589,10 @@
   let armorEnchantAction: THREE.AnimationAction | null = null
   let enchantPoseUntil = 0
   let enchantWeapon = true
-  let roarPoseUntil = 0
+  // A class skill's cast clip (Primal Roar, Healing Prayer).
+  let castPose:
+    | { clip: string; until: number; swing?: number; cutBySwing: boolean }
+    | undefined
   // Swing count when a roar or charge stab took over; the attack stance holds
   // until the next.
   let heldSwingCounter: number | undefined
@@ -1236,15 +1240,17 @@
     )
   }
 
-  // Primal Roar's cast pose; wins over idle and auto-attack swings.
-  function activeRoarClip() {
+  // Wins over idle and auto-attack swings while it lasts.
+  function activeCastClip() {
     if (
+      !castPose ||
       (playerState !== 'idle' && playerState !== 'attack') ||
       riding ||
-      Date.now() >= roarPoseUntil
+      Date.now() >= castPose.until ||
+      (castPose.cutBySwing && attackCounter !== castPose.swing)
     )
       return undefined
-    return socialClipsByName.get(ROAR_ANIMATION)
+    return socialClipsByName.get(castPose.clip)
   }
 
   function swingIdleClip() {
@@ -1317,7 +1323,7 @@
       : undefined
     const enchantClip = activeEnchantClip()
     const armorEnchant = activeArmorEnchant()
-    const roarClip = activeRoarClip()
+    const castClip = activeCastClip()
     if (attackCounter !== heldSwingCounter) heldSwingCounter = undefined
     const stanceClip =
       playerState === 'attack' && heldSwingCounter !== undefined
@@ -1332,10 +1338,10 @@
       )
       return
     }
-    if (roarClip) {
-      // The idle hand-off near a clip's end must not rewind the roar.
-      if (currentAction?.getClip() === roarClip) return
-      clip = roarClip
+    if (castClip) {
+      // The idle hand-off near a clip's end must not rewind the cast.
+      if (currentAction?.getClip() === castClip) return
+      clip = castClip
       heldSwingCounter = attackCounter
     } else if (playerState === 'idle') {
       clip =
@@ -1768,16 +1774,31 @@
       setEnchantPoseUntil(until, equippedMainHandItemId !== null)
   }
 
-  export function playRoar(audible: boolean) {
-    if (audible) playPrimalRoarSound(gender, ROAR_CRY_DELAY_MS)
+  // The server holds swings through Primal Roar's cast but not Healing
+  // Prayer's, so the next swing cuts the prayer short.
+  function playCastPose(name: string, cutBySwing: boolean) {
     const start = Date.now()
+    const swing = attackCounter
     void loadSocialAnimations().then(() => {
-      const clip = socialClipsByName.get(ROAR_ANIMATION)
+      const clip = socialClipsByName.get(name)
       if (!clip) return
       // Ends as the idle overlap starts, so the tail blends into idle.
-      roarPoseUntil =
-        start + Math.max(0, clip.duration - OVERLAP_BEFORE_END) * 1000
+      castPose = {
+        clip: name,
+        until: start + Math.max(0, clip.duration - OVERLAP_BEFORE_END) * 1000,
+        swing,
+        cutBySwing,
+      }
     })
+  }
+
+  export function playRoar(audible: boolean) {
+    if (audible) playPrimalRoarSound(gender, ROAR_CRY_DELAY_MS)
+    playCastPose(ROAR_ANIMATION, false)
+  }
+
+  export function playHeal() {
+    playCastPose(HEAL_ANIMATION, true)
   }
 
   export function setEnchantPoseUntil(until: number, weapon: boolean) {
@@ -2134,8 +2155,8 @@
                 ? `charge-stab:${stabLandsAt}`
                 : playerState === 'moving'
                   ? `moving:${movementMode}`
-                  : activeRoarClip()
-                    ? 'roar'
+                  : castPose && activeCastClip()
+                    ? `cast:${castPose.clip}`
                     : playerState === 'attack'
                       ? `attack:${attackCounter}:${daggerCastAt() ?? ''}`
                       : activeArmorEnchant()
@@ -2226,14 +2247,17 @@
     color: string,
     shieldRatio = 0
   )}
-    <T.Group position.y={y} renderOrder={LOCAL_NAMETAG_RENDER_ORDER}>
+    <T.Group
+      position.y={y}
+      renderOrder={isCurrentPlayer ? LOCAL_NAMETAG_RENDER_ORDER : 0}
+    >
       <T.Mesh>
         <T.PlaneGeometry args={[HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT]} />
         <T.MeshBasicMaterial
           color="#000000"
           transparent
           opacity={0.5}
-          depthTest={false}
+          depthTest={!isCurrentPlayer}
           depthWrite={false}
         />
       </T.Mesh>
@@ -2248,7 +2272,7 @@
           <T.MeshBasicMaterial
             {color}
             transparent
-            depthTest={false}
+            depthTest={!isCurrentPlayer}
             depthWrite={false}
           />
         </T.Mesh>
@@ -2316,6 +2340,13 @@
           '#4299e1'
         )}
       {/if}
+    {:else if maxHealth > 0 && health > 0}
+      <!-- Other players' HP reaches only stethoscope wearers. -->
+      {@render resourceBar(
+        -0.38 + HEALTH_BAR_HEIGHT,
+        Math.max(0.001, displayedHealthRatio),
+        '#ff0000'
+      )}
     {/if}
 
     {#if animDebugInfo}

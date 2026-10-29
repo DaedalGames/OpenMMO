@@ -598,6 +598,7 @@ pub fn msg_name(msg: &onlinerpg_shared::ServerMessage) -> &'static str {
         ServerMessage::MonsterStunned { .. } => "MonsterStunned",
         ServerMessage::MonsterSlowed { .. } => "MonsterSlowed",
         ServerMessage::PlayerCharged { .. } => "PlayerCharged",
+        ServerMessage::HealingPrayed { .. } => "HealingPrayed",
         ServerMessage::BowMarkUpdate { .. } => "BowMarkUpdate",
         ServerMessage::InvisibilityChanged { .. } => "InvisibilityChanged",
         ServerMessage::InspectionResult { .. } => "InspectionResult",

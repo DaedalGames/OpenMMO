@@ -5,6 +5,8 @@ use std::sync::LazyLock;
 #[derive(Deserialize)]
 struct MonsterDef {
     name: String,
+    #[serde(default)]
+    undead: bool,
 }
 
 static DEFS: LazyLock<HashMap<String, MonsterDef>> = LazyLock::new(|| {
@@ -31,6 +33,20 @@ static MONSTER_TERMS: LazyLock<Vec<String>> = LazyLock::new(|| {
 
 pub fn monster_name(id: &str) -> &str {
     DEFS.get(id).map_or(id, |def| def.name.as_str())
+}
+
+pub fn is_undead(id: &str) -> bool {
+    DEFS.get(id).is_some_and(|def| def.undead)
+}
+
+pub fn undead_names() -> Vec<&'static str> {
+    let mut names: Vec<_> = DEFS
+        .values()
+        .filter(|def| def.undead)
+        .map(|def| def.name.as_str())
+        .collect();
+    names.sort_unstable();
+    names
 }
 
 pub fn is_combat_report(text: &str) -> bool {

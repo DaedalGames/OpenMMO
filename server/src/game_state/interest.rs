@@ -74,6 +74,8 @@ pub(super) struct Interest {
     hidden: HashMap<String, PlayerId>,
     pub(super) stall_owners: HashMap<u64, String>,
     pending_tiles: HashSet<(i32, i32)>,
+    /// Stethoscope wearers: they see every player's exact HP.
+    health_viewers: HashSet<PlayerId>,
 }
 
 impl Default for Interest {
@@ -90,6 +92,7 @@ impl Default for Interest {
             hidden: HashMap::new(),
             stall_owners: HashMap::new(),
             pending_tiles: HashSet::new(),
+            health_viewers: HashSet::new(),
         }
     }
 }
@@ -165,6 +168,47 @@ impl Interest {
             if changed {
                 self.republish(&id, |_| {}, vec![]);
             }
+        }
+    }
+
+    /// Stethoscope put on or taken off: resend the HP of every player in view.
+    pub(super) fn set_health_viewer(&mut self, viewer: PlayerId, sees: bool) {
+        let changed = if sees {
+            self.health_viewers.insert(viewer)
+        } else {
+            self.health_viewers.remove(&viewer)
+        };
+        if !changed {
+            return;
+        }
+        let Some(view) = self.views.get(&viewer) else {
+            return;
+        };
+        let own = format!("player:{viewer}");
+        let events: Vec<_> = view
+            .subjects
+            .iter()
+            .filter(|id| id.starts_with("player:") && **id != own)
+            .filter_map(|id| {
+                let subject = self.subjects.get(id)?;
+                let player = subject.snapshot.iter().find_map(|message| match message {
+                    ServerMessage::PlayerAppeared { player } => Some(player),
+                    _ => None,
+                })?;
+                Some(WorldEvent {
+                    subject: id.clone(),
+                    revision: subject.revision,
+                    change: InterestChange::Update,
+                    messages: vec![ServerMessage::PlayerHealthUpdate {
+                        player_id: player.id,
+                        health: player.health,
+                        max_health: player.max_health,
+                    }],
+                })
+            })
+            .collect();
+        if !events.is_empty() {
+            self.send(viewer, false, events);
         }
     }
 
@@ -363,6 +407,7 @@ impl Interest {
             | ServerMessage::EquipmentEnchantSucceeded { player_id, .. }
             | ServerMessage::PlayerInstrumentNotes { player_id, .. }
             | ServerMessage::AbilityUsed { player_id, .. }
+            | ServerMessage::HealingPrayed { player_id, .. }
                 if !self.hidden.is_empty() =>
             {
                 Some(*player_id)
@@ -373,6 +418,8 @@ impl Interest {
         let Some(bytes) = encode_server_msg(message) else {
             return;
         };
+        let health_owners = message.health_owners();
+        let mut hidden_health = HashMap::new();
         let mut sent = HashSet::new();
         for cell in area_cells(std::slice::from_ref(&area), EVENT_DELIVERY_RADIUS) {
             if let Some(ids) = self.viewers.cells.get(&cell) {
@@ -388,10 +435,28 @@ impl Interest {
                     {
                         continue;
                     }
-                    if let Some(view) = self.views.get(id) {
-                        if area.contains(&view.position, &view.space) {
-                            let _ = view.tx.send(bytes.clone());
-                        }
+                    let Some(view) = self
+                        .views
+                        .get(id)
+                        .filter(|view| area.contains(&view.position, &view.space))
+                    else {
+                        continue;
+                    };
+                    if health_owners.is_empty()
+                        || health_owners == [*id]
+                        || self.health_viewers.contains(id)
+                    {
+                        let _ = view.tx.send(bytes.clone());
+                        continue;
+                    }
+                    let own = health_owners.contains(id).then_some(*id);
+                    let hidden = hidden_health.entry(own).or_insert_with(|| {
+                        let mut message = message.clone();
+                        message.hide_health(*id);
+                        encode_server_msg(&message)
+                    });
+                    if let Some(hidden) = hidden {
+                        let _ = view.tx.send(hidden.clone());
                     }
                 }
             }
@@ -420,6 +485,11 @@ impl Interest {
                         _ => {}
                     }
                 }
+            }
+        }
+        if !self.health_viewers.contains(&viewer) {
+            for message in events.iter_mut().flat_map(|event| &mut event.messages) {
+                message.hide_health(viewer);
             }
         }
         let Ok(body) = rmp_serde::to_vec(&events) else {
@@ -615,12 +685,22 @@ impl Interest {
         } else {
             &subject.snapshot
         };
+        let health_owner = id
+            .strip_prefix("player:")
+            .and_then(|n| n.parse::<u64>().ok())
+            .map(PlayerId::from);
+        // Only bodies that carry the subject's HP need a hidden twin.
+        let carries_health = |messages: &[ServerMessage]| {
+            health_owner.is_some() && messages.iter().any(|m| !m.health_owners().is_empty())
+        };
+        let (enter_health, update_health) =
+            (carries_health(enter_messages), carries_health(&changes));
         let mut bodies = HashMap::new();
         for viewer in candidates {
             let Some(view) = self.views.get_mut(&viewer) else {
                 continue;
             };
-            let visible = id == format!("player:{viewer}")
+            let visible = health_owner == Some(viewer)
                 || (!hidden_from(&self.hidden, &id, viewer)
                     && subject
                         .areas
@@ -658,8 +738,21 @@ impl Interest {
             if id.starts_with("stall:") && self.blocked_names.contains_key(&viewer) {
                 self.send(viewer, false, vec![event()]);
             } else {
-                let body = bodies.entry(change).or_insert_with(|| {
-                    rmp_serde::to_vec(&vec![event()]).expect("world event serializes")
+                let carries = match change {
+                    InterestChange::Enter => enter_health,
+                    _ => update_health,
+                };
+                let hide = carries
+                    && health_owner != Some(viewer)
+                    && !self.health_viewers.contains(&viewer);
+                let body = bodies.entry((change, hide)).or_insert_with(|| {
+                    let mut event = event();
+                    if hide {
+                        for message in &mut event.messages {
+                            message.hide_health(viewer);
+                        }
+                    }
+                    rmp_serde::to_vec(&vec![event]).expect("world event serializes")
                 });
                 self.send_body(viewer, false, body);
             }
@@ -724,6 +817,11 @@ impl Interest {
 impl super::GameState {
     pub(super) fn interest_lock(&self) -> std::sync::MutexGuard<'_, Interest> {
         self.interest.lock().expect("world interest lock poisoned")
+    }
+
+    #[cfg(test)]
+    pub(crate) fn sees_all_health(&self, viewer: &PlayerId) -> bool {
+        self.interest_lock().health_viewers.contains(viewer)
     }
 
     pub(crate) fn publish_subject_change(&self, message: ServerMessage) {

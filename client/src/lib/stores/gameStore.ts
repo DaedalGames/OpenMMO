@@ -56,6 +56,8 @@ interface PlayerBase {
   name: string
   level: number
   totalXp?: number
+  /** Other players: 1 while alive and `maxHealth` 0, unless you wear a
+   *  stethoscope. */
   health: number
   maxHealth: number
   characterClass: CharacterClass

@@ -473,3 +473,263 @@ async fn llm_valhalla_charge_sends_its_target_and_follows_the_dash() {
         assert!(line.starts_with("[ValhallaChargeFailed]") && line.contains(expected));
     }
 }
+
+fn priest_state() -> (SharedState, mpsc::Receiver<ClientMessage>) {
+    let (mut state, rx) = knight_state();
+    state.self_player.as_mut().unwrap().class = CharacterClass::Priest;
+    state.self_equipped.clear();
+    state.self_mana = Some((6, 20));
+    (state, rx)
+}
+
+fn hidden_player(id: u64, name: &str) -> onlinerpg_shared::Player {
+    let mut player = test_player(3.0, 0.0);
+    player.id = onlinerpg_shared::PlayerId::from(id);
+    player.name = name.into();
+    player.health = 1;
+    player.max_health = 0;
+    player
+}
+
+fn typed_monster(id: &str, monster_type: &str) -> onlinerpg_shared::Monster {
+    let mut monster = crate::state::tests::monster(id);
+    monster.monster_type = monster_type.into();
+    monster
+}
+
+#[tokio::test(start_paused = true)]
+async fn healing_prayer_prompt_shows_targets_range_roll_and_undead() {
+    let (mut state, _rx) = priest_state();
+    state
+        .nearby_monsters
+        .insert("m21".into(), typed_monster("m21", "skeleton"));
+    state
+        .nearby_monsters
+        .insert("m22".into(), typed_monster("m22", "gnoll"));
+    let prompt = state.format_world_state();
+    assert!(prompt.contains("Healing Prayer: ready."), "{prompt}");
+    assert!(prompt.contains(r#"{"type": "use_ability", "ability": "healing_prayer"}"#));
+    assert!(prompt.contains(r#""target": "<player name>" to heal another living player"#));
+    assert!(prompt.contains(r#""target": "<monster id>" to harm"#));
+    assert!(prompt.contains("Needs 6 MP and works with any gear. The target must be within 10m"));
+    assert!(prompt.contains("restores 2d6 + Level/3 + WIS modifier HP"));
+    assert!(prompt.contains(
+        "harms only undead monsters (Forgotten Dead, Skeleton, Skeleton Knight, Skeleton Warrior)"
+    ));
+    assert!(prompt.contains("Cooldown 8s."));
+    assert!(prompt.contains("Monster: Skeleton [m21] (undead) HP"));
+    assert!(prompt.contains("Monster: Gnoll [m22] HP"));
+
+    state.self_player.as_mut().unwrap().level = 9;
+    state
+        .characters
+        .push(onlinerpg_shared::character::Character {
+            id: 1,
+            deletion_due_at: None,
+            name: "Me".into(),
+            created_at: 0,
+            level: 9,
+            xp: 0,
+            max_hp: 10,
+            attributes: onlinerpg_shared::character::CharacterAttributes {
+                r#str: 10,
+                dex: 10,
+                con: 10,
+                int: 10,
+                wis: 17,
+                cha: 10,
+                guard: 10,
+            },
+            class: CharacterClass::Priest,
+            gender: Default::default(),
+            equipment: Default::default(),
+            titles: Vec::new(),
+            active_title: None,
+            appearance: Default::default(),
+        });
+    assert!(state.format_world_state().contains("restores 2d6+6 HP"));
+    state.push_event(ServerMessage::ManaUpdate {
+        mana: 5,
+        max_mana: 20,
+    });
+    assert!(state
+        .format_world_state()
+        .contains("Healing Prayer: not enough MP; requires 6 MP."));
+    state.self_player.as_mut().unwrap().class = CharacterClass::Knight;
+    let prompt = state.format_world_state();
+    assert!(!prompt.contains("Healing Prayer:"));
+    assert!(!prompt.contains("(undead)"));
+}
+
+#[tokio::test(start_paused = true)]
+async fn llm_healing_prayer_resolves_self_player_and_monster_targets() {
+    let (mut state, mut rx) = priest_state();
+    let ally = hidden_player(2, "Ann");
+    state.nearby_players.insert(ally.id, ally.clone());
+    state
+        .nearby_monsters
+        .insert("m21".into(), typed_monster("m21", "skeleton"));
+    let state = Arc::new(Mutex::new(state));
+    let cast = |target: Option<&str>| match target {
+        Some(target) => format!(
+            r#"{{"actions":[{{"type":"use_ability","ability":"healing_prayer","target":"{target}"}}]}}"#
+        ),
+        None => r#"{"actions":[{"type":"use_ability","ability":"healing_prayer"}]}"#.to_string(),
+    };
+    for (target, monster, player) in [
+        (None, None, None),
+        (Some("me"), None, None),
+        (Some("Me"), None, None),
+        (Some("ann"), None, Some(ally.id)),
+        (Some("m21"), Some("m21"), None),
+    ] {
+        handle_response(&state, &cast(target), &None, &None, false).await;
+        match rx.try_recv() {
+            Ok(ClientMessage::UseAbility {
+                ability: AbilityId::HealingPrayer,
+                monster_id,
+                target_player_id,
+            }) => {
+                assert_eq!(monster_id.as_deref(), monster, "{target:?}");
+                assert_eq!(target_player_id, player, "{target:?}");
+            }
+            other => panic!("{target:?}: {other:?}"),
+        }
+    }
+    handle_response(&state, &cast(Some("Nobody")), &None, &None, false).await;
+    assert!(rx.try_recv().is_err());
+    assert!(state
+        .lock()
+        .await
+        .drain_agent_events()
+        .iter()
+        .any(|line| line.starts_with("[HealingPrayerFailed] No player or monster 'Nobody'")));
+    state
+        .lock()
+        .await
+        .push_event(ServerMessage::AbilityCooldowns {
+            cooldowns: vec![AbilityTimer {
+                ability: AbilityId::HealingPrayer,
+                remaining_ms: 8_000,
+            }],
+        });
+    handle_response(&state, &cast(Some("Ann")), &None, &None, false).await;
+    assert!(rx.try_recv().is_err());
+    assert!(state
+        .lock()
+        .await
+        .drain_agent_events()
+        .iter()
+        .any(|line| line.starts_with("[HealingPrayerFailed] Wait 8.0s")));
+}
+
+#[tokio::test(start_paused = true)]
+async fn healing_prayer_feedback_covers_caster_target_and_rejections() {
+    use crate::state::EventUrgency;
+    let (mut state, _rx) = priest_state();
+    let me = state.self_player_id.unwrap();
+    let ann = hidden_player(2, "Ann");
+    let bob = hidden_player(3, "Bob");
+    state.nearby_players.insert(ann.id, ann.clone());
+    state.nearby_players.insert(bob.id, bob.clone());
+    let prayed = |player_id, target_player_id, monster_id: Option<&str>, amount| {
+        ServerMessage::HealingPrayed {
+            player_id,
+            target_player_id,
+            monster_id: monster_id.map(Into::into),
+            amount,
+        }
+    };
+    for (msg, line, urgency) in [
+        (
+            prayed(me, Some(me), None, 7),
+            Some("[HealingPrayer] You heal yourself for 7 HP."),
+            EventUrgency::Routine,
+        ),
+        (
+            prayed(me, Some(ann.id), None, 5),
+            Some("[HealingPrayer] You heal Ann for 5 HP."),
+            EventUrgency::Routine,
+        ),
+        (
+            prayed(me, None, Some("m21"), 9),
+            Some("[HealingPrayer] Your prayer sears m21 for 9 damage."),
+            EventUrgency::Routine,
+        ),
+        (
+            prayed(ann.id, Some(me), None, 4),
+            Some("[HealingPrayer] Ann heals you for 4 HP."),
+            EventUrgency::Routine,
+        ),
+        (
+            prayed(ann.id, Some(bob.id), None, 4),
+            None,
+            EventUrgency::Noise,
+        ),
+        (
+            prayed(ann.id, None, Some("m21"), 4),
+            None,
+            EventUrgency::Noise,
+        ),
+    ] {
+        assert_eq!(prompt::format_event(&state, &msg).as_deref(), line);
+        assert_eq!(state.classify_event(&msg), urgency, "{line:?}");
+    }
+    for (reason, expected) in [
+        (AbilityRejectReason::FullHealth, "already at full HP"),
+        (AbilityRejectReason::NotUndead, "only undead monsters"),
+        (AbilityRejectReason::Blocked, "a wall blocks your sight"),
+        (AbilityRejectReason::OutOfRange, "out of range"),
+        (AbilityRejectReason::Unavailable, "unmounted Priest"),
+    ] {
+        let line = prompt::format_event(
+            &state,
+            &ServerMessage::AbilityRejected {
+                ability: AbilityId::HealingPrayer,
+                reason,
+            },
+        )
+        .unwrap();
+        assert!(
+            line.starts_with("[HealingPrayerFailed]") && line.contains(expected),
+            "{line}"
+        );
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn monster_hits_show_exact_hp_only_where_disclosed() {
+    let (mut state, _rx) = priest_state();
+    let me = state.self_player_id.unwrap();
+    let ann = hidden_player(2, "Ann");
+    state.nearby_players.insert(ann.id, ann.clone());
+    let hit = |player_id, current_health| ServerMessage::MonsterAttackedPlayer {
+        monster_id: "m21".into(),
+        player_id,
+        hit: true,
+        roll: 15,
+        damage: 3,
+        current_health,
+        ranged: false,
+    };
+    for (msg, ending) in [
+        (hit(me, 7), "dmg=3 hp=7"),
+        (hit(ann.id, 1), "dmg=3 alive (HP hidden)"),
+        (hit(ann.id, 0), "dmg=3 dead"),
+    ] {
+        let line = prompt::format_event(&state, &msg).unwrap();
+        assert!(line.ends_with(ending), "{line}");
+    }
+    state.nearby_players.get_mut(&ann.id).unwrap().max_health = 20;
+    assert!(prompt::format_event(&state, &hit(ann.id, 12))
+        .unwrap()
+        .ends_with("dmg=3 hp=12"));
+    let respawned = prompt::format_event(
+        &state,
+        &ServerMessage::PlayerRespawned {
+            player: hidden_player(3, "Bob"),
+        },
+    )
+    .unwrap();
+    assert_eq!(respawned, "[Respawn] Bob alive (HP hidden)");
+}

@@ -10,6 +10,7 @@
   } from '../../effects/sword-guard'
   import {
     takeAbilityEffects,
+    takePrayerPoses,
     type AbilityEffectEvent,
   } from '../../stores/abilityStore'
   import { teleportLoading } from '../../stores/debugStore'
@@ -29,12 +30,14 @@
     getAnchor,
     getRotation,
     roar,
+    pray,
   }: {
     currentPlayer: LocalPlayer | null
     floorLevel: number
     getAnchor: (id: number, shield: boolean, target: THREE.Vector3) => boolean
     getRotation: (id: number) => number
     roar: (id: number, audible: boolean) => void
+    pray: (id: number) => void
   } = $props()
 
   const ABILITY_EARSHOT_M = 20
@@ -64,6 +67,7 @@
 
   function clear() {
     takeAbilityEffects()
+    takePrayerPoses()
     for (const slot of slots) {
       slot.event = null
       slot.effect.group.visible = false
@@ -112,6 +116,7 @@
       clear()
       return
     }
+    for (const id of takePrayerPoses()) pray(id)
     const now = Date.now()
     for (const event of takeAbilityEffects()) {
       if (event.floor_level !== floorLevel || now - event.startedAt > 1000)
