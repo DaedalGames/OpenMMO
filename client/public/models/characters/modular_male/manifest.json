@@ -72,7 +72,7 @@
     "boots_barbarian.glb": "0582be6d1c49e6fd45ae50fa458a43f2206a18fa76c0e4f04428aa3fd76b5713",
     "helmet_barbarian.glb": "56e6e2b638c4d5af8a8eb8889b88b804ee4ea57ddbcd02d74635a35f9fd963a7",
     "animations/locomotion.glb": {
-      "sha256": "b99c491b2c66f47a98fc03da923c892d59d62b240317203ec699c5b2d70d47ae",
+      "sha256": "0a05dafa2bb3dcf89c88bd7f25c66a214234104d83e4df96a9171d48a5b16222",
       "clips": [
         "idle1",
         "idle2",
@@ -86,7 +86,7 @@
       ]
     },
     "animations/combat_melee.glb": {
-      "sha256": "c70372c773f9613646ef5e2c01e138db682449bc50d353ee23567bb2007d16fc",
+      "sha256": "7ba6b4dea1c69316eae9b8d4d60f10c464ad17e0276cffb4d6f883349b48ba7f",
       "clips": [
         "slash1",
         "slash2",
@@ -100,7 +100,7 @@
       ]
     },
     "animations/social.glb": {
-      "sha256": "5e6cb305ddfb6a2cbd2ca9cf8ef230ad50482ccae33c299ebc22d3b3ae408d55",
+      "sha256": "d4810f84d55e2c77f7953346d37c9d2852b631dcfe393f3f2eea52410a0d7e79",
       "clips": [
         "sleep",
         "pickup",
@@ -126,23 +126,23 @@
       ]
     },
     "animations/fishing.glb": {
-      "sha256": "bc70a0865a6f6c434782872914c40f530c28041ee952500efb3ff3b04f26f256",
+      "sha256": "846a23326ff46920bb231bc35b439ebe17eca94a18a5af21614ea4dad105c465",
       "clips": ["fishing_cast", "fishing_idle"]
     },
     "animations/combat_ranged.glb": {
-      "sha256": "5bb0f04fecfc450ff9f52e6bcf940384228cc3bceee77871d761056b82d72648",
+      "sha256": "8fba4e49a4d7645a08e89ef48fb026dd16d4e826bdb20cccc2a7e7badcd3d91b",
       "clips": ["bow_shoot"]
     },
     "animations/offhand.glb": {
-      "sha256": "10800c4e7cc0cd984bfe504c750f335b7ac0a788579255cac4306f3ac551b8dd",
+      "sha256": "d08c28fa24675f87a1f508e45f7d4f82cd990540b75b2c8a038174b10d0059cb",
       "clips": ["torch_idle1", "torch_idle2", "torch_walk", "torch_run"]
     },
     "animations/enchant_armor.glb": {
-      "sha256": "79b9ada97cbf96146902a85338506852f66646042b9b555bcfffa3183549443a",
+      "sha256": "080c9f706f47cd5c1f9dac45f2cab4ee5e4f543772391939cb3f4afa36d6f4d2",
       "clips": ["enchant_armor", "enchant_armor_left"]
     },
     "animations/great_sword.glb": {
-      "sha256": "cb657e610262dfa7a60073d24becfab9c7a43d19438eee270acb7ad13240110c",
+      "sha256": "023ff867447ad22da440bf849b2348b8f237574ce5f2afea41a402ab5f986f38",
       "clips": [
         "great_sword_idle",
         "great_sword_walk",
@@ -151,7 +151,7 @@
       ]
     },
     "animations/riding.glb": {
-      "sha256": "232453e2837721ac30c7185bd21ce7fc65960adf8f5f017eb8ff3661011176f6",
+      "sha256": "3ee1fb3ebd82051687a5a05256b6535354c69c7d2db5844ddd1f8cb481920741",
       "clips": ["ride"]
     },
     "top_rogue.glb": "d32623aa4e007c4b406d8450134e8ad7952d5cf04034abf1f0eb6189ce1401ee",
@@ -180,7 +180,7 @@
     "boots_bard.glb": "ae3250362ad44f044096a55faac32c18bf17af142e820180b8acb40dd837df79",
     "helmet_bard.glb": "4c027ea017bdcce94899d8fb692d81b9e75f0b7783c7ed0067ca8a6b32bab951",
     "animations/dagger_preview.glb": {
-      "sha256": "3cafd8440bb4eecf0e38f475a632788034bc1a484ed61ceddf0d1a141cb9a68f",
+      "sha256": "b7a5ea43f9561d1b3c628742c69b41a127db50540c4ece6b0a2e1f3e0f782ff5",
       "clips": ["dagger_inward", "dagger_outward", "dagger_stab"]
     },
     "helmet_brilliance.glb": "312c493a742d92afee77c99098b01a01b0ef2857a7d562e20468110f8a315654"

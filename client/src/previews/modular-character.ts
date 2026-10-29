@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { disposeObjects } from './dispose-objects'
 import { femaleOutfitMask as createOutfitMask } from '../lib/utils/female-outfit-mask'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import {
@@ -132,7 +133,7 @@ async function main() {
     await showFemaleBase(scene, resources, cleanup, () => disposed)
     return
   }
-  const loader = new GLTFLoader()
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder)
   const params = new URLSearchParams(location.search)
   const requestedFace = params.get('face')
   const customFace = requestedFace === 'rugged' || requestedFace === 'ranger'

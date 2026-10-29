@@ -14,9 +14,15 @@ import { execFileSync } from "node:child_process";
 import * as THREE from "../client/node_modules/three/build/three.module.js";
 import { GLTFLoader } from "../client/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
 import { GLTFExporter } from "../client/node_modules/three/examples/jsm/exporters/GLTFExporter.js";
+import { MeshoptDecoder } from "../client/node_modules/three/examples/jsm/libs/meshopt_decoder.module.js";
 import { createServer } from "../client/node_modules/vite/dist/node/index.js";
 import { NodeIO } from "@gltf-transform/core";
-import { ALL_EXTENSIONS } from "@gltf-transform/extensions";
+import {
+  ALL_EXTENSIONS,
+  EXTMeshoptCompression,
+} from "@gltf-transform/extensions";
+import { dedup } from "@gltf-transform/functions";
+import { MeshoptEncoder } from "meshoptimizer";
 import { splitModularBody } from "./split-modular-body.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
@@ -253,7 +259,7 @@ globalThis.FileReader = class {
     });
   }
 };
-const loader = new GLTFLoader();
+const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 loader.register(() => ({
   name: "HeadlessTextures",
   loadTexture: () => Promise.resolve(null),
@@ -347,6 +353,23 @@ async function writeSoleOffsets(runtime, modular, headless) {
   console.log("sole offsets:", offsets);
 }
 
+// Lossless: dedup shares each clip's key times and Meshopt keeps float keys exact.
+async function compressPack(exported) {
+  await MeshoptEncoder.ready;
+  const io = new NodeIO()
+    .registerExtensions(ALL_EXTENSIONS)
+    .registerDependencies({ "meshopt.encoder": MeshoptEncoder });
+  const doc = await io.readBinary(new Uint8Array(exported));
+  await doc.transform(dedup());
+  doc
+    .createExtension(EXTMeshoptCompression)
+    .setRequired(true)
+    .setEncoderOptions({
+      method: EXTMeshoptCompression.EncoderMethod.QUANTIZE,
+    });
+  return io.writeBinary(doc);
+}
+
 async function preparePacks(runtime, modular) {
   const base = await load(`${fitted}/base.glb`);
   const baked = await load(`${tuned}/animations.glb`);
@@ -416,16 +439,14 @@ async function preparePacks(runtime, modular) {
     });
     for (const mesh of meshes) mesh.removeFromParent();
     scene.add(rig);
-    const bytes = await new GLTFExporter().parseAsync(scene, {
+    const exported = await new GLTFExporter().parseAsync(scene, {
       binary: true,
       animations,
     });
-    const roundtrip = await loader.parseAsync(bytes, "");
+    const bytes = await compressPack(exported);
+    const roundtrip = await loader.parseAsync(bytes.slice().buffer, "");
     modular.modularAnimationClips(base.scene, roundtrip, "corrected");
-    writeFileSync(
-      resolve(root, output, "animations", `${name}.glb`),
-      Buffer.from(bytes),
-    );
+    writeFileSync(resolve(root, output, "animations", `${name}.glb`), bytes);
     report.outputs[`animations/${name}.glb`] = {
       sha256: hash(`${output}/animations/${name}.glb`),
       clips: animations.map((clip) => clip.name),

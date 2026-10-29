@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { NodeIO, PropertyType, VertexLayout } from '@gltf-transform/core'
 import { ALL_EXTENSIONS, EXTMeshoptCompression, EXTTextureWebP } from '@gltf-transform/extensions'
-import { prune } from '@gltf-transform/functions'
+import { dedup, prune } from '@gltf-transform/functions'
 import { MeshoptDecoder, MeshoptEncoder } from 'meshoptimizer'
 import sharp from 'sharp'
 import * as THREE from '../client/node_modules/three/build/three.module.js'
@@ -85,9 +85,11 @@ await Promise.all([MeshoptEncoder.ready, MeshoptDecoder.ready])
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS)
   .registerDependencies({ 'meshopt.encoder': MeshoptEncoder, 'meshopt.decoder': MeshoptDecoder })
 // Replaces the file instead of rewriting it, since worktrees may hard-link these GLBs.
-async function write(path, doc, compressSocial = false) {
+async function write(path, doc, pack = false) {
   const bottom = path === `${output}/bottom.glb`
-  if (path === `${output}/base.glb` || bottom || compressSocial) {
+  // Packs share each clip's key times.
+  if (pack) await doc.transform(dedup())
+  if (path === `${output}/base.glb` || bottom || pack) {
     await doc.transform(prune({ propertyTypes: [PropertyType.MATERIAL, PropertyType.TEXTURE] }))
     // Preserve vertex and triangle numbering for outfit masks; do not quantize.
     doc.createExtension(EXTMeshoptCompression).setRequired(true)
@@ -95,7 +97,7 @@ async function write(path, doc, compressSocial = false) {
   }
   // Pelt rigs rewrite positions in place, which interleaved attributes do not support.
   const pelt = doc.getRoot().listNodes().some(node => node.getExtras().pelt_physics)
-  io.setVertexLayout(pelt || bottom || compressSocial ? VertexLayout.SEPARATE : VertexLayout.INTERLEAVED)
+  io.setVertexLayout(pelt || bottom || pack ? VertexLayout.SEPARATE : VertexLayout.INTERLEAVED)
   writeFileSync(`${path}.tmp`, await io.writeBinary(doc))
   renameSync(`${path}.tmp`, path)
 }
@@ -198,7 +200,7 @@ async function bakeBootsAndGrip(module, load) {
         }
       }
     }
-    await write(path, doc, path === `${output}/animations/social.glb`)
+    await write(path, doc, path.includes('/animations/'))
     console.log(`${path}: baked ${bakes.length} clips`)
   }
 }

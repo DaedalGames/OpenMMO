@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
@@ -123,11 +124,11 @@ export async function showBarkan(
     load(new GLTFLoader(), `/models/${definition.weapon}`),
     load(new GLTFLoader(), `/models/${definition.model}`),
     load(
-      new GLTFLoader(),
+      new GLTFLoader().setMeshoptDecoder(MeshoptDecoder),
       '/models/characters/modular_male/animations/social.glb'
     ),
     load(
-      new GLTFLoader(),
+      new GLTFLoader().setMeshoptDecoder(MeshoptDecoder),
       '/models/characters/modular_male/animations/combat_melee.glb'
     ),
   ])
