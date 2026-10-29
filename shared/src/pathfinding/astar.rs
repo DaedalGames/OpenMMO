@@ -86,15 +86,6 @@ impl SearchExtent {
     pub fn has_floor(&self, floor: u8) -> bool {
         self.floors[usize::from(floor / 64)] & (1 << (floor % 64)) != 0
     }
-
-    fn absorb(&mut self, other: &Self) {
-        self.expanded += other.expanded;
-        self.min = (self.min.0.min(other.min.0), self.min.1.min(other.min.1));
-        self.max = (self.max.0.max(other.max.0), self.max.1.max(other.max.1));
-        for (a, b) in self.floors.iter_mut().zip(other.floors) {
-            *a |= b;
-        }
-    }
 }
 
 /// Find a path on a virtual 1m world grid with floor-level awareness.
@@ -178,12 +169,9 @@ pub fn find_path_avoiding(
         max_nodes,
         blocked,
         &mut SearchExtent::default(),
-        true,
     )
 }
 
-/// `check_sealed` enables the sealed-goal shortcut; its own frontier leg
-/// passes false so it cannot recurse.
 #[allow(clippy::too_many_arguments)]
 pub(super) fn find_path_avoiding_counted(
     start_x: f32,
@@ -196,7 +184,6 @@ pub(super) fn find_path_avoiding_counted(
     max_nodes: usize,
     blocked: &[(i32, i32)],
     extent: &mut SearchExtent,
-    check_sealed: bool,
 ) -> PathResult {
     let (goal_x, goal_z) = snap_goal_into_floor(cache, goal_x, goal_z, goal_floor);
     let sx = start_x.floor() as i32;
@@ -317,8 +304,7 @@ pub(super) fn find_path_avoiding_counted(
     let mut best_h = start_h;
     let mut best_key = start_key;
     let mut termination = crate::pathfinding::PathTermination::Unreachable;
-    let check_sealed = check_sealed
-        && confine_to_floor
+    let check_sealed = confine_to_floor
         && cache.values().any(|rp| {
             (rp.min_x..rp.max_x).contains(&(gx as f32))
                 && (rp.min_z..rp.max_z).contains(&(gz as f32))
@@ -346,55 +332,19 @@ pub(super) fn find_path_avoiding_counted(
             };
         }
 
-        if check_sealed && stall_deadline == Some(extent.expanded) {
-            if let Some(cell) = sealed_goal_frontier(
+        if check_sealed
+            && stall_deadline == Some(extent.expanded)
+            && goal_pocket_sealed(
                 cache,
                 &stair_positions,
-                blocked,
                 (sx, sz),
                 (gx, gz),
                 goal_floor,
                 &start_escapes,
                 extent,
-            ) {
-                let key = (cell.0, cell.1, start_fk);
-                let waypoints = if cell == (sx, sz) {
-                    Vec::new()
-                } else if closed.contains_key(&key) {
-                    reconstruct_path_vf(
-                        &closed,
-                        start_key,
-                        key,
-                        cell.0 as f32 + 0.5,
-                        cell.1 as f32 + 0.5,
-                    )
-                } else {
-                    let mut leg = SearchExtent::default();
-                    let result = find_path_avoiding_counted(
-                        start_x,
-                        start_z,
-                        start_floor,
-                        cell.0 as f32 + 0.5,
-                        cell.1 as f32 + 0.5,
-                        goal_floor,
-                        cache,
-                        max_nodes.saturating_sub(extent.expanded),
-                        blocked,
-                        &mut leg,
-                        false,
-                    );
-                    extent.absorb(&leg);
-                    if !result.found {
-                        return result;
-                    }
-                    result.waypoints
-                };
-                return PathResult {
-                    waypoints,
-                    found: false,
-                    termination: crate::pathfinding::PathTermination::Unreachable,
-                };
-            }
+            )
+        {
+            break;
         }
 
         if let Some(entry) = closed.get(&cur_key) {
@@ -529,25 +479,20 @@ pub(super) fn find_path_avoiding_counted(
     }
 }
 
-/// The cell to approach when the goal's pocket is sealed off from `start`:
-/// outside the pocket, across one of its walls, nearest the goal, and not a
-/// `blocked` cell the route could never end on. `None` when the pocket leaks
+/// Whether the goal's pocket is sealed off from `start`; false when it leaks
 /// (outgrows `SEALED_MAX_CELLS`, touches stairs, or `start` enters it through
 /// an open edge or the furniture waiver). Walks the reverse moves, so a one-way
 /// edge counts the way A* would cross it. Every cell read is charged to `extent`.
-#[allow(clippy::too_many_arguments)]
-fn sealed_goal_frontier(
+fn goal_pocket_sealed(
     cache: &PassabilityCache,
     stair_positions: &HashSet<(i32, i32, u8)>,
-    blocked: &[(i32, i32)],
     start: (i32, i32),
     goal: (i32, i32),
     floor: u8,
     start_escapes: &impl Fn(i32, i32) -> bool,
     extent: &mut SearchExtent,
-) -> Option<(i32, i32)> {
+) -> bool {
     let mut pocket = vec![goal];
-    let mut walled = Vec::new();
     let sealed = 'fill: {
         let mut next = 0;
         while let Some(&(x, z)) = pocket.get(next) {
@@ -562,7 +507,6 @@ fn sealed_goal_frontier(
                     break 'fill false;
                 }
                 if walls {
-                    walled.push(n);
                     continue;
                 }
                 if stair_positions.contains(&(n.0, n.1, floor)) || pocket.len() >= SEALED_MAX_CELLS
@@ -578,14 +522,7 @@ fn sealed_goal_frontier(
         extent.include(x, z, floor);
     }
     extent.expanded += pocket.len();
-    if !sealed {
-        return None;
-    }
-    let dist = |a: (i32, i32), b: (i32, i32)| (a.0 - b.0).abs() + (a.1 - b.1).abs();
-    walled
-        .into_iter()
-        .filter(|&cell| !pocket.contains(&cell) && !cell_blocked(blocked, cell.0, cell.1))
-        .min_by_key(|&cell| (dist(cell, goal), dist(cell, start)))
+    sealed
 }
 
 fn reconstruct_path_vf(
@@ -684,7 +621,6 @@ mod tests {
             DEFAULT_MAX_NODES,
             blocked,
             &mut extent,
-            true,
         );
         (result, extent)
     }
@@ -712,27 +648,30 @@ mod tests {
         assert_ne!((last.x, last.z), (-1876.5, 5216.5));
     }
 
+    /// Prod 10/29: a fence pen walled off the nearest outside cells.
     #[test]
-    fn open_ground_searches_skip_the_check() {
-        let cache = PassabilityCache::new();
-        let run = |check_sealed| {
-            let mut extent = SearchExtent::default();
-            let result = find_path_avoiding_counted(
-                0.5,
-                0.5,
-                0,
-                60.5,
-                40.5,
-                0,
-                &cache,
-                DEFAULT_MAX_NODES,
-                &[],
-                &mut extent,
-                check_sealed,
-            );
-            (result.found, extent.expanded)
+    fn a_fenced_off_wall_is_not_the_cell_to_approach() {
+        use crate::fence::{sync_passability, Fence, FenceAxis, FenceEdge};
+        let mut cache = house(false);
+        let fence = |x, z, axis| Fence {
+            edge: FenceEdge { x, z, axis },
+            y: 1.15,
+            owner_id: 0,
         };
-        assert_eq!(run(true), run(false));
+        // The pen runs along the house's east and south walls.
+        let pen: Vec<Fence> = (-1876..=-1874)
+            .map(|x| fence(x, 5212, FenceAxis::X))
+            .chain((-1882..=-1874).map(|x| fence(x, 5219, FenceAxis::X)))
+            .chain((5212..=5218).map(|z| fence(-1873, z, FenceAxis::Z)))
+            .chain((5216..=5218).map(|z| fence(-1882, z, FenceAxis::Z)))
+            .collect();
+        sync_passability(&mut cache, "fences", &pen);
+
+        let (result, extent) = path_into_house(&cache, (-1879.5, 5208.5), &[]);
+        assert_eq!(result.termination, PathTermination::Unreachable);
+        assert!(extent.expanded < 300, "expanded {}", extent.expanded);
+        let last = result.waypoints.last().unwrap();
+        assert_eq!((last.x, last.z), (-1876.5, 5211.5));
     }
 
     #[test]
