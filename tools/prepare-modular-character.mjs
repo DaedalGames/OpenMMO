@@ -153,6 +153,11 @@ function writeManifest(merge) {
   delete report.outputs["base_rugged.glb"];
   delete report.outputs["base_ranger.glb"];
   writeFileSync(manifest, JSON.stringify(report, null, 2) + "\n");
+  execFileSync(
+    resolve(root, "client/node_modules/.bin/prettier"),
+    ["--log-level", "warn", "--write", manifest],
+    { cwd: resolve(root, "client") },
+  );
   for (const name of ["base_rugged", "base_ranger"])
     rmSync(resolve(root, output, `${name}.glb`), { force: true });
 }

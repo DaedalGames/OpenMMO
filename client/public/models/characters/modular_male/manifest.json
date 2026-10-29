@@ -127,32 +127,19 @@
     },
     "animations/fishing.glb": {
       "sha256": "bc70a0865a6f6c434782872914c40f530c28041ee952500efb3ff3b04f26f256",
-      "clips": [
-        "fishing_cast",
-        "fishing_idle"
-      ]
+      "clips": ["fishing_cast", "fishing_idle"]
     },
     "animations/combat_ranged.glb": {
       "sha256": "5bb0f04fecfc450ff9f52e6bcf940384228cc3bceee77871d761056b82d72648",
-      "clips": [
-        "bow_shoot"
-      ]
+      "clips": ["bow_shoot"]
     },
     "animations/offhand.glb": {
       "sha256": "10800c4e7cc0cd984bfe504c750f335b7ac0a788579255cac4306f3ac551b8dd",
-      "clips": [
-        "torch_idle1",
-        "torch_idle2",
-        "torch_walk",
-        "torch_run"
-      ]
+      "clips": ["torch_idle1", "torch_idle2", "torch_walk", "torch_run"]
     },
     "animations/enchant_armor.glb": {
       "sha256": "79b9ada97cbf96146902a85338506852f66646042b9b555bcfffa3183549443a",
-      "clips": [
-        "enchant_armor",
-        "enchant_armor_left"
-      ]
+      "clips": ["enchant_armor", "enchant_armor_left"]
     },
     "animations/great_sword.glb": {
       "sha256": "cb657e610262dfa7a60073d24becfab9c7a43d19438eee270acb7ad13240110c",
@@ -165,9 +152,7 @@
     },
     "animations/riding.glb": {
       "sha256": "232453e2837721ac30c7185bd21ce7fc65960adf8f5f017eb8ff3661011176f6",
-      "clips": [
-        "ride"
-      ]
+      "clips": ["ride"]
     },
     "top_rogue.glb": "d32623aa4e007c4b406d8450134e8ad7952d5cf04034abf1f0eb6189ce1401ee",
     "pants_rogue.glb": "d6f3e11d85c1da1814e7416b66f0b752cf7180c821b5e727784a13014a6f717e",
@@ -196,11 +181,7 @@
     "helmet_bard.glb": "4c027ea017bdcce94899d8fb692d81b9e75f0b7783c7ed0067ca8a6b32bab951",
     "animations/dagger_preview.glb": {
       "sha256": "3cafd8440bb4eecf0e38f475a632788034bc1a484ed61ceddf0d1a141cb9a68f",
-      "clips": [
-        "dagger_inward",
-        "dagger_outward",
-        "dagger_stab"
-      ]
+      "clips": ["dagger_inward", "dagger_outward", "dagger_stab"]
     },
     "helmet_brilliance.glb": "312c493a742d92afee77c99098b01a01b0ef2857a7d562e20468110f8a315654"
   }
