@@ -265,9 +265,7 @@ impl PathProvider for CountingPath<'_> {
             return result;
         }
         let remaining = self.remaining.get();
-        if self.tick_remaining.get() < max_nodes.min(remaining) {
-            return self.defer();
-        }
+        let tick = self.tick_remaining.get();
         let started = Instant::now();
         let mut extent = SearchExtent::default();
         let result = find_and_smooth_path_avoiding_with_budget(
@@ -278,14 +276,13 @@ impl PathProvider for CountingPath<'_> {
             gz,
             gf,
             self.inner.cache,
-            max_nodes,
+            max_nodes.min(tick),
             blocked,
             &self.remaining,
             &mut extent,
         );
         let expanded_nodes = remaining - self.remaining.get();
-        self.tick_remaining
-            .set(self.tick_remaining.get() - expanded_nodes);
+        self.tick_remaining.set(tick.saturating_sub(expanded_nodes));
         self.diagnostics.update(|mut d| {
             d.record(PathSample {
                 start: (sx, sz, sf),
@@ -297,6 +294,10 @@ impl PathProvider for CountingPath<'_> {
             });
             d
         });
+        // Cut short by the tick rather than its own limit: rerun it next tick.
+        if tick < max_nodes.min(remaining) && result.termination == PathTermination::NodeLimit {
+            return self.defer();
+        }
         if !result.found && remaining >= max_nodes && max_nodes > 0 {
             self.failures.borrow_mut().insert(
                 query,
@@ -494,9 +495,8 @@ mod tests {
         let second = CountingPath::new(&cache, &budget, &second_failures, now);
         let postponed = query(&second, 20);
         assert!(postponed.waypoints.is_empty());
-        assert_eq!(budget.get(), 10);
+        assert_eq!(budget.get(), 0);
         assert!(second.diagnostics.get().deferred);
-        assert_eq!(second.diagnostics.get().count(), 0);
         assert!(second_failures.borrow().entries.is_empty());
         budget.set(30);
         let next_tick = CountingPath::new(&cache, &budget, &second_failures, now);
@@ -504,6 +504,20 @@ mod tests {
         assert_eq!(budget.get(), 10);
         assert!(!next_tick.diagnostics.get().deferred);
         assert_eq!(next_tick.diagnostics.get().count(), 1);
+    }
+
+    #[test]
+    fn a_short_search_runs_on_what_the_tick_has_left() {
+        let cache = obstacle();
+        let failures = RefCell::default();
+        let budget = Cell::new(35);
+        let now = Instant::now();
+        let first = CountingPath::new(&cache, &budget, &failures, now);
+        query(&first, 20);
+        let path = CountingPath::new(&cache, &budget, &failures, now);
+        assert!(path.find_path(-1.5, 0.5, 0, 2.5, 0.5, 0).found);
+        assert!(!path.diagnostics.get().deferred);
+        assert_eq!(budget.get(), 2);
     }
 
     #[test]
