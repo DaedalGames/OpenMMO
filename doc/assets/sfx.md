@@ -450,7 +450,7 @@ Starter 유료 플랜(API 구독 조회로 확인),
   모노 44.1 kHz OGG Vorbis q5, 1.2초, −16.1 LUFS. 게임 재생 볼륨 0.25로 가디언 와드보다 약 5 dB 작게 들리고,
   같은 층 시전자 20 m 안에서 들린다. 원본과 필터 체인은
   `assets/sfx/healing-prayer-2026-10-30/`의 `healing-prayer_glow-take1_2026-10-30.mp3` 및 같은 이름의 `.json`에 보관.
-  나머지 후보 원본은 `~/assets_original/sfx/healing_prayer_*.mp3`.
+  미채택 후보 5개의 원본은 사용자 요청으로 2026-10-30 삭제했다.
 
 - guardian-ward.ogg — Guardian Ward 방패 버프 발동음. 사용자가 제공한
   `Heavy_shield_buff_ca_#4-1789246371152.mp3`를 사용한다. 출처·생성일·요금제는
