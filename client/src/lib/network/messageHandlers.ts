@@ -86,6 +86,8 @@ import {
   playPlayerHurtSound,
   playPropSound,
   playSwordMissSound,
+  playBattleHymn,
+  stopBattleHymn,
 } from '../managers/sfxManager'
 import { FISHING_CAST_SWING_DELAY_MS } from '../data/combatTiming'
 import { monsterManager } from '../managers/monsterManager'
@@ -244,6 +246,7 @@ import {
 import { shortestWrappedDeltaX } from '../terrain/world-wrap'
 import { whisperChatEntry, partyChatEntry } from '../chat-format'
 import {
+  battle_hymn_stats,
   fishing_cast_ms,
   fishing_trophy_min_tension,
 } from '../wasm/onlinerpg_shared'
@@ -517,7 +520,24 @@ function clearInstrumentNoteTimers(playerId: number) {
 function stopPlayerInstrument(playerId: number) {
   clearInstrumentNoteTimers(playerId)
   stopInstrumentPerformer(playerId)
+  stopBattleHymnTune(playerId)
   if (isSelfPlayer(playerId)) closeInstrumentPanel()
+}
+
+function stopBattleHymnTune(playerId: number) {
+  if (stopBattleHymn(playerId)) holdLiveInstrumentQuiet(0)
+}
+
+/** How loud a performer at `position` is here: 0 off our floor. */
+function listenerGain(
+  position: { x: number; y: number; z: number },
+  floorLevel: number
+): number {
+  const listener = get(gameStore).currentPlayer
+  if (!listener || floorLevel !== localFloorLevel()) return 0
+  const dx = shortestWrappedDeltaX(listener.position.x, position.x)
+  const dz = position.z - listener.position.z
+  return instrumentDistanceGain(Math.hypot(dx, dz))
 }
 
 function localFloorLevel(): number {
@@ -534,12 +554,9 @@ function playRemoteInstrumentNotes(
   if (isSelfPlayer(playerId) || !position || !Array.isArray(events)) return
 
   const play = (note: number) => {
-    const listener = get(gameStore).currentPlayer
-    if (!listener || floorLevel !== localFloorLevel()) return
-    const dx = shortestWrappedDeltaX(listener.position.x, position.x)
-    const dz = position.z - listener.position.z
-    const gain = instrumentDistanceGain(Math.hypot(dx, dz))
-    if (gain > 0) holdLiveInstrumentQuiet()
+    const gain = listenerGain(position, floorLevel)
+    if (gain <= 0) return
+    holdLiveInstrumentQuiet()
     playInstrumentNote(note, playerId, gain)
   }
 
@@ -565,6 +582,24 @@ function playRemoteInstrumentNotes(
     }, delay)
     timers.add(timer)
   }
+}
+
+/** A bard took up Battle Hymn: their old tune and notes stop and the march
+ *  the server picked plays from where they stand. */
+function playBattleHymnTune(
+  playerId: number,
+  position: { x: number; y: number; z: number },
+  floorLevel: number,
+  tune: number
+) {
+  stopPlayerInstrument(playerId)
+  stopMusicPerformance(playerId)
+  if (isSelfPlayer(playerId)) emoteRequest.set(MUSIC_EMOTE_ANIM)
+  const gain = listenerGain(position, floorLevel)
+  if (gain > 0 && playBattleHymn(playerId, tune, gain))
+    holdLiveInstrumentQuiet(
+      (battle_hymn_stats() as { cast_ms: number }).cast_ms
+    )
 }
 
 /// Who did it, for a chat line: "You" for us, their name for anyone else.
@@ -1514,6 +1549,14 @@ export function handleServerMessage(
         Number(data.duration_ms)
       )
       break
+    case 'BattleHymnStarted':
+      playBattleHymnTune(
+        data.player_id,
+        data.position,
+        data.floor_level,
+        data.tune
+      )
+      break
     case 'HealingPrayed':
       handleHealingPrayed(
         data.player_id,
@@ -2017,6 +2060,7 @@ export function handleServerMessage(
     case 'PlayerInstrumentStarted': {
       clearInstrumentNoteTimers(data.player_id)
       stopInstrumentPerformer(data.player_id)
+      stopBattleHymnTune(data.player_id)
       if (isSelfPlayer(data.player_id)) {
         emotePanelVisible.set(false)
         openInstrumentPanel()
@@ -2731,6 +2775,7 @@ export function handleServerMessage(
       for (const [id, key] of [
         ['rage', 'rage'],
         ['primal_roar', 'primalRoar'],
+        ['battle_hymn', 'battleHymn'],
         ['radiance', 'radiance'],
         ['bow_mark', 'trueAim'],
       ] as const)
@@ -2760,6 +2805,8 @@ export function handleServerMessage(
         text = translate('skillFailure.fullHealth')
       else if (data.reason === 'not_undead')
         text = translate('skillFailure.notUndead')
+      else if (data.reason === 'interrupted')
+        text = translate('skillFailure.interrupted', { name })
       else if (data.reason === 'cooldown')
         text = translate('skillFailure.cooldown', { name })
       else if (data.reason === 'equipment')

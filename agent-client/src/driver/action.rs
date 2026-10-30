@@ -22,6 +22,7 @@ pub(super) enum AgentAbility {
     PrimalRoar,
     ValhallaCharge,
     HealingPrayer,
+    BattleHymn,
 }
 
 #[derive(Debug, Deserialize)]
@@ -489,17 +490,19 @@ pub(super) const ACTION_SPECS: &[ActionSpec] = &[
         names: &["use_ability"],
         aliases: &[],
         doc: r#"- Cast a class ability (Knights: Guardian Ward, Barbarians: Rage,
-  Cavemen: Primal Roar, Valkyries: Valhalla Charge, Priests: Healing Prayer):
+  Cavemen: Primal Roar, Valkyries: Valhalla Charge, Priests: Healing Prayer,
+  Bards: Battle Hymn):
   {"type": "use_ability", "ability": "guardian_ward"}
   {"type": "use_ability", "ability": "rage"}
   {"type": "use_ability", "ability": "primal_roar"}
   {"type": "use_ability", "ability": "valhalla_charge", "target": "m21"}
   {"type": "use_ability", "ability": "healing_prayer"}
   {"type": "use_ability", "ability": "healing_prayer", "target": "darkcocoa"}
+  {"type": "use_ability", "ability": "battle_hymn"}
   Check your class-specific world-state guidance for equipment, MP,
   cooldown and active buff status. Valhalla Charge takes a monster target.
   Healing Prayer heals you without a target, or the player name or undead
-  monster id you give as target.
+  monster id you give as target. Battle Hymn takes 10s of playing in place.
   The server reports success or failure."#,
     },
     ActionSpec {
@@ -1508,6 +1511,7 @@ pub(super) fn action_to_command(
                     onlinerpg_shared::ability::AbilityId::ValhallaCharge
                 }
                 AgentAbility::HealingPrayer => onlinerpg_shared::ability::AbilityId::HealingPrayer,
+                AgentAbility::BattleHymn => onlinerpg_shared::ability::AbilityId::BattleHymn,
             },
             monster_id: monster_id.clone(),
             target_player_id: None,

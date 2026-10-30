@@ -1,6 +1,20 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { readFileSync } from 'node:fs'
 import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest'
+import { initSharedWasm } from '../utils/ability.fixture'
+import { battle_hymn_stats } from '../wasm/onlinerpg_shared'
+import {
+  BATTLE_HYMN_TUNES,
   cancelPendingFishingSounds,
+  playBattleHymn,
+  stopBattleHymn,
   playDungeonDripSound,
   playFishingSound,
   preloadDungeonSounds,
@@ -184,5 +198,48 @@ describe('dungeon drip audio', () => {
     expect(playbacks[0].audio.paused).toBe(true)
     expect(playbacks[1].audio.paused).toBe(true)
     expect(playbacks[2].audio.paused).toBe(false)
+  })
+})
+
+describe('battle hymn marches', () => {
+  beforeAll(initSharedWasm)
+
+  beforeEach(() => {
+    playbacks = []
+    vi.stubGlobal('Audio', FakeAudio)
+    sfxVolume.set(1)
+    sfxMuted.set(false)
+  })
+
+  afterEach(() => {
+    stopBattleHymn(7)
+    stopBattleHymn(8)
+    vi.unstubAllGlobals()
+  })
+
+  it('holds a march file for every tune the server can pick', () => {
+    const { tunes } = battle_hymn_stats() as { tunes: number }
+    expect(BATTLE_HYMN_TUNES).toHaveLength(tunes)
+    for (const url of BATTLE_HYMN_TUNES)
+      expect(
+        readFileSync(new URL(`../../../public${url}`, import.meta.url)).length
+      ).toBeGreaterThan(0)
+  })
+
+  it('plays the picked tune per bard and stops only that bard', () => {
+    expect(playBattleHymn(7, 2, 0.5)).toBe(true)
+    expect(playBattleHymn(8, 0, 1)).toBe(true)
+    expect(playbacks[0].audio.url).toContain('battle-hymn-3.ogg')
+    expect(playbacks[0].volume).toBeCloseTo(0.225)
+    expect(stopBattleHymn(7)).toBe(true)
+    expect(playbacks[0].audio.paused).toBe(true)
+    expect(playbacks[1].audio.paused).toBe(false)
+    expect(stopBattleHymn(7)).toBe(false)
+  })
+
+  it('stays silent when effects are muted', () => {
+    sfxMuted.set(true)
+    expect(playBattleHymn(7, 0, 1)).toBe(false)
+    expect(playbacks).toHaveLength(0)
   })
 })

@@ -154,6 +154,25 @@ pub fn healing_prayer_stats() -> Result<JsValue, JsError> {
     })
 }
 
+#[derive(Serialize)]
+struct BattleHymnStats {
+    radius_m: f32,
+    cast_ms: u32,
+    duration_ms: u32,
+    tunes: u8,
+}
+
+#[wasm_bindgen]
+pub fn battle_hymn_stats() -> Result<JsValue, JsError> {
+    use crate::ability::*;
+    to_js(&BattleHymnStats {
+        radius_m: BATTLE_HYMN_RADIUS,
+        cast_ms: BATTLE_HYMN_CAST_MS as u32,
+        duration_ms: BATTLE_HYMN_DURATION_MS as u32,
+        tunes: BATTLE_HYMN_TUNES,
+    })
+}
+
 #[wasm_bindgen]
 pub fn fishing_is_stern_cast(dx: f32, dz: f32, boat_rotation: f32) -> bool {
     crate::fishing::is_stern_cast(dx, dz, boat_rotation)

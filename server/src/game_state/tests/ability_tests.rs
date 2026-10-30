@@ -2350,3 +2350,292 @@ async fn other_players_hp_reaches_only_themselves_and_stethoscope_wearers() {
     gs.set_player_gear(&pid("doctor"), &gear).await;
     assert_eq!(health_seen(&drain(&mut doctor), "ally"), Some((1, 0)));
 }
+
+const HYMN: AbilityId = AbilityId::BattleHymn;
+const MUSIC: &str = onlinerpg_shared::messages::MUSIC_EMOTE;
+
+async fn add_bard(gs: &GameState, name: &str, x: f32, character: i64) -> DirectRx {
+    let rx = add_ward_player(gs, name, x, character).await;
+    gs.players.write().await.get_mut(&pid(name)).unwrap().class = CharacterClass::Bard;
+    give(gs, &pid(name), bag_item(9, "worn_mandolin", 1)).await;
+    rx
+}
+
+async fn hymn_speed(gs: &GameState, name: &str) -> f32 {
+    gs.hunger_movement_profiles_for(&[pid(name)])
+        .await
+        .get(&pid(name))
+        .map_or(1.0, |profile| profile.0)
+}
+
+fn hymn_badge_ms(updates: &[ServerMessage]) -> Option<u64> {
+    updates.iter().rev().find_map(|m| match m {
+        ServerMessage::BuffUpdate { buffs } => Some(
+            buffs
+                .iter()
+                .find(|b| b.ability == HYMN)
+                .map_or(0, |b| b.remaining_ms),
+        ),
+        _ => None,
+    })
+}
+
+async fn finish_playing(gs: &GameState) {
+    tokio::time::advance(Duration::from_millis(10_000)).await;
+    gs.tick_battle_hymns().await;
+}
+
+#[tokio::test(start_paused = true)]
+async fn battle_hymn_plays_ten_seconds_then_speeds_up_the_party_for_ten_minutes() {
+    let gs = make_test_game_state("hymn_cast");
+    let mut bard_rx = add_bard(&gs, "bard", 0.0, 1).await;
+    let mut near_rx = add_ward_player(&gs, "near", 19.0, 2).await;
+    add_ward_player(&gs, "far", 21.0, 3).await;
+    add_ward_player(&gs, "stranger", 3.0, 4).await;
+    party(&gs, "bard", "near").await;
+    party(&gs, "bard", "far").await;
+    drain(&mut near_rx);
+    let base_interval = gs.player_attack_interval_ms(&pid("near")).await;
+
+    gs.use_ability(&pid("bard"), HYMN).await;
+    assert_eq!(
+        gs.mana.read().await[&pid("bard")].mana,
+        15,
+        "paid at the end"
+    );
+    assert_eq!(
+        gs.players.read().await[&pid("bard")].object_type.as_deref(),
+        Some(MUSIC)
+    );
+    let updates = drain(&mut bard_rx);
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::BattleHymnStarted { player_id, tune, .. }
+            if *player_id == pid("bard")
+                && *tune < onlinerpg_shared::ability::BATTLE_HYMN_TUNES)));
+    assert!(!updates
+        .iter()
+        .any(|m| matches!(m, ServerMessage::PlayerMusicStarted { .. })));
+    assert!(drain(&mut near_rx)
+        .iter()
+        .any(|m| matches!(m, ServerMessage::BattleHymnStarted { .. })));
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::AbilityCooldowns { cooldowns }
+            if cooldowns.iter().any(|c| c.ability == HYMN && c.remaining_ms == 10_000))));
+    tokio::time::advance(Duration::from_millis(9_999)).await;
+    gs.tick_battle_hymns().await;
+    assert_eq!(hymn_speed(&gs, "near").await, 1.0);
+
+    tokio::time::advance(Duration::from_millis(1)).await;
+    gs.tick_battle_hymns().await;
+    assert_eq!(gs.mana.read().await[&pid("bard")].mana, 10);
+    assert!(
+        gs.players.read().await[&pid("bard")].object_type.is_none(),
+        "the strum ends with the hymn"
+    );
+    assert_eq!(hymn_speed(&gs, "bard").await, 1.08);
+    assert_eq!(hymn_speed(&gs, "near").await, 1.08);
+    assert_eq!(hymn_speed(&gs, "far").await, 1.0);
+    assert_eq!(hymn_speed(&gs, "stranger").await, 1.0);
+    assert_eq!(
+        gs.player_attack_interval_ms(&pid("near")).await,
+        (base_interval as f32 / 1.08).ceil() as u64
+    );
+    let updates = drain(&mut near_rx);
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::HungerUpdate { move_mult, attack_mult, .. }
+            if *move_mult == 1.08 && *attack_mult == 1.08)));
+    assert_eq!(hymn_badge_ms(&updates), Some(600_000));
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::AbilityUsed { ability, targets, .. }
+            if *ability == HYMN && targets.len() == 2)));
+
+    gs.players
+        .write()
+        .await
+        .get_mut(&pid("near"))
+        .unwrap()
+        .position
+        .x = 300.0;
+    tokio::time::advance(Duration::from_millis(599_999)).await;
+    gs.tick_debuffs().await;
+    assert_eq!(
+        hymn_speed(&gs, "near").await,
+        1.08,
+        "range only counts once"
+    );
+    tokio::time::advance(Duration::from_millis(2)).await;
+    gs.tick_debuffs().await;
+    assert_eq!(hymn_speed(&gs, "near").await, 1.0);
+    let updates = drain(&mut near_rx);
+    assert!(updates.iter().any(|m| matches!(m,
+        ServerMessage::HungerUpdate { move_mult, .. } if *move_mult == 1.0)));
+    assert_eq!(hymn_badge_ms(&updates), Some(0));
+}
+
+#[tokio::test(start_paused = true)]
+async fn stopping_the_tune_interrupts_the_hymn_at_no_cost() {
+    let gs = make_test_game_state("hymn_interrupt");
+    let mut rx = add_bard(&gs, "bard", 0.0, 1).await;
+    let id = pid("bard");
+    gs.use_ability(&id, HYMN).await;
+    gs.use_ability(&id, HYMN).await;
+    rejected(&mut rx, AbilityRejectReason::Cooldown);
+    gs.set_player_interaction(&id, None, None).await;
+    rejected(&mut rx, AbilityRejectReason::Interrupted);
+    assert!(!gs.abilities.read().await.hymns.contains_key(&id));
+    finish_playing(&gs).await;
+    assert_eq!(gs.mana.read().await[&id].mana, 15);
+    assert_eq!(hymn_speed(&gs, "bard").await, 1.0);
+
+    gs.use_ability(&id, HYMN).await;
+    assert!(
+        gs.abilities.read().await.hymns.contains_key(&id),
+        "an interrupted hymn leaves no cooldown"
+    );
+}
+
+#[tokio::test]
+async fn a_landed_blow_interrupts_the_hymn() {
+    let gs = make_test_game_state("hymn_hit");
+    add_bard(&gs, "bard", 0.0, 1).await;
+    let id = pid("bard");
+    {
+        let mut players = gs.players.write().await;
+        let bard = players.get_mut(&id).unwrap();
+        (bard.health, bard.max_health) = (500, 500);
+    }
+    let mut attacker = make_monster(
+        "attacker",
+        Position {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        },
+        0,
+    );
+    attacker.level_override = Some(20);
+    gs.monsters
+        .write()
+        .await
+        .insert("attacker".into(), attacker);
+    gs.use_ability(&id, HYMN).await;
+    for _ in 0..50 {
+        let before = gs.players.read().await[&id].health;
+        gs.monster_attack("attacker", &id).await;
+        let playing = gs.abilities.read().await.hymns.contains_key(&id);
+        if gs.players.read().await[&id].health < before {
+            assert!(!playing);
+            assert_eq!(gs.mana.read().await[&id].mana, 15);
+            assert!(gs.players.read().await[&id].object_type.is_none());
+            return;
+        }
+        assert!(playing, "a miss leaves the hymn playing");
+    }
+    panic!("no blow landed");
+}
+
+#[tokio::test(start_paused = true)]
+async fn battle_hymn_takes_over_a_live_performance() {
+    let gs = make_test_game_state("hymn_live");
+    let mut rx = add_bard(&gs, "bard", 0.0, 1).await;
+    let id = pid("bard");
+    gs.start_live_instrument(&id).await;
+    drain(&mut rx);
+    gs.use_ability(&id, HYMN).await;
+    assert!(!gs.live_instrument_players.read().await.contains(&id));
+    assert_eq!(
+        gs.players.read().await[&id].object_type.as_deref(),
+        Some(MUSIC)
+    );
+    assert!(drain(&mut rx)
+        .iter()
+        .any(|m| matches!(m, ServerMessage::BattleHymnStarted { .. })));
+    finish_playing(&gs).await;
+    assert_eq!(hymn_speed(&gs, "bard").await, 1.08);
+}
+
+#[tokio::test(start_paused = true)]
+async fn battle_hymn_takes_over_a_play_music_tune() {
+    let gs = make_test_game_state("hymn_play_music");
+    let auth = make_test_auth("hymn_play_music");
+    add_bard(&gs, "bard", 0.0, 1).await;
+    let id = pid("bard");
+    gs.send_chat_message(&id, "/play_music twilight".to_string(), &auth)
+        .await;
+    assert!(gs.music_performances.read().await.contains_key(&id));
+    gs.use_ability(&id, HYMN).await;
+    assert!(!gs.music_performances.read().await.contains_key(&id));
+    assert!(gs.abilities.read().await.hymns.contains_key(&id));
+    gs.send_chat_message(&id, "/play_music twilight".to_string(), &auth)
+        .await;
+    assert!(
+        !gs.abilities.read().await.hymns.contains_key(&id),
+        "another tune cuts the hymn short"
+    );
+}
+
+#[tokio::test(start_paused = true)]
+async fn battle_hymn_needs_a_bard_an_instrument_and_mana_at_both_ends() {
+    let gs = make_test_game_state("hymn_reject");
+    let mut knight = add_ward_player(&gs, "knight", 0.0, 1).await;
+    give(&gs, &pid("knight"), bag_item(9, "worn_mandolin", 1)).await;
+    gs.use_ability(&pid("knight"), HYMN).await;
+    rejected(&mut knight, AbilityRejectReason::Unavailable);
+
+    let mut bard = add_bard(&gs, "bard", 5.0, 2).await;
+    let id = pid("bard");
+    gs.inventories
+        .write()
+        .await
+        .get_mut(&id)
+        .unwrap()
+        .bag
+        .clear();
+    gs.use_ability(&id, HYMN).await;
+    rejected(&mut bard, AbilityRejectReason::Equipment);
+    give(&gs, &id, bag_item(9, "worn_mandolin", 1)).await;
+    gs.mana.write().await.get_mut(&id).unwrap().mana = 4;
+    gs.use_ability(&id, HYMN).await;
+    rejected(&mut bard, AbilityRejectReason::NotEnoughMana);
+    assert!(gs.players.read().await[&id].object_type.is_none());
+
+    gs.mana.write().await.get_mut(&id).unwrap().mana = 5;
+    gs.use_ability(&id, HYMN).await;
+    gs.mana.write().await.get_mut(&id).unwrap().mana = 4;
+    finish_playing(&gs).await;
+    rejected(&mut bard, AbilityRejectReason::NotEnoughMana);
+    assert_eq!(hymn_speed(&gs, "bard").await, 1.0);
+    assert_eq!(gs.mana.read().await[&id].mana, 4);
+    assert!(gs.players.read().await[&id].object_type.is_none());
+}
+
+#[tokio::test(start_paused = true)]
+async fn another_hymn_renews_the_buff_without_stacking() {
+    let gs = make_test_game_state("hymn_stack");
+    add_bard(&gs, "bard", 0.0, 1).await;
+    add_bard(&gs, "minstrel", 4.0, 2).await;
+    let mut member_rx = add_ward_player(&gs, "member", 2.0, 3).await;
+    party(&gs, "bard", "minstrel").await;
+    party(&gs, "bard", "member").await;
+    gs.use_ability(&pid("bard"), HYMN).await;
+    finish_playing(&gs).await;
+    tokio::time::advance(Duration::from_millis(300_000)).await;
+    drain(&mut member_rx);
+    gs.use_ability(&pid("minstrel"), HYMN).await;
+    finish_playing(&gs).await;
+    assert_eq!(hymn_speed(&gs, "member").await, 1.08);
+    assert_eq!(hymn_badge_ms(&drain(&mut member_rx)), Some(600_000));
+    assert!(gs.hunger.read().await[&pid("bard")]
+        .hymn_active(tokio::time::Instant::now() + Duration::from_millis(599_000)));
+}
+
+#[tokio::test(start_paused = true)]
+async fn death_drops_the_hymn_buff() {
+    let gs = make_test_game_state("hymn_death");
+    add_bard(&gs, "bard", 0.0, 1).await;
+    gs.use_ability(&pid("bard"), HYMN).await;
+    finish_playing(&gs).await;
+    assert_eq!(hymn_speed(&gs, "bard").await, 1.08);
+    gs.clear_debuffs(&pid("bard")).await;
+    assert_eq!(hymn_speed(&gs, "bard").await, 1.0);
+}

@@ -514,6 +514,7 @@ impl super::GameState {
             return;
         };
 
+        self.interrupt_battle_hymn(player_id).await;
         self.remove_live_instrument(player_id).await;
         self.set_player_interaction(
             player_id,

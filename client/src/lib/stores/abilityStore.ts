@@ -112,6 +112,7 @@ export type AbilityEffectEvent = {
     | 'dagger_double_slash'
     | 'valhalla_charge'
     | 'healing_prayer'
+    | 'battle_hymn'
   >
   player_id: number
   position: Position

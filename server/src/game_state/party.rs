@@ -402,7 +402,7 @@ impl super::GameState {
     }
 
     /// Party members other than `player_id`, online or not.
-    async fn other_party_member_ids(&self, player_id: &PlayerId) -> Vec<PlayerId> {
+    pub(super) async fn other_party_member_ids(&self, player_id: &PlayerId) -> Vec<PlayerId> {
         let parties = self.parties.read().await;
         parties
             .party_of(player_id)

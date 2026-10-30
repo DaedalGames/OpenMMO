@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Generate sound-effect candidates with the ElevenLabs SFX API.
+"""Generate sound-effect candidates with the ElevenLabs SFX API, or short
+music with the Music API (--music).
 
-Usage: gen-death-sfx.py [--takes N] [--duration S] [subject ...]
+Usage: gen-death-sfx.py [--music] [--takes N] [--duration S] [subject ...]
 Key is read from ~/.config/elevenlabs/key (or $ELEVENLABS_API_KEY).
 Candidates land in sfx-candidates/<subject>-<n>.mp3 (gitignored).
 """
-import argparse, json, os, pathlib, sys, time, urllib.request
+import argparse, json, os, pathlib, sys, time, urllib.error, urllib.request
 
 PROMPTS = {
     "dungeon_drip": (
@@ -204,7 +205,20 @@ PROMPTS = {
     ),
 }
 
+# The Music API ignored a requested length (doc/assets/sfx.md), so none is sent.
+MUSIC_PROMPTS = {
+    "battle_hymn_march": (
+        "A rousing medieval fantasy battle march played by a bard as an army "
+        "sets out to war. Pounding war drums and a crisp military snare drive a "
+        "steady 120 BPM march from the very first beat, with a bright plucked "
+        "mandolin playing a heroic fanfare melody on top. Bold, courageous and "
+        "building. It ends on one strong final drum hit and chord at about nine "
+        "seconds, then a brief ring-out. Instrumental only: no vocals, no choir."
+    ),
+}
+
 API = "https://api.elevenlabs.io/v1/sound-generation"
+MUSIC_API = "https://api.elevenlabs.io/v1/music?output_format=mp3_44100_128"
 SUB = "https://api.elevenlabs.io/v1/user/subscription"
 
 
@@ -229,16 +243,28 @@ def credits(k):
     return d["character_limit"] - d["character_count"]
 
 
+def post(k, url, params):
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(params).encode(),
+        headers={"xi-api-key": k, "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req) as r:
+            return r.read()
+    except urllib.error.HTTPError as e:
+        sys.exit(f"HTTP {e.code}: {e.read().decode(errors='replace')[:500]}")
+
+
 def generate(k, text, duration, influence, loop=False):
     params = {"text": text, "duration_seconds": duration, "prompt_influence": influence}
     if loop:
         params.update(model_id="eleven_text_to_sound_v2", loop=True)
-    body = json.dumps(params).encode()
-    req = urllib.request.Request(
-        API, data=body, headers={"xi-api-key": k, "Content-Type": "application/json"}
-    )
-    with urllib.request.urlopen(req) as r:
-        return r.read()
+    return post(k, API, params)
+
+
+def compose(k, prompt):
+    return post(k, MUSIC_API, {"prompt": prompt, "model_id": "music_v1", "force_instrumental": True})
 
 
 def main():
@@ -248,11 +274,13 @@ def main():
     ap.add_argument("--duration", type=float, default=1.5)
     ap.add_argument("--influence", type=float, default=0.4)
     ap.add_argument("--loop", action="store_true")
+    ap.add_argument("--music", action="store_true")
     ap.add_argument("--out", default="sfx-candidates")
     args = ap.parse_args()
 
-    targets = args.subjects or list(PROMPTS)
-    unknown = [m for m in targets if m not in PROMPTS]
+    prompts = MUSIC_PROMPTS if args.music else PROMPTS
+    targets = args.subjects or list(prompts)
+    unknown = [m for m in targets if m not in prompts]
     if unknown:
         sys.exit(f"no prompt for: {', '.join(unknown)}")
 
@@ -269,7 +297,10 @@ def main():
             if dest.exists():
                 print(f"skip {dest}")
                 continue
-            audio = generate(k, PROMPTS[m], args.duration, args.influence, args.loop)
+            if args.music:
+                audio = compose(k, prompts[m])
+            else:
+                audio = generate(k, prompts[m], args.duration, args.influence, args.loop)
             dest.write_bytes(audio)
             generated += 1
             print(f"{dest}  {len(audio)} bytes")

@@ -300,7 +300,9 @@ impl GameState {
             player.clone()
         };
         drop(movement.regions);
-        if object_type.as_deref() != Some(onlinerpg_shared::messages::MUSIC_EMOTE) {
+        let performance_over =
+            object_type.as_deref() != Some(onlinerpg_shared::messages::MUSIC_EMOTE);
+        if performance_over {
             self.music_performances.write().await.remove(player_id);
             self.remove_live_instrument(player_id).await;
         }
@@ -317,6 +319,12 @@ impl GameState {
         } else {
             self.publish_nearby(&player.position, player.floor_level, message, None)
                 .await;
+        }
+        drop(movement.state);
+        if performance_over
+            && previous.object_type.as_deref() == Some(onlinerpg_shared::messages::MUSIC_EMOTE)
+        {
+            self.interrupt_battle_hymn(player_id).await;
         }
     }
 }

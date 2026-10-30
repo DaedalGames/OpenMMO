@@ -359,7 +359,8 @@ impl super::GameState {
         }
         messages.push(self.effective_stats(id).await.into());
         messages.push(self.ability_cooldown_message(id).await);
-        let buffs = self.abilities.read().await.buff_message(id);
+        let hymn_until = self.hunger.read().await.get(id).and_then(|d| d.hymn_until);
+        let buffs = self.abilities.read().await.buff_message(id, hymn_until);
         messages.push(buffs);
         messages.push(ServerMessage::GoldUpdate {
             gold: self.get_player_gold(id).await,
@@ -985,6 +986,8 @@ impl super::GameState {
         drop(movement.regions);
         self.update_bed_rest(&moved_player).await;
         self.music_performances.write().await.remove(player_id);
+        let left_strum =
+            movement.player.object_type.as_deref() == Some(onlinerpg_shared::messages::MUSIC_EMOTE);
         if movement.player.object_type.is_some() {
             let mut standing = movement.player;
             standing.object_type = None;
@@ -999,6 +1002,10 @@ impl super::GameState {
         }
         self.finish_position_update(player_id, old_position, old_floor, moved_player, update_msg)
             .await;
+        drop(movement.state);
+        if left_strum {
+            self.interrupt_battle_hymn(player_id).await;
+        }
     }
 
     /// Update spatial state, dungeon occupancy, and nearby clients after relocation.

@@ -2059,6 +2059,15 @@ pub enum ServerMessage {
         monster_id: Option<String>,
         amount: u32,
     },
+    /// A bard began Battle Hymn's 10 s: viewers stop that bard's tune and
+    /// play march `tune`, picked here so everyone hears the same one.
+    /// Leaving the strum stops it.
+    BattleHymnStarted {
+        player_id: PlayerId,
+        position: Position,
+        floor_level: i8,
+        tune: u8,
+    },
     BowMarkUpdate {
         monster_id: Option<String>,
         remaining_ms: u64,
@@ -2240,7 +2249,8 @@ impl ServerMessage {
             | Self::AbilityUsed { .. }
             | Self::MonsterStunned { .. }
             | Self::MonsterSlowed { .. }
-            | Self::HealingPrayed { .. } => DeliveryClass::NearbyEffect,
+            | Self::HealingPrayed { .. }
+            | Self::BattleHymnStarted { .. } => DeliveryClass::NearbyEffect,
             Self::TerrainTileVersion { .. }
             | Self::LandscapeChanged { .. }
             | Self::LandscapeInvalidated { .. }

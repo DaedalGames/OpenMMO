@@ -1,5 +1,5 @@
 repo jake-song-openmmo/onlinerpg-assets
-revision 4b7b9dad7970f7fc3b1865b91d811c2d4b60f6bf
+revision e9172e0789bfcce509bd1ea0389494c765e12dd1
 file 74b7a9f450eb4c14e99f037b1cfe735eabdc64b3a94023418dabb24b6889e6f7 assets/all_animation.blend
 file 1043a18aae65ebfcca9aeb7ba70acd97be2886d2b9f51c608624372f2417ba86 assets/animations/Annoyed Head Shake.fbx
 file 5edac6dfec09f450747fa2d9ad9dc64b10e717f2fa5a01729f0d4ebc00396cdd assets/animations/Clapping.fbx
@@ -1067,6 +1067,12 @@ file f2b0b859224ca0d452776731983f9eab4679fcadddb434e457bcd17c052663c9 assets/pro
 file 252b2694a7dcedabaaf7687d5dbe0874f3c6cf488a9056f89f23bc45d779c4a9 assets/props/ysolde-tent/tripo_ortho_v3/front/build.json
 file 47c32a333ae371ce29126bb87de49e0b4d7da87ce24cc98fa0474f5c9911209a assets/props/ysolde-tent/tripo_ortho_v3/front/generation.json
 file 874f567077c3d002725ddeb44dc523e170a8f7fc1dc1796a2fb193418db7655c assets/props/ysolde-tent/tripo_ortho_v3/front/source/model_url.glb
+file 64205347fbbdb32918f08baaa06f9a2b1e100868065ba7e05ca4cc81d9efba36 assets/sfx/battle-hymn-2026-10-30/battle-hymn-march_take1_2026-10-30.json
+file b6be18fe3c8837b5ec7e1273c3a59aef2888f48516df45047936f40d92ee375f assets/sfx/battle-hymn-2026-10-30/battle-hymn-march_take1_2026-10-30.mp3
+file 42726fd1b7033b70ab61bd1801a09065896fdbfcf11fb8d7abca284c8460317b assets/sfx/battle-hymn-2026-10-30/battle-hymn-march_take3_2026-10-30.json
+file a808f90655c42309be49cc15b4d4c852a9958266f0de8ab2596df6fc3174cafe assets/sfx/battle-hymn-2026-10-30/battle-hymn-march_take3_2026-10-30.mp3
+file 2e8eacfb4157b3efbd30a0029bb448c2f3ac7b6df888312d3726669b91ecc5b3 assets/sfx/battle-hymn-2026-10-30/battle-hymn-march_take4_2026-10-30.json
+file 85ed3dea736c898d4f423fe964050ecc5fa8878f1d3374e1861ed8d882a91911 assets/sfx/battle-hymn-2026-10-30/battle-hymn-march_take4_2026-10-30.mp3
 file 2abb530b73da677fc86e205e8eab1b4555678ed4807548b90971ff6312645f6e assets/sfx/dungeon-drip-ocons-2026-09-18/ocons_6gEs_tJpkIY_158.556-158.796.json
 file 4cbe13615927f5ad414617403d5265bc9d007333c66fa30ceec270777ef04ccf assets/sfx/dungeon-drip-ocons-2026-09-18/ocons_6gEs_tJpkIY_158.556-158.796.wav
 file 3337aa679a60eab163fc5b07922e759f40a1e4a5f4ed8c2df10845cc014c207f assets/sfx/dungeon-drip-ocons-2026-09-18/ocons_6gEs_tJpkIY_68.932-69.332.json

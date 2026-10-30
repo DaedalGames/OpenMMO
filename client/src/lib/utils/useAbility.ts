@@ -62,8 +62,8 @@ export function useAbility(id: string) {
     reportSkillFailure(translate('skillFailure.mounted'))
     return
   }
-  const { equipped } = get(inventoryStore)
-  if (!abilityEquipmentAllowed(ability.id, equipped)) {
+  const { equipped, bag } = get(inventoryStore)
+  if (!abilityEquipmentAllowed(ability.id, equipped, bag)) {
     reportSkillFailure(abilityEquipmentNotMet(id))
     return
   }

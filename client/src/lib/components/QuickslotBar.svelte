@@ -177,12 +177,14 @@
         {@const pending =
           entry.skill.id !== FISHING.id &&
           ($abilityPending[entry.skill.id] ?? 0) > $abilityClock}
+        {@const hasGear = abilityEquipmentAllowed(
+          entry.skill.id,
+          $inventoryStore.equipped,
+          $inventoryStore.bag
+        )}
         <img
           class="item-icon skill-icon"
-          class:depleted={!abilityEquipmentAllowed(
-            entry.skill.id,
-            $inventoryStore.equipped
-          ) ||
+          class:depleted={!hasGear ||
             remaining > 0 ||
             entry.skill.manaCost > ($manaState?.mana ?? 0)}
           src={entry.skill.icon}

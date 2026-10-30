@@ -386,3 +386,30 @@ it('aims Healing Prayer at a hovered party row, player or undead, else yourself'
       ).length
     ).toBeGreaterThan(0)
 })
+
+it('plays Battle Hymn from a bag instrument once there is mana for it', () => {
+  updatePlayer({ characterClass: 'bard' })
+  inventoryStore.set({ bag: [], equipped: {} })
+  useAbility('battle_hymn')
+  expect(reportSkillFailure).toHaveBeenLastCalledWith(
+    'You need an instrument to play the Battle Hymn.'
+  )
+  inventoryStore.set({ bag: [testItem('worn_mandolin')], equipped: {} })
+  manaState.set({ mana: 4, max_mana: 10 })
+  useAbility('battle_hymn')
+  expect(reportSkillFailure).toHaveBeenLastCalledWith('Not enough mana.')
+  manaState.set({ mana: 5, max_mana: 10 })
+  useAbility('battle_hymn')
+  expect(networkManager.sendUseAbility).toHaveBeenCalledExactlyOnceWith(
+    'battle_hymn',
+    null
+  )
+  expect(
+    readFileSync(
+      new URL(
+        `../../../public${getAbility('battle_hymn')!.icon}`,
+        import.meta.url
+      )
+    ).length
+  ).toBeGreaterThan(0)
+})

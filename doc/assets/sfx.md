@@ -452,6 +452,19 @@ Starter 유료 플랜(API 구독 조회로 확인),
   `assets/sfx/healing-prayer-2026-10-30/`의 `healing-prayer_glow-take1_2026-10-30.mp3` 및 같은 이름의 `.json`에 보관.
   미채택 후보 5개의 원본은 사용자 요청으로 2026-10-30 삭제했다.
 
+- battle-hymn-1.ogg, battle-hymn-2.ogg, battle-hymn-3.ogg — 전투의 찬가 행진곡. Bard가 찬가를 시작할 때
+  서버가 셋 중 하나를 골라 `BattleHymnStarted`로 알리고, 10초 연주 동안 Bard 위치에서 재생한다.
+  [ElevenLabs Music](https://elevenlabs.io/music-api) API(`POST /v1/music`, `music_v1`)로 2026-10-30 직접 생성.
+  Starter 유료 플랜, [유료 플랜 상업 이용 라이선스](https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform) 적용.
+  `tools/gen-death-sfx.py --music`의 `battle_hymn_march` 프롬프트(전쟁 북·군악 스네어 위의 만돌린 팡파르, 120 BPM, 보컬 없음)로
+  4개 후보를 생성(총 250크레딧)했고, 사용자가 take 1·3·4를 골라 무작위로 쓰기로 했다. take 2는 미채택.
+  10초를 요청했지만 API가 길이를 무시해 19.04초 파일(연주 13~16초 뒤 무음)이 나왔다.
+  앞 10초만 쓰고 마지막 0.8초 페이드, 가장 작은 take 1에 맞춰 −16.9 LUFS로 낮춤(take 3 −2.8 dB, take 4 −0.4 dB),
+  스테레오 44.1 kHz OGG Vorbis q4. battle-hymn-1은 take 1, battle-hymn-2는 take 3, battle-hymn-3은 take 4다.
+  take 3은 처음 약 2초가 작게 시작한다. 원본과 필터 체인은 `assets/sfx/battle-hymn-2026-10-30/`의
+  `battle-hymn-march_take{1,3,4}_2026-10-30.mp3` 및 같은 이름의 `.json`에 보관.
+  미채택 take 2의 원본은 사용자 요청으로 2026-10-31 삭제했다.
+
 - guardian-ward.ogg — Guardian Ward 방패 버프 발동음. 사용자가 제공한
   `Heavy_shield_buff_ca_#4-1789246371152.mp3`를 사용한다. 출처·생성일·요금제는
   사용자 확인: ElevenLabs Sound Effects, Starter, 2026-09-13.

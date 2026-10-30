@@ -31,6 +31,15 @@ pub const HEALING_PRAYER_RANGE: f32 = 10.0;
 pub const HEALING_PRAYER_COOLDOWN_MS: u64 = 8_000;
 pub const HEALING_PRAYER_MANA_COST: u32 = 6;
 pub const HEALING_PRAYER_DICE: &str = "2d6";
+pub const BATTLE_HYMN_RADIUS: f32 = 20.0;
+/// Spent when the playing finishes.
+pub const BATTLE_HYMN_MANA_COST: u32 = 5;
+/// The bard plays this long, unbroken, before the buff lands.
+pub const BATTLE_HYMN_CAST_MS: u64 = 10_000;
+pub const BATTLE_HYMN_DURATION_MS: u64 = 600_000;
+pub const BATTLE_HYMN_SPEED_MULT: f32 = 1.08;
+/// Recorded marches the web client holds (`battle-hymn-<n>.ogg`).
+pub const BATTLE_HYMN_TUNES: u8 = 3;
 pub const RADIANCE_DURATION_MS: u64 = 120_000;
 pub const RADIANCE_COOLDOWN_MS: u64 = 800;
 pub const BOW_MARK_DURATION_MS: u64 = 5_000;
@@ -50,6 +59,7 @@ pub enum AbilityId {
     PrimalRoar,
     ValhallaCharge,
     HealingPrayer,
+    BattleHymn,
 }
 
 impl AbilityId {
@@ -60,6 +70,7 @@ impl AbilityId {
             Self::PrimalRoar => PRIMAL_ROAR_MANA_COST,
             Self::ValhallaCharge => VALHALLA_CHARGE_MANA_COST,
             Self::HealingPrayer => HEALING_PRAYER_MANA_COST,
+            Self::BattleHymn => BATTLE_HYMN_MANA_COST,
             _ => 0,
         }
     }
@@ -100,6 +111,7 @@ pub enum AbilityRejectReason {
     Blocked,
     FullHealth,
     NotUndead,
+    Interrupted,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

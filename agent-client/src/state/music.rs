@@ -1,6 +1,16 @@
 use super::*;
 
 impl SharedState {
+    /// Bag or hands, as the server checks for `/play_music` and Battle Hymn.
+    pub(super) fn holds_instrument(&self) -> bool {
+        self.self_bag
+            .iter()
+            .chain(self.self_equipped.values())
+            .any(|item| {
+                crate::item_defs::get(&item.item_def_id).is_some_and(|def| def.is_instrument())
+            })
+    }
+
     /// The pose an interaction holds us in — anything but the music emote
     /// (a bed, a chair). `None` while free or strumming.
     pub(super) fn held_pose(&self) -> Option<&str> {
@@ -214,14 +224,7 @@ impl SharedState {
         {
             return;
         }
-        let holds_instrument =
-            self.self_bag
-                .iter()
-                .chain(self.self_equipped.values())
-                .any(|item| {
-                    crate::item_defs::get(&item.item_def_id).is_some_and(|def| def.is_instrument())
-                });
-        if !holds_instrument {
+        if !self.holds_instrument() {
             return;
         }
         self.recital = None;

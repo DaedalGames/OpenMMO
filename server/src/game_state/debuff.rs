@@ -8,6 +8,7 @@
 
 use crate::debuff_defs::{debuff_def, DebuffDef};
 use futures_util::{stream, StreamExt};
+use onlinerpg_shared::ability::BATTLE_HYMN_SPEED_MULT;
 use onlinerpg_shared::debuff::ActiveDebuffState;
 use onlinerpg_shared::weather::{precip_at, Precip};
 use onlinerpg_shared::{PlayerId, Position, ServerMessage};
@@ -59,8 +60,18 @@ impl HungerData {
         self.debuffs.iter().filter(move |d| d.until >= now)
     }
 
+    pub(super) fn hymn_active(&self, now: Instant) -> bool {
+        self.hymn_until.is_some_and(|until| until >= now)
+    }
+
+    /// Battle Hymn rides along: a buff, but the same multiplier.
     pub(super) fn debuff_mults(&self, now: Instant) -> (f32, f32, f32) {
-        self.active(now).fold((1.0, 1.0, 1.0), |(m, a, c), d| {
+        let hymn = if self.hymn_active(now) {
+            BATTLE_HYMN_SPEED_MULT
+        } else {
+            1.0
+        };
+        self.active(now).fold((hymn, hymn, 1.0), |(m, a, c), d| {
             (
                 m * d.def.move_mult,
                 a * d.def.attack_mult,
@@ -72,7 +83,9 @@ impl HungerData {
     pub(super) fn next_attack_mult_change(&self, now: Instant) -> Option<Duration> {
         self.active(now)
             .filter(|d| d.def.attack_mult != 1.0)
-            .map(|d| d.until.duration_since(now))
+            .map(|d| d.until)
+            .chain(self.hymn_until.filter(|until| *until >= now))
+            .map(|until| until.duration_since(now))
             .min()
     }
 
@@ -206,75 +219,99 @@ impl super::GameState {
         self.inflict_debuff(player_id, stage, Some(true)).await;
     }
 
-    /// Death drops every debuff.
+    /// Death drops every debuff, and a Battle Hymn with them.
     pub(crate) async fn clear_debuffs(&self, player_id: &PlayerId) {
         let now = Instant::now();
-        let (msgs, was_wet) = {
+        let (msgs, was_wet, hymn) = {
             let mut hunger = self.hunger.write().await;
             let Some(data) = hunger.get_mut(player_id) else {
                 return;
             };
             data.rain_exposure_secs = 0.0;
             data.cold_exposure_secs = 0.0;
-            if data.debuffs.is_empty() {
+            let hymn = data.hymn_until.take().is_some();
+            if data.debuffs.is_empty() && !hymn {
                 return;
             }
             let was_wet = data.carries(WET_DEBUFF_ID, now);
             data.debuffs.clear();
-            (data.status_msgs(now), was_wet)
+            (data.status_msgs(now), was_wet, hymn)
         };
         self.wake_player_attack(player_id).await;
         for msg in msgs {
             self.send_direct_message(player_id, msg).await;
+        }
+        if hymn {
+            self.send_buff_update(player_id).await;
         }
         if was_wet {
             self.set_player_wet(player_id, false).await;
         }
     }
 
-    /// 1s sweep: deal each active debuff's dps, then drop the expired ones.
+    /// 1s sweep: deal each active debuff's dps, then drop the expired ones
+    /// and expired Battle Hymns.
     /// Read-locked bail-out first: only a due tick or expiry may write-lock
     /// the 5,000 entries — a lingering dps-less debuff (food poisoning)
-    /// must not.
+    /// must not, and an expired hymn touches only its own entry.
     pub async fn tick_debuffs(&self) {
         let now = Instant::now();
+        let mut due = false;
+        let mut spent_hymns: Vec<PlayerId> = Vec::new();
         {
             let hunger = self.hunger.read().await;
-            let due = hunger
-                .values()
-                .flat_map(|d| d.debuffs.iter())
-                .any(|d| d.until <= now || d.def.dps > 0);
-            if !due {
-                return;
+            for (pid, data) in hunger.iter() {
+                if !due {
+                    due = data.debuffs.iter().any(|d| d.until <= now || d.def.dps > 0);
+                }
+                if data.hymn_until.is_some_and(|until| until < now) {
+                    spent_hymns.push(*pid);
+                }
             }
+        }
+        if !due && spent_hymns.is_empty() {
+            return;
         }
         let mut damage: Vec<(PlayerId, u32, String)> = Vec::new();
         let mut updates: Vec<(PlayerId, [ServerMessage; 2])> = Vec::new();
         let mut dried: Vec<PlayerId> = Vec::new();
+        let mut unsung: Vec<PlayerId> = Vec::new();
         {
             let mut hunger = self.hunger.write().await;
-            for (pid, data) in hunger.iter_mut() {
-                if data.debuffs.is_empty() {
+            if due {
+                for (pid, data) in hunger.iter_mut() {
+                    if data.debuffs.is_empty() {
+                        continue;
+                    }
+                    let dps = data.debuff_dps(now);
+                    if dps > 0 {
+                        damage.push((*pid, dps, data.damaging_debuff_ids(now)));
+                    }
+                    // The raw list, not `active()`: a timer already run down (or
+                    // pulled into the past by a campfire) is still listed until
+                    // the retain below drops it, and that drop is the drying.
+                    if data
+                        .debuffs
+                        .iter()
+                        .any(|d| d.def.id == WET_DEBUFF_ID && d.until <= now)
+                    {
+                        dried.push(*pid);
+                    }
+                    let before = data.debuffs.len();
+                    data.debuffs.retain(|d| d.until > now);
+                    if data.debuffs.len() != before {
+                        updates.push((*pid, data.status_msgs(now)));
+                    }
+                }
+            }
+            for pid in spent_hymns {
+                let Some(data) = hunger.get_mut(&pid) else {
                     continue;
-                }
-                let dps = data.debuff_dps(now);
-                if dps > 0 {
-                    damage.push((*pid, dps, data.damaging_debuff_ids(now)));
-                }
-                // The raw list, not `active()`: a timer already run down (or
-                // pulled into the past by a campfire) is still listed until
-                // the retain below drops it, and that drop is the drying.
-                if data
-                    .debuffs
-                    .iter()
-                    .any(|d| d.def.id == WET_DEBUFF_ID && d.until <= now)
-                {
-                    dried.push(*pid);
-                }
-                let before = data.debuffs.len();
-                data.debuffs.retain(|d| d.until > now);
-                if data.debuffs.len() != before {
-                    updates.push((*pid, data.status_msgs(now)));
+                };
+                // A bard may have renewed it since the read.
+                if data.hymn_until.take_if(|until| *until < now).is_some() {
+                    unsung.push(pid);
+                    updates.push((pid, data.status_msgs(now)));
                 }
             }
         }
@@ -283,6 +320,9 @@ impl super::GameState {
             for msg in msgs {
                 self.send_direct_message(&pid, msg).await;
             }
+        }
+        for pid in unsung {
+            self.send_buff_update(&pid).await;
         }
         self.clear_wet_flags(dried).await;
         if !damage.is_empty() {

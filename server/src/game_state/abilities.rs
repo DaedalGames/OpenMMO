@@ -21,6 +21,7 @@ pub(super) struct Abilities {
     marks: HashMap<PlayerId, BowMark>,
     rages: HashMap<PlayerId, Instant>,
     roars: HashMap<PlayerId, Instant>,
+    pub(super) hymns: HashMap<PlayerId, super::battle_hymn::Hymn>,
     cooldowns: HashMap<(i64, AbilityId), Instant>,
 }
 
@@ -87,7 +88,12 @@ impl Abilities {
             .is_some_and(|until| *until > Instant::now())
     }
 
-    pub(super) fn buff_message(&self, player_id: &PlayerId) -> ServerMessage {
+    /// Battle Hymn's `hymn_until` lives with the hunger multipliers.
+    pub(super) fn buff_message(
+        &self,
+        player_id: &PlayerId,
+        hymn_until: Option<Instant>,
+    ) -> ServerMessage {
         let now = Instant::now();
         let buffs = [
             (AbilityId::GuardianWard, self.wards.get(player_id)),
@@ -98,6 +104,7 @@ impl Abilities {
             ),
             (AbilityId::Rage, self.rages.get(player_id)),
             (AbilityId::PrimalRoar, self.roars.get(player_id)),
+            (AbilityId::BattleHymn, hymn_until.as_ref()),
         ]
         .into_iter()
         .filter_map(|(ability, until)| {
@@ -140,6 +147,10 @@ impl GameState {
                     .map(|id| state.cooldown_ms(id, ability))
                     .unwrap_or(0),
             })
+            .chain([AbilityTimer {
+                ability: AbilityId::BattleHymn,
+                remaining_ms: state.hymns.get(player_id).map_or(0, |h| h.remaining_ms()),
+            }])
             .collect::<Vec<_>>()
         };
         cooldowns.push(AbilityTimer {
@@ -159,6 +170,7 @@ impl GameState {
             AbilityId::Radiance => self.try_radiance(player_id).await,
             AbilityId::Rage => self.try_rage(player_id).await,
             AbilityId::PrimalRoar => self.try_primal_roar(player_id).await,
+            AbilityId::BattleHymn => self.try_battle_hymn(player_id).await,
             AbilityId::BowMark
             | AbilityId::DaggerDoubleSlash
             | AbilityId::Auscultation
@@ -167,6 +179,16 @@ impl GameState {
         };
         match result {
             Ok((position, floor_level, targets)) => {
+                // Paid when the playing finishes.
+                if ability == AbilityId::BattleHymn {
+                    self.send_direct_message(
+                        player_id,
+                        self.ability_cooldown_message(player_id).await,
+                    )
+                    .await;
+                    self.strike_up_hymn(player_id).await;
+                    return;
+                }
                 if ability.mana_cost() > 0 {
                     self.mark_dirty(player_id).await;
                     self.send_mana_update(player_id).await;
@@ -896,10 +918,25 @@ impl GameState {
 
     async fn send_buff_state(&self, player_id: &PlayerId) {
         self.sync_visible_buffs(player_id).await;
-        let message = self.abilities.read().await.buff_message(player_id);
-        self.send_direct_message(player_id, message).await;
+        self.send_buff_update(player_id).await;
         self.send_direct_message(player_id, self.effective_stats(player_id).await.into())
             .await;
+    }
+
+    /// The badge list alone, for a timer that moved without a stat change.
+    pub(super) async fn send_buff_update(&self, player_id: &PlayerId) {
+        let hymn_until = self
+            .hunger
+            .read()
+            .await
+            .get(player_id)
+            .and_then(|data| data.hymn_until);
+        let message = self
+            .abilities
+            .read()
+            .await
+            .buff_message(player_id, hymn_until);
+        self.send_direct_message(player_id, message).await;
     }
 
     async fn sync_visible_buffs(&self, player_id: &PlayerId) {
@@ -958,6 +995,7 @@ impl GameState {
             let mark = state.marks.remove(player_id).is_some();
             let rage = state.rages.remove(player_id).is_some();
             let roar = state.roars.remove(player_id).is_some();
+            state.hymns.remove(player_id);
             ward || radiance || mark || rage || roar
         };
         if removed {

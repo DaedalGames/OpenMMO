@@ -430,6 +430,36 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
             }),
             onlinerpg_shared::ability::PRIMAL_ROAR_DURATION_MS / 1000
         )),
+        ServerMessage::BattleHymnStarted { player_id, .. }
+            if state.self_player_id == Some(*player_id) =>
+        {
+            Some(format!(
+                "[BattleHymn] You start the hymn; keep still for {}s.",
+                onlinerpg_shared::ability::BATTLE_HYMN_CAST_MS / 1000
+            ))
+        }
+        ServerMessage::AbilityUsed {
+            ability: onlinerpg_shared::ability::AbilityId::BattleHymn,
+            player_id,
+            targets,
+            ..
+        } => {
+            let self_id = state.self_player_id?;
+            let minutes = onlinerpg_shared::ability::BATTLE_HYMN_DURATION_MS / 60_000;
+            if *player_id == self_id {
+                let others = targets.iter().filter(|id| **id != self_id).count();
+                Some(format!(
+                    "[BattleHymn] Your hymn is done: you and {others} party member(s) move and attack faster for {minutes} minutes."
+                ))
+            } else if targets.contains(&self_id) {
+                Some(format!(
+                    "[BattleHymn] {}'s hymn: you move and attack faster for {minutes} minutes.",
+                    player_name(state, player_id)
+                ))
+            } else {
+                None
+            }
+        }
         ServerMessage::PlayerCharged {
             player_id,
             monster_id,
@@ -487,6 +517,9 @@ pub(crate) fn format_event(state: &SharedState, msg: &ServerMessage) -> Option<S
                 }
                 AbilityRejectReason::NotUndead => {
                     "only undead monsters can be harmed by it; nothing was spent".into()
+                }
+                AbilityRejectReason::Interrupted => {
+                    "you moved, attacked, stopped playing or were hit before it finished; nothing was spent, start again when ready".into()
                 }
             };
             Some(format!("[{}Failed] {reason}.", info.tag))

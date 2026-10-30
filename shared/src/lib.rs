@@ -235,7 +235,9 @@ pub const NPC_TOKEN_FILENAME: &str = "npc_token";
 /// v133: Priest Healing Prayer (`AbilityId::HealingPrayer`, `HealingPrayed`,
 /// `AbilityRejectReason::FullHealth`/`NotUndead`); other players' HP is hidden
 /// unless the viewer wears a stethoscope.
-pub const PROTOCOL_VERSION: u32 = 133;
+/// v134: Bard Battle Hymn (`AbilityId::BattleHymn`, `BattleHymnStarted`,
+/// `AbilityRejectReason::Interrupted`).
+pub const PROTOCOL_VERSION: u32 = 134;
 
 /// Fingerprint of the dungeon layout generator this build compiled, stamped by
 /// `build.rs`. Layouts never travel the wire — both sides generate them from

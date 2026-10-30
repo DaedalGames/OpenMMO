@@ -375,6 +375,41 @@ export function playPrimalRoarSound(gender: Gender, delayMs = 0) {
   playSound(spec)
 }
 
+// One march per tune the server picks (`BATTLE_HYMN_TUNES`).
+export const BATTLE_HYMN_TUNES = [
+  '/sounds/battle-hymn-1.ogg',
+  '/sounds/battle-hymn-2.ogg',
+  '/sounds/battle-hymn-3.ogg',
+]
+const BATTLE_HYMN_VOLUME = 0.45
+const battleHymns = new Map<number, HTMLAudioElement>()
+
+/** A bard's march at `gain` (distance falloff), cut short by
+ *  `stopBattleHymn`. False when nothing is heard. */
+export function playBattleHymn(bardId: number, tune: number, gain: number) {
+  stopBattleHymn(bardId)
+  const url = BATTLE_HYMN_TUNES[tune]
+  const volume = Math.min(1, BATTLE_HYMN_VOLUME * gain * getSfxMultiplier())
+  if (!canUseAudio() || !url || volume <= 0) return false
+  const audio = createAudio(url, volume)
+  const forget = () => {
+    if (battleHymns.get(bardId) === audio) battleHymns.delete(bardId)
+  }
+  audio.onended = forget
+  battleHymns.set(bardId, audio)
+  audio.play().catch(forget)
+  return true
+}
+
+/** True when a march was playing. */
+export function stopBattleHymn(bardId: number) {
+  const audio = battleHymns.get(bardId)
+  if (!audio) return false
+  battleHymns.delete(bardId)
+  audio.pause()
+  return true
+}
+
 export function playAbilitySound(ability: AbilityId) {
   const sound = ABILITY_SOUNDS[ability]
   if (sound) playSound(sound)

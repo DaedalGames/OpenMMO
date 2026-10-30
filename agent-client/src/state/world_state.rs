@@ -1,5 +1,6 @@
 use super::*;
 use onlinerpg_shared::ability::{
+    BATTLE_HYMN_CAST_MS, BATTLE_HYMN_DURATION_MS, BATTLE_HYMN_RADIUS, BATTLE_HYMN_SPEED_MULT,
     GUARDIAN_WARD_COOLDOWN_MS, GUARDIAN_WARD_DURATION_MS, GUARDIAN_WARD_RADIUS,
     HEALING_PRAYER_COOLDOWN_MS, HEALING_PRAYER_DICE, HEALING_PRAYER_RANGE, PRIMAL_ROAR_CAST_MS,
     PRIMAL_ROAR_COOLDOWN_MS, PRIMAL_ROAR_DURATION_MS, PRIMAL_ROAR_RADIUS, PRIMAL_ROAR_STAGGER_MS,
@@ -47,6 +48,12 @@ pub fn buff_ability(ability: AbilityId) -> Option<BuffAbility> {
             name: "Healing Prayer",
             requires: "a living, unmounted Priest and a living player or undead monster target in sight on your floor",
             equipment: "nothing",
+        }),
+        AbilityId::BattleHymn => Some(BuffAbility {
+            tag: "BattleHymn",
+            name: "Battle Hymn",
+            requires: "a living, unmounted Bard",
+            equipment: "an instrument in your bag or hands",
         }),
         _ => None,
     }
@@ -385,6 +392,48 @@ dead unless they are in your party or you wear a stethoscope.
 Use the readiness status above. Wait for server success or failure feedback."#,
                 HEALING_PRAYER_COOLDOWN_MS / 1000,
             ));
+        }
+        let speed_percent = ((BATTLE_HYMN_SPEED_MULT - 1.0) * 100.0).round();
+        if let Some(player) = self
+            .self_player
+            .as_ref()
+            .filter(|player| player.class == onlinerpg_shared::CharacterClass::Bard)
+        {
+            let (readiness, _) =
+                self.buff_ability_status(player, AbilityId::BattleHymn, self.holds_instrument());
+            let wait = self.ability_wait(AbilityId::BattleHymn);
+            let performing = player.object_type.as_deref() == Some(MUSIC_EMOTE);
+            // The cast runs as the cooldown, so a wait while strumming is the hymn.
+            let status = if performing && !wait.is_zero() {
+                format!(
+                    "playing; done in {:.1}s if you keep still",
+                    wait.as_secs_f32()
+                )
+            } else {
+                readiness
+            };
+            let mana_cost = AbilityId::BattleHymn.mana_cost();
+            lines.push(format!(
+                r#"Battle Hymn: {status}.
+As a Bard, play it with {{"type": "use_ability", "ability": "battle_hymn"}}.
+Needs an instrument in your bag or hands and {mana_cost} MP, spent when it finishes. You play the hymn's
+own melody for {}s, taking over any tune you are playing. Moving, attacking or being hit before
+the end cancels it at no cost, and you may start again at once. Then you and living party members
+within {BATTLE_HYMN_RADIUS}m on your floor move and attack {speed_percent}% faster for {} minutes, wherever they go.
+Playing again renews it; it does not stack. Best played between fights.
+Use the readiness status above. Wait for server success or failure feedback."#,
+                BATTLE_HYMN_CAST_MS / 1000,
+                BATTLE_HYMN_DURATION_MS / 60_000,
+            ));
+        }
+        if let Some(until) = self.buff_expires_at.get(&AbilityId::BattleHymn) {
+            let left = until.saturating_duration_since(tokio::time::Instant::now());
+            if !left.is_zero() {
+                lines.push(format!(
+                    "Battle Hymn: you move and attack {speed_percent}% faster for {}s more.",
+                    left.as_secs()
+                ));
+            }
         }
         if let Some((satiation, state)) = self.self_hunger {
             let mut line = format!("Hunger: {state:?} ({satiation}/1000)");

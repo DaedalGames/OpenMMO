@@ -733,3 +733,56 @@ async fn monster_hits_show_exact_hp_only_where_disclosed() {
     .unwrap();
     assert_eq!(respawned, "[Respawn] Bob alive (HP hidden)");
 }
+
+#[tokio::test(start_paused = true)]
+async fn battle_hymn_prompt_needs_an_instrument_and_shows_playing_and_the_buff() {
+    let (mut state, _rx) = knight_state();
+    state.self_player.as_mut().unwrap().class = CharacterClass::Bard;
+    state.self_mana = Some((5, 10));
+    let prompt = state.format_world_state();
+    assert!(prompt.contains("Battle Hymn: equip an instrument in your bag or hands first."));
+    assert!(prompt.contains(r#"{"type": "use_ability", "ability": "battle_hymn"}"#));
+    assert!(prompt.contains("within 20m on your floor move and attack 8% faster for 10 minutes"));
+    state.self_bag.push(bag_item(5, "worn_mandolin", 1));
+    assert!(state.format_world_state().contains("Battle Hymn: ready."));
+    state.self_player.as_mut().unwrap().object_type = Some(crate::state::MUSIC_EMOTE.into());
+    state.push_event(ServerMessage::AbilityCooldowns {
+        cooldowns: vec![AbilityTimer {
+            ability: AbilityId::BattleHymn,
+            remaining_ms: 10_000,
+        }],
+    });
+    assert!(state
+        .format_world_state()
+        .contains("Battle Hymn: playing; done in 10.0s if you keep still."));
+
+    let player = state.self_player.as_mut().unwrap();
+    player.class = CharacterClass::Knight;
+    player.object_type = None;
+    state.push_event(ServerMessage::BuffUpdate {
+        buffs: vec![AbilityTimer {
+            ability: AbilityId::BattleHymn,
+            remaining_ms: 600_000,
+        }],
+    });
+    let prompt = state.format_world_state();
+    assert!(!prompt.contains("As a Bard"));
+    assert!(prompt.contains("Battle Hymn: you move and attack 8% faster for 600s more."));
+}
+
+#[tokio::test(start_paused = true)]
+async fn llm_battle_hymn_dispatches_without_a_target() {
+    let (mut state, mut rx) = knight_state();
+    state.self_player.as_mut().unwrap().class = CharacterClass::Bard;
+    let state = Arc::new(Mutex::new(state));
+    let response = r#"{"actions":[{"type":"use_ability","ability":"battle_hymn"}]}"#;
+    handle_response(&state, response, &None, &None, false).await;
+    assert!(matches!(
+        rx.try_recv(),
+        Ok(ClientMessage::UseAbility {
+            ability: AbilityId::BattleHymn,
+            monster_id: None,
+            target_player_id: None,
+        })
+    ));
+}

@@ -2002,6 +2002,7 @@ impl super::GameState {
         let mut current_health = 0;
         let mut shield_hit = false;
         let mut target_loc: Option<(Position, i8)> = None;
+        let mut strumming = false;
         audit.reason = "target_disappeared_or_dead";
 
         {
@@ -2020,6 +2021,8 @@ impl super::GameState {
                 current_health = player.health;
                 audit.resolved(old_health, player, result.hit);
                 target_loc = Some((player.position, player.floor_level));
+                strumming =
+                    player.object_type.as_deref() == Some(onlinerpg_shared::messages::MUSIC_EMOTE);
             }
         }
 
@@ -2030,6 +2033,9 @@ impl super::GameState {
         if result.hit {
             self.cancel_live_instrument_if_active(target_player_id)
                 .await;
+            if strumming && self.interrupt_battle_hymn(target_player_id).await {
+                self.clear_player_pose(target_player_id, "hit").await;
+            }
             self.cancel_food_regeneration(target_player_id).await;
             self.mark_dirty(target_player_id).await;
             self.mark_party_vitals_dirty(target_player_id).await;

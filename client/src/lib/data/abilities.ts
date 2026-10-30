@@ -130,10 +130,21 @@ export const HEALING_PRAYER = {
   description: 'Heal yourself or another player, or sear an undead monster.',
 } as const
 
+export const BATTLE_HYMN = {
+  get manaCost() {
+    return ability_mana_cost('battle_hymn')
+  },
+  id: 'battle_hymn',
+  name: 'Battle Hymn',
+  icon: '/icons/skills/battle-hymn.png',
+  description: 'Play to speed up yourself and nearby party members.',
+} as const
+
 export const BUFF_ABILITIES = [
   GUARDIAN_WARD,
   RAGE,
   PRIMAL_ROAR,
+  BATTLE_HYMN,
   RADIANCE,
   TRUE_AIM,
 ] as const
@@ -211,6 +222,7 @@ export const ABILITIES = [
   PRIMAL_ROAR,
   VALHALLA_CHARGE,
   HEALING_PRAYER,
+  BATTLE_HYMN,
   DOUBLE_SLASH,
   RADIANCE,
   TRUE_AIM,
@@ -231,7 +243,8 @@ export function isAbilityAvailable(
     (id === RAGE.id && characterClass === 'barbarian') ||
     (id === PRIMAL_ROAR.id && characterClass === 'caveman') ||
     (id === VALHALLA_CHARGE.id && characterClass === 'valkyrie') ||
-    (id === HEALING_PRAYER.id && characterClass === 'priest')
+    (id === HEALING_PRAYER.id && characterClass === 'priest') ||
+    (id === BATTLE_HYMN.id && characterClass === 'bard')
   )
 }
 
@@ -239,10 +252,17 @@ export function getAbility(id: string) {
   return ABILITIES.find((ability) => ability.id === id)
 }
 
+/** Battle Hymn alone looks in the bag: an instrument plays from anywhere. */
 export function abilityEquipmentAllowed(
   id: (typeof ABILITIES)[number]['id'],
-  equipped: PlayerInventory['equipped']
+  equipped: PlayerInventory['equipped'],
+  bag: PlayerInventory['bag'] = []
 ) {
+  if (id === BATTLE_HYMN.id) {
+    const instrument = (item?: { item_def_id: string }) =>
+      getItemDef(item?.item_def_id ?? '')?.category === 'instrument'
+    return bag.some(instrument) || Object.values(equipped).some(instrument)
+  }
   if (id === FISHING.id)
     return (
       getItemDef(equipped.main_hand?.item_def_id ?? '')?.category ===
@@ -284,6 +304,8 @@ export function abilityEquipmentNotMet(id: string) {
   if (id === DOUBLE_SLASH.id) return translate('skillFailure.daggerEquipment')
   if (id === VALHALLA_CHARGE.id)
     return translate('skillFailure.valhallaChargeEquipment')
+  if (id === BATTLE_HYMN.id)
+    return translate('skillFailure.battleHymnEquipment')
   return abilityRequirementsNotMet(abilityDisplayName(id))
 }
 

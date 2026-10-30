@@ -24,6 +24,9 @@ pub(crate) struct HungerData {
     pub cold_exposure_secs: f32,
     /// Recent drinks as (when, units), pruned to the alcohol window.
     pub recent_drinks: Vec<(Instant, u32)>,
+    /// A party bard's Battle Hymn, kept here so its speed folds into
+    /// `debuff_mults` (battle_hymn.rs).
+    pub hymn_until: Option<Instant>,
     movement_seconds: f32,
     sprint_seconds: f32,
     /// Equipment's drain factor, cached so the movement tick never has to
@@ -89,6 +92,7 @@ impl super::GameState {
                 rain_exposure_secs: 0.0,
                 cold_exposure_secs: 0.0,
                 recent_drinks: Vec::new(),
+                hymn_until: None,
                 movement_seconds: 0.0,
                 sprint_seconds: 0.0,
                 gear_drain_mult: 1.0,

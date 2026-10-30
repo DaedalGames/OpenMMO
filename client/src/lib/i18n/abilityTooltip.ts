@@ -1,5 +1,6 @@
 import type { SkillTooltipParams } from '../actions/skillTooltip'
 import {
+  BATTLE_HYMN,
   HEALING_PRAYER,
   PRIMAL_ROAR,
   RAGE,
@@ -8,6 +9,7 @@ import {
 } from '../data/abilities'
 import { DAGGER_SKILL } from '../data/daggerSkill'
 import {
+  battle_hymn_stats,
   healing_prayer_stats,
   primal_roar_stats,
   valhalla_charge_stats,
@@ -122,6 +124,39 @@ export function abilityTooltip(
           { label: text('skill.cooldown'), value: seconds(prayer.cooldown_ms) },
         ]
       }
+      case BATTLE_HYMN.id: {
+        const hymn = battle_hymn_stats() as {
+          radius_m: number
+          cast_ms: number
+          duration_ms: number
+        }
+        return [
+          { label: text('skill.type'), value: text('skill.magic') },
+          { label: text('skill.class'), value: text('class.bard') },
+          {
+            label: text('skill.equipment'),
+            value: text('ability.battle_hymn.equipment'),
+          },
+          {
+            label: text('skill.target'),
+            value: text('ability.battle_hymn.target'),
+          },
+          { label: text('skill.radius'), value: `${hymn.radius_m} m` },
+          {
+            label: text('skill.effect'),
+            value: text('ability.battle_hymn.buffDescription'),
+          },
+          { label: text('skill.castTime'), value: seconds(hymn.cast_ms) },
+          {
+            label: text('skill.duration'),
+            value: translate(
+              'duration.minutes',
+              { count: hymn.duration_ms / 60_000 },
+              language
+            ),
+          },
+        ]
+      }
       default:
         return ability.stats
     }
@@ -131,7 +166,8 @@ export function abilityTooltip(
     if (
       ability.id === RAGE.id ||
       ability.id === PRIMAL_ROAR.id ||
-      ability.id === HEALING_PRAYER.id
+      ability.id === HEALING_PRAYER.id ||
+      ability.id === BATTLE_HYMN.id
     )
       return [text(`ability.${ability.id}.details`)]
     if (ability.id !== VALHALLA_CHARGE.id) return ability.details

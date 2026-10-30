@@ -211,6 +211,7 @@ mod dungeon;
 mod estate_return;
 mod estate_storage;
 pub(crate) use estate_storage::EstateFurnitureMove;
+mod battle_hymn;
 mod bed_rest;
 mod fence;
 mod field_raid;
