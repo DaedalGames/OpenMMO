@@ -34,6 +34,7 @@
       },
     },
     priest: {
+      main_hand: 'worn_mace',
       armor: {
         head: 'worn_priest_helmet',
         chest: 'worn_priest_top',
@@ -85,6 +86,7 @@
   }
   const FEMALE_STARTER_EQUIPMENT: typeof STARTER_EQUIPMENT = {
     rogue: STARTER_EQUIPMENT.rogue,
+    priest: { main_hand: STARTER_EQUIPMENT.priest?.main_hand },
     knight: {
       armor: { ...STARTER_EQUIPMENT.knight?.armor, head: 'worn_plate_helmet' },
     },

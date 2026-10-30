@@ -335,6 +335,8 @@
   "worn_dagger.name": "낡은 단검",
   "worn_iron_sword.description": "오래 사용한 철제 장검. 상인은 사들이지 않습니다.",
   "worn_iron_sword.name": "낡은 철검",
+  "worn_mace.description": "오래 사용한 철퇴. 상인은 사들이지 않습니다.",
+  "worn_mace.name": "낡은 철퇴",
   "worn_mandolin.description": "여행으로 낡았지만 음색은 여전한 만돌린. /play_music으로 연주합니다. 상인은 사들이지 않습니다.",
   "worn_mandolin.name": "낡은 만돌린",
   "worn_plate_boots.description": "새내기 기사에게 지급되는 낡은 판금 방어구. 상인은 사들이지 않습니다.",

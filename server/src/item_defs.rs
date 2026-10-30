@@ -1116,6 +1116,7 @@ mod tests {
             ("small_sword", WeaponType::Sword),
             ("dagger", WeaponType::Dagger),
             ("morningstar", WeaponType::Mace),
+            ("worn_mace", WeaponType::Mace),
             ("greatclub", WeaponType::Club),
             ("spear", WeaponType::Spear),
             ("torch", WeaponType::Torch),

@@ -329,6 +329,31 @@
     파지 위치 수정으로 기존 임시 사망 동작의 검 바닥 간섭도 해소했다. 양손 전용 동작과 플레이어 아이템·드롭 데이터는 후속 작업이다.
     검증: `node tools/validate-rune-blade.mjs`.
 
+## Mace
+
+- `worn_mace`(낡은 철퇴): 사제 시작 무기. 가시 없는 둥근 철구 철퇴로, 가시 철퇴(`morningstar`)보다 수수한 초보 무기다.
+  mace 타입·1d6·무게 4·basePrice 없음·거래 불가. 기존 사제는 서버 시작 마이그레이션
+  `priest_starter_mace_20261031`로 철퇴를 가방에 받는다. 낡은 철검과 장착 상태는 그대로 둔다.
+  새 사제만 낡은 철검 대신 철퇴를 들고 시작한다.
+  - 원화 `assets/items/mace/concepts/mace.png`(`doc/images/items/mace.png`), 1536×1024: OpenAI Codex built-in ImageGen
+    (`codex exec`, codex-cli 0.162.1), **ChatGPT Pro 20x**, 2026-10-31. OpenAI 생성 출력물 이용 조건 적용.
+    가시 철퇴 원화를 스타일 참조로 넣었다. [프롬프트·해시](../../assets/items/mace/concepts/generation.json).
+    ![원화](../images/items/mace.png)
+  - 3D 모델: Tripo API 유료 크레딧, 2026-10-31. Tripo 서비스 이용 조건 적용. 기존 구매분에서 120 credits를 사용했다(잔액 800→680).
+    P2 단일 이미지·PBR·상세 텍스처·목표 4,000 faces로 생성했고 결과 2,972 triangles를 유지했다.
+    원본·요청·task ID `9acbb6f6-3bf4-4e04-b1d7-8f9eed846a69`는 `assets/items/mace/tripo_v1/`에 보관한다.
+  - 전장 0.8m(0.800×0.156×0.156m — goblin_sword와 같은 길이, morningstar 0.95m보다 짧다), 머리 +X,
+    손잡이 끝에서 전장의 13.6% 지점이 그립 원점이다(sword.glb 비율). 실제 미터 크기를 메시 좌표에 굽고 object/runtime scale은 1이다.
+    PBR 텍스처 4096²→512² WebP, 발광 없음.
+  - 게임 모델 `client/public/models/weapons/mace.glb`(388,484 bytes),
+    투명 128² 아이콘 `client/public/items/weapons/mace.png`,
+    패킹한 Blender 편집본 `assets/items/mace/mace.blend`.
+    [제작 기록](mace-model.json). 재현: `blender -b -t 6 --python-exit-code 1 --python tools/blender-scripts/build_mace.py`.
+  - 손 장착: 손잡이 중심이 원점이고 지름이 약 5cm로 두 사제의 주먹 구멍(약 2~2.6cm)보다 굵다.
+    기본 위치 `(0, 0.08, 0)`에서는 손등으로 나와서, `client/src/lib/utils/handProps.ts`의 모델별 보정으로 손바닥 앞에 둔다.
+    모듈형 남자 `(0.02, 0.12, 0.05)`, `female_priest.glb` `(0.03, 0.07, 0.03)`.
+    여자 사제의 대기·걷기·달리기 클립은 손을 편 채라 주먹을 쥐지 않는다.
+
 ## 로그 기본 장비 — 2026-10-02
 
 새 로그 캐릭터는 `worn_rogue_top`, `worn_rogue_pants`, `worn_rogue_gloves`,

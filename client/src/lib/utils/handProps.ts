@@ -4,16 +4,15 @@ import { getWeaponAnimation } from '../data/weaponAnimationDefs'
 import {
   MODULAR_MALE_MODEL_PATH,
   MODULAR_FEMALE_MODEL_PATH,
+  FEMALE_PRIEST_CHARACTER_MODEL_PATH,
 } from './modelPaths'
 
 /** Offset from the wrist bone toward the palm, so a prop looks gripped. */
 const HAND_GRIP_OFFSET = new THREE.Vector3(0, 0.08, 0)
-const MODULAR_TORCH_GRIP_OFFSET = new THREE.Vector3(0.025, 0.08, 0.012)
 
-export const FEMALE_HAND_FITS: Record<
-  string,
-  { position: THREE.Vector3; rotation?: THREE.Euler }
-> = {
+type HandFit = { position: THREE.Vector3; rotation?: THREE.Euler }
+
+export const FEMALE_HAND_FITS: Record<string, HandFit> = {
   'weapons/sword.glb': {
     position: new THREE.Vector3(0.0652, 0.0422, -0.0282),
     rotation: new THREE.Euler(0, 0, 0.2),
@@ -35,14 +34,26 @@ export const FEMALE_HAND_FITS: Record<
   },
 }
 
-function fitFemaleHandProp(
+// Per-rig grips for props that HAND_GRIP_OFFSET does not seat.
+const MODEL_HAND_FITS: Record<string, Record<string, HandFit>> = {
+  [MODULAR_FEMALE_MODEL_PATH]: FEMALE_HAND_FITS,
+  [MODULAR_MALE_MODEL_PATH]: {
+    'weapons/mace.glb': { position: new THREE.Vector3(0.02, 0.12, 0.05) },
+    'weapons/torch.glb': { position: new THREE.Vector3(0.025, 0.08, 0.012) },
+  },
+  [FEMALE_PRIEST_CHARACTER_MODEL_PATH]: {
+    'weapons/mace.glb': { position: new THREE.Vector3(0.03, 0.07, 0.03) },
+  },
+}
+
+function fitHandProp(
   prop: THREE.Object3D,
   worldModel?: string,
   modelPath?: string
 ) {
   const fit =
-    modelPath === MODULAR_FEMALE_MODEL_PATH && worldModel
-      ? FEMALE_HAND_FITS[worldModel]
+    modelPath && worldModel
+      ? MODEL_HAND_FITS[modelPath]?.[worldModel]
       : undefined
   if (!fit) return
   prop.position.copy(fit.position)
@@ -97,7 +108,7 @@ export function poseMainHandProp(
     if (forearm && forearm > 0) prop.position.y = forearm * BOW_FOREARM_RATIO
     prop.rotation.copy(BOW_ROTATION)
   }
-  fitFemaleHandProp(prop, getItemDef(itemDefId)?.worldModel, modelPath)
+  fitHandProp(prop, getItemDef(itemDefId)?.worldModel, modelPath)
 }
 
 const forearmCache = new Map<string, number>()
@@ -138,17 +149,13 @@ export function poseOffHandProp(
   worldModel?: string,
   modelPath?: string
 ) {
-  prop.position.copy(
-    modelPath === MODULAR_MALE_MODEL_PATH && worldModel === 'weapons/torch.glb'
-      ? MODULAR_TORCH_GRIP_OFFSET
-      : HAND_GRIP_OFFSET
-  )
+  prop.position.copy(HAND_GRIP_OFFSET)
   if (worldModel === 'armor/earth_shield.glb') {
     prop.rotation.set(0.170659, 0.002636, 1.657126)
   } else {
     prop.rotation.set(0, Math.PI, 0)
   }
-  fitFemaleHandProp(prop, worldModel, modelPath)
+  fitHandProp(prop, worldModel, modelPath)
 }
 
 /** Where the flame sits on a torch GLB that names no `torch_tip` empty. */

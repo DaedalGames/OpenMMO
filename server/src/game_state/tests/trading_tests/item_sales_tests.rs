@@ -35,6 +35,7 @@ async fn unpriced_starter_gear_cannot_mint_gold_from_single_or_batch_sales() {
         "worn_ranger_gloves",
         "worn_ranger_boots",
         "worn_iron_sword",
+        "worn_mace",
         "worn_torch",
     ];
     let mut bag: Vec<_> = items

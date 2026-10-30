@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-31",
+  "source": "assets/items/mace/tripo_v1/model_url.glb",
+  "source_sha256": "d2d6594b3c27a2a15686313560b36eccec88be0494b1098ce09eba9baaec3cce",
+  "generation_record": "assets/items/mace/tripo_v1/generation.json",
+  "concept_record": "assets/items/mace/concepts/generation.json",
+  "tool": "Tripo API",
+  "tier": "Paid API credits; user purchased 1000 credits",
+  "license": "Tripo Terms of User Agreement; source image provenance retained separately",
+  "license_url": "https://developers.tripo3d.ai/en/terms",
+  "task_id": "9acbb6f6-3bf4-4e04-b1d7-8f9eed846a69",
+  "credits_consumed": 120.0,
+  "parameters": {
+    "model": "P2-20260801",
+    "quad": false,
+    "face_limit": 4000,
+    "texture": true,
+    "pbr": true,
+    "texture_quality": "detailed",
+    "texture_version": "v3.5-20260815",
+    "delight": true,
+    "texture_alignment": "original_image",
+    "orientation": "align_image",
+    "auto_size": false,
+    "export_uv": true,
+    "model_seed": 103101,
+    "texture_seed": 103101,
+    "enable_image_autofix": false
+  },
+  "method": "Preserve generated topology and UVs; align head to +X; bake metric size and grip origin; drop emission; resize PBR maps to 512px.",
+  "length_m": 0.8,
+  "grip_fraction_from_pommel": 0.136,
+  "triangles": 2972,
+  "dimensions_blender_xyz_m": [
+    0.800000011920929,
+    0.15593552589416504,
+    0.15593552589416504
+  ],
+  "scale": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "model": "client/public/models/weapons/mace.glb",
+  "icon": "client/public/items/weapons/mace.png",
+  "blender": "assets/items/mace/mace.blend"
+}

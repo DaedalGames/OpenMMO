@@ -335,6 +335,8 @@
   "worn_dagger.name": "破旧匕首",
   "worn_iron_sword.description": "一把久经使用的铁制长剑。商人不会收购。",
   "worn_iron_sword.name": "破旧铁剑",
+  "worn_mace.description": "一把久经使用的铁锤矛。商人不会收购。",
+  "worn_mace.name": "破旧锤矛",
   "worn_mandolin.description": "饱经旅途风霜却依然音色动人的曼陀林。使用 /play_music 演奏。商人不会收购。",
   "worn_mandolin.name": "破旧曼陀林",
   "worn_plate_boots.description": "发给新手骑士的破旧板甲。商人不会收购。",
