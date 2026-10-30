@@ -65,6 +65,15 @@
     return slot
   }
 
+  function inEarshot(player: LocalPlayer, at: { x: number; z: number }) {
+    return (
+      Math.hypot(
+        shortestWrappedDeltaX(player.position.x, at.x),
+        at.z - player.position.z
+      ) <= ABILITY_EARSHOT_M
+    )
+  }
+
   function clear() {
     takeAbilityEffects()
     takePrayerPoses()
@@ -116,16 +125,20 @@
       clear()
       return
     }
-    for (const id of takePrayerPoses()) pray(id)
     const now = Date.now()
+    for (const { playerId, startedAt } of takePrayerPoses()) {
+      if (now - startedAt > 1000) continue
+      pray(playerId)
+      if (
+        getAnchor(playerId, false, anchor) &&
+        inEarshot(currentPlayer, anchor)
+      )
+        playAbilitySound('healing_prayer')
+    }
     for (const event of takeAbilityEffects()) {
       if (event.floor_level !== floorLevel || now - event.startedAt > 1000)
         continue
-      const audible =
-        Math.hypot(
-          shortestWrappedDeltaX(currentPlayer.position.x, event.position.x),
-          event.position.z - currentPlayer.position.z
-        ) <= ABILITY_EARSHOT_M
+      const audible = inEarshot(currentPlayer, event.position)
       if (event.ability === 'primal_roar') {
         roar(event.player_id, audible)
         continue

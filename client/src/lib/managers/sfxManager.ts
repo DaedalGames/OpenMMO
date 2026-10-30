@@ -82,6 +82,11 @@ const ABILITY_SOUNDS: Partial<Record<AbilityId, SoundSpec>> = {
     volume: 0.55,
     pool: 3,
   },
+  healing_prayer: {
+    url: '/sounds/healing-prayer.ogg',
+    volume: 0.25,
+    pool: 3,
+  },
 }
 
 // Primal Roar's cry. Loaded on first roar: only Cavemen cast it.

@@ -2957,8 +2957,7 @@ export function markMonsterSkillSpots(
   }
 }
 
-/** Healing Prayer, as told to its caster and its target; the HP itself
- *  arrives in `PlayerHealthUpdate`. */
+/** Healing Prayer seen nearby; the HP itself arrives in `PlayerHealthUpdate`. */
 function handleHealingPrayed(
   casterId: number,
   targetId: number | null,
@@ -2978,7 +2977,18 @@ function handleHealingPrayed(
       })
     return
   }
-  if (targetId === null || (casterId !== selfId && targetId !== selfId)) return
+  if (targetId === null) return
+  // Your own +N comes from the `PlayerHealthUpdate` diff.
+  const target = state.otherPlayers.get(targetId)
+  if (target)
+    updatePlayer(targetId, {
+      lastRegenInfo: {
+        damage: amount,
+        hit: true,
+        trigger: (target.lastRegenInfo?.trigger ?? 0) + 1,
+      },
+    })
+  if (casterId !== selfId && targetId !== selfId) return
   let text = translate('combat.prayerHealedSelf', { amount })
   if (casterId !== targetId)
     text =

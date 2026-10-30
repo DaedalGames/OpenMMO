@@ -127,10 +127,10 @@ export function queueAbilityEffect(
   effects.push({ ...event, startedAt: Date.now() })
 }
 
-let prayers: number[] = []
-/** A Healing Prayer caster, for their cast pose. */
+let prayers: { playerId: number; startedAt: number }[] = []
+/** A Healing Prayer caster, for their cast pose and sound. */
 export function queuePrayerPose(playerId: number) {
-  prayers.push(playerId)
+  prayers.push({ playerId, startedAt: Date.now() })
 }
 
 export function takePrayerPoses() {

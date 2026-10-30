@@ -801,6 +801,7 @@
         appearance={player.appearance}
         health={player.health}
         maxHealth={player.maxHealth}
+        lastRegenInfo={player.lastRegenInfo}
         torchOn={player.torchOn}
         mount={player.mount}
         mainHand={player.mainHand}

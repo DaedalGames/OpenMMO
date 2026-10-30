@@ -441,6 +441,17 @@ Starter 유료 플랜(API 구독 조회로 확인),
   및 같은 이름의 `.json`에 보관.
   `AbilityUsed`를 받은 뒤 800 ms 늦게 재생해 시전 동작에서 양팔을 벌리는 순간에 맞춘다. 같은 층 20 m 안에서 들린다.
 
+- healing-prayer.ogg — 치유의 기도 효과음. 회복·언데드 피해 모두 `HealingPrayed`마다 한 번 재생한다.
+  [ElevenLabs Sound Effects](https://elevenlabs.io/sound-effects) API로 2026-10-30 직접 생성. Starter 유료 플랜,
+  [유료 플랜 상업 이용 라이선스](https://help.elevenlabs.io/hc/en-us/articles/13313564601361-Can-I-publish-the-content-I-generate-on-the-platform) 적용.
+  1.2초, `prompt_influence=0.5`. 두 프롬프트로 3개씩 6개 후보 생성(총 72크레딧) 후 사용자가
+  `tools/gen-death-sfx.py`의 `healing_prayer_glow` take 1을 골랐다. 더 따뜻한 `healing_prayer_chime` 세 후보는 미채택.
+  모노 다운믹스 후 끝 무음 −40 dB 기준 트림(잘린 부분 없음), 피크 −3 dB 정규화, 마지막 80 ms 페이드,
+  모노 44.1 kHz OGG Vorbis q5, 1.2초, −16.1 LUFS. 게임 재생 볼륨 0.25로 가디언 와드보다 약 5 dB 작게 들리고,
+  같은 층 시전자 20 m 안에서 들린다. 원본과 필터 체인은
+  `assets/sfx/healing-prayer-2026-10-30/`의 `healing-prayer_glow-take1_2026-10-30.mp3` 및 같은 이름의 `.json`에 보관.
+  나머지 후보 원본은 `~/assets_original/sfx/healing_prayer_*.mp3`.
+
 - guardian-ward.ogg — Guardian Ward 방패 버프 발동음. 사용자가 제공한
   `Heavy_shield_buff_ca_#4-1789246371152.mp3`를 사용한다. 출처·생성일·요금제는
   사용자 확인: ElevenLabs Sound Effects, Starter, 2026-09-13.

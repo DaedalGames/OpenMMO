@@ -141,6 +141,20 @@ PROMPTS = {
         "savage and strong, about one second, ending abruptly. Human female voice "
         "only, no scream of fear, no animal growl, no words, no music, no reverb."
     ),
+    "healing_prayer_chime": (
+        "A gentle holy healing spell for a fantasy RPG: a soft, warm shimmer of "
+        "a few quiet celesta and harp notes rising lightly, with a faint airy "
+        "sparkle, then fading out smoothly. Calm, soothing, subtle and quiet, "
+        "short game heal feedback, about one second. No voice, no choir, no "
+        "words, no drums, no bass, no whoosh, no loud bell, no fanfare."
+    ),
+    "healing_prayer_glow": (
+        "A quiet restorative magic glow: a soft breathy shimmer swelling gently "
+        "like warm light, with a delicate high glassy twinkle on top, then a "
+        "smooth short fade. Gentle priest healing spell in a fantasy game, "
+        "understated and calm, about one second. No voice, no choir, no words, "
+        "no drums, no bass boom, no whoosh, no harsh ringing."
+    ),
     "level_up": (
         "Fantasy RPG level-up sound: a bright magical ascending shimmer. A quick "
         "rising harp and glockenspiel arpeggio with sparkling twinkles and a soft "

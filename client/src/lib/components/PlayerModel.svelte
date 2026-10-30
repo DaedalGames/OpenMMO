@@ -1973,7 +1973,7 @@
       nametagGroup.quaternion.copy(camera.quaternion)
     }
 
-    if (camera && isCurrentPlayer) {
+    if (camera) {
       damageText.update(
         deltaTime,
         position.x,
